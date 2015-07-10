@@ -16,6 +16,8 @@
 
 package cats.derived
 
+import org.scalacheck.Arbitrary, Arbitrary.arbitrary
+
 object TestDefns {
   sealed trait IList[A]
   final case class ICons[A](head: A, tail: IList[A]) extends IList[A]
@@ -25,6 +27,9 @@ object TestDefns {
     def fromSeq[T](ts: Seq[T]): IList[T] =
       ts.foldRight(INil[T](): IList[T])(ICons(_, _))
   }
+
+  implicit def arbIList[A:Arbitrary]: Arbitrary[IList[A]] = Arbitrary(
+    arbitrary[Seq[A]].map(IList.fromSeq))
 
   sealed trait Snoc[A]
   final case class SCons[A](init: Snoc[A], last: A) extends Snoc[A]

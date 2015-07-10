@@ -16,27 +16,14 @@
 
 package cats.derived
 
+import cats.Eq
+import algebra.laws.OrderLaws
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
-object TestDefns {
-  sealed trait IList[A]
-  final case class ICons[A](head: A, tail: IList[A]) extends IList[A]
-  final case class INil[A]() extends IList[A]
+import TestDefns._
 
-  object IList {
-    def fromSeq[T](ts: Seq[T]): IList[T] =
-      ts.foldRight(INil[T](): IList[T])(ICons(_, _))
-  }
+class EqTests extends CatsSuite {
+  import EqDerivedOrphans._
 
-  implicit def arbIList[A:Arbitrary]: Arbitrary[IList[A]] = Arbitrary(
-    arbitrary[Seq[A]].map(IList.fromSeq))
-
-  sealed trait Tree[T]
-  final case class Leaf[T](t: T) extends Tree[T]
-  final case class Node[T](l: Tree[T], r: Tree[T]) extends Tree[T]
-
-  trait Dummy1[F[_]]
-  object Dummy1 {
-    implicit def mkDummy1[F[_]]: Dummy1[F] = new Dummy1[F] {}
-  }
+  checkAll("IList[Int]", OrderLaws[IList[Int]].eqv)
 }

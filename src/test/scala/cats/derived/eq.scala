@@ -18,7 +18,7 @@ package cats.derived
 
 import cats.Eq
 import algebra.laws.OrderLaws
-import org.scalacheck.Arbitrary, Arbitrary.arbitrary
+import org.scalacheck.Prop.forAll
 
 import TestDefns._
 
@@ -26,4 +26,10 @@ class EqTests extends CatsSuite {
   import EqDerivedOrphans._
 
   checkAll("IList[Int]", OrderLaws[IList[Int]].eqv)
+
+  test("IList Eq consistent with universal equality")(check {
+    forAll { (a: IList[Int], b: IList[Int]) =>
+      Eq[IList[Int]].eqv(a, b) == (a == b)
+    }
+  })
 }

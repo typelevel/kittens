@@ -16,3 +16,8 @@ script:
   - sbt ++${TRAVIS_SCALA_VERSION} test
 
 sudo: false
+
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/7d9188983e70fdb9839

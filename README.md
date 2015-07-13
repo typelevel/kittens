@@ -1,4 +1,4 @@
-# kittens: Automatic type class derivation for Cats
+# kittens: Automatic type class derivation for cats
 
 **kittens** is a Scala library which provides instances of type classes from the [Cats][cats] library for arbitrary
 algebraic data types using [shapeless][shapeless]-based automatic type class derivation.

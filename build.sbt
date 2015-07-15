@@ -29,4 +29,5 @@ scalacOptions := Seq(
   "-feature",
   "-language:higherKinds",
   "-language:implicitConversions",
-  "-unchecked")
+  "-unchecked"
+)

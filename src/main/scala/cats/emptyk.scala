@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
 
-object TestDefns {
-  sealed trait IList[A]
-  final case class ICons[A](head: A, tail: IList[A]) extends IList[A]
-  final case class INil[A]() extends IList[A]
-
-  object IList {
-    def fromSeq[T](ts: Seq[T]): IList[T] =
-      ts.foldRight(INil[T](): IList[T])(ICons(_, _))
-  }
-
-  sealed trait Tree[T]
-  final case class Leaf[T](t: T) extends Tree[T]
-  final case class Node[T](l: Tree[T], r: Tree[T]) extends Tree[T]
+trait EmptyK[F[_]] {
+  def empty[A]: F[A]
 }
+
+object EmptyK {
+  def apply[F[_]](implicit ef: EmptyK[F]): EmptyK[F] = ef
+
+  implicit val listEmptyK: EmptyK[List] =
+    new EmptyK[List] {
+      def empty[A]: List[A] = Nil
+    }
+
+  implicit val optionEmptyK: EmptyK[Option] =
+    new EmptyK[Option] {
+      def empty[A]: Option[A] = None
+    }
+}
+
+

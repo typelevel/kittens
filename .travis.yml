@@ -20,4 +20,4 @@ sudo: false
 notifications:
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/7d9188983e70fdb9839
+      - https://webhooks.gitter.im/e/7d9188983e70fdb9839f

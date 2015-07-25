@@ -19,11 +19,13 @@ package cats.derived
 import cats.Eq
 import algebra.laws.OrderLaws
 import org.scalacheck.Prop.forAll
+import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
 import TestDefns._
 
 class EqTests extends CatsSuite {
   import cats.derived.eq._
+  import EqTests._
 
   checkAll("IList[Int]", OrderLaws[IList[Int]].eqv)
 
@@ -32,4 +34,24 @@ class EqTests extends CatsSuite {
       Eq[IList[Int]].eqv(a, b) == (a == b)
     }
   })
+
+  test("existing Eq instances in scope are respected")(check {
+    // nasty local implicit Eq instances that think that all things are equal
+    implicit val eqInt: Eq[Int] = Eq.instance((_, _) => true)
+    implicit def eqOption[A]: Eq[Option[A]] = Eq.instance((_, _) => true)
+
+    forAll { (a: Foo, b: Foo) =>
+      Eq[Foo].eqv(a, b)
+    }
+  })
+}
+
+object EqTests {
+  final case class Foo(i: Int, b: Option[Boolean])
+
+  implicit val arbFoo: Arbitrary[Foo] = Arbitrary(
+    for {
+      i <- arbitrary[Int]
+      b <- arbitrary[Option[Boolean]]
+    } yield Foo(i, b))
 }

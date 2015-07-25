@@ -23,7 +23,7 @@ import org.scalacheck.Prop.forAll
 import TestDefns._
 
 class EqTests extends CatsSuite {
-  import EqDerivedOrphans._
+  import cats.derived.eq._
 
   checkAll("IList[Int]", OrderLaws[IList[Int]].eqv)
 

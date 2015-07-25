@@ -25,7 +25,7 @@ import shapeless._
  * Inspired by work in [[https://github.com/typelevel/shapeless-contrib shapeless-contrib]]
  * by Miles Sabin and Lars Hupel.
  */
-object EqDerivedOrphans extends TypeClassCompanion[Eq] {
+object eq extends TypeClassCompanion[Eq] {
   object typeClass extends TypeClass[Eq] {
     def emptyProduct = new Eq[HNil] {
       def eqv(a: HNil, b: HNil) = true

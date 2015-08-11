@@ -16,10 +16,18 @@
 
 package cats.derived
 
-import cats.{ EmptyK, Pointed }
+import alleycats.{ EmptyK, Pure }
 import shapeless._
 
-object emptyk {
+object emptyk extends emptyk0 {
+  // Temporarily forward to the alleycats instances until export-hook is in place
+  import alleycats.std.{ list, option }
+
+  implicit val listEmptyK: EmptyK[List] = list.listEmptyK
+  implicit val optionEmptyK: EmptyK[Option] = option.optionEmptyK
+}
+
+trait emptyk0 {
   implicit def apply[F[_]](implicit mef: WrappedOrphan[MkEmptyK[F]]): EmptyK[F] = mef.instance
 }
 
@@ -70,11 +78,11 @@ trait MkEmptyK1 extends MkEmptyK2 {
 }
 
 trait MkEmptyK2 extends MkEmptyK3 {
-  implicit def split[F[_]](implicit split: Split1[F, Pointed, MkEmptyK]): MkEmptyK[F] =
+  implicit def split[F[_]](implicit split: Split1[F, Pure, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import split._
-        pack(fo.point(fi.empty))
+        pack(fo.pure(fi.empty))
       }
     }
 }

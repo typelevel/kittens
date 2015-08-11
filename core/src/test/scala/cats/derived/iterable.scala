@@ -16,10 +16,9 @@
 
 package cats.derived
 
-import TestDefns._
+import TestDefns._, iterable._
 
 class IterableTests extends CatsSuite {
-  import iterable._
 
   test("IList[T] => Iterable[T]") {
     // test trampolining

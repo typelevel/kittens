@@ -16,13 +16,12 @@
 
 package cats.derived
 
-import cats.EmptyK
+import alleycats.EmptyK
 import shapeless._
 
-import TestDefns._
+import TestDefns._, emptyk._
 
 class EmptyKTests extends CatsSuite {
-  import cats.derived.emptyk._
 
   test("EmptyK[Option]") {
     val E = EmptyK[Option]

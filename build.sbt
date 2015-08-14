@@ -22,8 +22,9 @@ lazy val commonSettings = Seq(
   ),
   libraryDependencies ++= Seq(
     "org.spire-math"  %% "cats"           % "0.1.2",
-    "org.spire-math"  %% "alleycats"      % "0.1.2",
+    "org.spire-math"  %% "alleycats"      % "0.1.3-SNAPSHOT",
     "com.chuusai"     %% "shapeless"      % "2.2.5",
+    "org.typelevel"   %% "export-hook"    % "1.0.1-SNAPSHOT",
     "org.scalatest"   %% "scalatest"      % "2.1.3"  % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.12.4" % "test",
     "org.typelevel"   %% "discipline"     % "0.4"  % "test",

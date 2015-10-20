@@ -16,7 +16,7 @@
 
 package cats.derived
 
-import cats.{ Eq, Fold, Foldable }, Fold.{ Continue, Return, Pass }
+import cats.{ Eq, Eval, Foldable }, Eval.now
 
 import TestDefns._
 
@@ -25,12 +25,12 @@ class FoldableTests extends CatsSuite {
   override def convertToEqualizer[T](left: T): Equalizer[T] = ???
 
   // exists method written in terms of foldRight
-  def exists[F[_]: Foldable, A: Eq](as: F[A], goal: A): cats.Lazy[Boolean] =
-    Foldable[F].foldRight(as, cats.Lazy(false)) { a =>
-      if (a === goal) Return(true) else Pass
+  def contains[F[_]: Foldable, A: Eq](as: F[A], goal: A): Eval[Boolean] =
+    as.foldRight(now(false)) { (a, lb) =>
+      if (a === goal) now(true) else lb
     }
 
-  import cats.derived.foldable._
+  import foldable._, exports._, legacy._
 
   test("Foldable[IList]") {
     val F = Foldable[IList]
@@ -40,7 +40,7 @@ class FoldableTests extends CatsSuite {
     val ns = IList.fromSeq(lns)
     val total = lns.sum
     assert(F.foldLeft(ns, 0)(_ + _) == total)
-    assert(F.foldRight(ns, cats.Lazy(0))(x => Continue(x + _)).value == total)
+    assert(F.foldRight(ns, now(0))((x, ly) => ly.map(x + _)).value == total)
     assert(F.fold(ns) == total)
 
     // more basic checks
@@ -54,10 +54,10 @@ class FoldableTests extends CatsSuite {
     val largeTotal = llarge.sum
     assert(F.foldLeft(large, 0)(_ + _) == largeTotal)
     assert(F.fold(large) == largeTotal)
-    assert(exists(large, 10000).value)
+    assert(contains(large, 10000).value)
 
     // safely build large lists
-    val larger = F.foldRight(large, cats.Lazy(List.empty[Int]))(x => Continue((x + 1) :: _))
+    val larger = F.foldRight(large, now(List.empty[Int]))((x, lxs) => lxs.map((x + 1) :: _))
     assert(larger.value == llarge.map(_ + 1))
   }
 

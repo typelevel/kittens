@@ -17,40 +17,23 @@
 package cats.derived
 
 import alleycats.{ EmptyK, Pure }
+import export.exports
 import shapeless._
 
-object emptyk extends emptyk0 {
-  // Temporarily forward to the alleycats instances until export-hook is in place
-  import alleycats.std.{ list, option }
+@exports[MkEmptyK]
+object emptyk
 
-  implicit val listEmptyK: EmptyK[List] = list.listEmptyK
-  implicit val optionEmptyK: EmptyK[Option] = option.optionEmptyK
-}
-
-trait emptyk0 {
-  implicit def apply[F[_]](implicit mef: WrappedOrphan[MkEmptyK[F]]): EmptyK[F] = mef.instance
-}
-
-trait MkEmptyK[F[_]] extends EmptyK[F] {
-  def empty[A]: F[A]
-}
+trait MkEmptyK[F[_]] extends EmptyK[F]
 
 object MkEmptyK extends MkEmptyK0 {
   def apply[F[_]](implicit mef: MkEmptyK[F]): MkEmptyK[F] = mef
 
-  implicit def emptyk[F[_]](implicit cf: EmptyK[F]): MkEmptyK[F] =
-    new MkEmptyK[F] {
-      def empty[A]: F[A] = cf.empty
-    }
-}
-
-trait MkEmptyK0 extends MkEmptyK1 {
   implicit val hnil: MkEmptyK[Const[HNil]#λ] =
     new MkEmptyK[Const[HNil]#λ] {
       def empty[A]: HNil = HNil
     }
 
-  implicit def hcons[F[_]](implicit ihf: IsHCons1[F, MkEmptyK, MkEmptyK]): MkEmptyK[F] =
+  implicit def hcons[F[_]](implicit ihf: IsHCons1[F, EmptyK, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import ihf._
@@ -58,7 +41,7 @@ trait MkEmptyK0 extends MkEmptyK1 {
       }
     }
 
-  implicit def ccons0[F[_]](implicit icf: IsCCons1[F, MkEmptyK, Trivial1]): MkEmptyK[F] =
+  implicit def ccons0[F[_]](implicit icf: IsCCons1[F, EmptyK, Trivial1]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import icf._
@@ -67,7 +50,7 @@ trait MkEmptyK0 extends MkEmptyK1 {
     }
 }
 
-trait MkEmptyK1 extends MkEmptyK2 {
+trait MkEmptyK0 extends MkEmptyK1 {
   implicit def ccons1[F[_]](implicit icf: IsCCons1[F, Trivial1, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
@@ -77,8 +60,18 @@ trait MkEmptyK1 extends MkEmptyK2 {
     }
 }
 
+trait MkEmptyK1 extends MkEmptyK2 {
+  implicit def split0[F[_]](implicit split: Split1[F, EmptyK, Trivial1]): MkEmptyK[F] =
+    new MkEmptyK[F] {
+      def empty[A]: F[A] = {
+        import split._
+        pack(fo.empty)
+      }
+    }
+}
+
 trait MkEmptyK2 extends MkEmptyK3 {
-  implicit def split[F[_]](implicit split: Split1[F, Pure, MkEmptyK]): MkEmptyK[F] =
+  implicit def split1[F[_]](implicit split: Split1[F, Pure, EmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import split._

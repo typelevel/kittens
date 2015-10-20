@@ -16,10 +16,12 @@
 
 package cats.derived
 
-import alleycats.EmptyK
+import alleycats.EmptyK, alleycats.std.all._
+import cats._
 import shapeless._
 
-import TestDefns._, emptyk._
+import TestDefns._
+import emptyk.exports._, pure.exports._
 
 class EmptyKTests extends CatsSuite {
 
@@ -41,18 +43,25 @@ class EmptyKTests extends CatsSuite {
     assert(E.empty == INil())
   }
 
+  test("EmptyK[λ[t => Option[Option[t]]]]") {
+    type OOption[t] = Option[Option[t]]
+    val E = MkEmptyK[OOption]
+
+    assert(E.empty == None)
+  }
+
   test("EmptyK[λ[t => List[Option[t]]]]") {
     type LOption[t] = List[Option[t]]
     val E = EmptyK[LOption]
 
-    assert(E.empty == List(None))
+    assert(E.empty == Nil)
   }
 
   test("EmptyK[λ[t => List[List[t]]]]") {
     type LList[t] = List[List[t]]
     val E = EmptyK[LList]
 
-    assert(E.empty == List(Nil))
+    assert(E.empty == Nil)
   }
 
   test("EmptyK[λ[t => (List[t], List[t])]]") {
@@ -60,19 +69,5 @@ class EmptyKTests extends CatsSuite {
     val E = EmptyK[PList]
 
     assert(E.empty == (Nil, Nil))
-  }
-
-  test("EmptyK[λ[t => HNil]]") {
-    type HNilK[t] = HNil
-    val E = EmptyK[HNilK]
-
-    assert(E.empty == HNil)
-  }
-
-  test("EmptyK[λ[t => IList[t] :: HNil]]") {
-    type IN[t] = IList[t] :: HNil
-    val E = EmptyK[IN]
-
-    assert(E.empty == (INil() :: HNil))
   }
 }

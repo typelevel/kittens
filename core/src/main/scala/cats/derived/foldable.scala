@@ -16,21 +16,23 @@
 
 package cats.derived
 
-import cats._, Fold.{ Continue, Pass, Return}, free.Trampoline, Trampoline.done, std.function._
+import cats.{ Eval, Foldable }, Eval.now
+import export.exports
 import shapeless._
 
+@exports[MkFoldable]
 object foldable {
-  implicit def apply[F[_]](implicit mff: WrappedOrphan[MkFoldable[F]]): Foldable[F] = mff.instance
+  object legacy {
+    implicit def mkFoldableLegacy[F[_]](implicit mff: WrappedOrphan[MkFoldable[F]]): Foldable[F] = mff.instance
+  }
 }
 
 trait MkFoldable[F[_]] extends Foldable[F] {
-  def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B = trampolinedFoldLeft(fa, b){ (b, a) => done(f(b, a)) }.run
+  def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B = safeFoldLeft(fa, b){ (b, a) => now(f(b, a)) }.value
 
-  def partialFold[A, B](fa: F[A])(f: A => Fold[B]): Fold[B] = trampolinedPartialFold(fa){ a => done(f(a)) }.run
+  def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
 
-  def trampolinedFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Trampoline[B]): Trampoline[B]
-
-  def trampolinedPartialFold[A, B](fa: F[A])(f: A => Trampoline[Fold[B]]): Trampoline[Fold[B]]
+  def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B]
 }
 
 object MkFoldable extends MkFoldable0 {
@@ -38,22 +40,19 @@ object MkFoldable extends MkFoldable0 {
 
   implicit val id: MkFoldable[shapeless.Id] =
     new MkFoldable[shapeless.Id] {
-      def trampolinedFoldLeft[A, B](fa: A, b: B)(f: (B, A) => Trampoline[B]): Trampoline[B] = f(b, fa)
+      def foldRight[A, B](fa: A, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = f(fa, lb)
 
-      def trampolinedPartialFold[A, B](fa: A)(f: A => Trampoline[Fold[B]]): Trampoline[Fold[B]] = f(fa)
+      def safeFoldLeft[A, B](fa: A, b: B)(f: (B, A) => Eval[B]): Eval[B] = now(f(b, fa).value)
     }
 
   implicit def foldable[F[_]](implicit ff: Foldable[F]): MkFoldable[F] =
     new MkFoldable[F] {
       override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B = ff.foldLeft(fa, b)(f)
 
-      override def partialFold[A, B](fa: F[A])(f: A => Fold[B]): Fold[B] = ff.partialFold(fa)(f)
+      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = ff.foldRight(fa, lb)(f)
 
-      def trampolinedFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Trampoline[B]): Trampoline[B] =
-        done(foldLeft(fa, b){ (b, a) => f(b, a).run })
-
-      def trampolinedPartialFold[A, B](fa: F[A])(f: A => Trampoline[Fold[B]]): Trampoline[Fold[B]] =
-        done(partialFold(fa){ a => f(a).run })
+      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] =
+        now(ff.foldLeft(fa, b) { (b, a) => f(b, a).value })
     }
 }
 
@@ -61,42 +60,41 @@ trait MkFoldable0 extends MkFoldable1 {
   // Induction step for products
   implicit def hcons[F[_]](implicit ihc: IsHCons1[F, MkFoldable, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
-      def trampolinedFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Trampoline[B]): Trampoline[B] = {
+      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
         import ihc._
         val (hd, tl) = unpack(fa)
         for {
-          h <- fh.trampolinedFoldLeft(hd, b)(f)
-          t <- ft.trampolinedFoldLeft(tl, h)(f)
-        } yield t
+          t <- ft.foldRight(tl, lb)(f)
+          h <- fh.foldRight(hd, now(t))(f)
+        } yield h
       }
 
-      def trampolinedPartialFold[A, B](fa: F[A])(f: A => Trampoline[Fold[B]]): Trampoline[Fold[B]] = {
+      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] = {
         import ihc._
         val (hd, tl) = unpack(fa)
-        ft.trampolinedPartialFold(tl)(f).flatMap {
-          case Continue(fbb) => fh.trampolinedPartialFold(hd)(f).map(_ compose fbb)
-          case r: Return[b] => done(r)
-          case _ => fh.trampolinedPartialFold(hd)(f)
-        }
+        for {
+          h <- fh.safeFoldLeft(hd, b)(f)
+          t <- ft.safeFoldLeft(tl, h)(f)
+        } yield t
       }
     }
 
   // Induction step for coproducts
   implicit def ccons[F[_]](implicit icc: IsCCons1[F, MkFoldable, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
-      def trampolinedFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Trampoline[B]): Trampoline[B] = {
+      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
         import icc._
         unpack(fa) match {
-          case Left(hd)  => fh.trampolinedFoldLeft(hd, b)(f)
-          case Right(tl) => ft.trampolinedFoldLeft(tl, b)(f)
+          case Left(hd)  => fh.foldRight(hd, lb)(f)
+          case Right(tl) => ft.foldRight(tl, lb)(f)
         }
       }
 
-      def trampolinedPartialFold[A, B](fa: F[A])(f: A => Trampoline[Fold[B]]): Trampoline[Fold[B]] = {
+      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] = {
         import icc._
         unpack(fa) match {
-          case Left(hd)  => fh.trampolinedPartialFold(hd)(f)
-          case Right(tl) => ft.trampolinedPartialFold(tl)(f)
+          case Left(hd)  => fh.safeFoldLeft(hd, b)(f)
+          case Right(tl) => ft.safeFoldLeft(tl, b)(f)
         }
       }
     }
@@ -105,14 +103,14 @@ trait MkFoldable0 extends MkFoldable1 {
 trait MkFoldable1 extends MkFoldable2 {
   implicit def split[F[_]](implicit split: Split1[F, MkFoldable, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
-      def trampolinedFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Trampoline[B]): Trampoline[B] = {
+      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
         import split._
-        fo.trampolinedFoldLeft(unpack(fa), b)((bi, fai) => fi.trampolinedFoldLeft(fai, bi)(f))
+        fo.foldRight(unpack(fa), lb) { (fai, lbi) => fi.foldRight(fai, lbi)(f) }
       }
 
-      def trampolinedPartialFold[A, B](fa: F[A])(f: A => Trampoline[Fold[B]]): Trampoline[Fold[B]] = {
+      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] = {
         import split._
-        fo.trampolinedPartialFold(unpack(fa))(fai => fi.trampolinedPartialFold(fai)(f))
+        fo.safeFoldLeft(unpack(fa), b){ (lbi, fai) => fi.safeFoldLeft(fai, lbi)(f) }
       }
     }
 }
@@ -120,19 +118,19 @@ trait MkFoldable1 extends MkFoldable2 {
 trait MkFoldable2 extends MkFoldable3 {
   implicit def generic[F[_]](implicit gen: Generic1[F, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
-      def trampolinedFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Trampoline[B]): Trampoline[B] =
-        gen.fr.trampolinedFoldLeft(gen.to(fa), b)(f)
+      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+        gen.fr.foldRight(gen.to(fa), lb)(f)
 
-      def trampolinedPartialFold[A, B](fa: F[A])(f: A => Trampoline[Fold[B]]): Trampoline[Fold[B]] =
-        gen.fr.trampolinedPartialFold(gen.to(fa))(f)
+      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] =
+        gen.fr.safeFoldLeft(gen.to(fa), b)(f)
     }
 }
 
 trait MkFoldable3 {
   implicit def constFoldable[T]: MkFoldable[Const[T]#λ] =
     new MkFoldable[Const[T]#λ] {
-      def trampolinedFoldLeft[A, B](fa: T, b: B)(f: (B, A) => Trampoline[B]): Trampoline[B] = done(b)
+      def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
-      def trampolinedPartialFold[A, B](fa: T)(f: A => Trampoline[Fold[B]]): Trampoline[Fold[B]] = done(Pass)
+      def safeFoldLeft[A, B](fa: T, b: B)(f: (B, A) => Eval[B]): Eval[B] = now(b)
     }
 }

@@ -21,10 +21,10 @@ lazy val commonSettings = Seq(
     "bintray/non" at "http://dl.bintray.com/non/maven"
   ),
   libraryDependencies ++= Seq(
-    "org.spire-math"  %% "cats"           % "0.1.2",
-    "org.spire-math"  %% "alleycats"      % "0.1.3-SNAPSHOT",
-    "com.chuusai"     %% "shapeless"      % "2.2.5",
-    "org.typelevel"   %% "export-hook"    % "1.0.1-SNAPSHOT",
+    "org.spire-math"  %% "cats"           % "0.2.0",
+    "org.typelevel"   %% "alleycats"      % "0.1.3-SNAPSHOT",
+    "com.chuusai"     %% "shapeless"      % "2.3.0-SNAPSHOT",
+    "org.typelevel"   %% "export-hook"    % "1.0.2-SNAPSHOT",
     "org.scalatest"   %% "scalatest"      % "2.1.3"  % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.12.4" % "test",
     "org.typelevel"   %% "discipline"     % "0.4"  % "test",

@@ -18,7 +18,10 @@ package cats.derived
 
 import cats.Functor
 
-import TestDefns._, functor._, iterable._
+import TestDefns._
+
+import functor._, exports._, legacy._
+import iterable.exports._
 
 class FunctorTests extends CatsSuite {
 

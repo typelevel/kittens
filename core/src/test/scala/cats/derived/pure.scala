@@ -16,16 +16,14 @@
 
 package cats.derived
 
-import alleycats.Pure
-import alleycats.std._, list._, option._
-import shapeless._
+import alleycats.Pure, alleycats.std.all._
+import cats._
+import shapeless.{ Id => _, _ }
 
-import TestDefns._, pure._
+import TestDefns._
+import emptyk.exports._, pure.exports._
 
 class PureTests extends CatsSuite {
-
-  // Workaround for missing @typeclass annotation on alleycats.Pure
-  def Pure[F[_]](implicit pf: Pure[F]) = pf
 
   test("Pure[Id]") {
     val P = Pure[Id]
@@ -45,17 +43,24 @@ class PureTests extends CatsSuite {
     assert(P.pure(23) == List(23))
   }
 
-  test("Pure[λ[t => t :: HNil]]") {
-    type TNil[t] = t :: HNil
-    val P = Pure[TNil]
-
-    assert(P.pure(23) == (23 :: HNil))
-  }
-
   test("Pure[IList]") {
     val P = Pure[IList]
 
     assert(P.pure(23) == ICons(23, INil()))
+  }
+
+  test("Pure[λ[t => Option[Option[t]]]]") {
+    type OOption[t] = Option[Option[t]]
+    val P = Pure[OOption]
+
+    assert(P.pure(23) == Some(Some(23)))
+  }
+
+  test("Pure[λ[t => Option[List[t]]]]") {
+    type OList[t] = Option[List[t]]
+    val P = Pure[OList]
+
+    assert(P.pure(23) == Some(List(23)))
   }
 
   test("Pure[λ[t => List[Option[t]]]]") {

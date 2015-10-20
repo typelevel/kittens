@@ -16,17 +16,21 @@
 
 package cats.derived
 
-import cats._, free.Trampoline, Trampoline.done, std.function._
+import cats.{ Eval, Functor }, Eval.now
+import export.exports
 import shapeless._
 
+@exports[MkFunctor]
 object functor {
-  implicit def apply[F[_]](implicit mff: WrappedOrphan[MkFunctor[F]]): Functor[F] = mff.instance
+  object legacy {
+    implicit def mkFunctorLegacy[F[_]](implicit mff: WrappedOrphan[MkFunctor[F]]): Functor[F] = mff.instance
+  }
 }
 
 trait MkFunctor[F[_]] extends Functor[F] {
-  def map[A, B](fa: F[A])(f: A => B): F[B] = trampolinedMap(fa){ a => done(f(a)) }.run
+  def map[A, B](fa: F[A])(f: A => B): F[B] = safeMap(fa){ a => now(f(a)) }.value
 
-  def trampolinedMap[A, B](fa: F[A])(f: A => Trampoline[B]): Trampoline[F[B]]
+  def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]]
 }
 
 object MkFunctor extends MkFunctor0 {
@@ -36,8 +40,8 @@ object MkFunctor extends MkFunctor0 {
     new MkFunctor[F] {
       override def map[A, B](fa: F[A])(f: A => B): F[B] = ff.map(fa)(f)
 
-      def trampolinedMap[A, B](fa: F[A])(f: A => Trampoline[B]): Trampoline[F[B]] =
-        done(map(fa){ a => f(a).run })
+      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
+        now(map(fa){ a => f(a).value })
     }
 }
 
@@ -45,12 +49,12 @@ trait MkFunctor0 extends MkFunctor1 {
   // Induction step for products
   implicit def hcons[F[_]](implicit ihc: IsHCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
-      def trampolinedMap[A, B](fa: F[A])(f: A => Trampoline[B]): Trampoline[F[B]] = {
+      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import ihc._
         val (hd, tl) = unpack(fa)
         for {
-          fhd <- fh.trampolinedMap(hd)(f)
-          ftl <- ft.trampolinedMap(tl)(f)
+          fhd <- fh.safeMap(hd)(f)
+          ftl <- ft.safeMap(tl)(f)
         } yield pack(fhd, ftl)
       }
     }
@@ -58,11 +62,11 @@ trait MkFunctor0 extends MkFunctor1 {
   // Induction step for coproducts
   implicit def ccons[F[_]](implicit icc: IsCCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
-      def trampolinedMap[A, B](fa: F[A])(f: A => Trampoline[B]): Trampoline[F[B]] = {
+      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import icc._
         unpack(fa) match {
-          case Left(hd)  => fh.trampolinedMap(hd)(f).map { fhd => pack(Left(fhd)) }
-          case Right(tl) => ft.trampolinedMap(tl)(f).map { ftl => pack(Right(ftl)) }
+          case Left(hd)  => fh.safeMap(hd)(f).map { fhd => pack(Left(fhd)) }
+          case Right(tl) => ft.safeMap(tl)(f).map { ftl => pack(Right(ftl)) }
         }
       }
     }
@@ -71,9 +75,9 @@ trait MkFunctor0 extends MkFunctor1 {
 trait MkFunctor1 extends MkFunctor2 {
   implicit def split[F[_]](implicit split: Split1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
-      def trampolinedMap[A, B](fa: F[A])(f: A => Trampoline[B]): Trampoline[F[B]] = {
+      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import split._
-        fo.trampolinedMap(unpack(fa))(fi.trampolinedMap(_)(f)).map(pack)
+        fo.safeMap(unpack(fa))(fi.safeMap(_)(f)).map(pack)
       }
     }
 }
@@ -81,14 +85,14 @@ trait MkFunctor1 extends MkFunctor2 {
 trait MkFunctor2 extends MkFunctor3 {
   implicit def generic[F[_]](implicit gen: Generic1[F, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
-      def trampolinedMap[A, B](fa: F[A])(f: A => Trampoline[B]): Trampoline[F[B]] =
-        gen.fr.trampolinedMap(gen.to(fa))(f).map(gen.from)
+      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
+        gen.fr.safeMap(gen.to(fa))(f).map(gen.from)
     }
 }
 
 trait MkFunctor3 {
   implicit def constFunctor[T]: MkFunctor[Const[T]#λ] =
     new MkFunctor[Const[T]#λ] {
-      def trampolinedMap[A, B](t: T)(f: A => Trampoline[B]): Trampoline[T] = done(t)
+      def safeMap[A, B](t: T)(f: A => Eval[B]): Eval[T] = now(t)
     }
 }

@@ -18,11 +18,9 @@ package cats.derived
 
 import cats.Functor
 
-import TestDefns._
+import TestDefns._, functor._, iterable._
 
 class FunctorTests extends CatsSuite {
-  import cats.derived.functor._
-  import cats.derived.iterable._
 
   test("Functor[IList]") {
     val F = Functor[IList]

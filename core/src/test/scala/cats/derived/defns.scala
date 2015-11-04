@@ -34,9 +34,4 @@ object TestDefns {
   sealed trait Tree[T]
   final case class Leaf[T](t: T) extends Tree[T]
   final case class Node[T](l: Tree[T], r: Tree[T]) extends Tree[T]
-
-  trait Dummy1[F[_]]
-  object Dummy1 {
-    implicit def mkDummy1[F[_]]: Dummy1[F] = new Dummy1[F] {}
-  }
 }

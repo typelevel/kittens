@@ -17,10 +17,10 @@
 package cats.derived
 
 import cats.{ Eval, Foldable }, Eval.now
-import export.exports
+import export.{ exports, reexports }
 import shapeless._
 
-@exports[MkFoldable]
+@reexports[MkFoldable]
 object foldable {
   object legacy {
     implicit def mkFoldableLegacy[F[_]](implicit mff: WrappedOrphan[MkFoldable[F]]): Foldable[F] = mff.instance
@@ -35,6 +35,7 @@ trait MkFoldable[F[_]] extends Foldable[F] {
   def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B]
 }
 
+@exports
 object MkFoldable extends MkFoldable0 {
   def apply[F[_]](implicit mff: MkFoldable[F]): MkFoldable[F] = mff
 

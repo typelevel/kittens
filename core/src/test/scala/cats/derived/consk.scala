@@ -16,17 +16,23 @@
 
 package cats.derived
 
-object TestDefns {
-  sealed trait IList[A]
-  final case class ICons[A](head: A, tail: IList[A]) extends IList[A]
-  final case class INil[A]() extends IList[A]
+import alleycats.ConsK
+import cats._
+import shapeless._
 
-  object IList {
-    def fromSeq[T](ts: Seq[T]): IList[T] =
-      ts.foldRight(INil[T](): IList[T])(ICons(_, _))
+import TestDefns._
+import consk.exports._
+
+class ConsKTests extends CatsSuite {
+  test("ConsK[IList]") {
+    val C = ConsK[IList]
+
+    assert(C.cons(23, INil()) == ICons(23, INil()))
   }
 
-  sealed trait Tree[T]
-  final case class Leaf[T](t: T) extends Tree[T]
-  final case class Node[T](l: Tree[T], r: Tree[T]) extends Tree[T]
+  test("ConsK[Snoc]") {
+    val C = ConsK[Snoc]
+
+    assert(C.cons(23, SNil()) == SCons(SNil(), 23))
+  }
 }

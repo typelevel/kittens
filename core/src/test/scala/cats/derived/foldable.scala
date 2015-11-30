@@ -30,7 +30,7 @@ class FoldableTests extends CatsSuite {
       if (a === goal) now(true) else lb
     }
 
-  import foldable._, exports._, legacy._
+  import foldable._, legacy._
 
   test("Foldable[IList]") {
     val F = Foldable[IList]

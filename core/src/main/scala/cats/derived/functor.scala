@@ -17,10 +17,10 @@
 package cats.derived
 
 import cats.{ Eval, Functor }, Eval.now
-import export.exports
+import export.{ exports, reexports }
 import shapeless._
 
-@exports[MkFunctor]
+@reexports[MkFunctor]
 object functor {
   object legacy {
     implicit def mkFunctorLegacy[F[_]](implicit mff: WrappedOrphan[MkFunctor[F]]): Functor[F] = mff.instance
@@ -33,6 +33,7 @@ trait MkFunctor[F[_]] extends Functor[F] {
   def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]]
 }
 
+@exports
 object MkFunctor extends MkFunctor0 {
   def apply[F[_]](implicit mff: MkFunctor[F]): MkFunctor[F] = mff
 

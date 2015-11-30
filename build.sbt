@@ -5,7 +5,7 @@ import ReleaseTransformations._
 lazy val buildSettings = Seq(
   organization := "com.milessabin",
   scalaVersion := "2.11.7",
-  crossScalaVersions := Seq("2.10.5", "2.11.7")
+  crossScalaVersions := Seq("2.10.6", "2.11.7")
 )
 
 lazy val commonSettings = Seq(
@@ -22,14 +22,14 @@ lazy val commonSettings = Seq(
   ),
   libraryDependencies ++= Seq(
     "org.spire-math"  %% "cats"           % "0.2.0",
-    "org.typelevel"   %% "alleycats"      % "0.1.3-SNAPSHOT",
+    "org.typelevel"   %% "alleycats-core" % "0.1.3-SNAPSHOT",
     "com.chuusai"     %% "shapeless"      % "2.3.0-SNAPSHOT",
-    "org.typelevel"   %% "export-hook"    % "1.0.2-SNAPSHOT",
+    "org.typelevel"   %% "export-hook"    % "1.1.0",
     "org.scalatest"   %% "scalatest"      % "2.1.3"  % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.12.4" % "test",
     "org.typelevel"   %% "discipline"     % "0.4"  % "test",
 
-    compilerPlugin("org.spire-math" %% "kind-projector" % "0.5.4")
+    compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
   ),
 
   scmInfo :=
@@ -76,7 +76,7 @@ addCommandAlias("root", ";project root")
 lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
-    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0-M5" cross CrossVersion.full)
+    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   ),
   libraryDependencies ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
@@ -84,9 +84,7 @@ lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
       case Some((2, scalaMajor)) if scalaMajor >= 11 => Seq()
       // in Scala 2.10, quasiquotes are provided by macro paradise
       case Some((2, 10)) =>
-        Seq(
-              "org.scalamacros" %% "quasiquotes" % "2.0.0" cross CrossVersion.binary
-        )
+        Seq("org.scalamacros" %% "quasiquotes" % "2.1.0" cross CrossVersion.binary)
     }
   }
 )
@@ -118,7 +116,7 @@ lazy val publishSettings = Seq(
   pomExtra := (
     <developers>
       <developer>
-        <id>non</id>
+        <id>milessabin</id>
         <name>Miles Sabin</name>
         <url>http://milessabin.com/blog</url>
       </developer>

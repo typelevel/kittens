@@ -21,7 +21,7 @@ import cats._
 import shapeless.{ Id => _, _ }
 
 import TestDefns._
-import emptyk.exports._, pure.exports._
+import emptyk._, pure._
 
 class PureTests extends CatsSuite {
 
@@ -33,6 +33,12 @@ class PureTests extends CatsSuite {
 
   test("Pure[Option]") {
     val P = Pure[Option]
+
+    assert(P.pure(23) == Some(23))
+  }
+
+  test("Pure[Some]") {
+    val P = Pure[Some]
 
     assert(P.pure(23) == Some(23))
   }

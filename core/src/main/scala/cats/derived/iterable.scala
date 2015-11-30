@@ -21,7 +21,7 @@ import scala.annotation.tailrec
 import shapeless._
 
 object iterable {
-  object exports {
+  object legacy {
     implicit def mkIterableLegacy[F[_], A](fa: F[A])(implicit mif: WrappedOrphan[MkIterable[F]]): Iterable[A] =
       mif.instance.iterable(fa)
   }

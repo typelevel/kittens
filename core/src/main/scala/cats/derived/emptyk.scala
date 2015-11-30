@@ -17,14 +17,15 @@
 package cats.derived
 
 import alleycats.{ EmptyK, Pure }
-import export.exports
+import export.{ exports, reexports }
 import shapeless._
 
-@exports[MkEmptyK]
+@reexports[MkEmptyK]
 object emptyk
 
 trait MkEmptyK[F[_]] extends EmptyK[F]
 
+@exports
 object MkEmptyK extends MkEmptyK0 {
   def apply[F[_]](implicit mef: MkEmptyK[F]): MkEmptyK[F] = mef
 

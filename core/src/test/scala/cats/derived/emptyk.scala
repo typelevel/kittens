@@ -21,7 +21,7 @@ import cats._
 import shapeless._
 
 import TestDefns._
-import emptyk.exports._, pure.exports._
+import emptyk._, pure._
 
 class EmptyKTests extends CatsSuite {
 

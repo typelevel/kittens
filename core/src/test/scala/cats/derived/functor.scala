@@ -20,8 +20,8 @@ import cats.Functor
 
 import TestDefns._
 
-import functor._, exports._, legacy._
-import iterable.exports._
+import functor._, legacy._
+import iterable.legacy._
 
 class FunctorTests extends CatsSuite {
 

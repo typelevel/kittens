@@ -22,7 +22,12 @@ import org.typelevel.discipline.scalatest.Discipline
 
 /**
  * An opinionated stack of traits to improve consistency and reduce
- * boilerplate in Cats tests.
+ * boilerplate in Cats tests. No instances included.
  */
-trait CatsSuite extends FunSuite with Discipline with AllInstances with AllSyntax
+trait CatsSuiteNoInstances extends FunSuite with Discipline with AllSyntax
 
+/**
+ * An opinionated stack of traits to improve consistency and reduce
+ * boilerplate in Cats tests. Default instances included.
+ */
+trait CatsSuite extends CatsSuiteNoInstances with AllInstances

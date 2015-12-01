@@ -17,29 +17,33 @@
 package cats.derived
 
 import cats.Eq
+import eq._, legacy._
 import algebra.laws.OrderLaws
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
 import TestDefns._
 
-class EqTests extends CatsSuite {
-  import cats.derived.eq._
+class EqTests extends CatsSuiteNoInstances {
   import EqTests._
 
-  // this results in:
-  // java.lang.NoClassDefFoundError: org/scalatest/FunSuiteRegistration
-  //checkAll("IList[Int]", OrderLaws[IList[Int]].eqv)
-
   test("IList Eq consistent with universal equality")(check {
+    import cats.std.int._
+
+    // this results in:
+    // java.lang.NoClassDefFoundError: org/scalatest/FunSuiteRegistration
+    //checkAll("IList[Int]", OrderLaws[IList[Int]].eqv)
+
     forAll { (a: IList[Int], b: IList[Int]) =>
       Eq[IList[Int]].eqv(a, b) == (a == b)
     }
   })
 
   test("existing Eq instances in scope are respected")(check {
+    import cats.std.boolean._
+
     // nasty local implicit Eq instances that think that all things are equal
-    implicit val eqInt: Eq[Int] = Eq.instance((_, _) => true)
+    implicit def eqInt: Eq[Int] = Eq.instance((_, _) => true)
     implicit def eqOption[A]: Eq[Option[A]] = Eq.instance((_, _) => true)
 
     forAll { (a: Foo, b: Foo) =>

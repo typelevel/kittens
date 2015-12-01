@@ -17,39 +17,47 @@
 package cats.derived
 
 import cats.Eq
+import export.{ exports, imports, reexports }
 import shapeless._
 
-/**
- * Derived [[Eq]] instances for products and coproducts via Shapeless.
- *
- * Inspired by work in [[https://github.com/typelevel/shapeless-contrib shapeless-contrib]]
- * by Miles Sabin and Lars Hupel.
- */
-object eq extends TypeClassCompanion[Eq] {
-  object typeClass extends TypeClass[Eq] {
-    def emptyProduct = new Eq[HNil] {
+@reexports[MkEq]
+object eq {
+  @imports[Eq]
+  object legacy
+}
+
+trait MkEq[T] extends Eq[T]
+
+@exports
+object MkEq {
+  def apply[T](implicit met: MkEq[T]): MkEq[T] = met
+
+  implicit val hnil: MkEq[HNil] =
+    new MkEq[HNil] {
       def eqv(a: HNil, b: HNil) = true
     }
 
-    def product[H, T <: HList](eqH: Eq[H], eqT: Eq[T]) = new Eq[H :: T] {
-      def eqv(a: H :: T, b: H :: T) = eqH.eqv(a.head, b.head) && eqT.eqv(a.tail, b.tail)
+  implicit def hcons[H, T <: HList](implicit eqH: Lazy[Eq[H]], eqT: Lazy[MkEq[T]]): MkEq[H :: T] =
+    new MkEq[H :: T] {
+      def eqv(a: H :: T, b: H :: T) = eqH.value.eqv(a.head, b.head) && eqT.value.eqv(a.tail, b.tail)
     }
 
-    def emptyCoproduct: Eq[CNil] = new Eq[CNil] {
+  implicit val cnil: MkEq[CNil] =
+    new MkEq[CNil] {
       def eqv(a: CNil, b: CNil) = true
     }
 
-      def coproduct[L, R <: Coproduct](eqL: => Eq[L], eqR: => Eq[R]) =
-        new Eq[L :+: R] {
-          def eqv(a: L :+: R, b: L :+: R) = (a, b) match {
-            case (Inl(l1), Inl(l2)) => eqL.eqv(l1, l2)
-            case (Inr(r1), Inr(r2)) => eqR.eqv(r1, r2)
-            case _ => false
-          }
-        }
-
-    def project[F, G](instance: => Eq[G], to: F => G, from: G => F) = new Eq[F] {
-      def eqv(a: F, b: F) = instance.eqv(to(a), to(b))
+  implicit def ccons[L, R <: Coproduct](implicit eqL: Lazy[Eq[L]], eqR: Lazy[MkEq[R]]): MkEq[L :+: R] =
+    new MkEq[L :+: R] {
+      def eqv(a: L :+: R, b: L :+: R) = (a, b) match {
+        case (Inl(l1), Inl(l2)) => eqL.value.eqv(l1, l2)
+        case (Inr(r1), Inr(r2)) => eqR.value.eqv(r1, r2)
+        case _ => false
+      }
     }
-  }
+
+  implicit def generic[T, R](implicit gen: Generic.Aux[T, R], eqR: Lazy[MkEq[R]]): MkEq[T] =
+    new MkEq[T] {
+      def eqv(a: T, b: T) = eqR.value.eqv(gen.to(a), gen.to(b))
+    }
 }

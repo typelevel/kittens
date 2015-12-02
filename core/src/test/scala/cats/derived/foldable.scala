@@ -20,7 +20,7 @@ import cats.{ Eq, Eval, Foldable }, Eval.now
 
 import TestDefns._
 
-class FoldableTests extends CatsSuite {
+class FoldableTests extends KittensSuite {
   // disable scalatest ===
   override def convertToEqualizer[T](left: T): Equalizer[T] = ???
 
@@ -31,6 +31,7 @@ class FoldableTests extends CatsSuite {
     }
 
   import foldable._, legacy._
+  import cats.std.int._
 
   test("Foldable[IList]") {
     val F = Foldable[IList]

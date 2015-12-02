@@ -24,7 +24,7 @@ import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
 import TestDefns._
 
-class EqTests extends CatsSuiteNoInstances {
+class EqTests extends KittensSuite {
   import EqTests._
 
   {

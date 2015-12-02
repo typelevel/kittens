@@ -23,7 +23,7 @@ import TestDefns._
 import functor._, legacy._
 import iterable.legacy._
 
-class FunctorTests extends CatsSuite {
+class FunctorTests extends KittensSuite {
 
   test("Functor[IList]") {
     val F = Functor[IList]

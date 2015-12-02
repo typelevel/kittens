@@ -17,14 +17,13 @@
 package cats.derived
 
 import cats.{ Eval, Functor }, Eval.now
-import export.{ exports, reexports }
+import export.{ exports, imports, reexports }
 import shapeless._
 
 @reexports[MkFunctor]
 object functor {
-  object legacy {
-    implicit def mkFunctorLegacy[F[_]](implicit mff: WrappedOrphan[MkFunctor[F]]): Functor[F] = mff.instance
-  }
+  @imports[Functor]
+  object legacy
 }
 
 trait MkFunctor[F[_]] extends Functor[F] {
@@ -36,19 +35,11 @@ trait MkFunctor[F[_]] extends Functor[F] {
 @exports
 object MkFunctor extends MkFunctor0 {
   def apply[F[_]](implicit mff: MkFunctor[F]): MkFunctor[F] = mff
-
-  implicit def functor[F[_]](implicit ff: Functor[F]): MkFunctor[F] =
-    new MkFunctor[F] {
-      override def map[A, B](fa: F[A])(f: A => B): F[B] = ff.map(fa)(f)
-
-      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
-        now(map(fa){ a => f(a).value })
-    }
 }
 
 trait MkFunctor0 extends MkFunctor1 {
   // Induction step for products
-  implicit def hcons[F[_]](implicit ihc: IsHCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
+  implicit def hcons[F[_]](implicit ihc: IsHCons1[F, Functor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import ihc._
@@ -61,7 +52,7 @@ trait MkFunctor0 extends MkFunctor1 {
     }
 
   // Induction step for coproducts
-  implicit def ccons[F[_]](implicit icc: IsCCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
+  implicit def ccons[F[_]](implicit icc: IsCCons1[F, Functor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import icc._
@@ -74,7 +65,7 @@ trait MkFunctor0 extends MkFunctor1 {
 }
 
 trait MkFunctor1 extends MkFunctor2 {
-  implicit def split[F[_]](implicit split: Split1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
+  implicit def split[F[_]](implicit split: Split1[F, Functor, Functor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import split._
@@ -96,4 +87,12 @@ trait MkFunctor3 {
     new MkFunctor[Const[T]#λ] {
       def safeMap[A, B](t: T)(f: A => Eval[B]): Eval[T] = now(t)
     }
+
+  implicit class FunctorSafeMap[F[_]](val ff: Functor[F]) {
+    def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
+      ff match {
+        case mff: MkFunctor[F] => mff.safeMap(fa)(f)
+        case _ => now(ff.map(fa){ a => f(a).value })
+      }
+  }
 }

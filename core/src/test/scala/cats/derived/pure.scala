@@ -23,7 +23,7 @@ import shapeless.{ Id => _, _ }
 import TestDefns._
 import emptyk._, pure._
 
-class PureTests extends CatsSuite {
+class PureTests extends KittensSuite {
 
   test("Pure[Id]") {
     val P = Pure[Id]

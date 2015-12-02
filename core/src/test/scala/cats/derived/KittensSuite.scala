@@ -16,18 +16,14 @@
 
 package cats.derived
 
-import cats.std.AllInstances, cats.syntax.AllSyntax
+import cats.syntax.AllSyntax
 import org.scalatest.FunSuite
 import org.typelevel.discipline.scalatest.Discipline
 
 /**
  * An opinionated stack of traits to improve consistency and reduce
- * boilerplate in Cats tests. No instances included.
+ * boilerplate in Kittens tests. Note that unlike the corresponding
+ * CatsSuite in the Cat project, this trait does not mix in any
+ * instances.
  */
-trait CatsSuiteNoInstances extends FunSuite with Discipline with AllSyntax
-
-/**
- * An opinionated stack of traits to improve consistency and reduce
- * boilerplate in Cats tests. Default instances included.
- */
-trait CatsSuite extends CatsSuiteNoInstances with AllInstances
+trait KittensSuite extends FunSuite with Discipline with AllSyntax

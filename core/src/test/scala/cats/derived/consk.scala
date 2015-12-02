@@ -23,7 +23,7 @@ import shapeless._
 import TestDefns._
 import consk.exports._
 
-class ConsKTests extends CatsSuite {
+class ConsKTests extends KittensSuite {
   test("ConsK[IList]") {
     val C = ConsK[IList]
 

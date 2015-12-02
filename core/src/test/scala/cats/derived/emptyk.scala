@@ -23,7 +23,7 @@ import shapeless._
 import TestDefns._
 import emptyk._, pure._
 
-class EmptyKTests extends CatsSuite {
+class EmptyKTests extends KittensSuite {
 
   test("EmptyK[Option]") {
     val E = EmptyK[Option]

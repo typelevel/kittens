@@ -17,14 +17,13 @@
 package cats.derived
 
 import cats.{ Eval, Foldable }, Eval.now
-import export.{ exports, reexports }
+import export.{ exports, imports, reexports }
 import shapeless._
 
 @reexports[MkFoldable]
 object foldable {
-  object legacy {
-    implicit def mkFoldableLegacy[F[_]](implicit mff: WrappedOrphan[MkFoldable[F]]): Foldable[F] = mff.instance
-  }
+  @imports[Foldable]
+  object legacy
 }
 
 trait MkFoldable[F[_]] extends Foldable[F] {
@@ -45,21 +44,11 @@ object MkFoldable extends MkFoldable0 {
 
       def safeFoldLeft[A, B](fa: A, b: B)(f: (B, A) => Eval[B]): Eval[B] = now(f(b, fa).value)
     }
-
-  implicit def foldable[F[_]](implicit ff: Foldable[F]): MkFoldable[F] =
-    new MkFoldable[F] {
-      override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B = ff.foldLeft(fa, b)(f)
-
-      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = ff.foldRight(fa, lb)(f)
-
-      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] =
-        now(ff.foldLeft(fa, b) { (b, a) => f(b, a).value })
-    }
 }
 
 trait MkFoldable0 extends MkFoldable1 {
   // Induction step for products
-  implicit def hcons[F[_]](implicit ihc: IsHCons1[F, MkFoldable, MkFoldable]): MkFoldable[F] =
+  implicit def hcons[F[_]](implicit ihc: IsHCons1[F, Foldable, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
         import ihc._
@@ -81,7 +70,7 @@ trait MkFoldable0 extends MkFoldable1 {
     }
 
   // Induction step for coproducts
-  implicit def ccons[F[_]](implicit icc: IsCCons1[F, MkFoldable, MkFoldable]): MkFoldable[F] =
+  implicit def ccons[F[_]](implicit icc: IsCCons1[F, Foldable, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
         import icc._
@@ -102,7 +91,7 @@ trait MkFoldable0 extends MkFoldable1 {
 }
 
 trait MkFoldable1 extends MkFoldable2 {
-  implicit def split[F[_]](implicit split: Split1[F, MkFoldable, MkFoldable]): MkFoldable[F] =
+  implicit def split[F[_]](implicit split: Split1[F, Foldable, Foldable]): MkFoldable[F] =
     new MkFoldable[F] {
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
         import split._
@@ -134,4 +123,12 @@ trait MkFoldable3 {
 
       def safeFoldLeft[A, B](fa: T, b: B)(f: (B, A) => Eval[B]): Eval[B] = now(b)
     }
+
+  implicit class FoldableSafeFoldLeft[F[_]](val ff: Foldable[F]) {
+    def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] =
+      ff match {
+        case mff: MkFoldable[F] => mff.safeFoldLeft(fa, b)(f)
+        case _ => now(ff.foldLeft(fa, b) { (b, a) => f(b, a).value })
+      }
+  }
 }

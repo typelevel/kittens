@@ -22,8 +22,8 @@ import shapeless._
 
 object iterable {
   object legacy {
-    implicit def mkIterableLegacy[F[_], A](fa: F[A])(implicit mif: WrappedOrphan[MkIterable[F]]): Iterable[A] =
-      mif.instance.iterable(fa)
+    implicit def mkIterableLegacy[F[_], A](fa: F[A])(implicit mif: MkIterable[F]): Iterable[A] =
+      mif.iterable(fa)
   }
 }
 
@@ -91,7 +91,7 @@ object IterState {
 object MkIterable extends MkIterable0 {
   import IterState._
 
-  def apply[F[_]](implicit F: Lazy[MkIterable[F]]): MkIterable[F] = F.value
+  def apply[F[_]](implicit mif: MkIterable[F]): MkIterable[F] = mif
 
   implicit val id: MkIterable[Id] =
     new MkIterable[Id] {
@@ -103,12 +103,10 @@ object MkIterable extends MkIterable0 {
       def initialState[A](fa: Option[A]): IterState[A] = ReturnI(fa.iterator)
     }
 
-  trait Arbitrary
-
-  implicit def iterable[F[_]](implicit ev: F[Arbitrary] <:< Iterable[Arbitrary]): MkIterable[F] =
+  implicit def iterable[F[t] <: Iterable[t]]: MkIterable[F] =
     new MkIterable[F] {
       def initialState[A](fa: F[A]): IterState[A] =
-        ReturnI(fa.asInstanceOf[Iterable[A]].iterator)
+        ReturnI(fa.iterator)
     }
 }
 

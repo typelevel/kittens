@@ -27,12 +27,13 @@ import TestDefns._
 class EqTests extends CatsSuiteNoInstances {
   import EqTests._
 
+  {
+    import cats.std.int._
+    checkAll("IList[Int]", OrderLaws[IList[Int]].eqv)
+  }
+
   test("IList Eq consistent with universal equality")(check {
     import cats.std.int._
-
-    // this results in:
-    // java.lang.NoClassDefFoundError: org/scalatest/FunSuiteRegistration
-    //checkAll("IList[Int]", OrderLaws[IList[Int]].eqv)
 
     forAll { (a: IList[Int], b: IList[Int]) =>
       Eq[IList[Int]].eqv(a, b) == (a == b)

@@ -7,10 +7,11 @@ import cats._
 import cats.data._, Xor._
 import cats.implicits._
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
-import shapeless._
+import shapeless._, shapeless.syntax.singleton._
 import cats.derived._
 import org.scalacheck.Prop.forAll
 import scala.language.existentials
+
 class SequenceTests extends KittensSuite {
   import SequenceTests._
 
@@ -54,6 +55,58 @@ class SequenceTests extends KittensSuite {
     assert( f("42.0") == 4 :: "0.24" :: 42.0 :: HNil )
 
   }
+
+  test("sequencing record of Option")(check {
+    forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
+      val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
+      (('a ->> x) :: ('b ->> y) :: ('c ->> z) :: HNil).sequenceRecord == expected
+    }
+  })
+
+  test("sequencing record of Option using RecordArgs")(check {
+    forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
+
+      val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
+      sequenceRecord(a = x, b = y, c = z) == expected
+    }
+  })
+
+  test("sequencing record of Xor")(check {
+    forAll { (x: Xor[String, Int], y: Xor[String, String], z: Xor[String, Float]) =>
+
+      val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
+      (('a ->> x) :: ('b ->> y) :: ('c ->> z) :: HNil).sequenceRecord == expected
+    }
+  })
+
+  test("sequencing record of Functions through RecordArgs") {
+    val f1 = (_: String).length
+    val f2 = (_: String).reverse
+    val f3 = (_: String).toDouble
+
+    val f = sequenceRecord(a = f1, b = f2, c = f3)
+    assert( f("42.0") == ('a ->> 4) :: ('b ->> "0.24") :: ('c ->> 42.0) :: HNil )
+  }
+
+  case class MyCase(a: Int, b: String, c: Float)
+
+  test("sequence gen for Option")(check {
+    forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
+      val myGen = sequenceGeneric[MyCase]
+      val expected = (x |@| y |@| z) map MyCase.apply
+
+      myGen(a = x, b = y, c = z) == expected
+    }
+  })
+
+  test("sequence gen for Xor")(check {
+    forAll { (x: Xor[String, Int], y: Xor[String, String], z: Xor[String, Float]) =>
+      val myGen = sequenceGeneric[MyCase]
+      val expected = (x |@| y |@| z) map MyCase.apply
+
+      myGen(a = x, b = y, c = z) == expected
+    }
+  })
 
 }
 

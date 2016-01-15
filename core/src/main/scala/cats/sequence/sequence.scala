@@ -1,5 +1,5 @@
 /*
- * Adapted from shapeless-contrib scalaz
+ * Originally adapted from shapeless-contrib scalaz
  * https://github.com/typelevel/shapeless-contrib/blob/v0.4/scalaz/main/scala/sequence.scala
  *
  */

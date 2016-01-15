@@ -121,6 +121,35 @@ object RecordSequencer {
   ): Aux[L, F[A, zip.Out]] = recordSequencerAux[L, VFOut, F[A, ?], K, VOut]
 }
 
+trait GenericSequencer[L <: HList, T] {
+  type Out
+  def apply(l: L): Out
+}
+
+object GenericSequencer {
+  type Aux[L <: HList, T, Out0] = GenericSequencer[L, T] { type Out = Out0 }
+
+  implicit def genericSequencer[L <: HList, T, SOut <: HList, FOut, F[_]]
+  (implicit
+   rs:              RecordSequencer.Aux[L, FOut],
+   gen:             LabelledGeneric.Aux[T, SOut],
+   un:              Unapply.Aux1[Functor, FOut, F, SOut]
+  ): Aux[L, T, F[T]] = new GenericSequencer[L, T] {
+    type Out = F[T]
+    def apply(in: L): Out = {
+      un.TC.map(un.subst(rs(in)))(gen.from)
+    }
+  }
+
+  implicit def genericSequencerRight[L <: HList, T, SOut <: HList, FOut, A, F[A, _]]
+  (implicit
+   rs:              RecordSequencer.Aux[L, FOut],
+   gen:             LabelledGeneric.Aux[T, SOut],
+   un:              Unapply.Aux2Right[Functor, FOut, F, A, SOut]
+  ): Aux[L, T, F[A, T]] = genericSequencer[L, T, SOut, FOut, F[A, ?]]
+}
+
+
 
 trait SequenceOps {
   implicit class sequenceFunction[L <: HList](self: L) {
@@ -135,6 +164,13 @@ trait SequenceOps {
   object sequenceRecord extends RecordArgs {
     def applyRecord[L <: HList](l: L)(implicit seq: RecordSequencer[L]): seq.Out = seq(l)
   }
+
+  class sequenceGen[T] extends RecordArgs {
+    def applyRecord[L <: HList](l: L)(implicit seq: GenericSequencer[L, T]): seq.Out = seq(l)
+  }
+
+  def sequenceGeneric[T] = new sequenceGen[T]
+
 }
 
 object SequenceOps extends SequenceOps

@@ -24,7 +24,7 @@ object Apply2 {
   implicit def apply2[F[_], H, T <: HList](implicit app: Apply[F]): Aux[F[H], F[T], F[H :: T]] =
     new Apply2[F[H], F[T]] {
       type Out = F[H :: T]
-      def apply(fh: F[H], outT: F[T]): Out = app.ap(outT)(app.map(fh)(( (_:H) :: (_:T)).curried))
+      def apply(fh: F[H], outT: F[T]): Out = app.map2(fh, outT)(_ :: _)
     }
 
   implicit def apply2a[F[_, _], A, H, T <: HList](implicit app: Apply[F[A, ?]]): Aux[F[A, H], F[A, T], F[A, H :: T]] =

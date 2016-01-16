@@ -10,7 +10,6 @@ import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 import shapeless._, shapeless.syntax.singleton._
 import cats.derived._
 import org.scalacheck.Prop.forAll
-import scala.language.existentials
 
 class SequenceTests extends KittensSuite {
   import SequenceTests._
@@ -107,6 +106,18 @@ class SequenceTests extends KittensSuite {
       myGen(a = x, b = y, c = z) == expected
     }
   })
+
+  test("sequence gen for Functions") {
+    val f1 = (_: String).length
+    val f2 = (_: String).reverse
+    val f3 = (_: String).toFloat
+
+    val myGen = sequenceGeneric[MyCase]
+    val f = myGen(a = f1, b = f2, c = f3)
+
+    assert( f("42.0") == MyCase(4, "0.24", 42.0f))
+  }
+
 
 }
 

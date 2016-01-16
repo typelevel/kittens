@@ -1,2 +1,2 @@
 package cats
-package object sequence extends SequenceOps
+package object sequence extends SequenceOps with TraverseOps

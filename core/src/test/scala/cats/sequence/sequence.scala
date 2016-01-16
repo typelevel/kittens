@@ -1,5 +1,5 @@
 /*
-  Adapted from shapeless-contrib scalaz
+  Originally Adapted from shapeless-contrib scalaz
  */
 package cats.sequence
 

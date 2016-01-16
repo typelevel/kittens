@@ -10,7 +10,6 @@ import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 import shapeless._, shapeless.syntax.singleton._
 import cats.derived._
 import org.scalacheck.Prop.forAll
-import scala.language.existentials
 
 class SequenceTests extends KittensSuite {
   import SequenceTests._

@@ -99,7 +99,7 @@ trait RecordSequencer[L <: HList] {
 object RecordSequencer {
   type Aux[L <: HList, Out0] = RecordSequencer[L] { type Out = Out0 }
 
-  implicit def recordSequencerAux[L <: HList, VFOut, F[_], K <: HList, VOut <: HList]
+  implicit def mkRecordSequencer[L <: HList, VFOut, F[_], K <: HList, VOut <: HList]
   (implicit
    valueSequencer: ValueSequencer.Aux[L, VFOut],
    un:        Unapply.Aux1[Functor, VFOut, F, VOut],
@@ -112,13 +112,13 @@ object RecordSequencer {
     }
   }
 
-  implicit def recordSequencerAuxRight[L <: HList, VFOut, A,  F[_, _], K <: HList, VOut <: HList]
+  implicit def mkRecordSequencer2Right[L <: HList, VFOut, A,  F[_, _], K <: HList, VOut <: HList]
   (implicit
    valueSequencer: ValueSequencer.Aux[L, VFOut],
    un: Unapply.Aux2Right[Functor, VFOut, F, A, VOut],
    keys:      Keys.Aux[L, K],
    zip:       ZipWithKeys[K, VOut]
-  ): Aux[L, F[A, zip.Out]] = recordSequencerAux[L, VFOut, F[A, ?], K, VOut]
+  ): Aux[L, F[A, zip.Out]] = mkRecordSequencer[L, VFOut, F[A, ?], K, VOut]
 }
 
 trait GenericSequencer[L <: HList, T] {
@@ -129,7 +129,7 @@ trait GenericSequencer[L <: HList, T] {
 object GenericSequencer {
   type Aux[L <: HList, T, Out0] = GenericSequencer[L, T] { type Out = Out0 }
 
-  implicit def genericSequencer[L <: HList, T, SOut <: HList, FOut, F[_]]
+  implicit def mkGenericSequencer[L <: HList, T, SOut <: HList, FOut, F[_]]
   (implicit
    rs:              RecordSequencer.Aux[L, FOut],
    gen:             LabelledGeneric.Aux[T, SOut],
@@ -141,21 +141,34 @@ object GenericSequencer {
     }
   }
 
-  implicit def genericSequencerRight[L <: HList, T, SOut <: HList, FOut, A, F[A, _]]
+  implicit def mkGenericSequencer2Right[L <: HList, T, SOut <: HList, FOut, A, F[A, _]]
   (implicit
    rs:              RecordSequencer.Aux[L, FOut],
    gen:             LabelledGeneric.Aux[T, SOut],
    un:              Unapply.Aux2Right[Functor, FOut, F, A, SOut]
-  ): Aux[L, T, F[A, T]] = genericSequencer[L, T, SOut, FOut, F[A, ?]]
+  ): Aux[L, T, F[A, T]] = mkGenericSequencer[L, T, SOut, FOut, F[A, ?]]
+}
+
+// Syntax for non-records
+class NonRecordOps[L <: HList](self: L) {
+  def sequence(implicit seq: Sequencer[L]): seq.Out = seq(self)
+}
+
+// Syntax for records
+class RecordOps[L <: HList](self: L) {
+  def sequence(implicit seq: RecordSequencer[L]): seq.Out = seq(self)
+}
+
+trait LowPrioritySequenceOps {
+  // fallback for non-records
+  implicit def mkNonRecordOps[L <: HList](l: L): NonRecordOps[L] = new NonRecordOps(l)
 }
 
 
+trait SequenceOps extends LowPrioritySequenceOps{
 
-trait SequenceOps {
-  implicit class sequenceFunction[L <: HList](self: L) {
-    def sequence(implicit seq: Sequencer[L]): seq.Out = seq(self)
-    def sequenceRecord(implicit seq: RecordSequencer[L]): seq.Out = seq(self)
-  }
+  implicit def mkRecordOps[L <: HList](l: L)
+                                      (implicit keys: Keys[L]): RecordOps[L] = new RecordOps(l)
 
   object sequence extends ProductArgs {
     def applyProduct[L <: HList](l: L)(implicit seq: Sequencer[L]): seq.Out = seq(l)

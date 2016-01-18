@@ -58,7 +58,7 @@ class SequenceTests extends KittensSuite {
   test("sequencing record of Option")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
       val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
-      (('a ->> x) :: ('b ->> y) :: ('c ->> z) :: HNil).sequenceRecord == expected
+      (('a ->> x) :: ('b ->> y) :: ('c ->> z) :: HNil).sequence == expected
     }
   })
 
@@ -74,7 +74,7 @@ class SequenceTests extends KittensSuite {
     forAll { (x: Xor[String, Int], y: Xor[String, String], z: Xor[String, Float]) =>
 
       val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
-      (('a ->> x) :: ('b ->> y) :: ('c ->> z) :: HNil).sequenceRecord == expected
+      (('a ->> x) :: ('b ->> y) :: ('c ->> z) :: HNil).sequence == expected
     }
   })
 

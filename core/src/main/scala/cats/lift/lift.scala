@@ -30,7 +30,7 @@ object LifterAux {
   }
 }
 
-trait Lifts {
+trait LiftsOps {
 
   implicit class ApplicativeOps[G[_]](instance: Applicative[G]) {
     def liftA[F, R, I <: HList, GI <: HList, OF](f: F)(
@@ -44,4 +44,4 @@ trait Lifts {
 }
 
 
-object Lifts extends Lifts
+

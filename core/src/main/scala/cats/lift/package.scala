@@ -1,3 +1,3 @@
 package cats
 
-package object lift extends Lifts
+package object lift extends LiftsOps

@@ -55,6 +55,15 @@ class SequenceTests extends KittensSuite {
 
   }
 
+  test("sequencing Klesilis through ProductArgs") {
+    val f1 = ((_: String).length) andThen Option.apply
+    val f2 = ((_: String).reverse) andThen Option.apply
+    val f3 = ((_: String).toDouble) andThen Option.apply
+
+    val f = sequence(Kleisli(f1), Kleisli(f2), Kleisli(f3))
+    assert( f.run("42.0") == Some(('a ->> 4) :: ('b ->> "0.24") :: ('c ->> 42.0) :: HNil))
+  }
+
   test("sequencing record of Option")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
       val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
@@ -87,6 +96,15 @@ class SequenceTests extends KittensSuite {
     assert( f("42.0") == ('a ->> 4) :: ('b ->> "0.24") :: ('c ->> 42.0) :: HNil )
   }
 
+  test("sequencing record of Kleisli through RecordArgs") {
+    val f1 = ((_: String).length) andThen Option.apply
+    val f2 = ((_: String).reverse) andThen Option.apply
+    val f3 = ((_: String).toDouble) andThen Option.apply
+
+    val f = sequenceRecord(a = Kleisli(f1), b = Kleisli(f2), c = Kleisli(f3))
+    assert( f.run("42.0") == Some(('a ->> 4) :: ('b ->> "0.24") :: ('c ->> 42.0) :: HNil))
+  }
+
   case class MyCase(a: Int, b: String, c: Float)
 
   test("sequence gen for Option")(check {
@@ -116,6 +134,17 @@ class SequenceTests extends KittensSuite {
     val f = myGen(a = f1, b = f2, c = f3)
 
     assert( f("42.0") == MyCase(4, "0.24", 42.0f))
+  }
+
+  test("sequence gen for Klesili") {
+    val f1 = ((_: String).length) andThen Option.apply
+    val f2 = ((_: String).reverse) andThen Option.apply
+    val f3 = ((_: String).toFloat) andThen Option.apply
+
+    val myGen = sequenceGeneric[MyCase]
+    val f = myGen(a = Kleisli(f1), b = Kleisli(f2), c = Kleisli(f3))
+
+    assert( f.run("42.0") == Some(MyCase(4, "0.24", 42.0f)))
   }
 
 

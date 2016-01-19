@@ -32,6 +32,9 @@ object HListApply2 {
 
   implicit def mkHListApply2a[F[_, _], A, H, T <: HList]
     (implicit app: Apply[F[A, ?]]): Aux[F[A, H], F[A, T], F[A, H :: T]] = mkHListApply2[F[A, ?], H, T]
+
+  implicit def mkHListApply3right[G[_], F[_[_], _, _], A, H, T <: HList]
+    (implicit app: Apply[F[G, A, ?]]): Aux[F[G, A, H], F[G, A, T], F[G, A, H :: T]] = mkHListApply2[F[G, A, ?], H, T]
 }
 
 @implicitNotFound("cannot construct sequencer, make sure that every item of you hlist ${L} is an Applicative")
@@ -128,6 +131,15 @@ object RecordSequencer {
       zip: ZipWithKeys[K, VOut]
     ): Aux[L, F[A, zip.Out]] =
       mkRecordSequencer[L, VFOut, F[A, ?], K, VOut]
+
+  implicit def mkRecordSequencer3Right[L <: HList, VFOut, A, G[_], F[_[_], _, _], K <: HList, VOut <: HList]
+    ( implicit
+      vs: ValueSequencer.Aux[L, VFOut],
+      un: Unapply.Aux3MTRight[Functor, VFOut, F, G, A, VOut],
+      keys: Keys.Aux[L, K],
+      zip: ZipWithKeys[K, VOut]
+    ): Aux[L, F[G, A, zip.Out]] =
+      mkRecordSequencer[L, VFOut, F[G, A, ?], K, VOut]
 }
 
 trait GenericSequencer[L <: HList, T] {
@@ -153,13 +165,21 @@ object GenericSequencer {
       }
   }
 
-  implicit def mkGenericSequencer2Right[L <: HList, T, SOut <: HList, FOut, A, F[A, _]]
+  implicit def mkGenericSequencer2Right[L <: HList, T, SOut <: HList, FOut, A, F[_, _]]
     ( implicit
       rs: RecordSequencer.Aux[L, FOut],
       gen: LabelledGeneric.Aux[T, SOut],
       un: Unapply.Aux2Right[Functor, FOut, F, A, SOut]
     ): Aux[L, T, F[A, T]] =
       mkGenericSequencer[L, T, SOut, FOut, F[A, ?]]
+
+  implicit def mkGenericSequencer3Right[L <: HList, T, SOut <: HList, FOut, A, G[_], F[_[_], _, _]]
+    ( implicit
+      rs: RecordSequencer.Aux[L, FOut],
+      gen: LabelledGeneric.Aux[T, SOut],
+      un: Unapply.Aux3MTRight[Functor, FOut, F, G, A, SOut]
+    ): Aux[L, T, F[G, A, T]] =
+      mkGenericSequencer[L, T, SOut, FOut, F[G, A, ?]]
 }
 
 

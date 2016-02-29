@@ -50,7 +50,7 @@ lazy val commonJvmSettings = Seq(
   parallelExecution in Test := false
 )
 
-lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings
+lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings
 
 lazy val root = project.in(file("."))
   .aggregate(coreJS, coreJVM)
@@ -68,7 +68,7 @@ lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
 addCommandAlias("validate", ";root;compile;test")
-addCommandAlias("release-all", ";root;release")
+addCommandAlias("releaseAll", ";root;release")
 addCommandAlias("js", ";project coreJS")
 addCommandAlias("jvm", ";project coreJVM")
 addCommandAlias("root", ";project root")
@@ -99,8 +99,6 @@ lazy val crossVersionSharedSources: Seq[Setting[_]] =
   }
 
 lazy val publishSettings = Seq(
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   homepage := Some(url("https://github.com/milessabin/kittens")),
   licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   publishMavenStyle := true,
@@ -130,7 +128,9 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val sharedReleaseProcess = Seq(
+lazy val releaseSettings = Seq(
+  releaseCrossBuild := true,
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,

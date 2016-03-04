@@ -7,9 +7,11 @@ import cats._
 import cats.data._, Xor._
 import cats.implicits._
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
+import org.scalatest.Ignore
 import shapeless._, shapeless.syntax.singleton._
 import cats.derived._
 import org.scalacheck.Prop.forAll
+import shapeless.record.Record
 
 class SequenceTests extends KittensSuite {
   import SequenceTests._
@@ -147,6 +149,14 @@ class SequenceTests extends KittensSuite {
     assert( f.run("42.0") == Some(MyCase(4, "0.24", 42.0f)))
   }
 
+  //wait until cats 0.5.0 release to bring unapply to serializable
+  ignore("RecordSequencer is serializable") {
+    import java.io.{ ObjectOutputStream, ByteArrayOutputStream }
+    val r = Record.`'a -> Option[Int], 'b -> Option[String]`
+    type Rec = r.T
+    val rs = the[RecordSequencer[Rec]]
+    assert( isSerializable(rs) )
+  }
 
 }
 

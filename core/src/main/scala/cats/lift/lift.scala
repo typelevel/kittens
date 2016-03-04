@@ -11,7 +11,7 @@ import shapeless._
 import shapeless.ops.function._
 import shapeless.syntax.std.function._
 
-trait LifterAux[G[_], I <: HList, R, GI <: HList] {
+trait LifterAux[G[_], I <: HList, R, GI <: HList] extends Serializable {
   def apply(gf: G[I => R])(implicit G: Apply[G]): GI => G[R]
 }
 

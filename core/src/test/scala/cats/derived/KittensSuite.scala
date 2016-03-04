@@ -20,10 +20,36 @@ import cats.syntax.AllSyntax
 import org.scalatest.FunSuite
 import org.typelevel.discipline.scalatest.Discipline
 
+import scala.util.control.NonFatal
+
 /**
  * An opinionated stack of traits to improve consistency and reduce
  * boilerplate in Kittens tests. Note that unlike the corresponding
  * CatsSuite in the Cat project, this trait does not mix in any
  * instances.
  */
-trait KittensSuite extends FunSuite with Discipline with AllSyntax
+trait KittensSuite extends FunSuite with Discipline with AllSyntax with SerializableTest
+
+
+trait SerializableTest {
+  def isSerializable[T](a: T): Boolean = {
+  import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream }
+    val baos = new ByteArrayOutputStream()
+    val oos = new ObjectOutputStream(baos)
+    var ois: ObjectInputStream = null
+    try {
+      oos.writeObject(a)
+      oos.close()
+      val bais = new ByteArrayInputStream(baos.toByteArray())
+      ois = new ObjectInputStream(bais)
+      val a2 = ois.readObject()
+      ois.close()
+      true
+    } catch { case NonFatal(t) =>
+      throw new Exception(t)
+    } finally {
+      oos.close()
+      if (ois != null) ois.close()
+    }
+  }
+}

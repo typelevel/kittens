@@ -8,7 +8,7 @@ package cats.sequence
 import shapeless._
 import shapeless.ops.hlist._
 
-sealed trait Traverser[L <: HList, P] {
+sealed trait Traverser[L <: HList, P] extends Serializable {
   type Out
   def apply(in: L): Out
 }

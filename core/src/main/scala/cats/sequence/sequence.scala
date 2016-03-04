@@ -13,7 +13,7 @@ import shapeless.ops.record.{Values, Keys}
 
 import scala.annotation.implicitNotFound
 
-trait HListApply2[FH, OutT] {
+trait HListApply2[FH, OutT] extends Serializable {
   type Out
 
   def apply(fh: FH, outT: OutT): Out
@@ -38,7 +38,7 @@ object HListApply2 {
 }
 
 @implicitNotFound("cannot construct sequencer, make sure that every item of you hlist ${L} is an Applicative")
-trait Sequencer[L <: HList] {
+trait Sequencer[L <: HList]  extends Serializable {
   type Out
 
   def apply(in: L): Out
@@ -76,7 +76,7 @@ object Sequencer extends LowPrioritySequencer {
 }
 
 
-trait ValueSequencer[L <: HList] {
+trait ValueSequencer[L <: HList] extends Serializable {
   type Out
 
   def apply(in: L): Out
@@ -98,7 +98,7 @@ object ValueSequencer {
 
 
 @implicitNotFound("cannot construct sequencer, make sure that every field value of you record ${L} is an Applicative")
-trait RecordSequencer[L <: HList] {
+trait RecordSequencer[L <: HList] extends Serializable {
   type Out
 
   def apply(in: L): Out
@@ -142,7 +142,7 @@ object RecordSequencer {
       mkRecordSequencer[L, VFOut, F[G, A, ?], K, VOut]
 }
 
-trait GenericSequencer[L <: HList, T] {
+trait GenericSequencer[L <: HList, T] extends Serializable {
   type Out
 
   def apply(l: L): Out

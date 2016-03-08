@@ -43,4 +43,7 @@ object TestDefns {
   sealed trait Tree[T]
   final case class Leaf[T](t: T) extends Tree[T]
   final case class Node[T](l: Tree[T], r: Tree[T]) extends Tree[T]
+
+  case class CaseClassWOption[T](a: Option[T])
+
 }

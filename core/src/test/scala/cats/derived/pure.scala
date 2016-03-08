@@ -50,7 +50,7 @@ class PureTests extends KittensSuite {
   }
 
   test("Pure[IList]") {
-    val P = Pure[IList]
+    val P = cachedImplicit[Pure[IList]]
 
     assert(P.pure(23) == ICons(23, INil()))
   }

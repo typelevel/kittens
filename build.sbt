@@ -53,8 +53,8 @@ lazy val commonJvmSettings = Seq(
 lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings
 
 lazy val root = project.in(file("."))
-  .aggregate(coreJS, coreJVM)
-  .dependsOn(coreJS, coreJVM)
+  .aggregate(coreJS, coreJVM, extraTests)
+  .dependsOn(coreJS, coreJVM, extraTests)
   .settings(coreSettings:_*)
   .settings(noPublishSettings)
 
@@ -63,6 +63,13 @@ lazy val core = crossProject.crossType(CrossType.Pure)
   .settings(coreSettings:_*)
   .jsSettings(commonJsSettings:_*)
   .jvmSettings(commonJvmSettings:_*)
+
+//Monad and Applicative tests are taking a long time to compile, separating them to another module to help development, and scala 2.10.x build on travis.
+lazy val extraTests = project.in(file("extra-tests"))
+  .settings(moduleName := "kittens-tests")
+  .dependsOn(coreJVM % "compile->compile;test->test")
+  .settings(coreSettings:_*)
+  .settings(noPublishSettings)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js

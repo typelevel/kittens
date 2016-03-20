@@ -19,7 +19,6 @@ package cats.derived
 import cats.{ Eq, Eval, Foldable }, Eval.now
 
 import TestDefns._
-
 class FoldableTests extends KittensSuite {
   // disable scalatest ===
   override def convertToEqualizer[T](left: T): Equalizer[T] = ???

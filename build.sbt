@@ -3,9 +3,9 @@ import org.scalajs.sbtplugin.cross.CrossProject
 import ReleaseTransformations._
 
 lazy val buildSettings = Seq(
-  organization := "com.milessabin",
-  scalaVersion := "2.11.7",
-  crossScalaVersions := Seq("2.10.6", "2.11.7")
+  organization := "org.typelevel",
+  scalaVersion := "2.11.8",
+  crossScalaVersions := Seq("2.10.6", "2.11.8")
 )
 
 lazy val commonSettings = Seq(
@@ -21,8 +21,8 @@ lazy val commonSettings = Seq(
     "bintray/non" at "http://dl.bintray.com/non/maven"
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel"  %% "cats"           % "0.4.1",
-    "org.typelevel"   %% "alleycats-core" % "0.1.4",
+    "org.typelevel"  %% "cats"           % "0.5.0",
+    "org.typelevel"   %% "alleycats-core" % "0.1.5",
     "com.chuusai"     %% "shapeless"      % "2.3.0",
     "org.typelevel"   %% "export-hook"    % "1.1.0",
     "org.scalatest"   %% "scalatest"      % "3.0.0-M7" % "test",

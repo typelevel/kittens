@@ -150,7 +150,7 @@ class SequenceTests extends KittensSuite {
   }
 
   //wait until cats 0.5.0 release to bring unapply to serializable
-  ignore("RecordSequencer is serializable") {
+  test("RecordSequencer is serializable") {
     import java.io.{ ObjectOutputStream, ByteArrayOutputStream }
     val r = Record.`'a -> Option[Int], 'b -> Option[String]`
     type Rec = r.T

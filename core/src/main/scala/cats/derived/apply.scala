@@ -50,9 +50,6 @@ trait MkApply1 {
 
     def map[A, B](fa: F[A])(f: A => B): F[B] = F.map(fa)(f)
 
-    def product[A, B](fa: F[A], fb: F[B]): F[(A, B)] = {
-      Fdb.value.foldLeft[A, F[(A, B)]](fa, E.empty[(A, B)])((_, a) => F.map(fb)((a, _)))
-    }
   }
 
 }

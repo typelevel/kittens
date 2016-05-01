@@ -29,6 +29,7 @@ lazy val commonSettings = Seq(
     "org.scalacheck"  %% "scalacheck"     % "1.12.5" % "test",
     "org.typelevel"   %% "discipline"     % "0.4" % "test",
 
+    compilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.1.0" cross CrossVersion.full),
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
   ),
 

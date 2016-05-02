@@ -19,22 +19,35 @@ trait HListApply2[FH, OutT] extends Serializable {
   def apply(fh: FH, outT: OutT): Out
 }
 
-object HListApply2 {
+object HListApply2 extends MkHListApply2 {
   type Aux[FH, OutT, Out0] = HListApply2[FH, OutT] { type Out = Out0 }
 
+
+}
+
+trait MkHListApply2 extends MkHListApply2_0 {
+
+
   implicit def mkHListApply2[F[_], H, T <: HList]
-    (implicit app: Apply[F]): Aux[F[H], F[T], F[H :: T]] =
-      new HListApply2[F[H], F[T]] {
-        type Out = F[H :: T]
+  (implicit app: Apply[F]): HListApply2.Aux[F[H], F[T], F[H :: T]] =
+    new HListApply2[F[H], F[T]] {
+      type Out = F[H :: T]
 
-        def apply(fh: F[H], outT: F[T]): Out = app.map2(fh, outT)(_ :: _)
-      }
+      def apply(fh: F[H], outT: F[T]): Out = app.map2(fh, outT)(_ :: _)
+    }
 
+}
+trait MkHListApply2_0 extends MkHListApply2_1 {
+  self: MkHListApply2 =>
   implicit def mkHListApply2a[F[_, _], A, H, T <: HList]
-    (implicit app: Apply[F[A, ?]]): Aux[F[A, H], F[A, T], F[A, H :: T]] = mkHListApply2[F[A, ?], H, T]
+  (implicit app: Apply[F[A, ?]]): HListApply2.Aux[F[A, H], F[A, T], F[A, H :: T]] = mkHListApply2[F[A, ?], H, T]
 
+}
+trait MkHListApply2_1 {
+  self: MkHListApply2 =>
   implicit def mkHListApply3right[G[_], F[_[_], _, _], A, H, T <: HList]
-    (implicit app: Apply[F[G, A, ?]]): Aux[F[G, A, H], F[G, A, T], F[G, A, H :: T]] = mkHListApply2[F[G, A, ?], H, T]
+  (implicit app: Apply[F[G, A, ?]]): HListApply2.Aux[F[G, A, H], F[G, A, T], F[G, A, H :: T]] = mkHListApply2[F[G, A, ?], H, T]
+
 }
 
 @implicitNotFound("cannot construct sequencer, make sure that every item of you hlist ${L} is an Applicative")
@@ -105,81 +118,101 @@ trait RecordSequencer[L <: HList] extends Serializable {
 }
 
 
-object RecordSequencer {
+object RecordSequencer extends MkRecordSequencer {
   type Aux[L <: HList, Out0] = RecordSequencer[L] { type Out = Out0 }
-
-  implicit def mkRecordSequencer[L <: HList, VFOut, F[_], K <: HList, VOut <: HList]
-    ( implicit
-      vs: ValueSequencer.Aux[L, VFOut],
-      un: Unapply.Aux1[Functor, VFOut, F, VOut],
-      keys: Keys.Aux[L, K],
-      zip: ZipWithKeys[K, VOut]
-    ): Aux[L, F[zip.Out]] =
-      new RecordSequencer[L] {
-        type Out = F[zip.Out]
-
-        def apply(in: L): Out = {
-          un.TC.map(un.subst(vs(in)))(zip(_))
-        }
-  }
-
-  implicit def mkRecordSequencer2Right[L <: HList, VFOut, A, F[_, _], K <: HList, VOut <: HList]
-    ( implicit
-      vs: ValueSequencer.Aux[L, VFOut],
-      un: Unapply.Aux2Right[Functor, VFOut, F, A, VOut],
-      keys: Keys.Aux[L, K],
-      zip: ZipWithKeys[K, VOut]
-    ): Aux[L, F[A, zip.Out]] =
-      mkRecordSequencer[L, VFOut, F[A, ?], K, VOut]
-
-  implicit def mkRecordSequencer3Right[L <: HList, VFOut, A, G[_], F[_[_], _, _], K <: HList, VOut <: HList]
-    ( implicit
-      vs: ValueSequencer.Aux[L, VFOut],
-      un: Unapply.Aux3MTRight[Functor, VFOut, F, G, A, VOut],
-      keys: Keys.Aux[L, K],
-      zip: ZipWithKeys[K, VOut]
-    ): Aux[L, F[G, A, zip.Out]] =
-      mkRecordSequencer[L, VFOut, F[G, A, ?], K, VOut]
 }
 
-trait GenericSequencer[L <: HList, T] extends Serializable {
+trait MkRecordSequencer extends MkRecordSequencer0 {
+  implicit def mkRecordSequencer[L <: HList, VFOut, F[_], K <: HList, VOut <: HList]
+  ( implicit
+    vs: ValueSequencer.Aux[L, VFOut],
+    un: Unapply.Aux1[Functor, VFOut, F, VOut],
+    keys: Keys.Aux[L, K],
+    zip: ZipWithKeys[K, VOut]
+  ): RecordSequencer.Aux[L, F[zip.Out]] =
+    new RecordSequencer[L] {
+      type Out = F[zip.Out]
+
+      def apply(in: L): Out = {
+        un.TC.map(un.subst(vs(in)))(zip(_))
+      }
+    }
+}
+
+trait MkRecordSequencer0 extends MkRecordSequencer1 {
+  self: MkRecordSequencer =>
+  implicit def mkRecordSequencer2Right[L <: HList, VFOut, A, F[_, _], K <: HList, VOut <: HList]
+  ( implicit
+    vs: ValueSequencer.Aux[L, VFOut],
+    un: Unapply.Aux2Right[Functor, VFOut, F, A, VOut],
+    keys: Keys.Aux[L, K],
+    zip: ZipWithKeys[K, VOut]
+  ): RecordSequencer.Aux[L, F[A, zip.Out]] =
+    mkRecordSequencer[L, VFOut, F[A, ?], K, VOut]
+}
+
+trait MkRecordSequencer1 {
+  self: MkRecordSequencer =>
+  implicit def mkRecordSequencer3Right[L <: HList, VFOut, A, G[_], F[_[_], _, _], K <: HList, VOut <: HList]
+  ( implicit
+    vs: ValueSequencer.Aux[L, VFOut],
+    un: Unapply.Aux3MTRight[Functor, VFOut, F, G, A, VOut],
+    keys: Keys.Aux[L, K],
+    zip: ZipWithKeys[K, VOut]
+  ): RecordSequencer.Aux[L, F[G, A, zip.Out]] =
+    mkRecordSequencer[L, VFOut, F[G, A, ?], K, VOut]
+}
+
+  trait GenericSequencer[L <: HList, T] extends Serializable {
   type Out
 
   def apply(l: L): Out
 }
 
-object GenericSequencer {
+object GenericSequencer extends MkGenericSequencer {
   type Aux[L <: HList, T, Out0] = GenericSequencer[L, T] { type Out = Out0 }
+}
+
+trait MkGenericSequencer extends MkGenericSequencer0 {
 
   implicit def mkGenericSequencer[L <: HList, T, SOut <: HList, FOut, F[_]]
-    ( implicit
-      rs: RecordSequencer.Aux[L, FOut],
-      gen: LabelledGeneric.Aux[T, SOut],
-      un: Unapply.Aux1[Functor, FOut, F, SOut]
-    ): Aux[L, T, F[T]] =
-      new GenericSequencer[L, T] {
-        type Out = F[T]
+  ( implicit
+    rs: RecordSequencer.Aux[L, FOut],
+    gen: LabelledGeneric.Aux[T, SOut],
+    un: Unapply.Aux1[Functor, FOut, F, SOut]
+  ): GenericSequencer.Aux[L, T, F[T]] =
+    new GenericSequencer[L, T] {
+      type Out = F[T]
 
-        def apply(in: L): Out = {
-          un.TC.map(un.subst(rs(in)))(gen.from)
+      def apply(in: L): Out = {
+        un.TC.map(un.subst(rs(in)))(gen.from)
       }
-  }
+    }
 
+}
+
+trait MkGenericSequencer0 extends MkGenericSequencer1 {
+  self: MkGenericSequencer =>
   implicit def mkGenericSequencer2Right[L <: HList, T, SOut <: HList, FOut, A, F[_, _]]
-    ( implicit
-      rs: RecordSequencer.Aux[L, FOut],
-      gen: LabelledGeneric.Aux[T, SOut],
-      un: Unapply.Aux2Right[Functor, FOut, F, A, SOut]
-    ): Aux[L, T, F[A, T]] =
-      mkGenericSequencer[L, T, SOut, FOut, F[A, ?]]
+  ( implicit
+    rs: RecordSequencer.Aux[L, FOut],
+    gen: LabelledGeneric.Aux[T, SOut],
+    un: Unapply.Aux2Right[Functor, FOut, F, A, SOut]
+  ): GenericSequencer.Aux[L, T, F[A, T]] =
+    mkGenericSequencer[L, T, SOut, FOut, F[A, ?]]
+
+}
+
+trait MkGenericSequencer1 {
+  self: MkGenericSequencer =>
 
   implicit def mkGenericSequencer3Right[L <: HList, T, SOut <: HList, FOut, A, G[_], F[_[_], _, _]]
-    ( implicit
-      rs: RecordSequencer.Aux[L, FOut],
-      gen: LabelledGeneric.Aux[T, SOut],
-      un: Unapply.Aux3MTRight[Functor, FOut, F, G, A, SOut]
-    ): Aux[L, T, F[G, A, T]] =
-      mkGenericSequencer[L, T, SOut, FOut, F[G, A, ?]]
+  ( implicit
+    rs: RecordSequencer.Aux[L, FOut],
+    gen: LabelledGeneric.Aux[T, SOut],
+    un: Unapply.Aux3MTRight[Functor, FOut, F, G, A, SOut]
+  ): GenericSequencer.Aux[L, T, F[G, A, T]] =
+    mkGenericSequencer[L, T, SOut, FOut, F[G, A, ?]]
 }
 
 

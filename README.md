@@ -99,6 +99,33 @@ res0: Option[String] = Some(1 - a - 3.2)
 [source]: https://github.com/milessabin/kittens
 [sonatype]: https://oss.sonatype.org/
 
+### kittens and Typelevel Scala
+
+[Typelevel Scala][tls] provides a [partial fix for SI-7046][si-7046-pr] which can present obstacles to the uses of
+shapeless's `Generic` and `LabelledGeneric` for the sealed trait at the root of an ADT such as you find in Kittens. If
+it appears that these two type classes are unable to find (all of) the subclasses of an ADT root trait then please try
+using Typelevel Scala and see if it resolves the issue.
+
+To use Typelevel Scala you should,
+
++ Update your `project/build.properties` to require SBT 0.13.13-M1 or later,
+
+  ```
+  sbt.version=0.13.13-M1
+  ```
+
++ Add the following to your `build.sbt` immediately next to where you set `scalaVersion`,
+
+  ```
+  scalaOrganization := "org.typelevel"
+  ```
+
+If this does resolve the problem, please lend your support to the [pull request][si-7046-pr] being merged in Lightbend
+Scala.
+
+[tls]: https://github.com/typelevel/scala
+[si-7046-pr]: https://github.com/scala/scala/pull/5284
+
 ## Participation
 
 The Kittens project supports the [Typelevel][typelevel] [code of conduct][codeofconduct] and wants all of its

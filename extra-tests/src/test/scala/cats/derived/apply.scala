@@ -19,7 +19,7 @@ import cats.{ Eq, Eval, Foldable, Functor, Apply}, Eval.now
 
 import alleycats.Pure, alleycats.std.all._
 
-import cats.std.int._
+import cats.instances.int._
 
 import TestDefns._
 import shapeless.Cached

@@ -17,7 +17,7 @@
 package cats.derived
 import cats.Applicative
 import alleycats.Pure, alleycats.std.all._
-import cats.std.int._
+import cats.instances.int._
 
 import TestDefns._
 

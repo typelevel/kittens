@@ -26,7 +26,7 @@ class SemigroupTests extends KittensSuite {
   import SemigroupTests._
 
   test("for simple product")(check {
-    import cats.std.all._
+    import cats.instances.all._
     forAll { (a: Foo, b: Foo) =>
       Semigroup[Foo].combine(a, b) == Foo(a.i + b.i , Semigroup[Option[String]].combine(a.b,b.b))
     }

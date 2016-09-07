@@ -35,6 +35,8 @@ trait MkMonad0 extends MkMonad1 {
         F.value.foldRight(fb, l)((b, memo) => now(C.value.cons(b, memo.value)))
       }.value
     }
+
+    def tailRecM[A, B](a: A)(f: (A) => F[Either[A, B]]): F[B] = defaultTailRecM(a)(f)
   }
 }
 
@@ -51,5 +53,8 @@ trait MkMonad1 {
     def flatMap[A, B](fa: F[A])(f: (A) => F[B]): F[B] = {
       F.value.foldLeft[A, F[B]](fa, E.value.empty[B])((_, a) => f(a))
     }
+
+    def tailRecM[A, B](a: A)(f: (A) => F[Either[A, B]]): F[B] = defaultTailRecM(a)(f)
+
   }
 }

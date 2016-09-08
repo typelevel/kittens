@@ -1,17 +1,19 @@
 package cats.generalized
 
 import cats._
-import cats.data._
+import cats.data.{Coproduct => _, _}
 import cats.laws._
 import cats.implicits._
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline._
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Arbitrary
+import org.scalacheck._
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.Matchers._
 import org.scalatest.prop.Checkers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import cats.derived._
+import shapeless._
 
 class CopairTest
   extends KittensSuite
@@ -19,13 +21,21 @@ class CopairTest
   with CopairSyntax
   with CopairInstances {
 
+  type Coproduct2[A, B] = A :+: B :+: CNil
+
+  implicit def genCoproduct2[A: Arbitrary, B: Arbitrary]: Arbitrary[Coproduct2[A,B]] = Arbitrary(arbitrary[Xor[A,B]].map(_.toCopair[Coproduct2]))
+  
+  implicit def coproductEq[A <: Coproduct]: Eq[A] = Eq.instance[A](_ == _)
+
   CopairTests[Xor].copair[Option, Int, Int, Int, String, String, String].all.check
   CopairTests[Either].copair[Option, Int, Int, Int, String, String, String].all.check
   CopairTests[Validated].copair[Option, Int, Int, Int, String, String, String].all.check
+  CopairTests[Coproduct2].copair[Option, Int, Int, Int, String, String, String].all.check
 
   testCopairs[Xor]("Xor")
   testCopairs[Either]("Either")
   testCopairs[Validated]("Validated")
+  testCopairs[Coproduct2]("Coproduct with 2 members")
 
   def testCopairs[F[_,_]: Copair](ofType: String)(implicit arb: Arbitrary[F[String, Int]]): Unit = {
     test(s"$ofType Copair for-each performs side-effect") {
@@ -59,11 +69,11 @@ class CopairTest
 
     test(s"$ofType Copair to") {
       forAll { copair: F[String, Int] =>
-        copair.to[Xor].isLeft should === (copair.isLeft)
-        copair.to[Xor].isRight should === (copair.isRight)
+        copair.toCopair[Xor].isLeft should === (copair.isLeft)
+        copair.toCopair[Xor].isRight should === (copair.isRight)
 
         val (strFold, intFold): (String => String, Int => String) = (_ => "string", _ => "int")
-        copair.to[Xor].fold(strFold, intFold) should === (copair.fold(strFold, intFold))
+        copair.toCopair[Xor].fold(strFold, intFold) should === (copair.fold(strFold, intFold))
       }
     }
 
@@ -133,7 +143,7 @@ trait CopairLaws[F[_,_]] extends BitraverseLaws[F] with BifoldableLaws[F] with B
     b.rightC[F, A].fold(fa, fb) <-> fb(b)
 
   def copairToIdentity[A, B](fab: F[A,B]): IsEq[F[A,B]] =
-    fab.to[F] <-> fab
+    fab.toCopair[F] <-> fab
 
   def copairLeftSwapIdentity[A, B](b: B): IsEq[F[A, B]] =
     b.leftC[F, A].swap <-> b.rightC[F, A]

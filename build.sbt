@@ -75,7 +75,7 @@ lazy val extraTests = project.in(file("extra-tests"))
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
-addCommandAlias("validate", ";root;compile;test")
+addCommandAlias("validate", ";root;clean;test")
 addCommandAlias("releaseAll", ";root;release")
 addCommandAlias("js", ";project coreJS")
 addCommandAlias("jvm", ";project coreJVM")

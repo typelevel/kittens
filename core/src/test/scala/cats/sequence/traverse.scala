@@ -3,8 +3,11 @@
  */
 package cats.sequence
 
-import cats.data.Validated
-import cats.implicits._
+import cats.data._
+import cats.syntax.all._
+import cats.instances.option._
+import cats.instances.string._
+
 import shapeless._
 import cats.derived._
 import org.scalacheck.Prop.forAll

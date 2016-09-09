@@ -30,7 +30,7 @@ class FoldableTests extends KittensSuite {
     }
 
   import foldable._, legacy._
-  import cats.std.int._
+  import cats.instances.int._
 
   test("Foldable[IList]") {
     val F = Foldable[IList]

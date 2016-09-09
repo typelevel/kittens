@@ -21,9 +21,9 @@ lazy val commonSettings = Seq(
     "bintray/non" at "http://dl.bintray.com/non/maven"
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel"  %% "cats"           % "0.5.0",
-    "org.typelevel"   %% "alleycats-core" % "0.1.5",
-    "com.chuusai"     %% "shapeless"      % "2.3.0",
+    "org.typelevel"  %% "cats"           % "0.7.2",
+    "org.typelevel"   %% "alleycats-core" % "0.1.7",
+    "com.chuusai"     %% "shapeless"      % "2.3.2",
     "org.typelevel"   %% "export-hook"    % "1.1.0",
     "org.scalatest"   %% "scalatest"      % "3.0.0-M7" % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.12.5" % "test",
@@ -75,7 +75,7 @@ lazy val extraTests = project.in(file("extra-tests"))
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
-addCommandAlias("validate", ";root;compile;test")
+addCommandAlias("validate", ";root;clean;test")
 addCommandAlias("releaseAll", ";root;release")
 addCommandAlias("js", ";project coreJS")
 addCommandAlias("jvm", ";project coreJVM")

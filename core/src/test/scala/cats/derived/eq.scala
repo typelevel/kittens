@@ -17,8 +17,8 @@
 package cats.derived
 
 import cats.Eq
+import cats.kernel.laws.OrderLaws
 import eq._, legacy._
-import algebra.laws.OrderLaws
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
@@ -28,12 +28,12 @@ class EqTests extends KittensSuite {
   import EqTests._
 
   {
-    import cats.std.int._
+    import cats.instances.int._
     checkAll("IList[Int]", OrderLaws[IList[Int]].eqv)
   }
 
   test("IList Eq consistent with universal equality")(check {
-    import cats.std.int._
+    import cats.instances.int._
 
     forAll { (a: IList[Int], b: IList[Int]) =>
       Eq[IList[Int]].eqv(a, b) == (a == b)
@@ -41,7 +41,7 @@ class EqTests extends KittensSuite {
   })
 
   test("existing Eq instances in scope are respected")(check {
-    import cats.std.boolean._
+    import cats.instances.boolean._
 
     // nasty local implicit Eq instances that think that all things are equal
     implicit def eqInt: Eq[Int] = Eq.instance((_, _) => true)

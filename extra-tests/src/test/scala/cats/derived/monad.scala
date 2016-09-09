@@ -22,7 +22,7 @@ import cats.{Eval, Foldable}, Eval.now
 
 import alleycats.{EmptyK, ConsK, Pure}, alleycats.std.all._
 
-import cats.std.int._
+import cats.instances.int._
 
 import TestDefns._
 

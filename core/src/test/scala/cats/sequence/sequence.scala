@@ -4,17 +4,20 @@
 package cats.sequence
 
 import cats._
-import cats.data._, Xor._
-import cats.implicits._
+import cats.data._
+import cats.syntax.all._
+import cats.instances.option._
+import cats.instances.either._
+import cats.instances.function._
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 import org.scalatest.Ignore
 import shapeless._, shapeless.syntax.singleton._
 import cats.derived._
 import org.scalacheck.Prop.forAll
 import shapeless.record.Record
+import cats.laws.discipline.arbitrary._
 
 class SequenceTests extends KittensSuite {
-  import SequenceTests._
 
   test("sequencing Option")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
@@ -23,8 +26,9 @@ class SequenceTests extends KittensSuite {
     }
   })
 
-  test("sequencing Xor")(check {
-    forAll { (x: Xor[String, Int], y: Xor[String, String], z: Xor[String, Float]) =>
+  test("sequencing Either")(check {
+    forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
+      val f = Unapply[Functor, Either[String, String]]
       val expected = (x |@| y |@| z) map (_ :: _ :: _ :: HNil)
       (x :: y :: z :: HNil).sequence == expected
     }
@@ -81,8 +85,8 @@ class SequenceTests extends KittensSuite {
     }
   })
 
-  test("sequencing record of Xor")(check {
-    forAll { (x: Xor[String, Int], y: Xor[String, String], z: Xor[String, Float]) =>
+  test("sequencing record of Either")(check {
+    forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
 
       val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
       (('a ->> x) :: ('b ->> y) :: ('c ->> z) :: HNil).sequence == expected
@@ -118,8 +122,8 @@ class SequenceTests extends KittensSuite {
     }
   })
 
-  test("sequence gen for Xor")(check {
-    forAll { (x: Xor[String, Int], y: Xor[String, String], z: Xor[String, Float]) =>
+  test("sequence gen for Either")(check {
+    forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
       val myGen = sequenceGeneric[MyCase]
       val expected = (x |@| y |@| z) map MyCase.apply
 
@@ -158,25 +162,4 @@ class SequenceTests extends KittensSuite {
     assert( isSerializable(rs) )
   }
 
-}
-
-object SequenceTests {
-  implicit def nelSemiGroup[A]: Semigroup[NonEmptyList[A]] = implicitly[SemigroupK[NonEmptyList]].algebra[A]
-
-  implicit def xora[A: Arbitrary, B: Arbitrary]: Arbitrary[Xor[A, B]] = Arbitrary(
-    for {
-      a <- arbitrary[A]
-      left <- arbitrary[Boolean]
-      b <- arbitrary[B]
-    } yield if(left) Left(a) else Right(b)
-  )
-
-  implicit def validatedNel[A: Arbitrary, B: Arbitrary]: Arbitrary[ValidatedNel[A, B]] = Arbitrary(
-    for {
-      a <- arbitrary[A]
-      as <- arbitrary[List[A]]
-      left <- arbitrary[Boolean]
-      b <- arbitrary[B]
-    } yield if(left) Validated.Invalid(NonEmptyList(a, as:_*)) else Validated.valid(b)
-  )
 }

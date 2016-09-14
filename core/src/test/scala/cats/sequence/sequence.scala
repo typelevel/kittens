@@ -5,10 +5,7 @@ package cats.sequence
 
 import cats._
 import cats.data._
-import cats.syntax.all._
-import cats.instances.option._
-import cats.instances.either._
-import cats.instances.function._
+import cats.instances.all._
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 import org.scalatest.Ignore
 import shapeless._, shapeless.syntax.singleton._

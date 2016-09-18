@@ -21,12 +21,9 @@ trait HListApply2[FH, OutT] extends Serializable {
 
 object HListApply2 extends MkHListApply2 {
   type Aux[FH, OutT, Out0] = HListApply2[FH, OutT] { type Out = Out0 }
-
-
 }
 
 trait MkHListApply2 extends MkHListApply2_0 {
-
 
   implicit def mkHListApply2[F[_], H, T <: HList]
   (implicit app: Apply[F]): HListApply2.Aux[F[H], F[T], F[H :: T]] =
@@ -37,12 +34,14 @@ trait MkHListApply2 extends MkHListApply2_0 {
     }
 
 }
+
 trait MkHListApply2_0 extends MkHListApply2_1 {
   self: MkHListApply2 =>
   implicit def mkHListApply2a[F[_, _], A, H, T <: HList]
   (implicit app: Apply[F[A, ?]]): HListApply2.Aux[F[A, H], F[A, T], F[A, H :: T]] = mkHListApply2[F[A, ?], H, T]
 
 }
+
 trait MkHListApply2_1 {
   self: MkHListApply2 =>
   implicit def mkHListApply3right[G[_], F[_[_], _, _], A, H, T <: HList]
@@ -70,12 +69,6 @@ trait LowPrioritySequencer {
 }
 
 object Sequencer extends LowPrioritySequencer {
-  implicit def nilSequencerAux[F[_] : Applicative]: Aux[HNil, F[HNil]] =
-    new Sequencer[HNil] {
-      type Out = F[HNil]
-
-      def apply(in: HNil): F[HNil] = Applicative[F].pure(HNil: HNil)
-    }
 
   implicit def singleSequencerAux[FH]
     (implicit un: Unapply[Functor, FH]): Aux[FH :: HNil, un.M[un.A :: HNil]] =

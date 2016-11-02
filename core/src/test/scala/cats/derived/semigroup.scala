@@ -20,25 +20,13 @@ import cats.Semigroup
 import semigroup._, legacy._
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
-
+import TestDefns._
 
 class SemigroupTests extends KittensSuite {
-  import SemigroupTests._
-
   test("for simple product")(check {
     import cats.instances.all._
     forAll { (a: Foo, b: Foo) =>
       Semigroup[Foo].combine(a, b) == Foo(a.i + b.i , Semigroup[Option[String]].combine(a.b,b.b))
     }
   })
-}
-
-object SemigroupTests {
-  final case class Foo(i: Int, b: Option[String])
-
-  implicit val arbFoo: Arbitrary[Foo] = Arbitrary(
-    for {
-      i <- arbitrary[Int]
-      b <- arbitrary[Option[String]]
-    } yield Foo(i, b))
 }

@@ -16,6 +16,7 @@
 
 package cats.derived
 
+import cats.Eq
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
 object TestDefns {
@@ -46,4 +47,14 @@ object TestDefns {
 
   case class CaseClassWOption[T](a: Option[T])
 
+  final case class Foo(i: Int, b: Option[String])
+
+  implicit val arbFoo: Arbitrary[Foo] =
+    Arbitrary(for {
+      i <- arbitrary[Int]
+      b <- arbitrary[Option[String]]
+    } yield Foo(i, b))
+
+  implicit val eqFoo: Eq[Foo] =
+    Eq.fromUniversalEquals
 }

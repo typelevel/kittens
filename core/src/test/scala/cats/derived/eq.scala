@@ -22,10 +22,9 @@ import eq._, legacy._
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
-import TestDefns._
+import TestDefns.{ eqFoo => _, _ }
 
 class EqTests extends KittensSuite {
-  import EqTests._
 
   {
     import cats.instances.int._
@@ -51,14 +50,4 @@ class EqTests extends KittensSuite {
       Eq[Foo].eqv(a, b)
     }
   })
-}
-
-object EqTests {
-  final case class Foo(i: Int, b: Option[Boolean])
-
-  implicit val arbFoo: Arbitrary[Foo] = Arbitrary(
-    for {
-      i <- arbitrary[Int]
-      b <- arbitrary[Option[Boolean]]
-    } yield Foo(i, b))
 }

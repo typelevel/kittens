@@ -16,8 +16,6 @@
 
 package cats.derived
 
-import cats.data.Xor
-import cats.laws.MonadLaws
 import cats.{Eval, Foldable}, Eval.now
 
 import alleycats.{EmptyK, ConsK, Pure}, alleycats.std.all._

@@ -21,13 +21,13 @@ lazy val commonSettings = Seq(
     "bintray/non" at "http://dl.bintray.com/non/maven"
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel"  %% "cats"           % "0.7.2",
-    "org.typelevel"   %% "alleycats-core" % "0.1.7",
+    "org.typelevel"  %% "cats"           % "0.8.1",
+    "org.typelevel"   %% "alleycats-core" % "0.1.8",
     "com.chuusai"     %% "shapeless"      % "2.3.2",
     "org.typelevel"   %% "export-hook"    % "1.1.0",
-    "org.scalatest"   %% "scalatest"      % "3.0.0-M7" % "test",
-    "org.scalacheck"  %% "scalacheck"     % "1.12.5" % "test",
-    "org.typelevel"   %% "discipline"     % "0.4" % "test",
+    "org.scalatest"   %% "scalatest"      % "3.0.0" % "test",
+    "org.scalacheck"  %% "scalacheck"     % "1.13.4" % "test",
+    "org.typelevel"   %% "discipline"     % "0.7.2" % "test",
 
     compilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.1.0" cross CrossVersion.full),
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")

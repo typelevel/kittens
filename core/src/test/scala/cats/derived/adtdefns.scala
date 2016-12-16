@@ -17,7 +17,7 @@
 package cats.derived
 
 import cats.Eq
-import org.scalacheck.Arbitrary, Arbitrary.arbitrary
+import org.scalacheck.{Cogen, Arbitrary}, Arbitrary.arbitrary
 
 object TestDefns {
   sealed trait IList[A]
@@ -27,10 +27,19 @@ object TestDefns {
   object IList {
     def fromSeq[T](ts: Seq[T]): IList[T] =
       ts.foldRight(INil[T](): IList[T])(ICons(_, _))
+
+    def toList[T](l: IList[T]): List[T] = l match {
+      case INil() => Nil
+      case ICons(h, t) => h :: toList(t)
+    }
+
   }
 
   implicit def arbIList[A:Arbitrary]: Arbitrary[IList[A]] = Arbitrary(
     arbitrary[Seq[A]].map(IList.fromSeq))
+
+  implicit def cogenIList[A:Cogen]: Cogen[IList[A]] =
+    Cogen[Seq[A]].contramap(IList.toList)
 
   sealed trait Snoc[A]
   final case class SCons[A](init: Snoc[A], last: A) extends Snoc[A]

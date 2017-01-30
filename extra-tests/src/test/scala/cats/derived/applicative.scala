@@ -20,16 +20,12 @@ import alleycats.Pure, alleycats.std.all._
 import cats.instances.int._
 
 import TestDefns._
+import emptyk._, pure._, foldable._ , foldable.legacy._, functor._ , functor.legacy._, MkApply._, MkApplicative._
 
 class ApplicativeTests extends KittensSuite {
-  import emptyk._, pure._
-  import MkApplicative._
-  import MkApply._
-  import ApplyTests._
 
 
   test("Applicative[IList]") {
-    import Implicits.{l, fl}
 
     val A = Applicative[IList]
 

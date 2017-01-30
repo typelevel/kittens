@@ -1,11 +1,12 @@
 import com.typesafe.sbt.pgp.PgpKeys.publishSigned
 import org.scalajs.sbtplugin.cross.CrossProject
 import ReleaseTransformations._
+import sbt._
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
-  scalaVersion := "2.11.8",
-  crossScalaVersions := Seq("2.10.6", "2.11.8")
+  scalaVersion := "2.12.1",
+  crossScalaVersions := Seq( "2.11.8", scalaVersion.value)
 )
 
 lazy val commonSettings = Seq(
@@ -14,24 +15,32 @@ lazy val commonSettings = Seq(
     "-language:higherKinds",
     "-language:implicitConversions",
     "-unchecked"
-  ),
+  ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, 12)) =>
+      Seq("-Ypartial-unification")
+    case _ => Seq()
+  }),
+
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots"),
     "bintray/non" at "http://dl.bintray.com/non/maven"
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel"  %% "cats"           % "0.8.1",
-    "org.typelevel"   %% "alleycats-core" % "0.1.8",
+    "org.typelevel"  %% "cats"           % "0.9.0",
+    "org.typelevel"   %% "alleycats-core" % "0.1.9",
     "com.chuusai"     %% "shapeless"      % "2.3.2",
     "org.typelevel"   %% "export-hook"    % "1.1.0",
     "org.scalatest"   %% "scalatest"      % "3.0.0" % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.13.4" % "test",
-    "org.typelevel"   %% "discipline"     % "0.7.2" % "test",
+    "org.typelevel"   %% "discipline"     % "0.7.3" % "test",
+    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3")
+  ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, scalaMajor)) if scalaMajor < 12 =>
+      Seq(compilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.1.0" cross CrossVersion.full))
+    case _ => Seq()
+  }),
 
-    compilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.1.0" cross CrossVersion.full),
-    compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
-  ),
 
   scmInfo :=
     Some(ScmInfo(
@@ -85,16 +94,7 @@ lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
     compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
-  ),
-  libraryDependencies ++= {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
-      case Some((2, scalaMajor)) if scalaMajor >= 11 => Seq()
-      // in Scala 2.10, quasiquotes are provided by macro paradise
-      case Some((2, 10)) =>
-        Seq("org.scalamacros" %% "quasiquotes" % "2.1.0" cross CrossVersion.binary)
-    }
-  }
+  )
 )
 
 lazy val crossVersionSharedSources: Seq[Setting[_]] =

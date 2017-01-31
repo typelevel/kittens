@@ -9,7 +9,13 @@ kittens is part of the [Typelevel][typelevel] family of projects. It is an Open 
 License v2, hosted on [github][source]. Binary artefacts will be published to the [Sonatype OSS Repository Hosting
 service][sonatype] and synced to Maven Central.
 
-It is current in a pre-alpha state, but should be ready for an initial release in the very near future.
+It is current in a alpha state and available for Scala 2.11 and 2.12, and Scala.js.
+
+To get started with SBT, simply add the following to your build.sbt file:
+
+```Scala
+libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-M8"
+```
 
 [![Build Status](https://api.travis-ci.org/milessabin/kittens.png?branch=master)](https://travis-ci.org/milessabin/kittens)
 [![Stories in Ready](https://badge.waffle.io/milessabin/kittens.png?label=Ready)](https://waffle.io/milessabin/kittens)

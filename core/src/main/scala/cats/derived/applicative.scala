@@ -7,7 +7,7 @@ object MkApplicative {
 
   implicit def mkApplicative[F[_]](
     implicit
-    P: MkPure[F], //on scala 2.10.6 `Pure`'s `applicativeIsPure` is somehow conflicting with auto derived Applicative and Pure
+    P: Pure[F],
     A: Apply[F]
  ): Applicative[F] = new Applicative[F] {
     def pure[A](x: A): F[A] = P.pure(x)

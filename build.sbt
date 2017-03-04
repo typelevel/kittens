@@ -37,7 +37,7 @@ lazy val commonSettings = Seq(
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3")
   ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, scalaMajor)) if scalaMajor < 12 =>
-      Seq(compilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.1.0" cross CrossVersion.full))
+      Seq(compilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.1.0" cross CrossVersion.patch))
     case _ => Seq()
   }),
 
@@ -93,7 +93,7 @@ addCommandAlias("root", ";project root")
 lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
-    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.patch)
   )
 )
 

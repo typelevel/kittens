@@ -114,10 +114,10 @@ using Typelevel Scala and see if it resolves the issue.
 
 To use Typelevel Scala you should,
 
-+ Update your `project/build.properties` to require SBT 0.13.13-M1 or later,
++ Update your `project/build.properties` to require SBT 0.13.13 or later,
 
   ```
-  sbt.version=0.13.13-M1
+  sbt.version=0.13.13
   ```
 
 + Add the following to your `build.sbt` immediately next to where you set `scalaVersion`,

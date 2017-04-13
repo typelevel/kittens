@@ -42,6 +42,12 @@ res3: Cat[Int] = Cat(Some(2),List(3, 4))
 ```
 
 ### Sequence examples
+Note that to run these examples you need on partial unification to overcome [SI-2712](https://github.com/scala/bug/issues/2712). An easy way to achieve that is to use this [sbt-plugin](https://github.com/fiadliel/sbt-partial-unification), add to your `project/plugs.sbt`:
+
+```Scala
+addSbtPlugin("org.lyranthe.sbt" % "partial-unification" % "1.0.0")
+```
+
 
 ```scala
 scala> import cats.implicits._, cats.sequence._

@@ -3,11 +3,11 @@
  */
 package cats.sequence
 
-import cats._
 import cats.data._
-import cats.instances.all._
-import org.scalacheck.Arbitrary, Arbitrary.arbitrary
-import org.scalatest.Ignore
+import cats.instances.option._
+import cats.instances.either._
+import cats.instances.function._
+import org.scalacheck.Arbitrary
 import shapeless._, shapeless.syntax.singleton._
 import cats.derived._
 import org.scalacheck.Prop.forAll
@@ -25,7 +25,6 @@ class SequenceTests extends KittensSuite {
 
   test("sequencing Either")(check {
     forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
-      val f = Unapply[Functor, Either[String, String]]
       val expected = (x |@| y |@| z) map (_ :: _ :: _ :: HNil)
       (x :: y :: z :: HNil).sequence == expected
     }

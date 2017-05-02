@@ -50,7 +50,7 @@ object MkSemigroupK extends MkSemigroupK0 {
 }
 
 trait MkSemigroupK0 extends MkSemigroupK1 {
-  implicit def composed[F[_]](implicit split: Split1[F, SemigroupK, Trivial1])
+  implicit def composed[F[_]](implicit split: Split1[F, SemigroupK, Trivial.PH1])
     : MkSemigroupK[F] = new MkSemigroupK[F] {
       import split._
       def combineK[A](x: F[A], y: F[A]) =

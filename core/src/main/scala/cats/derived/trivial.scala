@@ -16,11 +16,6 @@
 
 package cats.derived
 
-trait Trivial1[F[_]]
-object Trivial1 {
-  implicit def mkTrivial1[F[_]]: Trivial1[F] = new Trivial1[F] {}
-}
-
 /**
  * The "Unit type class".  The only instance of `Trivial` is given by
  * `Trivial.manifest`, and this instance is guaranteed to be in the
@@ -42,5 +37,5 @@ object Trivial {
   type P3[A, B, C] = Trivial
   type P3H1[F[_], A, B, C] = Trivial
 
-  implicit val catsTrivialInstance: Trivial = new Trivial {}
+  implicit val mkTrivial: Trivial = new Trivial {}
 }

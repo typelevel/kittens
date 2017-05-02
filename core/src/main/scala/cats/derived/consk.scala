@@ -48,7 +48,7 @@ trait MkConsK0 extends MkConsK1 {
     }
 
   implicit def cconsL[F[_], G[_]]
-    (implicit icf: IsCCons1[F, MkConsK[?[_], G], Trivial1]): MkConsK[F, G] =
+    (implicit icf: IsCCons1[F, MkConsK[?[_], G], Trivial.PH1]): MkConsK[F, G] =
       new MkConsK[F, G] {
         def cons[A](hd: A, tl: G[A]): F[A] = {
           import icf._
@@ -64,7 +64,7 @@ trait MkConsK1 extends MkConsK2 {
     }
 
   implicit def cconsR[F[_], G[_]]
-    (implicit icf: IsCCons1[F, Trivial1, MkConsK[?[_], G]]): MkConsK[F, G] =
+    (implicit icf: IsCCons1[F, Trivial.PH1, MkConsK[?[_], G]]): MkConsK[F, G] =
       new MkConsK[F, G] {
         def cons[A](hd: A, tl: G[A]): F[A] = {
           import icf._

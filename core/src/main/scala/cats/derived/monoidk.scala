@@ -51,7 +51,7 @@ object MkMonoidK extends MkMonoidK0 {
 }
 
 trait MkMonoidK0 extends MkMonoidK1 {
-  implicit def composed[F[_]](implicit split: Split1[F, MonoidK, Trivial1])
+  implicit def composed[F[_]](implicit split: Split1[F, MonoidK, Trivial.PH1])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import split._
       def empty[A] = pack(fo.empty[I[A]])

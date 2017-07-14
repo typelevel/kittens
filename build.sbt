@@ -6,7 +6,7 @@ import sbt._
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
   scalaVersion := "2.12.2",
-  crossScalaVersions := Seq( "2.11.8", scalaVersion.value)
+  crossScalaVersions := Seq( "2.11.11", scalaVersion.value)
 )
 
 lazy val commonSettings = Seq(
@@ -14,13 +14,9 @@ lazy val commonSettings = Seq(
     "-feature",
     "-language:higherKinds",
     "-language:implicitConversions",
+    "-Ypartial-unification",    
     "-unchecked"
-  ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, 12)) =>
-      Seq("-Ypartial-unification")
-    case _ => Seq()
-  }),
-
+  ),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots"),
@@ -36,13 +32,7 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %% "cats-laws"      % "0.9.0" % "test",
     "org.typelevel"   %% "discipline"     % "0.7.3" % "test",
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
-  ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, scalaMajor)) if scalaMajor < 12 =>
-      Seq(compilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.1.0" cross CrossVersion.patch))
-    case _ => Seq()
-  }),
-
-
+  ),
   scmInfo :=
     Some(ScmInfo(
       url("https://github.com/milessabin/kittens"),

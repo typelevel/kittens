@@ -6,7 +6,7 @@ import sbt._
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
   scalaVersion := "2.12.2",
-  crossScalaVersions := Seq( "2.11.8", scalaVersion.value)
+  crossScalaVersions := Seq( "2.11.11", scalaVersion.value)
 )
 
 lazy val commonSettings = Seq(
@@ -14,12 +14,9 @@ lazy val commonSettings = Seq(
     "-feature",
     "-language:higherKinds",
     "-language:implicitConversions",
+    "-Ypartial-unification",    
     "-unchecked"
-  ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, 12)) =>
-      Seq("-Ypartial-unification")
-    case _ => Seq()
-  }),
+  ),
 
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),

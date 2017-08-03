@@ -18,14 +18,14 @@ class SequenceTests extends KittensSuite {
 
   test("sequencing Option")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
-      val expected = (x |@| y |@| z) map (_ :: _ :: _ :: HNil)
+      val expected = (x, y, z) mapN (_ :: _ :: _ :: HNil)
       (x :: y :: z :: HNil).sequence == expected
     }
   })
 
   test("sequencing Either")(check {
     forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
-      val expected = (x |@| y |@| z) map (_ :: _ :: _ :: HNil)
+      val expected = (x, y, z) mapN (_ :: _ :: _ :: HNil)
       (x :: y :: z :: HNil).sequence == expected
     }
   })
@@ -33,7 +33,7 @@ class SequenceTests extends KittensSuite {
   // note: using the ValidationNel type alias here breaks the implicit search
   test("sequencing ValidatedNel")(check {
     forAll { (x: Validated[NonEmptyList[String], Int], y: Validated[NonEmptyList[String], String], z: Validated[NonEmptyList[String], Float]) =>
-      val expected = (x |@| y |@| z) map (_ :: _ :: _ :: HNil)
+      val expected = (x, y, z) mapN (_ :: _ :: _ :: HNil)
       sequence(x, y, z) == expected
     }
   })
@@ -112,7 +112,7 @@ class SequenceTests extends KittensSuite {
   test("sequence gen for Option")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
       val myGen = sequenceGeneric[MyCase]
-      val expected = (x |@| y |@| z) map MyCase.apply
+      val expected = (x, y, z) mapN MyCase.apply
 
       myGen(a = x, b = y, c = z) == expected
     }
@@ -121,7 +121,7 @@ class SequenceTests extends KittensSuite {
   test("sequence gen for Either")(check {
     forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
       val myGen = sequenceGeneric[MyCase]
-      val expected = (x |@| y |@| z) map MyCase.apply
+      val expected = (x, y, z) mapN MyCase.apply
 
       myGen(a = x, b = y, c = z) == expected
     }

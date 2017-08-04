@@ -23,13 +23,13 @@ lazy val commonSettings = Seq(
     "bintray/non" at "http://dl.bintray.com/non/maven"
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel"   %% "cats-core"      % "0.9.0",
-    "org.typelevel"   %% "alleycats-core" % "0.1.9",
+    "org.typelevel"   %% "cats-core"      % "1.0.0-MF",
+    "org.typelevel"   %% "alleycats-core" % "0.2.0",
     "com.chuusai"     %% "shapeless"      % "2.3.2",
     "org.typelevel"   %% "export-hook"    % "1.2.0",
     "org.scalatest"   %% "scalatest"      % "3.0.3" % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.13.5" % "test",
-    "org.typelevel"   %% "cats-laws"      % "0.9.0" % "test",
+    "org.typelevel"   %% "cats-laws"      % "1.0.0-MF" % "test",
     "org.typelevel"   %% "discipline"     % "0.7.3" % "test",
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
   ),
@@ -141,7 +141,7 @@ lazy val releaseSettings = Seq(
     publishArtifacts,
     setNextVersion,
     commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+    ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
     pushChanges
   )
 )

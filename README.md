@@ -105,7 +105,7 @@ res0: Option[String] = Some(1 - a - 3.2)
 ```
 
 
-[cats]: https://github.com/non/cats
+[cats]: https://github.com/typelevel/cats
 [shapeless]: https://github.com/milessabin/shapeless
 [typelevel]: http://typelevel.org/
 [source]: https://github.com/milessabin/kittens

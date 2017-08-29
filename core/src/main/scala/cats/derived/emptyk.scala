@@ -42,7 +42,7 @@ object MkEmptyK extends MkEmptyK0 {
       }
     }
 
-  implicit def ccons0[F[_]](implicit icf: IsCCons1[F, EmptyK, Trivial1]): MkEmptyK[F] =
+  implicit def ccons0[F[_]](implicit icf: IsCCons1[F, EmptyK, Trivial.PH1]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import icf._
@@ -52,7 +52,7 @@ object MkEmptyK extends MkEmptyK0 {
 }
 
 trait MkEmptyK0 extends MkEmptyK1 {
-  implicit def ccons1[F[_]](implicit icf: IsCCons1[F, Trivial1, MkEmptyK]): MkEmptyK[F] =
+  implicit def ccons1[F[_]](implicit icf: IsCCons1[F, Trivial.PH1, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import icf._
@@ -62,7 +62,7 @@ trait MkEmptyK0 extends MkEmptyK1 {
 }
 
 trait MkEmptyK1 extends MkEmptyK2 {
-  implicit def split0[F[_]](implicit split: Split1[F, EmptyK, Trivial1]): MkEmptyK[F] =
+  implicit def split0[F[_]](implicit split: Split1[F, EmptyK, Trivial.PH1]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import split._

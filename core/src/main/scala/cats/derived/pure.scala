@@ -37,7 +37,7 @@ object MkPure extends MkPure0 {
       }
     }
 
-  implicit def ccons0[F[_]](implicit icf: IsCCons1[F, Pure, Trivial1]): MkPure[F] =
+  implicit def ccons0[F[_]](implicit icf: IsCCons1[F, Pure, Trivial.PH1]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = {
         import icf._
@@ -55,7 +55,7 @@ trait MkPure0 extends MkPure1 {
       }
     }
 
-  implicit def ccons1[F[_]](implicit icf: IsCCons1[F, Trivial1, MkPure]): MkPure[F] =
+  implicit def ccons1[F[_]](implicit icf: IsCCons1[F, Trivial.PH1, MkPure]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = {
         import icf._

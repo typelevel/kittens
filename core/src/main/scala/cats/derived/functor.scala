@@ -32,7 +32,7 @@ object MkFunctor extends MkFunctor0 {
 
 trait MkFunctor0 extends MkFunctor1 {
   // Induction step for products
-  implicit def hcons[F[_]](implicit ihc: IsHCons1[F, Functor, MkFunctor]): MkFunctor[F] =
+  implicit def mkFunctorHcons[F[_]](implicit ihc: IsHCons1[F, Functor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import ihc._
@@ -45,7 +45,7 @@ trait MkFunctor0 extends MkFunctor1 {
     }
 
   // Induction step for coproducts
-  implicit def ccons[F[_]](implicit icc: IsCCons1[F, Functor, MkFunctor]): MkFunctor[F] =
+  implicit def mkFunctorCcons[F[_]](implicit icc: IsCCons1[F, Functor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import icc._
@@ -58,7 +58,7 @@ trait MkFunctor0 extends MkFunctor1 {
 }
 
 trait MkFunctor1 extends MkFunctor2 {
-  implicit def split[F[_]](implicit split: Split1[F, Functor, Functor]): MkFunctor[F] =
+  implicit def mkFunctorSplit[F[_]](implicit split: Split1[F, Functor, Functor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import split._
@@ -68,7 +68,7 @@ trait MkFunctor1 extends MkFunctor2 {
 }
 
 trait MkFunctor2 extends MkFunctor3 {
-  implicit def generic[F[_]](implicit gen: Generic1[F, MkFunctor]): MkFunctor[F] =
+  implicit def mkFunctorGeneric[F[_]](implicit gen: Generic1[F, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
         gen.fr.safeMap(gen.to(fa))(f).map(gen.from)
@@ -76,7 +76,7 @@ trait MkFunctor2 extends MkFunctor3 {
 }
 
 trait MkFunctor3 {
-  implicit def constFunctor[T]: MkFunctor[Const[T]#λ] =
+  implicit def mkFunctorConstFunctor[T]: MkFunctor[Const[T]#λ] =
     new MkFunctor[Const[T]#λ] {
       def safeMap[A, B](t: T)(f: A => Eval[B]): Eval[T] = now(t)
     }

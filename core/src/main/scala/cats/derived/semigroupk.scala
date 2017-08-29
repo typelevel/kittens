@@ -25,13 +25,13 @@ trait MkSemigroupK[F[_]] extends SemigroupK[F]
 object MkSemigroupK extends MkSemigroupK0 {
   def apply[F[_]](implicit sgk: MkSemigroupK[F]): MkSemigroupK[F] = sgk
 
-  implicit val hnil: MkSemigroupK[Const[HNil]#λ] =
+  implicit val mkSemigroupKHnil: MkSemigroupK[Const[HNil]#λ] =
     new MkSemigroupK[Const[HNil]#λ] {
       def empty[A] = HNil
       def combineK[A](x: HNil, y: HNil) = HNil
     }
 
-  implicit def hcons[F[_]](implicit ihc: IsHCons1[F, SemigroupK, MkSemigroupK])
+  implicit def mkSemigroupKHcons[F[_]](implicit ihc: IsHCons1[F, SemigroupK, MkSemigroupK])
     : MkSemigroupK[F] = new MkSemigroupK[F] {
       import ihc._
       def combineK[A](x: F[A], y: F[A]) = {
@@ -43,7 +43,7 @@ object MkSemigroupK extends MkSemigroupK0 {
 }
 
 trait MkSemigroupK0 extends MkSemigroupK1 {
-  implicit def composed[F[_]](implicit split: Split1[F, SemigroupK, Trivial1])
+  implicit def mkSemigroupKComposed[F[_]](implicit split: Split1[F, SemigroupK, Trivial1])
     : MkSemigroupK[F] = new MkSemigroupK[F] {
       import split._
       def combineK[A](x: F[A], y: F[A]) =
@@ -52,7 +52,7 @@ trait MkSemigroupK0 extends MkSemigroupK1 {
 }
 
 trait MkSemigroupK1 extends MkSemigroupK2 {
-  implicit def applied[F[_]](implicit split: Split1[F, Apply, SemigroupK])
+  implicit def mkSemigroupKApplied[F[_]](implicit split: Split1[F, Apply, SemigroupK])
     : MkSemigroupK[F] = new MkSemigroupK[F] {
       import split._
       def combineK[A](x: F[A], y: F[A]) =
@@ -61,7 +61,7 @@ trait MkSemigroupK1 extends MkSemigroupK2 {
 }
 
 trait MkSemigroupK2 extends MkSemigroupK3 {
-  implicit def generic[F[_]](implicit gen: Generic1[F, MkSemigroupK])
+  implicit def mkSemigroupKGeneric[F[_]](implicit gen: Generic1[F, MkSemigroupK])
     : MkSemigroupK[F] = new MkSemigroupK[F] {
       import gen._
       def combineK[A](x: F[A], y: F[A]) =
@@ -70,7 +70,7 @@ trait MkSemigroupK2 extends MkSemigroupK3 {
 }
 
 trait MkSemigroupK3 {
-  implicit def const[T](implicit sg: Semigroup[T])
+  implicit def mkSemigroupKConst[T](implicit sg: Semigroup[T])
     : MkSemigroupK[Const[T]#λ] = new MkSemigroupK[Const[T]#λ] {
       def combineK[A](x: T, y: T) = sg.combine(x, y)
     }

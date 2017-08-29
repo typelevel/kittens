@@ -25,12 +25,12 @@ trait MkEmptyK[F[_]] extends EmptyK[F]
 object MkEmptyK extends MkEmptyK0 {
   def apply[F[_]](implicit mef: MkEmptyK[F]): MkEmptyK[F] = mef
 
-  implicit val hnil: MkEmptyK[Const[HNil]#λ] =
+  implicit val mkEmptyKHnil: MkEmptyK[Const[HNil]#λ] =
     new MkEmptyK[Const[HNil]#λ] {
       def empty[A]: HNil = HNil
     }
 
-  implicit def hcons[F[_]](implicit ihf: IsHCons1[F, EmptyK, MkEmptyK]): MkEmptyK[F] =
+  implicit def mkEmptyKHcons[F[_]](implicit ihf: IsHCons1[F, EmptyK, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import ihf._
@@ -38,7 +38,7 @@ object MkEmptyK extends MkEmptyK0 {
       }
     }
 
-  implicit def ccons0[F[_]](implicit icf: IsCCons1[F, EmptyK, Trivial1]): MkEmptyK[F] =
+  implicit def mkEmptyKCcons0[F[_]](implicit icf: IsCCons1[F, EmptyK, Trivial1]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import icf._
@@ -48,7 +48,7 @@ object MkEmptyK extends MkEmptyK0 {
 }
 
 trait MkEmptyK0 extends MkEmptyK1 {
-  implicit def ccons1[F[_]](implicit icf: IsCCons1[F, Trivial1, MkEmptyK]): MkEmptyK[F] =
+  implicit def mkEmptyKCcons1[F[_]](implicit icf: IsCCons1[F, Trivial1, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import icf._
@@ -58,7 +58,7 @@ trait MkEmptyK0 extends MkEmptyK1 {
 }
 
 trait MkEmptyK1 extends MkEmptyK2 {
-  implicit def split0[F[_]](implicit split: Split1[F, EmptyK, Trivial1]): MkEmptyK[F] =
+  implicit def mkEmptyKSplit0[F[_]](implicit split: Split1[F, EmptyK, Trivial1]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import split._
@@ -68,7 +68,7 @@ trait MkEmptyK1 extends MkEmptyK2 {
 }
 
 trait MkEmptyK2 extends MkEmptyK3 {
-  implicit def split1[F[_]](implicit split: Split1[F, Pure, EmptyK]): MkEmptyK[F] =
+  implicit def mkEmptyKSplit1[F[_]](implicit split: Split1[F, Pure, EmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = {
         import split._
@@ -78,7 +78,7 @@ trait MkEmptyK2 extends MkEmptyK3 {
 }
 
 trait MkEmptyK3 {
-  implicit def generic[F[_]](implicit gen: Generic1[F, MkEmptyK]): MkEmptyK[F] =
+  implicit def mkEmptyKGeneric[F[_]](implicit gen: Generic1[F, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A]: F[A] = gen.from(gen.fr.empty)
     }

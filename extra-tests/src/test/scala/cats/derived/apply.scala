@@ -21,8 +21,8 @@ import alleycats.Pure, alleycats.std.all._
 
 import cats.instances.int._
 
-import foldable._ , foldable.legacy._
-import functor._ , functor.legacy._
+import MkFunctor._
+import MkFoldable._
 import TestDefns._
 import shapeless.Cached
 import ApplyTests._
@@ -30,7 +30,7 @@ import ApplyTests._
 //import apply._ todo: export hook conflicts with functor
 
 class ApplyTests extends KittensSuite {
-  import emptyk._, pure._
+  import MkEmptyK._, MkPure._
 
   import ApplyTests._
 

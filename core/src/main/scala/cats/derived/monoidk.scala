@@ -24,13 +24,13 @@ trait MkMonoidK[F[_]] extends MonoidK[F]
 object MkMonoidK extends MkMonoidK0 {
   def apply[F[_]](implicit mk: MkMonoidK[F]): MkMonoidK[F] = mk
 
-  implicit val hnil: MkMonoidK[Const[HNil]#λ] =
+  implicit val mkMonoidKHnil: MkMonoidK[Const[HNil]#λ] =
     new MkMonoidK[Const[HNil]#λ] {
       def empty[A] = HNil
       def combineK[A](x: HNil, y: HNil) = HNil
     }
 
-  implicit def hcons[F[_]](implicit ihc: IsHCons1[F, MonoidK, MkMonoidK])
+  implicit def mkMonoidKHcons[F[_]](implicit ihc: IsHCons1[F, MonoidK, MkMonoidK])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import ihc._
       def empty[A] = pack(fh.empty, ft.empty)
@@ -43,7 +43,7 @@ object MkMonoidK extends MkMonoidK0 {
 }
 
 trait MkMonoidK0 extends MkMonoidK1 {
-  implicit def composed[F[_]](implicit split: Split1[F, MonoidK, Trivial1])
+  implicit def mkMonoidKComposed[F[_]](implicit split: Split1[F, MonoidK, Trivial1])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import split._
       def empty[A] = pack(fo.empty[I[A]])
@@ -53,7 +53,7 @@ trait MkMonoidK0 extends MkMonoidK1 {
 }
 
 trait MkMonoidK1 extends MkMonoidK2 {
-  implicit def applicative[F[_]](implicit split: Split1[F, Applicative, MonoidK])
+  implicit def mkMonoidKApplicative[F[_]](implicit split: Split1[F, Applicative, MonoidK])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import split._
       def empty[A] = pack(fo.pure(fi.empty[A]))
@@ -63,7 +63,7 @@ trait MkMonoidK1 extends MkMonoidK2 {
 }
 
 trait MkMonoidK2 extends MkMonoidK3 {
-  implicit def generic[F[_]](implicit gen: Generic1[F, MkMonoidK])
+  implicit def mkMonoidKGeneric[F[_]](implicit gen: Generic1[F, MkMonoidK])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import gen._
       def empty[A] = from(fr.empty)
@@ -73,7 +73,7 @@ trait MkMonoidK2 extends MkMonoidK3 {
 }
 
 trait MkMonoidK3 {
-  implicit def const[T](implicit m: Monoid[T])
+  implicit def mkMonoidKConst[T](implicit m: Monoid[T])
     : MkMonoidK[Const[T]#λ] = new MkMonoidK[Const[T]#λ] {
       def empty[A] = m.empty
       def combineK[A](x: T, y: T) = m.combine(x, y)

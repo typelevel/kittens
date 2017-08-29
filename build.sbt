@@ -26,7 +26,6 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %% "cats-core"      % "1.0.0-MF",
     "org.typelevel"   %% "alleycats-core" % "0.2.0",
     "com.chuusai"     %% "shapeless"      % "2.3.2",
-    "org.typelevel"   %% "export-hook"    % "1.2.0",
     "org.scalatest"   %% "scalatest"      % "3.0.3" % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.13.5" % "test",
     "org.typelevel"   %% "cats-laws"      % "1.0.0-MF" % "test",

@@ -93,17 +93,17 @@ object MkIterable extends MkIterable0 {
 
   def apply[F[_]](implicit mif: MkIterable[F]): MkIterable[F] = mif
 
-  implicit val id: MkIterable[Id] =
+  implicit val mkIterableId: MkIterable[Id] =
     new MkIterable[Id] {
       def initialState[A](fa: A): IterState[A] = Return(fa)
     }
 
-  implicit val option: MkIterable[Option] =
+  implicit val mkIterableOption: MkIterable[Option] =
     new MkIterable[Option] {
       def initialState[A](fa: Option[A]): IterState[A] = ReturnI(fa.iterator)
     }
 
-  implicit def iterable[F[t] <: Iterable[t]]: MkIterable[F] =
+  implicit def mkIterableIterable[F[t] <: Iterable[t]]: MkIterable[F] =
     new MkIterable[F] {
       def initialState[A](fa: F[A]): IterState[A] =
         ReturnI(fa.iterator)
@@ -113,7 +113,7 @@ object MkIterable extends MkIterable0 {
 trait MkIterable0 extends MkIterable1 {
   import IterState._
 
-  implicit def hcons[F[_]](implicit F: IsHCons1[F, MkIterable, MkIterable]): MkIterable[F] =
+  implicit def mkIterableHcons[F[_]](implicit F: IsHCons1[F, MkIterable, MkIterable]): MkIterable[F] =
     new MkIterable[F] {
       def initialState[A](fa: F[A]): IterState[A] = {
         val (hd, tl) = F.unpack(fa)
@@ -122,7 +122,7 @@ trait MkIterable0 extends MkIterable1 {
       }
     }
 
-  implicit def ccons[F[_]](implicit F: IsCCons1[F, MkIterable, MkIterable]): MkIterable[F] =
+  implicit def mkIterableCcons[F[_]](implicit F: IsCCons1[F, MkIterable, MkIterable]): MkIterable[F] =
     new MkIterable[F] {
       def initialState[A](fa: F[A]): IterState[A] = {
         F.unpack(fa) match {
@@ -136,7 +136,7 @@ trait MkIterable0 extends MkIterable1 {
 trait MkIterable1 extends MkIterable2 {
   import IterState._
 
-  implicit def split[F[_]](implicit split: Split1[F, MkIterable, MkIterable]): MkIterable[F] =
+  implicit def mkIterableCplit[F[_]](implicit split: Split1[F, MkIterable, MkIterable]): MkIterable[F] =
     new MkIterable[F] {
       def initialState[A](fa: F[A]): IterState[A] = {
         import split._
@@ -146,7 +146,7 @@ trait MkIterable1 extends MkIterable2 {
 }
 
 trait MkIterable2 extends MkIterable3 {
-  implicit def generic[F[_]](implicit F: Generic1[F, MkIterable]): MkIterable[F] =
+  implicit def mkIterableGeneric[F[_]](implicit F: Generic1[F, MkIterable]): MkIterable[F] =
     new MkIterable[F] {
       def initialState[A](fa: F[A]): IterState[A] = F.fr.initialState(F.to(fa))
     }
@@ -155,7 +155,7 @@ trait MkIterable2 extends MkIterable3 {
 trait MkIterable3 {
   import IterState._
 
-  implicit def const[T]: MkIterable[Const[T]#λ] =
+  implicit def mkIterableConst[T]: MkIterable[Const[T]#λ] =
     new MkIterable[Const[T]#λ] {
       def initialState[A](fa: T): IterState[A] = Done
     }

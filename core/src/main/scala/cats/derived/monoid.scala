@@ -24,7 +24,7 @@ trait MkMonoid[T] extends Monoid[T]
 object MkMonoid {
   def apply[T](implicit m: MkMonoid[T]): MkMonoid[T] = m
 
-  implicit def algebraic[T](implicit e: Lazy[MkEmpty[T]], sg: Lazy[MkSemigroup[T]])
+  implicit def mkMonoidAlgebraic[T](implicit e: Lazy[MkEmpty[T]], sg: Lazy[MkSemigroup[T]])
     : MkMonoid[T] = new MkMonoid[T] {
       def empty = e.value.empty
       def combine(x: T, y: T) = sg.value.combine(x, y)

@@ -17,19 +17,15 @@
 package cats.derived
 
 import alleycats.{ EmptyK, Pure }
-import export.{ exports, reexports }
 import shapeless._
 
-@reexports[MkPure]
-object pure
 
 trait MkPure[F[_]] extends Pure[F]
 
-@exports
 object MkPure extends MkPure0 {
   def apply[F[_]](implicit mpf: MkPure[F]): MkPure[F] = mpf
 
-  implicit def hcons0[F[_]](implicit ihf: IsHCons1[F, Pure, EmptyK]): MkPure[F] =
+  implicit def mkPureHcons0[F[_]](implicit ihf: IsHCons1[F, Pure, EmptyK]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = {
         import ihf._
@@ -37,7 +33,7 @@ object MkPure extends MkPure0 {
       }
     }
 
-  implicit def ccons0[F[_]](implicit icf: IsCCons1[F, Pure, Trivial1]): MkPure[F] =
+  implicit def mkPureCcons0[F[_]](implicit icf: IsCCons1[F, Pure, Trivial1]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = {
         import icf._
@@ -47,7 +43,7 @@ object MkPure extends MkPure0 {
 }
 
 trait MkPure0 extends MkPure1 {
-  implicit def hcons1[F[_]](implicit ihf: IsHCons1[F, EmptyK, MkPure]): MkPure[F] =
+  implicit def mkPureHcons1[F[_]](implicit ihf: IsHCons1[F, EmptyK, MkPure]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = {
         import ihf._
@@ -55,7 +51,7 @@ trait MkPure0 extends MkPure1 {
       }
     }
 
-  implicit def ccons1[F[_]](implicit icf: IsCCons1[F, Trivial1, MkPure]): MkPure[F] =
+  implicit def mkPureCcons1[F[_]](implicit icf: IsCCons1[F, Trivial1, MkPure]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = {
         import icf._
@@ -65,7 +61,7 @@ trait MkPure0 extends MkPure1 {
 }
 
 trait MkPure1 extends MkPure2 {
-  implicit def split[F[_]](implicit split: Split1[F, Pure, Pure]): MkPure[F] =
+  implicit def mkPureSplit[F[_]](implicit split: Split1[F, Pure, Pure]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = {
         import split._
@@ -75,7 +71,7 @@ trait MkPure1 extends MkPure2 {
 }
 
 trait MkPure2 {
-  implicit def generic[F[_]](implicit gen: Generic1[F, MkPure]): MkPure[F] =
+  implicit def mkPureGeneric[F[_]](implicit gen: Generic1[F, MkPure]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = gen.from(gen.fr.pure(a))
     }

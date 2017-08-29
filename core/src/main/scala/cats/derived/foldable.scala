@@ -30,7 +30,7 @@ trait MkFoldable[F[_]] extends Foldable[F] {
 object MkFoldable extends MkFoldable0 {
   def apply[F[_]](implicit mff: MkFoldable[F]): MkFoldable[F] = mff
 
-  implicit val id: MkFoldable[shapeless.Id] =
+  implicit val mkFoldableId: MkFoldable[shapeless.Id] =
     new MkFoldable[shapeless.Id] {
       def foldRight[A, B](fa: A, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = f(fa, lb)
 
@@ -40,7 +40,7 @@ object MkFoldable extends MkFoldable0 {
 
 trait MkFoldable0 extends MkFoldable1 {
   // Induction step for products
-  implicit def hcons[F[_]](implicit ihc: IsHCons1[F, Foldable, MkFoldable]): MkFoldable[F] =
+  implicit def mkFoldableHcons[F[_]](implicit ihc: IsHCons1[F, Foldable, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
         import ihc._
@@ -62,7 +62,7 @@ trait MkFoldable0 extends MkFoldable1 {
     }
 
   // Induction step for coproducts
-  implicit def ccons[F[_]](implicit icc: IsCCons1[F, Foldable, MkFoldable]): MkFoldable[F] =
+  implicit def mkFoldableCcons[F[_]](implicit icc: IsCCons1[F, Foldable, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
         import icc._
@@ -83,7 +83,7 @@ trait MkFoldable0 extends MkFoldable1 {
 }
 
 trait MkFoldable1 extends MkFoldable2 {
-  implicit def split[F[_]](implicit split: Split1[F, Foldable, Foldable]): MkFoldable[F] =
+  implicit def mkFoldableSplit[F[_]](implicit split: Split1[F, Foldable, Foldable]): MkFoldable[F] =
     new MkFoldable[F] {
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
         import split._
@@ -98,7 +98,7 @@ trait MkFoldable1 extends MkFoldable2 {
 }
 
 trait MkFoldable2 extends MkFoldable3 {
-  implicit def generic[F[_]](implicit gen: Generic1[F, MkFoldable]): MkFoldable[F] =
+  implicit def mkFoldableGeneric[F[_]](implicit gen: Generic1[F, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         gen.fr.foldRight(gen.to(fa), lb)(f)
@@ -109,7 +109,7 @@ trait MkFoldable2 extends MkFoldable3 {
 }
 
 trait MkFoldable3 {
-  implicit def constFoldable[T]: MkFoldable[Const[T]#λ] =
+  implicit def mkFoldableConstFoldable[T]: MkFoldable[Const[T]#λ] =
     new MkFoldable[Const[T]#λ] {
       def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 

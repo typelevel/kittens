@@ -25,7 +25,7 @@ libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-M11"
 
 ```scala
 
-scala> import cats.derived._, functor._, legacy._
+scala> import cats.derived._, MkFunctor._
 scala> import cats.Functor
 
 scala> case class Cat[Food](food: Option[Food], foods: List[Food])

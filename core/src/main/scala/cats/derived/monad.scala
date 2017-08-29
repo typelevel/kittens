@@ -5,16 +5,8 @@ import alleycats.{ConsK, EmptyK, Pure}
 import export.{ exports, imports, reexports }
 import shapeless._
 
-
-@reexports[MkMonad]
-object monad {
-  @imports[Monad]
-  object legacy
-}
-
 trait MkMonad[F[_]] extends Monad[F]
 
-@exports
 object MkMonad extends MkMonad0 {
   def apply[F[_]](implicit mmf: MkMonad[F]): MkMonad[F] = mmf
 }

@@ -17,18 +17,10 @@
 package cats.derived
 
 import cats.Monoid
-import export.{ exports, imports, reexports }
 import shapeless._
-
-@reexports[MkEmpty, MkMonoid, MkSemigroup]
-object monoid {
-  @imports[Monoid]
-  object legacy
-}
 
 trait MkMonoid[T] extends Monoid[T]
 
-@exports(Algebraic)
 object MkMonoid {
   def apply[T](implicit m: MkMonoid[T]): MkMonoid[T] = m
 

@@ -17,14 +17,7 @@
 package cats.derived
 
 import cats.{ Eval, Foldable }, Eval.now
-import export.{ exports, imports, reexports }
 import shapeless._
-
-@reexports[MkFoldable]
-object foldable {
-  @imports[Foldable]
-  object legacy
-}
 
 trait MkFoldable[F[_]] extends Foldable[F] {
   def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B = safeFoldLeft(fa, b){ (b, a) => now(f(b, a)) }.value
@@ -34,7 +27,6 @@ trait MkFoldable[F[_]] extends Foldable[F] {
   def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B]
 }
 
-@exports
 object MkFoldable extends MkFoldable0 {
   def apply[F[_]](implicit mff: MkFoldable[F]): MkFoldable[F] = mff
 

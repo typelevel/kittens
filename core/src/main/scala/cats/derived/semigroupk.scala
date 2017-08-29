@@ -17,18 +17,11 @@
 package cats.derived
 
 import cats.{ Apply, Semigroup, SemigroupK }
-import export.{ exports, imports, reexports }
 import shapeless._
 
-@reexports[MkSemigroupK]
-object semigroupk {
-  @imports[SemigroupK]
-  object legacy
-}
 
 trait MkSemigroupK[F[_]] extends SemigroupK[F]
 
-@exports
 object MkSemigroupK extends MkSemigroupK0 {
   def apply[F[_]](implicit sgk: MkSemigroupK[F]): MkSemigroupK[F] = sgk
 

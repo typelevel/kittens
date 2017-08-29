@@ -17,14 +17,8 @@
 package cats.derived
 
 import cats.{ Eval, Functor }, Eval.now
-import export.{ exports, imports, reexports }
 import shapeless._
 
-@reexports[MkFunctor]
-object functor {
-  @imports[Functor]
-  object legacy
-}
 
 trait MkFunctor[F[_]] extends Functor[F] {
   def map[A, B](fa: F[A])(f: A => B): F[B] = safeMap(fa){ a => now(f(a)) }.value
@@ -32,7 +26,6 @@ trait MkFunctor[F[_]] extends Functor[F] {
   def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]]
 }
 
-@exports
 object MkFunctor extends MkFunctor0 {
   def apply[F[_]](implicit mff: MkFunctor[F]): MkFunctor[F] = mff
 }

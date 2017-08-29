@@ -17,18 +17,11 @@
 package cats.derived
 
 import alleycats.Empty
-import export.{ exports, imports, reexports }
-import shapeless._
 
-@reexports[MkEmpty]
-object empty {
-  @imports[Empty]
-  object legacy
-}
+import shapeless._
 
 trait MkEmpty[T] extends Empty[T]
 
-@exports
 object MkEmpty {
   def apply[T](implicit e: MkEmpty[T]): MkEmpty[T] = e
 

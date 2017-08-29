@@ -29,7 +29,7 @@ trait MkPure[F[_]] extends Pure[F]
 object MkPure extends MkPure0 {
   def apply[F[_]](implicit mpf: MkPure[F]): MkPure[F] = mpf
 
-  implicit def hcons0[F[_]](implicit ihf: IsHCons1[F, Pure, MkEmptyK]): MkPure[F] =
+  implicit def hcons0[F[_]](implicit ihf: IsHCons1[F, Pure, EmptyK]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = {
         import ihf._

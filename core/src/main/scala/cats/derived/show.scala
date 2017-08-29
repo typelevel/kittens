@@ -1,11 +1,7 @@
 package cats.derived
 
 import cats.Show
-import export.{ exports, reexports }
 import shapeless._, labelled._
-
-@reexports[MkShow]
-object show
 
 /**
  * Due to a limitation in the way Shapeless' `describe` is currently
@@ -21,7 +17,6 @@ object show
  */
 trait MkShow[A] extends Show[A]
 
-@exports
 object MkShow {
   private def instance[A](body: A => String) = new Show[A] {
     def show(value: A): String = body(value)

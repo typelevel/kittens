@@ -17,18 +17,11 @@
 package cats.derived
 
 import cats.Eq
-import export.{ exports, imports, reexports }
 import shapeless._
 
-@reexports[MkEq]
-object eq {
-  @imports[Eq]
-  object legacy
-}
 
 trait MkEq[T] extends Eq[T]
 
-@exports
 object MkEq {
   def apply[T](implicit met: MkEq[T]): MkEq[T] = met
 

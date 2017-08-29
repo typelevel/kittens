@@ -17,18 +17,10 @@
 package cats.derived
 
 import cats.{ Applicative, Monoid, MonoidK }
-import export.{ exports, imports, reexports }
 import shapeless._
-
-@reexports[MkMonoidK]
-object monoidk {
-  @imports[MonoidK]
-  object legacy
-}
 
 trait MkMonoidK[F[_]] extends MonoidK[F]
 
-@exports
 object MkMonoidK extends MkMonoidK0 {
   def apply[F[_]](implicit mk: MkMonoidK[F]): MkMonoidK[F] = mk
 

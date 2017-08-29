@@ -20,9 +20,8 @@ import cats.Functor
 
 import TestDefns._
 
-import functor._, legacy._
+import MkFunctor._
 import iterable.legacy._
-import shapeless.cachedImplicit
 
 class FunctorTests extends KittensSuite {
 

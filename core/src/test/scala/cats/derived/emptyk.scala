@@ -16,12 +16,10 @@
 
 package cats.derived
 
-import alleycats.EmptyK, alleycats.std.all._
-import cats._
-import shapeless._
+import alleycats.EmptyK
 
 import TestDefns._
-import emptyk._, pure._
+import MkEmptyK._
 
 class EmptyKTests extends KittensSuite {
 
@@ -45,7 +43,7 @@ class EmptyKTests extends KittensSuite {
 
   test("EmptyK[λ[t => Option[Option[t]]]]") {
     type OOption[t] = Option[Option[t]]
-    val E = MkEmptyK[OOption]
+    val E = EmptyK[OOption]
 
     assert(E.empty == None)
   }

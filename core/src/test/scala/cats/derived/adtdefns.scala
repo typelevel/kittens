@@ -58,6 +58,16 @@ object TestDefns {
 
   final case class Foo(i: Int, b: Option[String])
 
+  case class Inner(i: Int)
+  case class Outer(in: Inner)
+
+  sealed trait IntTree
+  final case class IntLeaf(t: Int) extends IntTree
+  final case class IntNode(l: IntTree, r: IntTree) extends IntTree
+
+  sealed trait GenericAdt[T]
+  case class GenericAdtCase[T](v: Option[T]) extends GenericAdt[T]
+
   implicit val arbFoo: Arbitrary[Foo] =
     Arbitrary(for {
       i <- arbitrary[Int]

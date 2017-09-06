@@ -118,6 +118,15 @@ class SequenceTests extends KittensSuite {
     }
   })
 
+  test("sequence gen with different sort")(check {
+    forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
+      val myGen = sequenceGeneric[MyCase]
+      val expected = (x, y, z) mapN MyCase.apply
+
+      myGen(b = y, a = x, c = z) == expected
+    }
+  })
+
   test("sequence gen for Either")(check {
     forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
       val myGen = sequenceGeneric[MyCase]

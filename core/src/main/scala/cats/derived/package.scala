@@ -1,5 +1,9 @@
 package cats
 
+/**
+ * For backward compat purpose.
+ * Use cats.derive to explicitly derive instance instead
+ */
 package object derived {
   object emptyK extends MkEmptyKDerivation
   object eq extends MkEqDerivation

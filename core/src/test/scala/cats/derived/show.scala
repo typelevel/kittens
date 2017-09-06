@@ -10,7 +10,7 @@ class ShowTests extends KittensSuite {
 
 
   test("Simple case classes") {
-    implicit val showF : Show[Foo] = derive.show[Foo]
+    implicit val sf = derive.show[Foo]
     val foo = Foo(42, Option("Hello"))
     val printedFoo = "Foo(i = 42, b = Some(Hello))"
 
@@ -18,7 +18,7 @@ class ShowTests extends KittensSuite {
   }
 
   test("Nested case classes auto derive inner class") {
-    implicit val showO : Show[Outer] = derive.show[Outer]
+    implicit val so = derive.show[Outer]
 
     val nested = Outer(Inner(3))
     val printedNested = "Outer(in = Inner(i = 3))"
@@ -27,7 +27,8 @@ class ShowTests extends KittensSuite {
   }
 
   test("Recursive ADTs with no type parameters") {
-    import show._
+    implicit val st = derive.show[IntTree]
+
     val tree: IntTree = IntNode(IntLeaf(1), IntNode(IntNode(IntLeaf(2), IntLeaf(3)), IntLeaf(4)))
     val printedTree =
       "IntNode(l = IntLeaf(t = 1), r = IntNode(l = IntNode(l = IntLeaf(t = 2), r = IntLeaf(t = 3)), r = IntLeaf(t = 4)))"
@@ -36,7 +37,7 @@ class ShowTests extends KittensSuite {
   }
 
   test("Non recursive ADTs with type parameters") {
-    implicit def showF : Show[GenericAdt[Int]] = derive.show[GenericAdt[Int]]
+    implicit val sg = derive.show[GenericAdt[Int]]
     val genAdt: GenericAdt[Int] = GenericAdtCase(Some(1))
     val printedGenAdt = "GenericAdtCase(v = Some(1))"
 
@@ -53,11 +54,4 @@ class ShowTests extends KittensSuite {
     illTyped("Show[Tree[Int]]")
   }
 
-  test("existing Show instances in scope are respected") {
-    implicit def showInt: Show[Foo] = new Show[Foo] {
-      def show(foo: Foo) = ""
-    }
-
-    assert(Foo(42, Option("Hello")).show == "")
-  }
 }

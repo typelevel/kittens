@@ -40,7 +40,7 @@ cat: Cat[Int] = Cat(1,List(2, 3))
 #### Derive `Functor`
 
 ```scala
-scala> implicit val FC: Functor[Cat] = cats.derive.functor
+scala> implicit val fc = cats.derive.functor[Cat]
 FC: cats.Functor[Cat] = cats.derived.MkFunctor2$$anon$4@1c60573f
 
 scala> cat.map(_ + 1)
@@ -50,7 +50,7 @@ res0: Cat[Int] = Cat(2,List(3, 4))
 #### Derive `Show`
 
 ```scala
-scala> implicit val catShow: Show[Cat[Int]] = cats.derive.show
+scala> implicit val cs = cats.derive.show[Cat[Int]]
 catShow: cats.Show[Cat[Int]] = cats.derived.MkShow3$$anon$1@7ec30e6b
 
 scala> cat.show

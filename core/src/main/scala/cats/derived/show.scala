@@ -64,7 +64,7 @@ trait MkShow1 extends MkShow2 {
   implicit def coproductDerivedShowWhenShowVAvailable[K <: Symbol, V, T <: Coproduct](
      implicit key: Witness.Aux[K],
      showV: Lazy[Show[V]],
-     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = mkShowSplit
+     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = mkShowCoproduct
 
 }
 
@@ -73,16 +73,16 @@ trait MkShow2 extends MkShow3 {
   implicit def coproductDerivedShow[K <: Symbol, V, T <: Coproduct](
      implicit key: Witness.Aux[K],
      showV: Lazy[MkShow[V]],
-     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = mkShowSplit
+     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = mkShowCoproduct
 
-  def mkShowSplit[K <: Symbol, V, T <: Coproduct](
+  def mkShowCoproduct[K <: Symbol, V, T <: Coproduct](
     implicit key: Witness.Aux[K],
     showV: Lazy[Show[V]],
     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = instance {
       case Inl(l) => showV.value.show(l)
       case Inr(r) => showT.value.show(r)
   }
-  
+
   implicit def genericDerivedShowProduct[A, R <: HList](
                                                          implicit repr: LabelledGeneric.Aux[A, R],
                                                          t: Lazy[Typeable[A]],

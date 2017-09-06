@@ -17,19 +17,18 @@
 package cats.derived
 
 import alleycats.ConsK
-import export.ExportGeneric
 import shapeless._
 
 object consk {
   object exports {
-    def apply[F[_]](implicit mcff: MkConsK[F, F]): ExportGeneric[ConsK[F]] =
-      ExportGeneric[ConsK[F]](
+    def apply[F[_]](implicit mcff: MkConsK[F, F]) =
+      ConsK[F](
         new ConsK[F] {
           def cons[A](hd: A, tl: F[A]): F[A] = mcff.cons(hd, tl)
         }
       )
 
-    implicit def deriveConsK[F[_]](implicit mcff: MkConsK[F, F]): ExportGeneric[ConsK[F]] = apply[F]
+    implicit def deriveConsK[F[_]](implicit mcff: MkConsK[F, F]): ConsK[F] = apply[F]
   }
 }
 

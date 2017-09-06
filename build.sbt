@@ -5,7 +5,7 @@ import sbt._
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
-  scalaVersion := "2.12.2",
+  scalaVersion := "2.12.3",
   crossScalaVersions := Seq( "2.11.11", scalaVersion.value)
 )
 
@@ -26,7 +26,6 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %% "cats-core"      % "1.0.0-MF",
     "org.typelevel"   %% "alleycats-core" % "0.2.0",
     "com.chuusai"     %% "shapeless"      % "2.3.2",
-    "org.typelevel"   %% "export-hook"    % "1.2.0",
     "org.scalatest"   %% "scalatest"      % "3.0.3" % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.13.5" % "test",
     "org.typelevel"   %% "cats-laws"      % "1.0.0-MF" % "test",
@@ -54,8 +53,8 @@ lazy val commonJvmSettings = Seq(
 lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings
 
 lazy val root = project.in(file("."))
-  .aggregate(coreJS, coreJVM, extraTests)
-  .dependsOn(coreJS, coreJVM, extraTests)
+  .aggregate(coreJS, coreJVM)
+  .dependsOn(coreJS, coreJVM)
   .settings(coreSettings:_*)
   .settings(noPublishSettings)
 
@@ -65,12 +64,6 @@ lazy val core = crossProject.crossType(CrossType.Pure)
   .jsSettings(commonJsSettings:_*)
   .jvmSettings(commonJvmSettings:_*)
 
-//Monad and Applicative tests are taking a long time to compile, separating them to another module to help development, and scala 2.10.x build on travis.
-lazy val extraTests = project.in(file("extra-tests"))
-  .settings(moduleName := "kittens-tests")
-  .dependsOn(coreJVM % "compile->compile;test->test")
-  .settings(coreSettings:_*)
-  .settings(noPublishSettings)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -103,9 +96,9 @@ lazy val publishSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
-  publishTo <<= version { (v: String) =>
+  publishTo := {
     val nexus = "https://oss.sonatype.org/"
-    if (v.trim.endsWith("SNAPSHOT"))
+    if (version.value.trim.endsWith("SNAPSHOT"))
       Some("snapshots" at nexus + "content/repositories/snapshots")
     else
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
@@ -141,7 +134,7 @@ lazy val releaseSettings = Seq(
     publishArtifacts,
     setNextVersion,
     commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
+    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
     pushChanges
   )
 )

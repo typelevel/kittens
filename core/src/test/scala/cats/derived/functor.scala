@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
+package derived
 
 import cats.Functor
 
 import TestDefns._
 
-import functor._, legacy._
-import iterable.legacy._
-import shapeless.cachedImplicit
+import functor._
+import iterable._
 
 class FunctorTests extends KittensSuite {
 

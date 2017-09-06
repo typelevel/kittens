@@ -19,7 +19,7 @@ package cats.derived
 import cats._, instances.all._, kernel.laws.GroupLaws
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
-import semigroupk._, legacy._
+import semigroupK._
 
 class SemigroupKTests extends KittensSuite {
   import SemigroupKTests.ComplexProduct

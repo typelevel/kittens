@@ -23,22 +23,38 @@ libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-M11"
 
 ### Auto derived Examples
 
+
+
 ```scala
 
-scala> import cats.derived._, functor._, legacy._
-scala> import cats.Functor
+scala> import cats.implicit._, cats._
 
-scala> case class Cat[Food](food: Option[Food], foods: List[Food])
+scala> case class Cat[Food](food: Food, foods: List[Food])
 defined class Cat
 
-scala> val f = Functor[Cat]
-f: cats.Functor[Cat] = cats.derived.MkFunctor2$$anon$4@782b2ad1
+scala> val cat = Cat(1, List(2, 3))
+cat: Cat[Int] = Cat(1,List(2, 3))
 
-scala> val cat = Cat(Some(1), List(2, 3))
-cat: Cat[Int] = Cat(Some(1),List(2, 3))
+```
 
-scala> f.map(cat)(_ + 1)
-res3: Cat[Int] = Cat(Some(2),List(3, 4))
+#### Derive `Functor`
+
+```scala
+scala> implicit val fc = cats.derive.functor[Cat]
+FC: cats.Functor[Cat] = cats.derived.MkFunctor2$$anon$4@1c60573f
+
+scala> cat.map(_ + 1)
+res0: Cat[Int] = Cat(2,List(3, 4))
+```
+
+#### Derive `Show`
+
+```scala
+scala> implicit val cs = cats.derive.show[Cat[Int]]
+catShow: cats.Show[Cat[Int]] = cats.derived.MkShow3$$anon$1@7ec30e6b
+
+scala> cat.show
+res1: String = Cat(food = 1, foods = List(2, 3))
 ```
 
 ### Sequence examples

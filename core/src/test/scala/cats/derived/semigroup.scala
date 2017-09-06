@@ -17,7 +17,7 @@
 package cats.derived
 
 import cats.Semigroup
-import semigroup._, legacy._
+import semigroup._
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 import TestDefns._

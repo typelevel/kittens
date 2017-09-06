@@ -1,11 +1,7 @@
 package cats.derived
 
 import cats.Show
-import export.{ exports, reexports }
 import shapeless._, labelled._
-
-@reexports[MkShow]
-object show
 
 /**
  * Due to a limitation in the way Shapeless' `describe` is currently
@@ -21,19 +17,33 @@ object show
  */
 trait MkShow[A] extends Show[A]
 
-@exports
-object MkShow {
-  private def instance[A](body: A => String) = new Show[A] {
-    def show(value: A): String = body(value)
-  }
+object MkShow extends MkShowDerivation {
+  def apply[A](implicit show: MkShow[A]): MkShow[A] = show
+}
 
-  implicit def emptyProductDerivedShow: Show[HNil] =
+trait MkShowDerivation extends MkShow0 {
+
+  implicit def emptyProductDerivedShow: MkShow[HNil] =
     instance(_ => "")
 
+  // used when a Show[V] (a member of the coproduct) is readily available
+  implicit def productDerivedShowWhenShowVAvailable[K <: Symbol, V, T <: HList](
+       implicit key: Witness.Aux[K],
+       showV: Lazy[Show[V]],
+       showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = mkShowCons
+}
+
+trait MkShow0 extends MkShow1 {
+  // used when a Show[V] (a member of the product) needs to be derived
   implicit def productDerivedShow[K <: Symbol, V, T <: HList](
-      implicit key: Witness.Aux[K],
-      showV: Lazy[Show[V]],
-      showT: Show[T]): Show[FieldType[K, V] :: T] = instance { fields =>
+       implicit key: Witness.Aux[K],
+       showV: Lazy[MkShow[V]],
+       showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = mkShowCons
+
+  def mkShowCons[K <: Symbol, V, T <: HList](
+                                            implicit key: Witness.Aux[K],
+                                            showV: Lazy[Show[V]],
+                                            showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = instance { fields =>
     val fieldName = key.value.name
     val fieldValue = showV.value.show(fields.head)
     val nextFields = showT.show(fields.tail)
@@ -44,29 +54,53 @@ object MkShow {
       s"$fieldName = $fieldValue, $nextFields"
   }
 
-  implicit def emptyCoproductDerivedShow: Show[CNil] =
-    sys.error("Kittens derived Show instance: impossible to call `show` on `CNil`")
 
+  implicit def emptyCoproductDerivedShow: MkShow[CNil] =
+    sys.error("Kittens derived Show instance: impossible to call `show` on `CNil`")
+}
+
+trait MkShow1 extends MkShow2 {
+  // used when a Show[V] (a member of the coproduct) is readily available
+  implicit def coproductDerivedShowWhenShowVAvailable[K <: Symbol, V, T <: Coproduct](
+     implicit key: Witness.Aux[K],
+     showV: Lazy[Show[V]],
+     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = mkShowCoproduct
+
+}
+
+trait MkShow2 extends MkShow3 {
+  // used when Show[V] (a member of the coproduct) has to be derived.
   implicit def coproductDerivedShow[K <: Symbol, V, T <: Coproduct](
-      implicit key: Witness.Aux[K],
-      showV: Lazy[Show[V]],
-      showT: Lazy[Show[T]]): Show[FieldType[K, V] :+: T] = instance {
-    case Inl(l) => showV.value.show(l)
-    case Inr(r) => showT.value.show(r)
+     implicit key: Witness.Aux[K],
+     showV: Lazy[MkShow[V]],
+     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = mkShowCoproduct
+
+  def mkShowCoproduct[K <: Symbol, V, T <: Coproduct](
+    implicit key: Witness.Aux[K],
+    showV: Lazy[Show[V]],
+    showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = instance {
+      case Inl(l) => showV.value.show(l)
+      case Inr(r) => showT.value.show(r)
   }
 
   implicit def genericDerivedShowProduct[A, R <: HList](
-      implicit repr: LabelledGeneric.Aux[A, R],
-      t: Lazy[Typeable[A]],
-      s: Lazy[Show[R]]): Show[A] = instance { a =>
+                                                         implicit repr: LabelledGeneric.Aux[A, R],
+                                                         t: Lazy[Typeable[A]],
+                                                         s: Lazy[MkShow[R]]): MkShow[A] = instance { a =>
     val name = t.value.describe.takeWhile(_ != '[')
     val contents = s.value.show(repr.to(a))
 
     s"$name($contents)"
   }
+}
+
+trait MkShow3 {
+  protected def instance[A](body: A => String): MkShow[A] = new MkShow[A] {
+    def show(value: A): String = body(value)
+  }
 
   implicit def genericDerivedShowCoproduct[A, R <: Coproduct](
       implicit repr: LabelledGeneric.Aux[A, R],
-      s: Lazy[Show[R]]): Show[A] =
+      s: Lazy[MkShow[R]]): MkShow[A] =
     instance(a => s.value.show(repr.to(a)))
 }

@@ -18,7 +18,7 @@ package cats.derived
 
 import cats.Eq
 import cats.kernel.laws.OrderLaws
-import eq._, legacy._
+import eq._
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 

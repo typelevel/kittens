@@ -17,34 +17,29 @@
 package cats.derived
 
 import cats.Semigroup
-import export.{ exports, imports, reexports }
 import shapeless._
 
-@reexports[MkSemigroup]
-object semigroup {
-  @imports[Semigroup]
-  object legacy
-}
 
 trait MkSemigroup[T] extends Semigroup[T]
 
-@exports
-object MkSemigroup {
+object MkSemigroup extends MkSemigroupDerivation {
   def apply[T](implicit met: MkSemigroup[T]): MkSemigroup[T] = met
+}
 
-  implicit val hnil: MkSemigroup[HNil] =
+trait MkSemigroupDerivation {
+  implicit val mkSemigroupHnil: MkSemigroup[HNil] =
     new MkSemigroup[HNil] {
       def combine(a: HNil, b: HNil) = HNil
     }
 
-  implicit def hcons[H, T <: HList](implicit semigroupH: Lazy[Semigroup[H]], semigroupT: Lazy[MkSemigroup[T]]): MkSemigroup[H :: T] =
+  implicit def mkSemigroupHcons[H, T <: HList](implicit semigroupH: Lazy[Semigroup[H]], semigroupT: Lazy[MkSemigroup[T]]): MkSemigroup[H :: T] =
     new MkSemigroup[H :: T] {
       def combine(a: H :: T, b: H :: T) =
         semigroupH.value.combine(a.head, b.head) :: semigroupT.value.combine(a.tail, b.tail)
     }
 
 
-  implicit def generic[T, R](
+  implicit def mkSemigroupGeneric[T, R](
                               implicit gen: Generic.Aux[T, R], semigroupR: Lazy[MkSemigroup[R]]): MkSemigroup[T] =
     new MkSemigroup[T] {
       def combine(a: T, b: T) = gen.from(semigroupR.value.combine(gen.to(a), gen.to(b)))

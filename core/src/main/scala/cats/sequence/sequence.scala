@@ -6,8 +6,8 @@
 package cats.sequence
 
 import shapeless._
-import cats.{Functor, Apply}
-import shapeless.ops.hlist.ZipWithKeys
+import cats.{Apply, Functor}
+import shapeless.ops.hlist.{Align, ZipWithKeys}
 import shapeless.ops.record.{Keys, Values}
 
 import scala.annotation.implicitNotFound
@@ -95,18 +95,19 @@ object GenericSequencer extends MkGenericSequencer {
 
 trait MkGenericSequencer {
 
-  implicit def mkGenericSequencer[L <: HList, T, SOut <: HList, FOut, F[_]]
+  implicit def mkGenericSequencer[L <: HList, T, SOut <: HList, FOut, LOut <: HList, F[_]]
   ( implicit
     rs: RecordSequencer.Aux[L, FOut],
-    gen: LabelledGeneric.Aux[T, SOut],
+    gen: LabelledGeneric.Aux[T, LOut],
     eqv: FOut =:= F[SOut],
+    align: Align[SOut, LOut],
     F: Functor[F]
   ): GenericSequencer.Aux[L, T, F[T]] =
     new GenericSequencer[L, T] {
       type Out = F[T]
 
       def apply(in: L): Out = {
-        F.map(rs(in))(gen.from)
+        F.map(rs(in))(l => gen.from(l.align))
       }
     }
 }

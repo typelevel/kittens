@@ -22,9 +22,11 @@ import shapeless._
 
 trait MkEq[T] extends Eq[T]
 
-object MkEq {
+object MkEq extends MkEqDerivation {
   def apply[T](implicit met: MkEq[T]): MkEq[T] = met
+}
 
+trait MkEqDerivation {
   implicit val mkEqHnil: MkEq[HNil] =
     new MkEq[HNil] {
       def eqv(a: HNil, b: HNil) = true

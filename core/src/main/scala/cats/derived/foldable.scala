@@ -27,9 +27,11 @@ trait MkFoldable[F[_]] extends Foldable[F] {
   def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B]
 }
 
-object MkFoldable extends MkFoldable0 {
+object MkFoldable extends MkFoldableDerivation {
   def apply[F[_]](implicit mff: MkFoldable[F]): MkFoldable[F] = mff
+}
 
+trait MkFoldableDerivation extends MkFoldable0 {
   implicit val mkFoldableId: MkFoldable[shapeless.Id] =
     new MkFoldable[shapeless.Id] {
       def foldRight[A, B](fa: A, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = f(fa, lb)

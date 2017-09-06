@@ -19,7 +19,7 @@ package cats.derived
 import cats._, instances.all._, kernel.laws.GroupLaws
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
-import MkMonoid._
+import monoid._
 import TestDefns._
 
 class MonoidTests extends KittensSuite {

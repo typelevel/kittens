@@ -26,11 +26,11 @@ trait MkFunctor[F[_]] extends Functor[F] {
   def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]]
 }
 
-object MkFunctor extends MkFunctor0 {
+object MkFunctor extends MkFunctorDerivation {
   def apply[F[_]](implicit mff: MkFunctor[F]): MkFunctor[F] = mff
 }
 
-trait MkFunctor0 extends MkFunctor1 {
+trait MkFunctorDerivation extends MkFunctor1 {
   // Induction step for products
   implicit def mkFunctorHcons[F[_]](implicit ihc: IsHCons1[F, Functor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {

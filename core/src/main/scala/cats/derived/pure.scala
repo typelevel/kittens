@@ -16,15 +16,17 @@
 
 package cats.derived
 
-import alleycats.{ EmptyK, Pure }
+import alleycats.{EmptyK, Pure}
 import shapeless._
 
 
 trait MkPure[F[_]] extends Pure[F]
 
-object MkPure extends MkPure0 {
+object MkPure extends MkPureDerivation {
   def apply[F[_]](implicit mpf: MkPure[F]): MkPure[F] = mpf
+}
 
+trait MkPureDerivation extends MkPure0 {
   implicit def mkPureHcons0[F[_]](implicit ihf: IsHCons1[F, Pure, EmptyK]): MkPure[F] =
     new MkPure[F] {
       def pure[A](a: A): F[A] = {

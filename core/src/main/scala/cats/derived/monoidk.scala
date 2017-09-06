@@ -21,9 +21,11 @@ import shapeless._
 
 trait MkMonoidK[F[_]] extends MonoidK[F]
 
-object MkMonoidK extends MkMonoidK0 {
+object MkMonoidK extends MkMonoidKDerivation {
   def apply[F[_]](implicit mk: MkMonoidK[F]): MkMonoidK[F] = mk
+}
 
+trait MkMonoidKDerivation extends MkMonoidK0 {
   implicit val mkMonoidKHnil: MkMonoidK[Const[HNil]#λ] =
     new MkMonoidK[Const[HNil]#λ] {
       def empty[A] = HNil

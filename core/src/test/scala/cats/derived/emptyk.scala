@@ -19,7 +19,7 @@ package cats.derived
 import alleycats.EmptyK
 
 import TestDefns._
-import MkEmptyK._
+import emptyK._
 
 class EmptyKTests extends KittensSuite {
 

@@ -29,7 +29,7 @@ class FoldableTests extends KittensSuite {
       if (a === goal) now(true) else lb
     }
 
-  import MkFoldable._
+  import foldable._
   import cats.instances.int._
 
   test("Foldable[IList]") {

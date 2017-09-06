@@ -20,8 +20,8 @@ import cats.Functor
 
 import TestDefns._
 
-import MkFunctor._
-import iterable.legacy._
+import functor._
+import iterable._
 
 class FunctorTests extends KittensSuite {
 

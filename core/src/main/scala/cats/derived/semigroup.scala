@@ -22,9 +22,11 @@ import shapeless._
 
 trait MkSemigroup[T] extends Semigroup[T]
 
-object MkSemigroup {
+object MkSemigroup extends MkSemigroupDerivation {
   def apply[T](implicit met: MkSemigroup[T]): MkSemigroup[T] = met
+}
 
+trait MkSemigroupDerivation {
   implicit val mkSemigroupHnil: MkSemigroup[HNil] =
     new MkSemigroup[HNil] {
       def combine(a: HNil, b: HNil) = HNil

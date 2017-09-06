@@ -22,9 +22,11 @@ import shapeless._
 
 trait MkEmpty[T] extends Empty[T]
 
-object MkEmpty {
+object MkEmpty extends MkEmptyDerivation {
   def apply[T](implicit e: MkEmpty[T]): MkEmpty[T] = e
+}
 
+trait MkEmptyDerivation {
   implicit val mkEmptyHnil: MkEmpty[HNil] =
     new MkEmpty[HNil] {
       def empty = HNil

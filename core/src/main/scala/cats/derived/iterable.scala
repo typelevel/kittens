@@ -20,11 +20,11 @@ import scala.annotation.tailrec
 
 import shapeless._
 
-object iterable {
-  object legacy {
-    implicit def mkIterableLegacy[F[_], A](fa: F[A])(implicit mif: MkIterable[F]): Iterable[A] =
-      mif.iterable(fa)
-  }
+trait IterableDerivationFromMkIterable {
+
+  implicit def mkIterableLegacy[F[_], A](fa: F[A])(implicit mif: MkIterable[F]): Iterable[A] =
+    mif.iterable(fa)
+
 }
 
 trait MkIterable[F[_]] {

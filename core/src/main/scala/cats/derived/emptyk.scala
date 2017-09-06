@@ -22,8 +22,11 @@ import shapeless._
 
 trait MkEmptyK[F[_]] extends EmptyK[F]
 
-object MkEmptyK extends MkEmptyK0 {
+object MkEmptyK extends MkEmptyKDerivation {
   def apply[F[_]](implicit mef: MkEmptyK[F]): MkEmptyK[F] = mef
+}
+
+trait MkEmptyKDerivation extends MkEmptyK0 {
 
   implicit val mkEmptyKHnil: MkEmptyK[Const[HNil]#λ] =
     new MkEmptyK[Const[HNil]#λ] {

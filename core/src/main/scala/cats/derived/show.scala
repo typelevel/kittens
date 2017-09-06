@@ -17,7 +17,9 @@ import shapeless._, labelled._
  */
 trait MkShow[A] extends Show[A]
 
-object MkShow {
+object MkShow extends MkShowDerivation
+
+trait MkShowDerivation {
   private def instance[A](body: A => String) = new Show[A] {
     def show(value: A): String = body(value)
   }

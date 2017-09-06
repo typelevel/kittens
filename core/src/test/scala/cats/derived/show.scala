@@ -4,7 +4,7 @@ import cats.Show
 import cats.instances.all._
 import shapeless.test.illTyped
 
-import MkShow._
+import show._
 import TestDefns._
 
 class ShowTests extends KittensSuite {

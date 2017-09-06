@@ -22,9 +22,11 @@ import shapeless._
 
 trait MkSemigroupK[F[_]] extends SemigroupK[F]
 
-object MkSemigroupK extends MkSemigroupK0 {
+object MkSemigroupK extends MkSemigroupKDerivation {
   def apply[F[_]](implicit sgk: MkSemigroupK[F]): MkSemigroupK[F] = sgk
+}
 
+trait MkSemigroupKDerivation extends MkSemigroupK0 {
   implicit val mkSemigroupKHnil: MkSemigroupK[Const[HNil]#λ] =
     new MkSemigroupK[Const[HNil]#λ] {
       def empty[A] = HNil

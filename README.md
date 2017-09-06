@@ -23,11 +23,11 @@ libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-M11"
 
 ### Auto derived Examples
 
-`Functor` example
+
 
 ```scala
 
-scala> import cats.implicit._, cats.Functor
+scala> import cats.implicit._, cats._
 
 scala> case class Cat[Food](food: Food, foods: List[Food])
 defined class Cat
@@ -35,12 +35,28 @@ defined class Cat
 scala> val cat = Cat(1, List(2, 3))
 cat: Cat[Int] = Cat(1,List(2, 3))
 
+```
+
+#### Derive `Functor`
+
+```scala
 scala> implicit val FC: Functor[Cat] = cats.derive.functor
 FC: cats.Functor[Cat] = cats.derived.MkFunctor2$$anon$4@1c60573f
 
 scala> cat.map(_ + 1)
-res3: Cat[Int] = Cat(2,List(3, 4))
+res0: Cat[Int] = Cat(2,List(3, 4))
 ```
+
+#### Derive Show`
+
+```scala
+scala> implicit val catShow: Show[Cat[Int]] = cats.derive.show
+catShow: cats.Show[Cat[Int]] = cats.derived.MkShow3$$anon$1@7ec30e6b
+
+scala> cat.show
+res1: String = Cat(food = 1, foods = List(2, 3))
+```
+
 
 ### Sequence examples
 Note that to run these examples you need on partial unification to overcome [SI-2712](https://github.com/scala/bug/issues/2712). An easy way to achieve that is to use this [sbt-plugin](https://github.com/fiadliel/sbt-partial-unification), add to your `project/plugs.sbt`:

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
+package derived
 
 import cats.Functor
 

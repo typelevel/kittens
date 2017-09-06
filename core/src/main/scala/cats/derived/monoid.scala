@@ -17,22 +17,16 @@
 package cats.derived
 
 import cats.Monoid
-import export.{ exports, imports, reexports }
 import shapeless._
-
-@reexports[MkEmpty, MkMonoid, MkSemigroup]
-object monoid {
-  @imports[Monoid]
-  object legacy
-}
 
 trait MkMonoid[T] extends Monoid[T]
 
-@exports(Algebraic)
-object MkMonoid {
+object MkMonoid extends MkMonoidDerivation {
   def apply[T](implicit m: MkMonoid[T]): MkMonoid[T] = m
+}
 
-  implicit def algebraic[T](implicit e: Lazy[MkEmpty[T]], sg: Lazy[MkSemigroup[T]])
+trait MkMonoidDerivation {
+  implicit def mkMonoidAlgebraic[T](implicit e: Lazy[MkEmpty[T]], sg: Lazy[MkSemigroup[T]])
     : MkMonoid[T] = new MkMonoid[T] {
       def empty = e.value.empty
       def combine(x: T, y: T) = sg.value.combine(x, y)

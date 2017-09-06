@@ -27,13 +27,13 @@ import TestDefns._
 
 //import monad._ todo: importing causes compiler to hang
 import shapeless.the
+import MkEmptyK._, MkPure._, MkFoldable._
 
 
 
 class MonadTests extends KittensSuite {
 
   test("Monad[CaseClassWOption]") {
-    import emptyk._, pure._, foldable._, foldable.legacy._
 
     val M = MkMonad[CaseClassWOption]
     val p1 = M.pure(1)
@@ -45,7 +45,7 @@ class MonadTests extends KittensSuite {
   }
 
   test("Monad[IList]") {
-    import emptyk._, pure._, consk.exports._, foldable._, foldable.legacy._
+    import consk.exports._
 
     val A = MkMonad[IList]
 

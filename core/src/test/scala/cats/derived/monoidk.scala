@@ -18,7 +18,7 @@ package cats.derived
 
 import cats._, instances.all._, kernel.laws.GroupLaws
 
-import monoidk._, legacy._
+import monoidK._
 
 class MonoidKTests extends KittensSuite {
   import SemigroupKTests.ComplexProduct

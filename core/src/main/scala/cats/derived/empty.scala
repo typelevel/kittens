@@ -17,32 +17,27 @@
 package cats.derived
 
 import alleycats.Empty
-import export.{ exports, imports, reexports }
-import shapeless._
 
-@reexports[MkEmpty]
-object empty {
-  @imports[Empty]
-  object legacy
-}
+import shapeless._
 
 trait MkEmpty[T] extends Empty[T]
 
-@exports
-object MkEmpty {
+object MkEmpty extends MkEmptyDerivation {
   def apply[T](implicit e: MkEmpty[T]): MkEmpty[T] = e
+}
 
-  implicit val hnil: MkEmpty[HNil] =
+trait MkEmptyDerivation {
+  implicit val mkEmptyHnil: MkEmpty[HNil] =
     new MkEmpty[HNil] {
       def empty = HNil
     }
 
-  implicit def hcons[H, T <: HList](implicit eh: Lazy[Empty[H]], et: Lazy[MkEmpty[T]])
+  implicit def mkEmptyHcons[H, T <: HList](implicit eh: Lazy[Empty[H]], et: Lazy[MkEmpty[T]])
     : MkEmpty[H :: T] = new MkEmpty[H :: T] {
       val empty = eh.value.empty :: et.value.empty
     }
 
-  implicit def generic[T, R](implicit gen: Generic.Aux[T, R], er: Lazy[MkEmpty[R]])
+  implicit def mkEmptyGeneric[T, R](implicit gen: Generic.Aux[T, R], er: Lazy[MkEmpty[R]])
     : MkEmpty[T] = new MkEmpty[T] {
       val empty = gen.from(er.value.empty)
     }

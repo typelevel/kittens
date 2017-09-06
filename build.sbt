@@ -26,7 +26,6 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %% "cats-core"      % "1.0.0-MF",
     "org.typelevel"   %% "alleycats-core" % "0.2.0",
     "com.chuusai"     %% "shapeless"      % "2.3.2",
-    "org.typelevel"   %% "export-hook"    % "1.2.0",
     "org.scalatest"   %% "scalatest"      % "3.0.3" % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.13.5" % "test",
     "org.typelevel"   %% "cats-laws"      % "1.0.0-MF" % "test",
@@ -103,9 +102,9 @@ lazy val publishSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
-  publishTo <<= version { (v: String) =>
+  publishTo := {
     val nexus = "https://oss.sonatype.org/"
-    if (v.trim.endsWith("SNAPSHOT"))
+    if (version.value.trim.endsWith("SNAPSHOT"))
       Some("snapshots" at nexus + "content/repositories/snapshots")
     else
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
@@ -141,7 +140,7 @@ lazy val releaseSettings = Seq(
     publishArtifacts,
     setNextVersion,
     commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
+    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
     pushChanges
   )
 )

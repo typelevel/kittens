@@ -20,7 +20,8 @@ import alleycats.Pure, alleycats.std.all._
 import cats.instances.int._
 
 import TestDefns._
-import emptyk._, pure._, foldable._ , foldable.legacy._, functor._ , functor.legacy._, MkApply._, MkApplicative._
+import MkFunctor._, MkApply._, MkApplicative._
+import MkEmptyK._, MkPure._, MkFoldable._
 
 class ApplicativeTests extends KittensSuite {
 

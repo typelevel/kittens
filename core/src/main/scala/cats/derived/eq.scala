@@ -17,37 +17,32 @@
 package cats.derived
 
 import cats.Eq
-import export.{ exports, imports, reexports }
 import shapeless._
 
-@reexports[MkEq]
-object eq {
-  @imports[Eq]
-  object legacy
-}
 
 trait MkEq[T] extends Eq[T]
 
-@exports
-object MkEq {
+object MkEq extends MkEqDerivation {
   def apply[T](implicit met: MkEq[T]): MkEq[T] = met
+}
 
-  implicit val hnil: MkEq[HNil] =
+trait MkEqDerivation {
+  implicit val mkEqHnil: MkEq[HNil] =
     new MkEq[HNil] {
       def eqv(a: HNil, b: HNil) = true
     }
 
-  implicit def hcons[H, T <: HList](implicit eqH: Lazy[Eq[H]], eqT: Lazy[MkEq[T]]): MkEq[H :: T] =
+  implicit def mkEqHcons[H, T <: HList](implicit eqH: Lazy[Eq[H]], eqT: Lazy[MkEq[T]]): MkEq[H :: T] =
     new MkEq[H :: T] {
       def eqv(a: H :: T, b: H :: T) = eqH.value.eqv(a.head, b.head) && eqT.value.eqv(a.tail, b.tail)
     }
 
-  implicit val cnil: MkEq[CNil] =
+  implicit val mkEqCnil: MkEq[CNil] =
     new MkEq[CNil] {
       def eqv(a: CNil, b: CNil) = true
     }
 
-  implicit def ccons[L, R <: Coproduct](implicit eqL: Lazy[Eq[L]], eqR: Lazy[MkEq[R]]): MkEq[L :+: R] =
+  implicit def mkEqCcons[L, R <: Coproduct](implicit eqL: Lazy[Eq[L]], eqR: Lazy[MkEq[R]]): MkEq[L :+: R] =
     new MkEq[L :+: R] {
       def eqv(a: L :+: R, b: L :+: R) = (a, b) match {
         case (Inl(l1), Inl(l2)) => eqL.value.eqv(l1, l2)
@@ -56,7 +51,7 @@ object MkEq {
       }
     }
 
-  implicit def generic[T, R](implicit gen: Generic.Aux[T, R], eqR: Lazy[MkEq[R]]): MkEq[T] =
+  implicit def mkEqGeneric[T, R](implicit gen: Generic.Aux[T, R], eqR: Lazy[MkEq[R]]): MkEq[T] =
     new MkEq[T] {
       def eqv(a: T, b: T) = eqR.value.eqv(gen.to(a), gen.to(b))
     }

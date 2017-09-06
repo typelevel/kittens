@@ -2,19 +2,11 @@ package cats.derived
 
 import cats.{Foldable, Functor, Eval, Apply}, Eval.now
 import alleycats.{EmptyK, Pure}
-import export.{ exports, imports, reexports }
 import shapeless._
-
-// todo doesn't work because an implicit Functor needs to be scope while Apply itself implements Functor
-//@reexports[MkApply]
-//object apply {
-//  @imports[Apply]
-//  object legacy
-//}
 
 trait MkApply[F[_]] extends Apply[F]
 
-@exports
+
 object MkApply extends MkApply0 {
   def apply[F[_]](implicit maf: MkApply[F]): MkApply[F] = maf
 }

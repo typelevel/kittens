@@ -7,8 +7,8 @@ object MkApplicative {
 
   implicit def mkApplicative[F[_]](
     implicit
-    P: Pure[F],
-    A: Apply[F]
+    P: MkPure[F],
+    A: MkApply[F]
  ): Applicative[F] = new Applicative[F] {
     def pure[A](x: A): F[A] = P.pure(x)
 

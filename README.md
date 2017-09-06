@@ -9,12 +9,12 @@ kittens is part of the [Typelevel][typelevel] family of projects. It is an Open 
 License v2, hosted on [github][source]. Binary artefacts will be published to the [Sonatype OSS Repository Hosting
 service][sonatype] and synced to Maven Central.
 
-It is current in a alpha state and available for Scala 2.11 and 2.12, and Scala.js.
+It is available for Scala 2.11 and 2.12, and Scala.js.
 
 To get started with SBT, simply add the following to your build.sbt file:
 
 ```Scala
-libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-M11"
+libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-RC0"
 ```
 
 [![Build Status](https://api.travis-ci.org/milessabin/kittens.png?branch=master)](https://travis-ci.org/milessabin/kittens)

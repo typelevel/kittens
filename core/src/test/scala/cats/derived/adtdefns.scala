@@ -41,15 +41,6 @@ object TestDefns {
   implicit def cogenIList[A:Cogen]: Cogen[IList[A]] =
     Cogen[Seq[A]].contramap(IList.toList)
 
-  sealed trait Snoc[A]
-  final case class SCons[A](init: Snoc[A], last: A) extends Snoc[A]
-  final case class SNil[A]() extends Snoc[A]
-
-  object Snoc {
-    def fromSeq[T](ts: Seq[T]): Snoc[T] =
-      ts.foldLeft(SNil[T](): Snoc[T])(SCons(_, _))
-  }
-
   sealed trait Tree[T]
   final case class Leaf[T](t: T) extends Tree[T]
   final case class Node[T](l: Tree[T], r: Tree[T]) extends Tree[T]

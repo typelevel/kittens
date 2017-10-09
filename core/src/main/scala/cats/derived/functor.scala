@@ -59,7 +59,7 @@ trait MkFunctorDerivation extends MkFunctor1 {
 
 trait MkFunctor1 extends MkFunctor2 {
   // Further induction step for products todo: de-duplicate the code from the above induction with instance in scope
-  implicit def mkFunctorHconsFurtherDerive[F[_]](implicit ihc: IsHCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
+  implicit def mkFunctorHconsFurther[F[_]](implicit ihc: IsHCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import ihc._
@@ -72,7 +72,7 @@ trait MkFunctor1 extends MkFunctor2 {
     }
 
   // Futher induction step for coproducts
-  implicit def mkFunctorCconsFurtherDerive[F[_]](implicit icc: IsCCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
+  implicit def mkFunctorCconsFurther[F[_]](implicit icc: IsCCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
         import icc._

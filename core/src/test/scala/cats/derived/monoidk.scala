@@ -23,6 +23,6 @@ import cats._, instances.all._, kernel.laws.GroupLaws
 class MonoidKTests extends KittensSuite {
   import SemigroupKTests.ComplexProduct
 
-  val m = derive.monoidK[ComplexProduct].algebra[Char]
-  checkAll("MonoidK[ComplexProduct]", GroupLaws[ComplexProduct[Char]].monoid(m))
+  implicit val m = derive.monoidK[ComplexProduct].algebra[Char]
+  checkAll("MonoidK[ComplexProduct]", GroupLaws[ComplexProduct[Char]].monoid)
 }

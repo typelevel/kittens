@@ -26,18 +26,14 @@ object MkSemigroup extends MkSemigroupDerivation {
   def apply[T](implicit met: MkSemigroup[T]): MkSemigroup[T] = met
 }
 
-trait MkSemigroupDerivation {
+private[derived] abstract class MkSemigroupDerivation extends MkSemigroup0{
   implicit val mkSemigroupHnil: MkSemigroup[HNil] =
     new MkSemigroup[HNil] {
       def combine(a: HNil, b: HNil) = HNil
     }
 
-  implicit def mkSemigroupHcons[H, T <: HList](implicit semigroupH: Lazy[Semigroup[H]], semigroupT: Lazy[MkSemigroup[T]]): MkSemigroup[H :: T] =
-    new MkSemigroup[H :: T] {
-      def combine(a: H :: T, b: H :: T) =
-        semigroupH.value.combine(a.head, b.head) :: semigroupT.value.combine(a.tail, b.tail)
-    }
-
+  implicit def mkSemigroupHcons[H, T <: HList](implicit semigroupH: Semigroup[H],
+                                               semigroupT: MkSemigroup[T]): MkSemigroup[H :: T] = mkSemigroupHconsBase
 
   implicit def mkSemigroupGeneric[T, R](
                               implicit gen: Generic.Aux[T, R], semigroupR: Lazy[MkSemigroup[R]]): MkSemigroup[T] =
@@ -45,3 +41,18 @@ trait MkSemigroupDerivation {
       def combine(a: T, b: T) = gen.from(semigroupR.value.combine(gen.to(a), gen.to(b)))
     }
 }
+
+private[derived] abstract class MkSemigroup0 {
+
+  implicit def mkSemigroupHconsFurther[H, T <: HList](implicit semigroupH: Lazy[MkSemigroup[H]], semigroupT: MkSemigroup[T])
+   = mkSemigroupHconsBase(semigroupH.value, semigroupT)
+
+  implicit def mkSemigroupHconsBase[H, T <: HList](implicit semigroupH: Semigroup[H], semigroupT: MkSemigroup[T]):
+    MkSemigroup[H :: T] =
+    new MkSemigroup[H :: T] {
+      def combine(a: H :: T, b: H :: T) =
+        semigroupH.combine(a.head, b.head) :: semigroupT.combine(a.tail, b.tail)
+    }
+
+}
+

@@ -92,4 +92,6 @@ object TestDefns {
 
   implicit val eqFoo: Eq[Foo] =
     Eq.fromUniversalEquals
+
+
 }

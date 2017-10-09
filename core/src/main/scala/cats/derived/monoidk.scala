@@ -21,11 +21,11 @@ import shapeless._
 
 trait MkMonoidK[F[_]] extends MonoidK[F]
 
-object MkMonoidK extends MkMonoidKDerivation {
+object MkMonoidK extends MkMonoidK0 {
   def apply[F[_]](implicit mk: MkMonoidK[F]): MkMonoidK[F] = mk
 }
 
-trait MkMonoidKDerivation extends MkMonoidK0 {
+private[derived] abstract class MkMonoidK0 extends MkMonoidK0b {
   implicit val mkMonoidKHnil: MkMonoidK[Const[HNil]#λ] =
     new MkMonoidK[Const[HNil]#λ] {
       def empty[A] = HNil
@@ -44,7 +44,7 @@ trait MkMonoidKDerivation extends MkMonoidK0 {
     }
 }
 
-trait MkMonoidK0 extends MkMonoidK0a {
+private[derived] abstract class  MkMonoidK0b extends MkMonoidK1 {
   implicit def mkMonoidKHconsFurther[F[_]](implicit ihc: IsHCons1[F, MkMonoidK, MkMonoidK])
   : MkMonoidK[F] = new MkMonoidK[F] {
     import ihc._
@@ -57,7 +57,7 @@ trait MkMonoidK0 extends MkMonoidK0a {
   }
 }
 
-trait MkMonoidK0a extends MkMonoidK1 {
+private[derived] abstract class  MkMonoidK1 extends MkMonoidK1b {
   implicit def mkMonoidKComposed[F[_]](implicit split: Split1[F, MonoidK, Trivial1])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import split._
@@ -67,7 +67,7 @@ trait MkMonoidK0a extends MkMonoidK1 {
     }
 }
 
-trait MkMonoidK1 extends MkMonoidK1a {
+private[derived] abstract class  MkMonoidK1b extends MkMonoidK2 {
   implicit def mkMonoidKComposedFurther[F[_]](implicit split: Split1[F, MkMonoidK, Trivial1])
   : MkMonoidK[F] = new MkMonoidK[F] {
     import split._
@@ -77,7 +77,7 @@ trait MkMonoidK1 extends MkMonoidK1a {
   }
 }
 
-trait MkMonoidK1a extends MkMonoidK2 {
+private[derived] abstract class  MkMonoidK2 extends MkMonoidK2b {
   implicit def mkMonoidKApplicative[F[_]](implicit split: Split1[F, Applicative, MonoidK])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import split._
@@ -87,7 +87,7 @@ trait MkMonoidK1a extends MkMonoidK2 {
     }
 }
 
-trait MkMonoidK2 extends MkMonoidK2a {
+private[derived] abstract class  MkMonoidK2b extends MkMonoidK23 {
   implicit def mkMonoidKApplicativeFurther[F[_]](implicit split: Split1[F, Applicative, MkMonoidK])
   : MkMonoidK[F] = new MkMonoidK[F] {
     import split._
@@ -97,7 +97,7 @@ trait MkMonoidK2 extends MkMonoidK2a {
   }
 }
 
-trait MkMonoidK2a extends MkMonoidK3 {
+private[derived] abstract class  MkMonoidK23 extends MkMonoidK4 {
   implicit def mkMonoidKGeneric[F[_]](implicit gen: Generic1[F, MkMonoidK])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import gen._
@@ -107,7 +107,7 @@ trait MkMonoidK2a extends MkMonoidK3 {
     }
 }
 
-trait MkMonoidK3 {
+private[derived] abstract class  MkMonoidK4 {
   implicit def mkMonoidKConst[T](implicit m: Monoid[T])
     : MkMonoidK[Const[T]#λ] = new MkMonoidK[Const[T]#λ] {
       def empty[A] = m.empty

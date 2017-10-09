@@ -30,7 +30,7 @@ object MkFunctor extends MkFunctorDerivation {
   def apply[F[_]](implicit mff: MkFunctor[F]): MkFunctor[F] = mff
 }
 
-trait MkFunctorDerivation extends MkFunctor1 {
+private[derived] abstract class MkFunctorDerivation extends MkFunctor1 {
   // Induction step for products
   implicit def mkFunctorHcons[F[_]](implicit ihc: IsHCons1[F, Functor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
@@ -57,7 +57,7 @@ trait MkFunctorDerivation extends MkFunctor1 {
     }
 }
 
-trait MkFunctor1 extends MkFunctor2 {
+private[derived] abstract class  MkFunctor1 extends MkFunctor2 {
   // Further induction step for products todo: de-duplicate the code from the above induction with instance in scope
   implicit def mkFunctorHconsFurther[F[_]](implicit ihc: IsHCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
@@ -84,7 +84,7 @@ trait MkFunctor1 extends MkFunctor2 {
     }
 }
 
-trait MkFunctor2 extends MkFunctor3 {
+private[derived] abstract class  MkFunctor2 extends MkFunctor3 {
   implicit def mkFunctorSplit[F[_]](implicit split: Split1[F, Functor, Functor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
@@ -94,7 +94,7 @@ trait MkFunctor2 extends MkFunctor3 {
     }
 }
 
-trait MkFunctor3 extends MkFunctor4 {
+private[derived] abstract class  MkFunctor3 extends MkFunctor4 {
   implicit def mkFunctorGeneric[F[_]](implicit gen: Generic1[F, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
@@ -102,7 +102,7 @@ trait MkFunctor3 extends MkFunctor4 {
     }
 }
 
-trait MkFunctor4 {
+private[derived] abstract class  MkFunctor4 {
   implicit def mkFunctorConstFunctor[T]: MkFunctor[Const[T]#λ] =
     new MkFunctor[Const[T]#λ] {
       def safeMap[A, B](t: T)(f: A => Eval[B]): Eval[T] = now(t)

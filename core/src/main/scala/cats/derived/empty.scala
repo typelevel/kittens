@@ -26,16 +26,24 @@ object MkEmpty extends MkEmptyDerivation {
   def apply[T](implicit e: MkEmpty[T]): MkEmpty[T] = e
 }
 
-trait MkEmptyDerivation {
+private[derived] abstract class  MkEmptyDerivation extends MkEmpty1 {
   implicit val mkEmptyHnil: MkEmpty[HNil] =
     new MkEmpty[HNil] {
       def empty = HNil
     }
 
-  implicit def mkEmptyHcons[H, T <: HList](implicit eh: Lazy[Empty[H]], et: Lazy[MkEmpty[T]])
-    : MkEmpty[H :: T] = new MkEmpty[H :: T] {
-      val empty = eh.value.empty :: et.value.empty
-    }
+  implicit def mkEmptyHconsAvailableInstance[H, T <: HList](implicit eh: Lazy[Empty[H]], et: MkEmpty[T])
+    : MkEmpty[H :: T] = mkEmptyHcons(eh.value, et)
+}
+
+private[derived] abstract class MkEmpty1 {
+  implicit def mkEmptyHconsFurtherDerive[H, T <: HList](implicit eh: Lazy[MkEmpty[H]], et: MkEmpty[T])
+  : MkEmpty[H :: T] = mkEmptyHcons(eh.value, et)
+
+  protected def mkEmptyHcons[H, T <: HList](eh: Empty[H], et: MkEmpty[T])
+  : MkEmpty[H :: T] = new MkEmpty[H :: T] {
+    val empty = eh.empty :: et.empty
+  }
 
   implicit def mkEmptyGeneric[T, R](implicit gen: Generic.Aux[T, R], er: Lazy[MkEmpty[R]])
     : MkEmpty[T] = new MkEmpty[T] {

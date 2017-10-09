@@ -5,6 +5,7 @@ package cats
  * Use cats.derive to explicitly derive instance instead
  */
 package object derived {
+  object empty extends MkEmptyDerivation
   object emptyK extends MkEmptyKDerivation
   object eq extends MkEqDerivation
   object foldable extends MkFoldableDerivation

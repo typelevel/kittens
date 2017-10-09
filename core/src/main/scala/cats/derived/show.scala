@@ -27,25 +27,25 @@ trait MkShowDerivation extends MkShow0 {
     instance(_ => "")
 
   // used when a Show[V] (a member of the coproduct) is readily available
-  implicit def productDerivedShowWhenShowVAvailable[K <: Symbol, V, T <: HList](
+  implicit def productDerivedShow[K <: Symbol, V, T <: HList](
        implicit key: Witness.Aux[K],
-       showV: Lazy[Show[V]],
+       showV: Show[V],
        showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = mkShowCons
 }
 
 trait MkShow0 extends MkShow1 {
-  // used when a Show[V] (a member of the product) needs to be derived
-  implicit def productDerivedShow[K <: Symbol, V, T <: HList](
+
+  implicit def productDerivedShowFurther[K <: Symbol, V, T <: HList](
        implicit key: Witness.Aux[K],
        showV: Lazy[MkShow[V]],
-       showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = mkShowCons
+       showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = mkShowCons(key, showV.value, showT)
 
   def mkShowCons[K <: Symbol, V, T <: HList](
                                             implicit key: Witness.Aux[K],
-                                            showV: Lazy[Show[V]],
+                                            showV: Show[V],
                                             showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = instance { fields =>
     val fieldName = key.value.name
-    val fieldValue = showV.value.show(fields.head)
+    val fieldValue = showV.show(fields.head)
     val nextFields = showT.show(fields.tail)
 
     if (nextFields.isEmpty)
@@ -63,7 +63,7 @@ trait MkShow1 extends MkShow2 {
   // used when a Show[V] (a member of the coproduct) is readily available
   implicit def coproductDerivedShowWhenShowVAvailable[K <: Symbol, V, T <: Coproduct](
      implicit key: Witness.Aux[K],
-     showV: Lazy[Show[V]],
+     showV: Show[V],
      showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = mkShowCoproduct
 
 }
@@ -73,13 +73,13 @@ trait MkShow2 extends MkShow3 {
   implicit def coproductDerivedShow[K <: Symbol, V, T <: Coproduct](
      implicit key: Witness.Aux[K],
      showV: Lazy[MkShow[V]],
-     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = mkShowCoproduct
+     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = mkShowCoproduct(key, showV.value, showT)
 
   def mkShowCoproduct[K <: Symbol, V, T <: Coproduct](
     implicit key: Witness.Aux[K],
-    showV: Lazy[Show[V]],
+    showV: Show[V],
     showT: Lazy[MkShow[T]]): MkShow[FieldType[K, V] :+: T] = instance {
-      case Inl(l) => showV.value.show(l)
+      case Inl(l) => showV.show(l)
       case Inr(r) => showT.value.show(r)
   }
 

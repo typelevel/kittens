@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
+package derived
 
 import cats._, instances.all._, kernel.laws.GroupLaws
 
-import monoidK._
 
 class MonoidKTests extends KittensSuite {
   import SemigroupKTests.ComplexProduct
 
-  val m = MonoidK[ComplexProduct].algebra[Char]
+  val m = derive.monoidK[ComplexProduct].algebra[Char]
   checkAll("MonoidK[ComplexProduct]", GroupLaws[ComplexProduct[Char]].monoid(m))
 }

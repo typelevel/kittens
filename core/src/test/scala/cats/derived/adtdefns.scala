@@ -74,6 +74,22 @@ object TestDefns {
       b <- arbitrary[Option[String]]
     } yield Foo(i, b))
 
+ implicit val arbInner: Arbitrary[Inner] =
+    Arbitrary(for {
+      i <- arbitrary[Int]
+    } yield Inner(i))
+
+ implicit val cogenInner: Cogen[Inner] =
+   Cogen[Int].contramap(_.i)
+
+  implicit val cogenOuter: Cogen[Outer] =
+   Cogen[Inner].contramap(_.in)
+
+ implicit val arbOuter: Arbitrary[Outer] =
+    Arbitrary(for {
+      i <- arbitrary[Inner]
+    } yield Outer(i))
+
   implicit val eqFoo: Eq[Foo] =
     Eq.fromUniversalEquals
 }

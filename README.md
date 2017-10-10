@@ -58,10 +58,10 @@ scala> case class People(name: String, contactInfo: ContactInfo)
 scala> val mike = People("Mike", ContactInfo("202-295-3928", Address("1 Main ST", "Chicago", "IL")))
 scala> import cats._,cats.implicits._
 
-scala> //existing show instance for Address
-scala> implicit val addressShow: Show[Address] = new Show[Address]{ 
+scala> //existing Show instance for Address
+scala> implicit val addressShow: Show[Address] = new Show[Address] {
           def show(a: Address) = s"${a.street}, ${a.city}, ${a.state}" 
-       }  //existing show instance for Address
+       }
 
 scala> implicit val peopleShow = derive.show[People] //auto derive Show for People
 

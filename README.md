@@ -50,12 +50,26 @@ res0: Cat[Int] = Cat(2,List(3, 4))
 #### Derive `Show`
 
 ```scala
-scala> implicit val cs = cats.derive.show[Cat[Int]]
-catShow: cats.Show[Cat[Int]] = cats.derived.MkShow3$$anon$1@7ec30e6b
 
-scala> cat.show
-res1: String = Cat(food = 1, foods = List(2, 3))
+scala> case class Address(street: String, city: String, state: String)
+scala> case class ContactInfo(phoneNumber: String, address: Address)
+scala> case class People(name: String, contactInfo: ContactInfo)
+
+scala> val mike = People("Mike", ContactInfo("202-295-3928", Address("1 Main ST", "Chicago", "IL")))
+scala> import cats._,cats.implicits._
+
+scala> //existing show instance for Address
+scala> implicit val addressShow: Show[Address] = new Show[Address]{ 
+          def show(a: Address) = s"${a.street}, ${a.city}, ${a.state}" 
+       }  //existing show instance for Address
+
+scala> implicit val peopleShow = derive.show[People] //auto derive Show for People
+
+scala> mike.show
+res0: String = People(name = Mike, contactInfo = ContactInfo(phoneNumber = 202-295-3928, address = 1 Main ST, Chicago, IL))
+
 ```
+Note that in this example, the derivation auto derived all referenced class but still respect the existing instance in scope. 
 
 ### Sequence examples
 Note that to run these examples you need on partial unification to overcome [SI-2712](https://github.com/scala/bug/issues/2712). An easy way to achieve that is to use this [sbt-plugin](https://github.com/fiadliel/sbt-partial-unification), add to your `project/plugs.sbt`:

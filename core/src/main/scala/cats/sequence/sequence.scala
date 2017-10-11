@@ -12,7 +12,7 @@ import shapeless.ops.record.{Keys, Values}
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("cannot construct sequencer, make sure that every item of you hlist ${L} is an Apply")
+@implicitNotFound("cannot construct sequencer, make sure that every item of your hlist ${L} is an Apply")
 trait Sequencer[L <: HList]  extends Serializable {
   type F[_]
   type LOut <: HList

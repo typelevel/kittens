@@ -27,7 +27,7 @@ libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-RC0"
 
 ```scala
 
-scala> import cats.implicit._, cats._
+scala> import cats.implicits._, cats._
 
 scala> case class Cat[Food](food: Food, foods: List[Food])
 defined class Cat

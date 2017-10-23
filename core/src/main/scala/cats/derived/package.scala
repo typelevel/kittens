@@ -5,7 +5,7 @@ package cats
  * Use cats.derive to explicitly derive instance instead
  */
 package object derived {
-  @deprecated("use cats.derive.emptemptyy instead", "1.0.0-RC1")
+  @deprecated("use cats.derive.empty instead", "1.0.0-RC1")
   object empty extends MkEmptyDerivation
 
   object emptyK extends MkEmptyKDerivation

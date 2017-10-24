@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
+
+package derived
 
 import cats.Semigroup
-import semigroup._
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Arbitrary, Arbitrary.arbitrary
+import org.scalacheck.Arbitrary
+import Arbitrary.arbitrary
 import TestDefns._
+import cats.kernel.laws.GroupLaws
 
 class SemigroupTests extends KittensSuite {
-  test("for simple product")(check {
-    import cats.instances.all._
-    forAll { (a: Foo, b: Foo) =>
-      Semigroup[Foo].combine(a, b) == Foo(a.i + b.i , Semigroup[Option[String]].combine(a.b,b.b))
-    }
-  })
+  import cats.instances.all._
+  implicit val sFoo = derive.semigroup[Foo]
+  checkAll("Semigroup[Foo]", GroupLaws[Foo].semigroup)
+
+
+  implicit val sOuter = derive.semigroup[Outer]
+
+  implicit val eqOuter: Eq[Outer] = Eq.fromUniversalEquals
+  checkAll("Semigroup[Outer]", GroupLaws[Outer].semigroup)
+
+
 }

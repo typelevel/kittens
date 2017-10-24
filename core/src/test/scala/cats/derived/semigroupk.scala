@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
+package derived
 
 import cats._, instances.all._, kernel.laws.GroupLaws
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
-import semigroupK._
+
 
 class SemigroupKTests extends KittensSuite {
   import SemigroupKTests.ComplexProduct
 
-  val sg = SemigroupK[ComplexProduct].algebra[Char]
+  implicit val sg = derive.semigroupK[ComplexProduct].algebra[Char]
   checkAll("SemigroupK[ComplexProduct]", GroupLaws[ComplexProduct[Char]].semigroup(sg))
 }
 

@@ -16,16 +16,16 @@
 
 package cats.derived
 
-import cats.{ Applicative, Monoid, MonoidK }
+import cats.{Applicative, Monoid, MonoidK}
 import shapeless._
 
 trait MkMonoidK[F[_]] extends MonoidK[F]
 
-object MkMonoidK extends MkMonoidKDerivation {
+object MkMonoidK extends MkMonoidK0 {
   def apply[F[_]](implicit mk: MkMonoidK[F]): MkMonoidK[F] = mk
 }
 
-trait MkMonoidKDerivation extends MkMonoidK0 {
+private[derived] abstract class MkMonoidK0 extends MkMonoidK0b {
   implicit val mkMonoidKHnil: MkMonoidK[Const[HNil]#λ] =
     new MkMonoidK[Const[HNil]#λ] {
       def empty[A] = HNil
@@ -44,7 +44,20 @@ trait MkMonoidKDerivation extends MkMonoidK0 {
     }
 }
 
-trait MkMonoidK0 extends MkMonoidK1 {
+private[derived] abstract class  MkMonoidK0b extends MkMonoidK1 {
+  implicit def mkMonoidKHconsFurther[F[_]](implicit ihc: IsHCons1[F, MkMonoidK, MkMonoidK])
+  : MkMonoidK[F] = new MkMonoidK[F] {
+    import ihc._
+    def empty[A] = pack(fh.empty, ft.empty)
+    def combineK[A](x: F[A], y: F[A]) = {
+      val (hx, tx) = unpack(x)
+      val (hy, ty) = unpack(y)
+      pack(fh.combineK(hx, hy), ft.combineK(tx, ty))
+    }
+  }
+}
+
+private[derived] abstract class  MkMonoidK1 extends MkMonoidK1b {
   implicit def mkMonoidKComposed[F[_]](implicit split: Split1[F, MonoidK, Trivial1])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import split._
@@ -54,7 +67,17 @@ trait MkMonoidK0 extends MkMonoidK1 {
     }
 }
 
-trait MkMonoidK1 extends MkMonoidK2 {
+private[derived] abstract class  MkMonoidK1b extends MkMonoidK2 {
+  implicit def mkMonoidKComposedFurther[F[_]](implicit split: Split1[F, MkMonoidK, Trivial1])
+  : MkMonoidK[F] = new MkMonoidK[F] {
+    import split._
+    def empty[A] = pack(fo.empty[I[A]])
+    def combineK[A](x: F[A], y: F[A]) =
+      pack(fo.combineK(unpack(x), unpack(y)))
+  }
+}
+
+private[derived] abstract class  MkMonoidK2 extends MkMonoidK2b {
   implicit def mkMonoidKApplicative[F[_]](implicit split: Split1[F, Applicative, MonoidK])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import split._
@@ -64,7 +87,17 @@ trait MkMonoidK1 extends MkMonoidK2 {
     }
 }
 
-trait MkMonoidK2 extends MkMonoidK3 {
+private[derived] abstract class  MkMonoidK2b extends MkMonoidK23 {
+  implicit def mkMonoidKApplicativeFurther[F[_]](implicit split: Split1[F, Applicative, MkMonoidK])
+  : MkMonoidK[F] = new MkMonoidK[F] {
+    import split._
+    def empty[A] = pack(fo.pure(fi.empty[A]))
+    def combineK[A](x: F[A], y: F[A]) =
+      pack(fo.map2(unpack(x), unpack(y))(fi.combineK(_, _)))
+  }
+}
+
+private[derived] abstract class  MkMonoidK23 extends MkMonoidK4 {
   implicit def mkMonoidKGeneric[F[_]](implicit gen: Generic1[F, MkMonoidK])
     : MkMonoidK[F] = new MkMonoidK[F] {
       import gen._
@@ -74,7 +107,7 @@ trait MkMonoidK2 extends MkMonoidK3 {
     }
 }
 
-trait MkMonoidK3 {
+private[derived] abstract class  MkMonoidK4 {
   implicit def mkMonoidKConst[T](implicit m: Monoid[T])
     : MkMonoidK[Const[T]#λ] = new MkMonoidK[Const[T]#λ] {
       def empty[A] = m.empty

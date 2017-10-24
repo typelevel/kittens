@@ -1,9 +1,10 @@
 package cats
-import alleycats.{EmptyK, Pure}
+import alleycats.{Empty, EmptyK, Pure}
 import cats.derived._
 
 object derive {
   def functor[F[_]](implicit F: MkFunctor[F]) : Functor[F] = F
+  def empty[A](implicit A: MkEmpty[A]): Empty[A] = A
   def emptyK[F[_]](implicit F: MkEmptyK[F]): EmptyK[F] = F
   def eq[T](implicit F: MkEq[T]): Eq[T] = F
   def foldable[F[_]](implicit F: MkFoldable[F]): Foldable[F] = F

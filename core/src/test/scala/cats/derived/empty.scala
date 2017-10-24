@@ -14,16 +14,37 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
+package derived
 
 import alleycats.Empty
 import cats.instances.all._
 
-import MkEmpty._
 import TestDefns._
 
 class EmptyTests extends KittensSuite {
   test("for simple product") {
+    implicit val E = derive.empty[Foo]
     assert(Empty[Foo].empty == Foo(0, None))
+  }
+
+  test("for nested product") {
+    implicit val E = derive.empty[Outer]
+    assert(Empty[Outer].empty == Outer(Inner(0)))
+  }
+
+  test("for nested product respect existing instance ") {
+    import InnerEmptyInstance._
+    implicit val E = derive.empty[Outer]
+    assert(Empty[Outer].empty == Outer(Inner(1)))
+  }
+}
+
+
+
+object InnerEmptyInstance {
+
+  implicit def emptyInner: Empty[Inner] = new Empty[Inner]{
+    override def empty: Inner = Inner(1)
   }
 }

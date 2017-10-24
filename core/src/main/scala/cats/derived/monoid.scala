@@ -25,7 +25,7 @@ object MkMonoid extends MkMonoidDerivation {
   def apply[T](implicit m: MkMonoid[T]): MkMonoid[T] = m
 }
 
-trait MkMonoidDerivation {
+private[derived] abstract class MkMonoidDerivation {
   implicit def mkMonoidAlgebraic[T](implicit e: Lazy[MkEmpty[T]], sg: Lazy[MkSemigroup[T]])
     : MkMonoid[T] = new MkMonoid[T] {
       def empty = e.value.empty

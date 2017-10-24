@@ -26,6 +26,16 @@ class ShowTests extends KittensSuite {
     assert(nested.show == printedNested)
   }
 
+  test("respect defined instance") {
+    import InnerInstance._
+    implicit val so = derive.show[Outer]
+
+    val printedNested = "Outer(in = Blah)"
+    val nested = Outer(Inner(3))
+
+    assert(nested.show == printedNested)
+  }
+
   test("Recursive ADTs with no type parameters") {
     implicit val st = derive.show[IntTree]
 
@@ -54,4 +64,10 @@ class ShowTests extends KittensSuite {
     illTyped("Show[Tree[Int]]")
   }
 
+}
+
+object InnerInstance {
+  implicit def showInner: Show[Inner] = new Show[Inner]{
+    def show(t: Inner): String = "Blah"
+  }
 }

@@ -22,7 +22,7 @@ import cats.instances.all._
 
 import TestDefns._
 
-class EmptyTests extends KittensSuite {
+class EmptySuite extends KittensSuite {
   test("for simple product") {
     implicit val E = derive.empty[Foo]
     assert(Empty[Foo].empty == Foo(0, None))

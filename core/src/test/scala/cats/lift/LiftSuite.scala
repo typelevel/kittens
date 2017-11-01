@@ -8,7 +8,7 @@ import cats.implicits._
 import cats.derived._
 import org.scalacheck.Prop.forAll
 
-class LiftTests extends KittensSuite {
+class LiftSuite extends KittensSuite {
 
   def foo(x: Int, y: String, z: Float) = s"$x - $y - $z"
   val lifted = Applicative[Option].liftA(foo _)

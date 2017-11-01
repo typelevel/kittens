@@ -16,20 +16,19 @@
 
 package cats.derived
 
-import cats._, instances.all._, kernel.laws.GroupLaws
+import cats._, instances.all._, kernel.laws.discipline._
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
-
 import monoid._
 import TestDefns._
 
-class MonoidTests extends KittensSuite {
-  import MonoidTests._
+class MonoidSuite extends KittensSuite {
+  import MonoidSuite._
 
-  checkAll("Monoid[Foo]", GroupLaws[Foo].monoid)
-  checkAll("Monoid[Rec]", GroupLaws[Rec].monoid)
+  checkAll("Monoid[Foo]", MonoidTests[Foo].monoid)
+  checkAll("Monoid[Rec]", MonoidTests[Rec].monoid)
 }
 
-object MonoidTests {
+object MonoidSuite {
   final case class Rec(i: Int, is: Option[Rec])
   object Rec {
     implicit lazy val arb: Arbitrary[Rec] = {

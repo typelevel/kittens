@@ -14,7 +14,7 @@ import org.scalacheck.Prop.forAll
 import shapeless.record.Record
 import cats.laws.discipline.arbitrary._
 
-class SequenceTests extends KittensSuite {
+class SequenceSuite extends KittensSuite {
 
   test("sequencing Option")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>

@@ -17,19 +17,19 @@
 package cats
 package derived
 
-import cats._, instances.all._, kernel.laws.GroupLaws
+import cats._, instances.all._, kernel.laws.discipline._
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
 
 
-class SemigroupKTests extends KittensSuite {
-  import SemigroupKTests.ComplexProduct
+class SemigroupKSuite extends KittensSuite {
+  import SemigroupKSuite.ComplexProduct
 
   implicit val sg = derive.semigroupK[ComplexProduct].algebra[Char]
-  checkAll("SemigroupK[ComplexProduct]", GroupLaws[ComplexProduct[Char]].semigroup(sg))
+  checkAll("SemigroupK[ComplexProduct]", SemigroupTests[ComplexProduct[Char]].semigroup)
 }
 
-object SemigroupKTests {
+object SemigroupKSuite {
 
   case class ComplexProduct[T](
     lbl: String,          // MkSemigroup.const

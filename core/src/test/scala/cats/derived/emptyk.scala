@@ -21,7 +21,7 @@ import alleycats.EmptyK
 import TestDefns._
 import emptyK._
 
-class EmptyKTests extends KittensSuite {
+class EmptyKSuite extends KittensSuite {
 
   test("EmptyK[Option]") {
     val E = EmptyK[Option]

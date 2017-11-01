@@ -23,7 +23,7 @@ import TestDefns._
 
 import iterable._
 
-class FunctorTests extends KittensSuite {
+class FunctorSuite extends KittensSuite {
 
   test("Functor[GenericAdt] does not conflict with instance in scope") {
     import cats.instances.option._

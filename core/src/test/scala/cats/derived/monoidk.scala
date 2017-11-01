@@ -17,12 +17,12 @@
 package cats
 package derived
 
-import cats._, instances.all._, kernel.laws.GroupLaws
+import cats._, instances.all._, kernel.laws.discipline._
 
 
-class MonoidKTests extends KittensSuite {
-  import SemigroupKTests.ComplexProduct
+class MonoidKSuite extends KittensSuite {
+  import SemigroupKSuite.ComplexProduct
 
   implicit val m = derive.monoidK[ComplexProduct].algebra[Char]
-  checkAll("MonoidK[ComplexProduct]", GroupLaws[ComplexProduct[Char]].monoid)
+  checkAll("MonoidK[ComplexProduct]", MonoidTests[ComplexProduct[Char]].monoid)
 }

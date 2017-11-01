@@ -23,18 +23,18 @@ import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary
 import Arbitrary.arbitrary
 import TestDefns._
-import cats.kernel.laws.GroupLaws
+import cats.kernel.laws.discipline._
 
-class SemigroupTests extends KittensSuite {
+class SemigroupSuite extends KittensSuite {
   import cats.instances.all._
   implicit val sFoo = derive.semigroup[Foo]
-  checkAll("Semigroup[Foo]", GroupLaws[Foo].semigroup)
+  checkAll("Semigroup[Foo]", SemigroupTests[Foo].semigroup)
 
 
   implicit val sOuter = derive.semigroup[Outer]
 
   implicit val eqOuter: Eq[Outer] = Eq.fromUniversalEquals
-  checkAll("Semigroup[Outer]", GroupLaws[Outer].semigroup)
+  checkAll("Semigroup[Outer]", SemigroupTests[Outer].semigroup)
 
 
 }

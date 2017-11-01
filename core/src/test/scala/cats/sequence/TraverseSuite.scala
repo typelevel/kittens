@@ -11,7 +11,7 @@ import cats.derived._
 import org.scalacheck.Prop.forAll
 
 
-class TraverseTests extends KittensSuite {
+class TraverseSuite extends KittensSuite {
 
   def optToValidation[T](opt: Option[T]): Validated[String, T] = Validated.fromOption(opt, "Nothing Here")
 

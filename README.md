@@ -20,6 +20,7 @@ libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-RC1"
 [![Build Status](https://api.travis-ci.org/milessabin/kittens.png?branch=master)](https://travis-ci.org/milessabin/kittens)
 [![Stories in Ready](https://badge.waffle.io/milessabin/kittens.png?label=Ready)](https://waffle.io/milessabin/kittens)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/milessabin/kittens)
+[![Maven Central](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.11.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/kittens_2.11)
 
 ### Auto derived Examples
 

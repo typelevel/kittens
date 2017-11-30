@@ -1,6 +1,5 @@
 package cats.replicateH
 
-import cats.Applicative
 import cats.sequence.Sequencer
 import shapeless._
 import shapeless.ops.hlist._

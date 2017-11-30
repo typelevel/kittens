@@ -23,6 +23,13 @@ class SequenceSuite extends KittensSuite {
     }
   })
 
+  test("sequencing HNil with Option")(
+    // We can't simply use HNil.sequence, because F would be ambiguous.
+    // However, we can explicitly grab the Sequencer for Option and use it.
+    check {
+      implicitly[Sequencer.Aux[HNil, Option, HNil]].apply(HNil) == Some(HNil)
+    })
+
   test("sequencing Either")(check {
     forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
       val expected = (x, y, z) mapN (_ :: _ :: _ :: HNil)

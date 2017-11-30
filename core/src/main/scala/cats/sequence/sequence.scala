@@ -6,7 +6,7 @@
 package cats.sequence
 
 import shapeless._
-import cats.{Apply, Functor}
+import cats.{Applicative, Apply, Functor}
 import shapeless.ops.hlist.{Align, ZipWithKeys}
 import shapeless.ops.record.{Keys, Values}
 
@@ -39,6 +39,15 @@ trait LowPrioritySequencer {
 }
 
 object Sequencer extends LowPrioritySequencer {
+
+  implicit def emptySequencerAux[F0[_], H](implicit F: Applicative[F0])
+    : Aux[HNil, F0, HNil] =
+      new Sequencer[HNil] {
+        type F[X] = F0[X]
+        type LOut = HNil
+
+        def apply(in: HNil): F[HNil] = F.pure(HNil)
+      }
 
   implicit def singleSequencerAux[F0[_], H](implicit F: Functor[F0])
     : Aux[F0[H] :: HNil, F0, H :: HNil] =

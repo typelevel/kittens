@@ -50,6 +50,8 @@ res0: Cat[Int] = Cat(2,List(3, 4))
 
 #### Derive `Show`
 
+Note that this `Show` also print out field names, so it might be more preferable than the default `toString`. 
+
 ```scala
 
 scala> case class Address(street: String, city: String, state: String)

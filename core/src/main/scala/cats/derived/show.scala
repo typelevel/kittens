@@ -85,10 +85,10 @@ trait MkShow2 extends MkShow3 {
 
   implicit def genericDerivedShowProduct[A, R <: HList](
                                                          implicit repr: LabelledGeneric.Aux[A, R],
-                                                         t: Typeable[A],
-                                                         s: MkShow[R]): MkShow[A] = instance { a =>
-    val name = t.describe.takeWhile(_ != '[')
-    val contents = s.show(repr.to(a))
+                                                         t: Lazy[Typeable[A]],
+                                                         s: Lazy[MkShow[R]]): MkShow[A] = instance { a =>
+    val name = t.value.describe.takeWhile(_ != '[')
+    val contents = s.value.show(repr.to(a))
 
     s"$name($contents)"
   }

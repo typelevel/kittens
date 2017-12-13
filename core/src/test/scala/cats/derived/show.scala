@@ -64,6 +64,11 @@ class ShowTests extends KittensSuite {
     illTyped("Show[Tree[Int]]")
   }
 
+  test("Deep type hierarchy") {
+    derive.show[Top]
+    derive.show[People]
+  }
+
 }
 
 object InnerInstance {

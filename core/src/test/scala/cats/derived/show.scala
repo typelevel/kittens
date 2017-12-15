@@ -64,6 +64,23 @@ class ShowTests extends KittensSuite {
     illTyped("Show[Tree[Int]]")
   }
 
+  test("Deep type hierarchy") {
+    derive.show[Top]
+    derive.show[People]
+  }
+
+  test("Deep type hierarchy respect existing instance") {
+    implicit val sAdd : Show[Address] = new Show[Address] {
+      def show(t: Address) = t.street + " " + t.city + " " + t.state
+    }
+    assert(derive.show[People].show(People(name = "Kai",
+      contactInfo = ContactInfo(
+        phoneNumber = "303-123-4567",
+        address = Address(
+          street = "123 1st St",
+          city = "New York", state = "NY") ))) == "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))")
+  }
+
 }
 
 object InnerInstance {

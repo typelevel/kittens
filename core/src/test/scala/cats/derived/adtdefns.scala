@@ -93,5 +93,12 @@ object TestDefns {
   implicit val eqFoo: Eq[Foo] =
     Eq.fromUniversalEquals
 
+  final case class First(value: String)
+  final case class Second(value: String)
+  final case class Middle(first: First, second: Option[Second])
+  final case class Top(middle: Middle)
 
+  case class Address(street: String, city: String, state: String)
+  case class ContactInfo(phoneNumber: String, address: Address)
+  case class People(name: String, contactInfo: ContactInfo)
 }

@@ -5,11 +5,11 @@ import sbt._
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
-  scalaVersion := "2.12.3",
-  crossScalaVersions := Seq( "2.11.11", scalaVersion.value)
+  scalaVersion := "2.12.4",
+  crossScalaVersions := Seq( "2.11.12", scalaVersion.value)
 )
 
-val catsVersion = "1.0.0-RC1"
+val catsVersion = "1.0.0-RC2"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(

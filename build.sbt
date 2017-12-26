@@ -5,7 +5,7 @@ import sbt._
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.12.3",
   crossScalaVersions := Seq( "2.11.12", scalaVersion.value)
 )
 

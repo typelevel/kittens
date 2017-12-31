@@ -5,7 +5,7 @@ import sbt._
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
-  scalaVersion := "2.12.3",
+  scalaVersion := "2.12.4",
   crossScalaVersions := Seq( "2.11.12", scalaVersion.value)
 )
 
@@ -27,7 +27,7 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "org.typelevel"   %% "cats-core"      % catsVersion,
     "org.typelevel"   %% "alleycats-core" % catsVersion,
-    "com.chuusai"     %% "shapeless"      % "2.3.2",
+    "com.chuusai"     %% "shapeless"      % "2.3.3",
     "org.scalatest"   %% "scalatest"      % "3.0.3" % "test",
     "org.scalacheck"  %% "scalacheck"     % "1.13.5" % "test",
     "org.typelevel"   %% "cats-laws"      % catsVersion % "test",

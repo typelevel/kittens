@@ -1,10 +1,10 @@
 package cats
 
-/**
- * For backward compat purpose.
- * Use cats.derive to explicitly derive instance instead
- */
+import shapeless.Lazy
+
+
 package object derived {
+
   @deprecated("use cats.derive.empty instead", "1.0.0-RC1")
   object empty extends MkEmptyDerivation
 
@@ -15,8 +15,11 @@ package object derived {
 
   object foldable extends MkFoldableDerivation
 
-  @deprecated("use cats.derive.functor instead", "1.0.0-RC1")
-  object functor extends MkFunctorDerivation
+  object functor {
+    implicit def derivedFunctor[F[_]](
+      implicit ev: Refute[Functor[F]], F: Lazy[MkFunctor.LowPriority[F]]
+    ): Functor[F] = F.value.instance
+  }
 
   object iterable extends IterableDerivationFromMkIterable
 
@@ -34,6 +37,9 @@ package object derived {
   @deprecated("use cats.derive.semigroupK instead", "1.0.0-RC1")
   object semigroupK extends MkSemigroupK0
 
-  @deprecated("use cats.derive.show instead", "1.0.0-RC1")
-  object show extends MkShowDerivation
+  object show {
+    implicit def derivedShow[A](
+      implicit ev: Refute[Show[A]], A: Lazy[MkShow.LowPriority[A]]
+    ): Show[A] = A.value.instance
+  }
 }

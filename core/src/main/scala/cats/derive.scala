@@ -1,9 +1,12 @@
 package cats
-import alleycats.{Empty, EmptyK, Pure}
+
+import alleycats._
 import cats.derived._
+import shapeless.Lazy
+
 
 object derive {
-  def functor[F[_]](implicit F: MkFunctor[F]) : Functor[F] = F
+  def functor[F[_]](implicit F: Lazy[MkFunctor.LowPriority[F]]): Functor[F] = F.value.instance
   def empty[A](implicit A: MkEmpty[A]): Empty[A] = A
   def emptyK[F[_]](implicit F: MkEmptyK[F]): EmptyK[F] = F
   def eq[T](implicit F: MkEq[T]): Eq[T] = F
@@ -13,8 +16,6 @@ object derive {
   def pure[F[_]](implicit F: MkPure[F]): Pure[F] = F
   def semigroup[T](implicit F: MkSemigroup[T]): Semigroup[T] = F
   def semigroupK[F[_]](implicit F: MkSemigroupK[F]): SemigroupK[F] = F
-  def show[T](implicit F: MkShow[T]): Show[T] = F
-
+  def show[A](implicit A: Lazy[MkShow.LowPriority[A]]): Show[A] = A.value.instance
   def iterable[F[_], A](fa: F[A])(implicit mif: MkIterable[F]): Iterable[A] = mif.iterable(fa)
-
 }

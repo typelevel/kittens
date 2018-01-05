@@ -18,6 +18,7 @@ package cats.derived
 
 import cats.Eq
 import org.scalacheck.{Cogen, Arbitrary}, Arbitrary.arbitrary
+import scala.annotation.tailrec
 
 object TestDefns {
   sealed trait IList[A]
@@ -28,9 +29,13 @@ object TestDefns {
     def fromSeq[T](ts: Seq[T]): IList[T] =
       ts.foldRight(INil[T](): IList[T])(ICons(_, _))
 
-    def toList[T](l: IList[T]): List[T] = l match {
-      case INil() => Nil
-      case ICons(h, t) => h :: toList(t)
+    def toList[T](l: IList[T]): List[T] = {
+      @tailrec def loop(il: IList[T], acc: List[T]): List[T] = il match {
+        case INil() => acc.reverse
+        case ICons(h, t) => loop(t, h :: acc)
+      }
+
+      loop(l, Nil)
     }
 
   }

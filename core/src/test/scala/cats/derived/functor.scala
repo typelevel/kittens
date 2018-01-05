@@ -17,72 +17,164 @@
 package cats
 package derived
 
-import cats.Functor
-
+import cats.instances.all._
+import cats.syntax.FunctorSyntax
+import shapeless.test.illTyped
+import org.scalatest.FreeSpec
 import TestDefns._
 
-import iterable._
 
-class FunctorSuite extends KittensSuite {
+class FunctorSuite extends FreeSpec with FunctorSyntax {
 
-  test("Functor[GenericAdt] does not conflict with instance in scope") {
-    import cats.instances.option._
+  "semi auto derivation" - {
+    "for a generic ADT respects existing instances" in {
+      implicit val F = derive.functor[GenericAdt]
+      val adt: GenericAdt[Int] = GenericAdtCase(Some(2))
+      assert(adt.map(_ + 1) == GenericAdtCase(Some(3)))
+    }
 
-    implicit val F = derive.functor[GenericAdt]
-    val g = GenericAdtCase(Some(2))
-    assert(F.map(g)(_ + 1) == GenericAdtCase(Some(3)))
-  }
+    "for an IList" in {
+      implicit val F = derive.functor[IList]
 
-  test("Functor[IList]") {
-    implicit val F = derive.functor[IList]
+      // some basic sanity checks
+      val lns = (1 to 10).toList
+      val ns = IList.fromSeq(lns)
+      assert(IList.toList(ns.map(_ + 1)) == lns.map(_ + 1))
 
-    // some basic sanity checks
-    val lns = (1 to 10).toList
-    val ns = IList.fromSeq(lns)
-    assert(F.map(ns)(_+1).toList sameElements lns.map(_+1))
+      // more basic checks
+      val lnames = List("Aaron", "Betty", "Calvin", "Deirdre")
+      val names = IList.fromSeq(lnames)
+      assert(IList.toList(names.map(_.length)) == lnames.map(_.length))
 
-    // more basic checks
-    val lnames = List("Aaron", "Betty", "Calvin", "Deirdre")
-    val names = IList.fromSeq(lnames)
-    assert(F.map(names)(_.length) sameElements lnames.map(_.length))
+      // test trampolining
+      val llarge = 1 to 10000
+      val large = IList.fromSeq(llarge)
+      assert(IList.toList(large.map(_ + 1)) == llarge.map(_ + 1))
+    }
 
-    // test trampolining
-    val llarge = 1 to 10000
-    val large = IList.fromSeq(llarge)
-    assert(F.map(large)(_+1).toList sameElements llarge.map(_+1))
-  }
+    "for a Tree" in {
+      implicit val F = derive.functor[Tree]
 
-  test("Functor[Tree]") {
-    implicit val F = derive.functor[Tree]
-
-    val tree: Tree[String] =
-      Node(
-        Leaf("quux"),
+      val tree: Tree[String] =
         Node(
-          Leaf("foo"),
-          Leaf("wibble")
+          Leaf("quux"),
+          Node(
+            Leaf("foo"),
+            Leaf("wibble")
+          )
         )
-      )
 
-    val expected: Tree[Int] =
-      Node(
-        Leaf(4),
+      val expected: Tree[Int] =
         Node(
-          Leaf(3),
-          Leaf(6)
+          Leaf(4),
+          Node(
+            Leaf(3),
+            Leaf(6)
+          )
         )
-      )
 
-    assert(F.map(tree)(_.length) == expected)
+      assert(tree.map(_.length) == expected)
+    }
+
+    "for a nested List[List[_]] (with alias)" in {
+      illTyped("derive.functor[λ[t => List[List[t]]]]")
+      type LList[T] = List[List[T]]
+      val F = derive.functor[LList]
+
+      val l = List(List(1), List(2, 3), List(4, 5, 6), List(), List(7))
+      val expected = List(List(2), List(3, 4), List(5, 6, 7), List(), List(8))
+
+      assert(F.map(l)(_ + 1) == expected)
+    }
+
+    "for a pair on the left (with alias)" in {
+      illTyped("derive.functor[(?, String)]")
+      def F[R]: Functor[(?, R)] = {
+        type Pair[L] = (L, R)
+        derive.functor[Pair]
+      }
+
+      val pair = (42, "shapeless")
+      assert(F[String].map(pair)(_ / 2) == (21, "shapeless"))
+    }
+
+    "for a pair on the right" in {
+      def F[L]: Functor[(L, ?)] = derive.functor[(L, ?)]
+      val pair = (42, "shapeless")
+      assert(F[Int].map(pair)(_.length) == (42, 9))
+    }
   }
 
-  test("Functor[λ[t => List[List[t]]]") {
-    type LList[T] = List[List[T]]
-    implicit val F = derive.functor[LList]
+  "full auto derivation" - {
+    import derived.functor._
 
-    val l = List(List(1), List(2, 3), List(4, 5, 6), List(), List(7))
-    val expected = List(List(2), List(3, 4), List(5, 6, 7), List(), List(8))
+    "for a generic ADT respects existing instances" in {
+      val adt: GenericAdt[Int] = GenericAdtCase(Some(2))
+      assert(adt.map(_ + 1) == GenericAdtCase(Some(3)))
+    }
 
-    assert(F.map(l)(_+1) == expected)
+    "for an IList" in {
+      // some basic sanity checks
+      val lns = (1 to 10).toList
+      val ns = IList.fromSeq(lns)
+      assert(IList.toList(ns.map(_ + 1)) == lns.map(_ + 1))
+
+      // more basic checks
+      val lnames = List("Aaron", "Betty", "Calvin", "Deirdre")
+      val names = IList.fromSeq(lnames)
+      assert(IList.toList(names.map(_.length)) == lnames.map(_.length))
+
+      // test trampolining
+      val llarge = 1 to 10000
+      val large = IList.fromSeq(llarge)
+      assert(IList.toList(large.map(_ + 1)) == llarge.map(_ + 1))
+    }
+
+    "for a Tree" in {
+      val tree: Tree[String] =
+        Node(
+          Leaf("quux"),
+          Node(
+            Leaf("foo"),
+            Leaf("wibble")
+          )
+        )
+
+      val expected: Tree[Int] =
+        Node(
+          Leaf(4),
+          Node(
+            Leaf(3),
+            Leaf(6)
+          )
+        )
+
+      assert(tree.map(_.length) == expected)
+    }
+
+    "for a nested List[List[_]] (with alias)" in {
+      illTyped("Functor[λ[t => List[List[t]]]]")
+      type LList[T] = List[List[T]]
+      val l = List(List(1), List(2, 3), List(4, 5, 6), List(), List(7))
+      val expected = List(List(2), List(3, 4), List(5, 6, 7), List(), List(8))
+      assert(Functor[LList].map(l)(_ + 1) == expected)
+    }
+
+    "for a pair on the left (with alias)" in {
+      illTyped("derive.functor[(?, String)]")
+      def F[R]: Functor[(?, R)] = {
+        type Pair[L] = (L, R)
+        Functor[Pair]
+      }
+
+      val pair = (42, "shapeless")
+      assert(F[String].map(pair)(_ / 2) == (21, "shapeless"))
+    }
+
+    "for a pair on the right" in {
+      def F[L]: Functor[(L, ?)] = Functor[(L, ?)]
+      val pair = (42, "shapeless")
+      assert(F[Int].map(pair)(_.length) == (42, 9))
+    }
   }
 }

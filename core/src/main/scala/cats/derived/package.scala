@@ -19,8 +19,11 @@ package object derived {
 
   object foldable extends MkFoldableDerivation
 
-  @deprecated("use cats.derive.functor instead", "1.0.0-RC1")
-  object functor extends MkFunctorDerivation
+  object functor {
+    implicit def mkFunctor[F[_]](
+      implicit refute: Refute[Functor[F]], functor: MkFunctor[F]
+    ): Functor[F] = functor
+  }
 
   object iterable extends IterableDerivationFromMkIterable
 

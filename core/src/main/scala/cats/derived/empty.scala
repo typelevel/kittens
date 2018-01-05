@@ -14,39 +14,40 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
+package derived
 
 import alleycats.Empty
-
 import shapeless._
+import scala.annotation.implicitNotFound
 
-trait MkEmpty[T] extends Empty[T]
+
+@implicitNotFound("Could not derive an instance of Empty[${A}]")
+trait MkEmpty[A] extends Empty[A]
 
 object MkEmpty extends MkEmptyDerivation {
-  def apply[T](implicit e: MkEmpty[T]): MkEmpty[T] = e
+  def apply[A](implicit empty: MkEmpty[A]): MkEmpty[A] = empty
 }
 
-private[derived] abstract class  MkEmptyDerivation extends MkEmpty1 {
-  implicit val mkEmptyHnil: MkEmpty[HNil] =
-    new MkEmpty[HNil] {
-      def empty = HNil
-    }
+private[derived] abstract class MkEmptyDerivation {
 
-  implicit def mkEmptyHconsAvailableInstance[H, T <: HList](implicit eh: Lazy[Empty[H]], et: MkEmpty[T])
-    : MkEmpty[H :: T] = mkEmptyHcons(eh.value, et)
-}
-
-private[derived] abstract class MkEmpty1 {
-  implicit def mkEmptyHconsFurtherDerive[H, T <: HList](implicit eh: Lazy[MkEmpty[H]], et: MkEmpty[T])
-  : MkEmpty[H :: T] = mkEmptyHcons(eh.value, et)
-
-  protected def mkEmptyHcons[H, T <: HList](eh: Empty[H], et: MkEmpty[T])
-  : MkEmpty[H :: T] = new MkEmpty[H :: T] {
-    val empty = eh.empty :: et.empty
+  protected def instance[A](default: => A): MkEmpty[A] = new MkEmpty[A] {
+    def empty = default
   }
 
-  implicit def mkEmptyGeneric[T, R](implicit gen: Generic.Aux[T, R], er: Lazy[MkEmpty[R]])
-    : MkEmpty[T] = new MkEmpty[T] {
-      val empty = gen.from(er.value.empty)
-    }
+  implicit val mkEmptyHNil: MkEmpty[HNil] =
+    instance(HNil)
+
+  implicit def mkEmptyHCons[H, T <: HList](
+    implicit H: Empty[H] OrElse MkEmpty[H], T: MkEmpty[T]
+  ): MkEmpty[H :: T] = instance {
+    H.unify.empty :: T.empty
+  }
+
+  implicit def mkEmptyGeneric[A, R](
+    implicit gen: Generic.Aux[A, R], R: Lazy[MkEmpty[R]]
+  ): MkEmpty[A] = new MkEmpty[A] {
+    // Cache empty case classes.
+    lazy val empty = gen.from(R.value.empty)
+  }
 }

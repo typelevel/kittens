@@ -1,12 +1,16 @@
 package cats
 
-/**
- * For backward compat purpose.
- * Use cats.derive to explicitly derive instance instead
- */
+import alleycats._
+import shapeless.Refute
+
+/** Full auto derivation of type classes. */
 package object derived {
-  @deprecated("use cats.derive.empty instead", "1.0.0-RC1")
-  object empty extends MkEmptyDerivation
+
+  object empty {
+    implicit def mkEmpty[A](
+      implicit refute: Refute[Empty[A]], empty: MkEmpty[A]
+    ): Empty[A] = empty
+  }
 
   object emptyK extends MkEmptyKDerivation
 

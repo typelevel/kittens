@@ -20,7 +20,7 @@ package derived
 import cats.Functor
 
 import TestDefns._
-
+import derived.functor._
 import iterable._
 
 class FunctorSuite extends KittensSuite {
@@ -28,13 +28,14 @@ class FunctorSuite extends KittensSuite {
   test("Functor[GenericAdt] does not conflict with instance in scope") {
     import cats.instances.option._
 
-    implicit val F = derive.functor[GenericAdt]
+    MkFunctor[GenericAdt]
+    val F = Functor[GenericAdt]
     val g = GenericAdtCase(Some(2))
     assert(F.map(g)(_ + 1) == GenericAdtCase(Some(3)))
   }
 
   test("Functor[IList]") {
-    implicit val F = derive.functor[IList]
+    val F = Functor[IList]
 
     // some basic sanity checks
     val lns = (1 to 10).toList
@@ -53,7 +54,7 @@ class FunctorSuite extends KittensSuite {
   }
 
   test("Functor[Tree]") {
-    implicit val F = derive.functor[Tree]
+    val F = Functor[Tree]
 
     val tree: Tree[String] =
       Node(
@@ -78,7 +79,7 @@ class FunctorSuite extends KittensSuite {
 
   test("Functor[λ[t => List[List[t]]]") {
     type LList[T] = List[List[T]]
-    implicit val F = derive.functor[LList]
+    val F = Functor[LList]
 
     val l = List(List(1), List(2, 3), List(4, 5, 6), List(), List(7))
     val expected = List(List(2), List(3, 4), List(5, 6, 7), List(), List(8))

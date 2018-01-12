@@ -14,105 +14,86 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
+package derived
 
-import cats.{ Eval, Functor }, Eval.now
 import shapeless._
+import scala.annotation.implicitNotFound
 
 
+@implicitNotFound("Could not derive an instance of Functor[${F}]")
 trait MkFunctor[F[_]] extends Functor[F] {
-  def map[A, B](fa: F[A])(f: A => B): F[B] = safeMap(fa){ a => now(f(a)) }.value
-
+  def map[A, B](fa: F[A])(f: A => B) = safeMap(fa)(f.andThen(Eval.now)).value
   def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]]
 }
 
 object MkFunctor extends MkFunctorDerivation {
-  def apply[F[_]](implicit mff: MkFunctor[F]): MkFunctor[F] = mff
+  def apply[F[_]](implicit functor: MkFunctor[F]): MkFunctor[F] = functor
+
+  private[derived] implicit class SafeMap[F[_]](val F: Functor[F]) extends AnyVal {
+    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) = F match {
+      case mk: MkFunctor[F] => mk.safeMap(fa)(f)
+      case _ => Eval.later(F.map(fa)(f.andThen(_.value)))
+    }
+  }
 }
 
 private[derived] abstract class MkFunctorDerivation extends MkFunctor1 {
-  // Induction step for products
-  implicit def mkFunctorHcons[F[_]](implicit ihc: IsHCons1[F, Functor, MkFunctor]): MkFunctor[F] =
-    new MkFunctor[F] {
-      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
-        import ihc._
-        val (hd, tl) = unpack(fa)
-        for {
-          fhd <- fh.safeMap(hd)(f)
-          ftl <- ft.safeMap(tl)(f)
-        } yield pack(fhd, ftl)
-      }
-    }
+  import MkFunctor.SafeMap
 
-  // Induction step for coproducts
-  implicit def mkFunctorCcons[F[_]](implicit icc: IsCCons1[F, Functor, MkFunctor]): MkFunctor[F] =
-    new MkFunctor[F] {
-      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
-        import icc._
-        unpack(fa) match {
-          case Left(hd)  => fh.safeMap(hd)(f).map { fhd => pack(Left(fhd)) }
-          case Right(tl) => ft.safeMap(tl)(f).map { ftl => pack(Right(ftl)) }
-        }
-      }
+  protected type FunctorOrMk[F[_]] = Functor[F] OrElse MkFunctor[F]
+
+  implicit val mkFunctorHNil: MkFunctor[Const[HNil]#λ] = new MkFunctor[Const[HNil]#λ] {
+    def safeMap[A, B](nil: HNil)(f: A => Eval[B]) = Eval.now(nil)
+  }
+
+  implicit val mkFunctorCNil: MkFunctor[Const[CNil]#λ] = new MkFunctor[Const[CNil]#λ] {
+    def safeMap[A, B](nil: CNil)(f: A => Eval[B]) = Eval.now(nil)
+  }
+
+  implicit def mkFunctorHCons[F[_]](
+    implicit F: IsHCons1[F, FunctorOrMk, MkFunctor]
+  ): MkFunctor[F] = new MkFunctor[F] {
+    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) = for {
+      ht <- Eval.now(F.unpack(fa))
+      fh <- F.fh.unify.safeMap(ht._1)(f)
+      ft <- F.ft.safeMap(ht._2)(f)
+    } yield F.pack(fh, ft)
+  }
+
+  implicit def mkFunctorCCons[F[_]](
+    implicit F: IsCCons1[F, FunctorOrMk, MkFunctor]
+  ): MkFunctor[F] = new MkFunctor[F] {
+    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) = F.unpack(fa) match {
+      case Left(hd)  => F.fh.unify.safeMap(hd)(f).map(fh => F.pack(Left(fh)))
+      case Right(tl) => F.ft.safeMap(tl)(f).map(ft => F.pack(Right(ft)))
     }
+  }
+
+  implicit def mkFunctorGeneric[F[_]](
+    implicit F: Generic1[F, MkFunctor]
+  ): MkFunctor[F] = new MkFunctor[F] {
+    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
+      F.fr.safeMap(F.to(fa))(f).map(F.from)
+  }
 }
 
-private[derived] abstract class  MkFunctor1 extends MkFunctor2 {
-  // Further induction step for products todo: de-duplicate the code from the above induction with instance in scope
-  implicit def mkFunctorHconsFurther[F[_]](implicit ihc: IsHCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
-    new MkFunctor[F] {
-      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
-        import ihc._
-        val (hd, tl) = unpack(fa)
-        for {
-          fhd <- fh.safeMap(hd)(f)
-          ftl <- ft.safeMap(tl)(f)
-        } yield pack(fhd, ftl)
-      }
-    }
+private[derived] abstract class MkFunctor1 extends MkFunctor2 {
+  this: MkFunctorDerivation =>
+  import MkFunctor.SafeMap
 
-  // Futher induction step for coproducts
-  implicit def mkFunctorCconsFurther[F[_]](implicit icc: IsCCons1[F, MkFunctor, MkFunctor]): MkFunctor[F] =
-    new MkFunctor[F] {
-      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
-        import icc._
-        unpack(fa) match {
-          case Left(hd)  => fh.safeMap(hd)(f).map { fhd => pack(Left(fhd)) }
-          case Right(tl) => ft.safeMap(tl)(f).map { ftl => pack(Right(ftl)) }
-        }
-      }
-    }
+  implicit def mkFunctorSplit[F[_]](
+    implicit F: Split1[F, FunctorOrMk, FunctorOrMk]
+  ): MkFunctor[F] = new MkFunctor[F] {
+    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
+      F.fo.unify.safeMap(F.unpack(fa))(F.fi.unify.safeMap(_)(f)).map(F.pack)
+  }
 }
 
-private[derived] abstract class  MkFunctor2 extends MkFunctor3 {
-  implicit def mkFunctorSplit[F[_]](implicit split: Split1[F, Functor, Functor]): MkFunctor[F] =
-    new MkFunctor[F] {
-      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] = {
-        import split._
-        fo.safeMap(unpack(fa))(fi.safeMap(_)(f)).map(pack)
-      }
-    }
-}
+private[derived] abstract class MkFunctor2 {
+  this: MkFunctorDerivation =>
 
-private[derived] abstract class  MkFunctor3 extends MkFunctor4 {
-  implicit def mkFunctorGeneric[F[_]](implicit gen: Generic1[F, MkFunctor]): MkFunctor[F] =
-    new MkFunctor[F] {
-      def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
-        gen.fr.safeMap(gen.to(fa))(f).map(gen.from)
-    }
-}
-
-private[derived] abstract class  MkFunctor4 {
-  implicit def mkFunctorConstFunctor[T]: MkFunctor[Const[T]#λ] =
-    new MkFunctor[Const[T]#λ] {
-      def safeMap[A, B](t: T)(f: A => Eval[B]): Eval[T] = now(t)
-    }
-
-  implicit class FunctorSafeMap[F[_]](val ff: Functor[F]) {
-    def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
-      ff match {
-        case mff: MkFunctor[F] => mff.safeMap(fa)(f)
-        case _ => now(ff.map(fa){ a => f(a).value })
-      }
+  implicit def mkFunctorConst[T]: MkFunctor[Const[T]#λ] = new MkFunctor[Const[T]#λ] {
+    def safeMap[A, B](t: T)(f: A => Eval[B]) = Eval.now(t)
   }
 }

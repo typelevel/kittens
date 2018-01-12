@@ -19,32 +19,49 @@ package derived
 
 import alleycats.Empty
 import cats.instances.all._
-
+import org.scalatest.FreeSpec
 import TestDefns._
 
-class EmptySuite extends KittensSuite {
-  test("for simple product") {
-    implicit val E = derive.empty[Foo]
-    assert(Empty[Foo].empty == Foo(0, None))
+
+class EmptySuite extends FreeSpec {
+
+  "semi auto derivation" - {
+    "for simple product" in {
+      implicit val E = derive.empty[Foo]
+      assert(Empty[Foo].empty == Foo(0, None))
+    }
+
+    "for nested product" in {
+      implicit val E = derive.empty[Outer]
+      assert(Empty[Outer].empty == Outer(Inner(0)))
+    }
+
+    "for nested product respects existing instances" in {
+      import EmptySuite._
+      implicit val E = derive.empty[Outer]
+      assert(Empty[Outer].empty == Outer(Inner(1)))
+    }
   }
 
-  test("for nested product") {
-    implicit val E = derive.empty[Outer]
-    assert(Empty[Outer].empty == Outer(Inner(0)))
-  }
+  "full auto derivation" - {
+    import derived.empty._
 
-  test("for nested product respect existing instance ") {
-    import InnerEmptyInstance._
-    implicit val E = derive.empty[Outer]
-    assert(Empty[Outer].empty == Outer(Inner(1)))
+    "for simple product" in {
+      assert(Empty[Foo].empty == Foo(0, None))
+    }
+
+    "for nested product" in {
+      assert(Empty[Outer].empty == Outer(Inner(0)))
+    }
+
+    "for nested product respects existing instances" in {
+      import EmptySuite._
+      assert(Empty[Outer].empty == Outer(Inner(1)))
+    }
   }
 }
 
-
-
-object InnerEmptyInstance {
-
-  implicit def emptyInner: Empty[Inner] = new Empty[Inner]{
-    override def empty: Inner = Inner(1)
-  }
+object EmptySuite {
+  implicit val emptyInner: Empty[Inner] =
+    Empty(Inner(1))
 }

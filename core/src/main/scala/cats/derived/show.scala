@@ -49,9 +49,9 @@ trait MkShow1 extends MkShow2 {
   // used when Show[V] (a member of the coproduct) has to be derived.
   implicit def coproductDerivedShow[K <: Symbol, V, T <: Coproduct](
      implicit key: Witness.Aux[K],
-     showV: Lazy[MkShow[V]],
+     showV: Show[V] OrElse MkShow[V],
      showT: MkShow[T]): MkShow[FieldType[K, V] :+: T] = instance {
-    case Inl(l) => showV.value.show(l)
+    case Inl(l) => showV.unify.show(l)
     case Inr(r) => showT.show(r)
   }
 

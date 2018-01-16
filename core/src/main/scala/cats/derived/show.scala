@@ -21,23 +21,16 @@ object MkShow extends MkShowDerivation {
   def apply[A](implicit show: MkShow[A]): MkShow[A] = show
 }
 
-trait MkShowDerivation extends MkShow0 {
-
-  implicit def fromShow[T](implicit s: Show[T]): MkShow[T] = new MkShow[T] {
-    override def show(t: T): String = s.show(t)
-  }
-}
-
-trait MkShow0 extends MkShow1 {
+trait MkShowDerivation extends MkShow1 {
   implicit val emptyProductDerivedShow: MkShow[HNil] =
     instance(_ => "")
 
   implicit def productDerivedShowFurther[K <: Symbol, V, T <: HList](
        implicit key: Witness.Aux[K],
-       showV: Lazy[MkShow[V]],
+       showV: Show[V] OrElse MkShow[V],
        showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = instance { fields =>
     val fieldName = key.value.name
-    val fieldValue = showV.value.show(fields.head)
+    val fieldValue = showV.unify.show(fields.head)
     val nextFields = showT.show(fields.tail)
 
     if (nextFields.isEmpty)

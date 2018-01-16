@@ -36,6 +36,16 @@ class ShowTests extends KittensSuite {
     assert(nested.show == printedNested)
   }
 
+  test("respect defined instance with full auto derivation") {
+    import InnerInstance._
+    import derived.show._
+
+    val printedNested = "Outer(in = Blah)"
+    val nested = Outer(Inner(3))
+
+    assert(nested.show == printedNested)
+  }
+
   test("Recursive ADTs with no type parameters") {
     implicit val st = derive.show[IntTree]
 
@@ -79,6 +89,19 @@ class ShowTests extends KittensSuite {
         address = Address(
           street = "123 1st St",
           city = "New York", state = "NY") ))) == "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))")
+  }
+
+  test("Deep type hierarchy respect existing instance in full auto derivation") {
+    implicit val sAdd : Show[Address] = new Show[Address] {
+      def show(t: Address) = t.street + " " + t.city + " " + t.state
+    }
+    import derived.show._
+    assert(People(name = "Kai",
+      contactInfo = ContactInfo(
+        phoneNumber = "303-123-4567",
+        address = Address(
+          street = "123 1st St",
+          city = "New York", state = "NY") )).show == "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))")
   }
 
 }

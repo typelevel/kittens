@@ -7,7 +7,7 @@ import shapeless.Refute
 package object derived {
 
   object empty {
-    implicit def mkEmpty[A](
+    implicit def kittensMkEmpty[A](
       implicit refute: Refute[Empty[A]], empty: MkEmpty[A]
     ): Empty[A] = empty
   }
@@ -20,7 +20,7 @@ package object derived {
   object foldable extends MkFoldableDerivation
 
   object functor {
-    implicit def mkFunctor[F[_]](
+    implicit def kittensMkFunctor[F[_]](
       implicit refute: Refute[Functor[F]], functor: MkFunctor[F]
     ): Functor[F] = functor
   }
@@ -41,6 +41,9 @@ package object derived {
   @deprecated("use cats.derive.semigroupK instead", "1.0.0-RC1")
   object semigroupK extends MkSemigroupK0
 
-  @deprecated("use cats.derive.show instead", "1.0.0-RC1")
-  object show extends MkShowDerivation
+  object show {
+    implicit def kittensMkShow[A](
+      implicit refute: Refute[Show[A]], show: MkShow[A]
+    ): Show[A] = show
+  }
 }

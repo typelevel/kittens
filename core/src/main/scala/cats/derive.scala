@@ -2,6 +2,9 @@ package cats
 import alleycats.{Empty, EmptyK, Pure}
 import cats.derived._
 
+/**
+ * Semi-auto derivations.
+ */
 object derive {
   def functor[F[_]](implicit F: MkFunctor[F]) : Functor[F] = F
   def empty[A](implicit A: MkEmpty[A]): Empty[A] = A

@@ -14,8 +14,11 @@ package object derived {
 
   object emptyK extends MkEmptyKDerivation
 
-  @deprecated("use cats.derive.eq instead", "1.0.0-RC1")
-  object eq extends MkEqDerivation
+  object eq {
+    implicit def kittensMkEq[A](
+      implicit refute: Refute[Eq[A]], eq: MkEq[A]
+    ): Eq[A] = eq
+  }
 
   object foldable extends MkFoldableDerivation
 

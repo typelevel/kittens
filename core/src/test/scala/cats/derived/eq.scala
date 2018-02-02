@@ -23,7 +23,7 @@ import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary
 import Arbitrary.arbitrary
 import cats.derived.EqSuite.Foo
-import cats.derived.TestDefns.{IList, Outer}
+import cats.derived.TestDefns.{IList, Large, Outer}
 import eq._
 
 
@@ -58,6 +58,61 @@ class EqSuite extends KittensSuite {
       Eq[Foo].eqv(a, b)
     }
   })
+
+  //compilation time
+  {
+    import cats.instances.all._
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+    implicitly[Eq[Large]]
+  }
 }
 
 object EqSuite {

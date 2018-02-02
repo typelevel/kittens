@@ -1,31 +1,31 @@
 package cats
 
 import alleycats._
-import shapeless.Refute
+import shapeless.{Cached, Refute}
 
 /** Full auto derivation of type classes. */
 package object derived {
 
   object empty {
     implicit def kittensMkEmpty[A](
-      implicit refute: Refute[Empty[A]], empty: MkEmpty[A]
-    ): Empty[A] = empty
+      implicit refute: Refute[Empty[A]], empty: Cached[MkEmpty[A]]
+    ): Empty[A] = empty.value
   }
 
   object emptyK extends MkEmptyKDerivation
 
   object eq {
     implicit def kittensMkEq[A](
-      implicit refute: Refute[Eq[A]], eq: MkEq[A]
-    ): Eq[A] = eq
+      implicit refute: Refute[Eq[A]], eq: Cached[MkEq[A]]
+    ): Eq[A] = eq.value
   }
 
   object foldable extends MkFoldableDerivation
 
   object functor {
     implicit def kittensMkFunctor[F[_]](
-      implicit refute: Refute[Functor[F]], functor: MkFunctor[F]
-    ): Functor[F] = functor
+      implicit refute: Refute[Functor[F]], functor: Cached[MkFunctor[F]]
+    ): Functor[F] = functor.value
   }
 
   object iterable extends IterableDerivationFromMkIterable
@@ -46,7 +46,7 @@ package object derived {
 
   object show {
     implicit def kittensMkShow[A](
-      implicit refute: Refute[Show[A]], show: MkShow[A]
-    ): Show[A] = show
+      implicit refute: Refute[Show[A]], show: Cached[MkShow[A]]
+    ): Show[A] = show.value
   }
 }

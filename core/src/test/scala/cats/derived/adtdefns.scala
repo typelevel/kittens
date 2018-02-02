@@ -106,4 +106,76 @@ object TestDefns {
   case class Address(street: String, city: String, state: String)
   case class ContactInfo(phoneNumber: String, address: Address)
   case class People(name: String, contactInfo: ContactInfo)
+
+  case class Large(
+                  bar1: String,
+                  bar2: Int,
+                  bar3: Boolean,
+                  bar4: Large2,
+                  bar5: List[String],
+                  bar6: Set[Boolean],
+                  bar7: Double,
+                  bar8: Long,
+                  bar9: Char,
+                  bar10: Float,
+                  bar11: String,
+                  bar12: Map[String, Int],
+                  bar13: Boolean,
+                  bar14: Option[String],
+                  bar15: List[String],
+                  bar16: Set[Boolean],
+                  bar17: Double,
+                  bar18: Long,
+                  bar19: Char,
+                  bar20: Float
+                )
+
+  case class Large2(
+                   bar1: String,
+                   bar2: Int,
+                   bar3: Boolean,
+                   bar4: Option[String],
+                   bar5: List[String],
+                   bar6: Set[Boolean],
+                   bar7: Double,
+                   bar8: Long,
+                   bar9: Char,
+                   bar10: Float,
+                   bar11: String,
+                   bar12: Map[String, Int],
+                   bar13: Boolean,
+                   bar14: Option[String],
+                   bar15: List[String],
+                   bar16: Set[Boolean],
+                   bar17: Double,
+                   bar18: Long,
+                   bar19: Char,
+                   bar20: Float,
+                   bar21: String
+                 )
+
+
+  case class Large3(
+                   bar1: String,
+                   bar2: Int,
+                   bar3: Boolean,
+                   bar4: Option[String],
+                   bar5: List[String],
+                   bar6: Set[Boolean],
+                   bar7: Double,
+                   bar8: Long,
+                   bar9: Char,
+                   bar10: Float,
+                   bar11: String,
+                   bar12: Map[String, Int],
+                   bar13: Boolean,
+                   bar14: Option[String],
+                   bar15: List[String],
+                   bar16: Set[Boolean],
+                   bar17: Double,
+                   bar18: Long,
+                   bar19: Char,
+                   bar20: Float,
+                   bar21: String
+                 )
 }

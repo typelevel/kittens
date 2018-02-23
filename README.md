@@ -28,7 +28,7 @@ libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-RC2"
 
 ```scala
 
-scala> import cats.implicits._, cats._
+scala> import cats.implicits._, cats._, cats.derived._
 
 scala> case class Cat[Food](food: Food, foods: List[Food])
 defined class Cat
@@ -41,7 +41,9 @@ cat: Cat[Int] = Cat(1,List(2, 3))
 #### Derive `Functor`
 
 ```scala
-scala> implicit val fc = cats.derive.functor[Cat]
+scala> implicit val fc: Functor[Cat] = { 
+          import auto.functor._           
+          semi.functor }
 FC: cats.Functor[Cat] = cats.derived.MkFunctor2$$anon$4@1c60573f
 
 scala> cat.map(_ + 1)
@@ -59,14 +61,17 @@ scala> case class ContactInfo(phoneNumber: String, address: Address)
 scala> case class People(name: String, contactInfo: ContactInfo)
 
 scala> val mike = People("Mike", ContactInfo("202-295-3928", Address("1 Main ST", "Chicago", "IL")))
-scala> import cats._,cats.implicits._
+
 
 scala> //existing Show instance for Address
 scala> implicit val addressShow: Show[Address] = new Show[Address] {
           def show(a: Address) = s"${a.street}, ${a.city}, ${a.state}" 
        }
 
-scala> implicit val peopleShow = derive.show[People] //auto derive Show for People
+scala> implicit val peopleShow: Show[People] = {
+            import auto.show._
+            semi.show
+        } //auto derive Show for People
 
 scala> mike.show
 res0: String = People(name = Mike, contactInfo = ContactInfo(phoneNumber = 202-295-3928, address = 1 Main ST, Chicago, IL))

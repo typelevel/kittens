@@ -28,13 +28,13 @@ class FunctorSuite extends FreeSpec with FunctorSyntax {
 
   "semi auto derivation" - {
     "for a generic ADT respects existing instances" in {
-      implicit val F = derive.functor[GenericAdt]
+      implicit val F = semi.functor[GenericAdt]
       val adt: GenericAdt[Int] = GenericAdtCase(Some(2))
       assert(adt.map(_ + 1) == GenericAdtCase(Some(3)))
     }
 
     "for an IList" in {
-      implicit val F = derive.functor[IList]
+      implicit val F = semi.functor[IList]
 
       // some basic sanity checks
       val lns = (1 to 10).toList
@@ -53,7 +53,7 @@ class FunctorSuite extends FreeSpec with FunctorSyntax {
     }
 
     "for a Tree" in {
-      implicit val F = derive.functor[Tree]
+      implicit val F = semi.functor[Tree]
 
       val tree: Tree[String] =
         Node(
@@ -79,7 +79,7 @@ class FunctorSuite extends FreeSpec with FunctorSyntax {
     "for a nested List[List[_]] (with alias)" in {
       illTyped("derive.functor[λ[t => List[List[t]]]]")
       type LList[T] = List[List[T]]
-      val F = derive.functor[LList]
+      val F = semi.functor[LList]
 
       val l = List(List(1), List(2, 3), List(4, 5, 6), List(), List(7))
       val expected = List(List(2), List(3, 4), List(5, 6, 7), List(), List(8))
@@ -91,7 +91,7 @@ class FunctorSuite extends FreeSpec with FunctorSyntax {
       illTyped("derive.functor[(?, String)]")
       def F[R]: Functor[(?, R)] = {
         type Pair[L] = (L, R)
-        derive.functor[Pair]
+        semi.functor[Pair]
       }
 
       val pair = (42, "shapeless")
@@ -99,14 +99,14 @@ class FunctorSuite extends FreeSpec with FunctorSyntax {
     }
 
     "for a pair on the right" in {
-      def F[L]: Functor[(L, ?)] = derive.functor[(L, ?)]
+      def F[L]: Functor[(L, ?)] = semi.functor[(L, ?)]
       val pair = (42, "shapeless")
       assert(F[Int].map(pair)(_.length) == (42, 9))
     }
   }
 
   "full auto derivation" - {
-    import derived.functor._
+    import auto.functor._
 
     "for a generic ADT respects existing instances" in {
       val adt: GenericAdt[Int] = GenericAdtCase(Some(2))

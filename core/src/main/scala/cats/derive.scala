@@ -16,7 +16,6 @@ object derive {
   def pure[F[_]](implicit F: MkPure[F]): Pure[F] = F
   def semigroup[T](implicit F: MkSemigroup[T]): Semigroup[T] = F
   def semigroupK[F[_]](implicit F: MkSemigroupK[F]): SemigroupK[F] = F
-  def show[T](implicit F: MkShow[T]): Show[T] = F
 
   def iterable[F[_], A](fa: F[A])(implicit mif: MkIterable[F]): Iterable[A] = mif.iterable(fa)
 

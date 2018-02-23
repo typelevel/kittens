@@ -27,24 +27,24 @@ class EmptySuite extends FreeSpec {
 
   "semi auto derivation" - {
     "for simple product" in {
-      implicit val E = derive.empty[Foo]
+      implicit val E = semi.empty[Foo]
       assert(Empty[Foo].empty == Foo(0, None))
     }
 
     "for nested product" in {
-      implicit val E = derive.empty[Outer]
+      implicit val E = semi.empty[Outer]
       assert(Empty[Outer].empty == Outer(Inner(0)))
     }
 
     "for nested product respects existing instances" in {
       import EmptySuite._
-      implicit val E = derive.empty[Outer]
+      implicit val E = semi.empty[Outer]
       assert(Empty[Outer].empty == Outer(Inner(1)))
     }
   }
 
   "full auto derivation" - {
-    import derived.empty._
+    import auto.empty._
 
     "for simple product" in {
       assert(Empty[Foo].empty == Foo(0, None))

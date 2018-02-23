@@ -178,4 +178,8 @@ object TestDefns {
                    bar20: Float,
                    bar21: String
                  )
+
+  case class ListField(a: String, b: List[ListFieldChild])
+
+  case class ListFieldChild(c: Int)
 }

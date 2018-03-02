@@ -29,7 +29,7 @@ class MonoidSuite extends KittensSuite {
     checkAll("Auto Monoid[Rec]", MonoidTests[Rec].monoid)
   }
   {
-    import semigroup._
+    import auto.semigroup._ //todo: required semigroup in scope
     implicit val mfoo = semi.monoid[Foo]
     implicit val mRec = semi.monoid[Rec]
 

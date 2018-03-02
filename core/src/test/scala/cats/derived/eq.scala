@@ -24,23 +24,28 @@ import org.scalacheck.Arbitrary
 import Arbitrary.arbitrary
 import cats.derived.EqSuite.Foo
 import cats.derived.TestDefns.{IList, Large, Outer}
-import auto.eq._
 
 
 class EqSuite extends KittensSuite {
 
 
   {
+    import auto.eq._
+
     import cats.instances.int._
     checkAll("IList[Int]", EqTests[IList[Int]].eqv)
   }
   {
+
+    import auto.eq._
     import cats.instances.all._
     checkAll("Outer", EqTests[Outer].eqv)
   }
 
 
   test("IList Eq consistent with universal equality")(check {
+
+    import auto.eq._
     import cats.instances.int._
 
     forAll { (a: IList[Int], b: IList[Int]) =>
@@ -48,7 +53,10 @@ class EqSuite extends KittensSuite {
     }
   })
 
+
   test("existing Eq instances in scope are respected")(check {
+
+    import auto.eq._
     import cats.instances.boolean._
 
     // nasty local implicit Eq instances that think that all things are equal
@@ -60,8 +68,25 @@ class EqSuite extends KittensSuite {
     }
   })
 
+  test("semi derivation existing Eq instances in scope are respected ")(check {
+
+
+    import cats.instances.boolean._
+
+    // nasty local implicit Eq instances that think that all things are equal
+    implicit def eqInt: Eq[Int] = Eq.instance((_, _) => true)
+    implicit def eqOption[A]: Eq[Option[A]] = Eq.instance((_, _) => true)
+
+    implicit val eqF: Eq[Foo] = semi.eq
+
+    forAll { (a: Foo, b: Foo) =>
+      Eq[Foo].eqv(a, b)
+    }
+  })
+
   //compilation time
   {
+    import auto.eq._
     import cats.instances.all._
     semi.eq[Large]
   }

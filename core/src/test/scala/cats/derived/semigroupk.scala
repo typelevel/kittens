@@ -24,9 +24,16 @@ import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 
 class SemigroupKSuite extends KittensSuite {
   import SemigroupKSuite.ComplexProduct
+  {
+    implicit val sg = semi.semigroupK[ComplexProduct].algebra[Char]
+    checkAll("SemigroupK[ComplexProduct]", SemigroupTests[ComplexProduct[Char]].semigroup)
 
-  implicit val sg = semi.semigroupK[ComplexProduct].algebra[Char]
-  checkAll("SemigroupK[ComplexProduct]", SemigroupTests[ComplexProduct[Char]].semigroup)
+  }
+  {
+    import auto.semigroupK._
+    implicit val sg = SemigroupK[ComplexProduct].algebra[Char]
+    checkAll("Auto SemigroupK[ComplexProduct]", SemigroupTests[ComplexProduct[Char]].semigroup)
+  }
 }
 
 object SemigroupKSuite {

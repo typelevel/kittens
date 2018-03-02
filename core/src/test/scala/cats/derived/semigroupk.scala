@@ -25,7 +25,7 @@ import org.scalacheck.Arbitrary, Arbitrary.arbitrary
 class SemigroupKSuite extends KittensSuite {
   import SemigroupKSuite.ComplexProduct
 
-  implicit val sg = derive.semigroupK[ComplexProduct].algebra[Char]
+  implicit val sg = semi.semigroupK[ComplexProduct].algebra[Char]
   checkAll("SemigroupK[ComplexProduct]", SemigroupTests[ComplexProduct[Char]].semigroup)
 }
 

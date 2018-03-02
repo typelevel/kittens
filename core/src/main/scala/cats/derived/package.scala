@@ -6,18 +6,8 @@ import shapeless.{Cached, Refute}
 /** Full auto derivation of type classes. */
 package object derived {
 
-   object emptyK extends MkEmptyKDerivation
-
-
-  object foldable extends MkFoldableDerivation
 
   object iterable extends IterableDerivationFromMkIterable
-
-  @deprecated("use cats.derive.monoid instead", "1.0.0-RC1")
-  object monoid extends MkMonoidDerivation
-
-  @deprecated("use cats.derive.monoidK instead", "1.0.0-RC1")
-  object monoidK extends MkMonoidK0
 
   object pure extends MkPureDerivation
 
@@ -47,6 +37,8 @@ package derived {
 
     }
 
+    object emptyK extends MkEmptyKDerivation
+
     object eq {
       implicit def kittensMkEq[A](
                                    implicit refute: Refute[Eq[A]], eq: MkEq[A]
@@ -66,6 +58,16 @@ package derived {
                                      implicit refute: Refute[Show[A]], show: MkShow[A]
                                    ): Show[A] = show
     }
+
+    object monoid extends MkMonoidDerivation
+
+    object monoidK {
+      implicit def kittensMkMonoidK[F[_]](
+                                           implicit refute: Refute[MonoidK[F]], ev: MkMonoidK[F]
+                                         ): MonoidK[F] = ev
+    } 
+
+    object foldable extends MkFoldableDerivation
 
 
   }
@@ -95,6 +97,12 @@ package derived {
     object show {
       implicit def kittensMkshow[A](implicit refute: Refute[Show[A]], ev: Cached[MkShow[A]])
       : Show[A] = ev.value
+    }
+
+    object monoidK {
+      implicit def kittensMkMonoidK[F[_]](
+                                           implicit refute: Refute[MonoidK[F]], ev: Cached[MkMonoidK[F]]
+                                         ): MonoidK[F] = ev.value
     }
 
   }
@@ -134,12 +142,27 @@ package derived {
 
     def empty[A](implicit ev: MkEmpty[A]): Empty[A] = ev
 
+    def emptyK[F[_]](implicit F: MkEmptyK[F]): EmptyK[F] = F
+
     def eq[A](implicit ev: MkEq[A]): Eq[A] = ev
 
     def functor[F[_]](implicit ev: MkFunctor[F]): Functor[F] = ev
 
     def show[A](implicit ev: MkShow[A]): Show[A] = ev
 
+    def foldable[F[_]](implicit F: MkFoldable[F]): Foldable[F] = F
+
+    def monoid[T](implicit T: MkMonoid[T]): Monoid[T] = T
+
+    def monoidK[F[_]](implicit F: MkMonoidK[F]): MonoidK[F] = F
+
+    def pure[F[_]](implicit F: MkPure[F]): Pure[F] = F
+
+    def semigroup[T](implicit F: MkSemigroup[T]): Semigroup[T] = F
+
+    def semigroupK[F[_]](implicit F: MkSemigroupK[F]): SemigroupK[F] = F
+
+    def iterable[F[_], A](fa: F[A])(implicit mif: MkIterable[F]): Iterable[A] = mif.iterable(fa)
   }
 
 }

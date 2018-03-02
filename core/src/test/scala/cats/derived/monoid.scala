@@ -18,14 +18,25 @@ package cats.derived
 
 import cats._, instances.all._, kernel.laws.discipline._
 import org.scalacheck.Arbitrary, Arbitrary.arbitrary
-import monoid._
 import TestDefns._
 
 class MonoidSuite extends KittensSuite {
   import MonoidSuite._
+  {
+    import auto.monoid._
 
-  checkAll("Monoid[Foo]", MonoidTests[Foo].monoid)
-  checkAll("Monoid[Rec]", MonoidTests[Rec].monoid)
+    checkAll("Auto Monoid[Foo]", MonoidTests[Foo].monoid)
+    checkAll("Auto Monoid[Rec]", MonoidTests[Rec].monoid)
+  }
+  {
+    import semigroup._
+    implicit val mfoo = semi.monoid[Foo]
+    implicit val mRec = semi.monoid[Rec]
+
+    checkAll("Monoid[Foo]", MonoidTests[Foo].monoid)
+    checkAll("Monoid[Rec]", MonoidTests[Rec].monoid)
+  }
+
 }
 
 object MonoidSuite {

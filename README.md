@@ -141,7 +141,54 @@ scala> lifted(Some(1), Some("a"), Some(3.2f))
 res0: Option[String] = Some(1 - a - 3.2)
 
 ```
+### Three Modes of Derivation
 
+Kittens provides three objects for derivation `cats.derived.auto`, `cats.derived.cached` and `cats.derived.semi`
+The recommended best practice is going to be a semi auto one:
+```scala
+import cats.derived
+
+implicit val showFoo: Show[Foo] = {
+   import derived.auto.show._
+   derived.semi.show
+}
+```
+This will respect all existing instances even if the field is a type constructor. For example `Show[List[A]]` will use the native `Show` instance for `List` and derived instance for `A`. And it manually caches the result to the `val showFoo`. Downside user will need to write one for every type they directly need a `Show` instance
+
+There are 3 alternatives:
+1. full auto: 
+
+```scala
+import derived.auto.show._
+```
+
+The downside is that it will re-derive for every use site, which multiples the compilation time cost. 
+
+
+2. full auto cached 
+
+```scala 
+import derived.cached.show._
+```
+
+Use this one with caution. It caches the derived instance globally. So it's only applicable if the instance is global in the application. This could be problematic for libraries, which has no control over the uniqueness of an instance on use site. It relies on `shapeless.Cached` which is buggy. Mile Sabin is working on a language level mechanism for instance sharing. 
+
+3. manual semi
+```scala
+implicit val showFoo: Show[Foo] =  derived.semi.show
+```
+It has the same downside as the recommenced semi-auto practice but also suffers from the type constructor field issue. I.e. if a field type is a type constructor whose native instance relies on the instance of the parameter type, this approach will by default derive an instance for the type constructor one. To overcome this user have to first derive the instance for type parameter. 
+e.g.  given
+```scala
+case class Foo(bars: List[Bar])
+case class Bar(a: String)
+```
+Since the `bars` field of `Foo` is a `List` of `Bar` which breaks the chains of auto derivation, you will need to derive `Bar` first and then `Foo`
+```scala
+implicit val showBar: Show[Bar] =  semi.show
+implicit val showFoo: Show[Foo] =  semi.show
+```
+This way the native instance for `Show[List]` would be used.
 
 [cats]: https://github.com/typelevel/cats
 [shapeless]: https://github.com/milessabin/shapeless

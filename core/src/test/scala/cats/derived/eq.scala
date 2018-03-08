@@ -20,43 +20,86 @@ package derived
 import cats.Eq
 import cats.kernel.laws.discipline._
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Arbitrary, Arbitrary.arbitrary
+import org.scalacheck.Arbitrary
+import Arbitrary.arbitrary
+import cats.derived.EqSuite.Foo
+import cats.derived.TestDefns.{IList, Large, Outer}
 
-import TestDefns.{ eqFoo => _, _ }
 
 class EqSuite extends KittensSuite {
 
+
   {
+    import auto.eq._
+
     import cats.instances.int._
-    implicit val eqvIList = derive.eq[IList[Int]]
     checkAll("IList[Int]", EqTests[IList[Int]].eqv)
   }
   {
+
+    import auto.eq._
     import cats.instances.all._
-    implicit val eqvOuter = derive.eq[Outer]
     checkAll("Outer", EqTests[Outer].eqv)
   }
 
 
   test("IList Eq consistent with universal equality")(check {
+
+    import auto.eq._
     import cats.instances.int._
-    implicit val eqvIList = derive.eq[IList[Int]]
 
     forAll { (a: IList[Int], b: IList[Int]) =>
       Eq[IList[Int]].eqv(a, b) == (a == b)
     }
   })
 
+
   test("existing Eq instances in scope are respected")(check {
+
+    import auto.eq._
     import cats.instances.boolean._
 
     // nasty local implicit Eq instances that think that all things are equal
     implicit def eqInt: Eq[Int] = Eq.instance((_, _) => true)
     implicit def eqOption[A]: Eq[Option[A]] = Eq.instance((_, _) => true)
-    implicit val eqvFoo = derive.eq[Foo]
 
     forAll { (a: Foo, b: Foo) =>
       Eq[Foo].eqv(a, b)
     }
   })
+
+  test("semi derivation existing Eq instances in scope are respected ")(check {
+
+
+    import cats.instances.boolean._
+
+    // nasty local implicit Eq instances that think that all things are equal
+    implicit def eqInt: Eq[Int] = Eq.instance((_, _) => true)
+    implicit def eqOption[A]: Eq[Option[A]] = Eq.instance((_, _) => true)
+
+    implicit val eqF: Eq[Foo] = semi.eq
+
+    forAll { (a: Foo, b: Foo) =>
+      Eq[Foo].eqv(a, b)
+    }
+  })
+
+  //compilation time
+  {
+    import auto.eq._
+    import cats.instances.all._
+    semi.eq[Large]
+  }
+}
+
+object EqSuite {
+
+  //redefine this because the one in TestDefn comes with a Eq instance and there is no way to shadow it.
+  final case class Foo(i: Int, b: Option[String])
+  implicit val arbFoo: Arbitrary[Foo] =
+    Arbitrary(for {
+      i <- arbitrary[Int]
+      b <- arbitrary[Option[String]]
+    } yield Foo(i, b))
+
 }

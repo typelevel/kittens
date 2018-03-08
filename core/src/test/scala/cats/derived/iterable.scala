@@ -16,7 +16,7 @@
 
 package cats.derived
 
-import TestDefns._, iterable._
+import TestDefns._, auto.iterable._
 
 class IterableSuite extends KittensSuite {
 

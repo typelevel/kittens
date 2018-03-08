@@ -28,7 +28,7 @@ libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-RC2"
 
 ```scala
 
-scala> import cats.implicits._, cats._
+scala> import cats.implicits._, cats._, cats.derived._
 
 scala> case class Cat[Food](food: Food, foods: List[Food])
 defined class Cat
@@ -41,7 +41,9 @@ cat: Cat[Int] = Cat(1,List(2, 3))
 #### Derive `Functor`
 
 ```scala
-scala> implicit val fc = cats.derive.functor[Cat]
+scala> implicit val fc: Functor[Cat] = { 
+          import auto.functor._           
+          semi.functor }
 FC: cats.Functor[Cat] = cats.derived.MkFunctor2$$anon$4@1c60573f
 
 scala> cat.map(_ + 1)
@@ -59,14 +61,17 @@ scala> case class ContactInfo(phoneNumber: String, address: Address)
 scala> case class People(name: String, contactInfo: ContactInfo)
 
 scala> val mike = People("Mike", ContactInfo("202-295-3928", Address("1 Main ST", "Chicago", "IL")))
-scala> import cats._,cats.implicits._
+
 
 scala> //existing Show instance for Address
 scala> implicit val addressShow: Show[Address] = new Show[Address] {
           def show(a: Address) = s"${a.street}, ${a.city}, ${a.state}" 
        }
 
-scala> implicit val peopleShow = derive.show[People] //auto derive Show for People
+scala> implicit val peopleShow: Show[People] = {
+            import auto.show._
+            semi.show
+        } //auto derive Show for People
 
 scala> mike.show
 res0: String = People(name = Mike, contactInfo = ContactInfo(phoneNumber = 202-295-3928, address = 1 Main ST, Chicago, IL))
@@ -136,7 +141,54 @@ scala> lifted(Some(1), Some("a"), Some(3.2f))
 res0: Option[String] = Some(1 - a - 3.2)
 
 ```
+### Three Modes of Derivation
 
+Kittens provides three objects for derivation `cats.derived.auto`, `cats.derived.cached` and `cats.derived.semi`
+The recommended best practice is going to be a semi auto one:
+```scala
+import cats.derived
+
+implicit val showFoo: Show[Foo] = {
+   import derived.auto.show._
+   derived.semi.show
+}
+```
+This will respect all existing instances even if the field is a type constructor. For example `Show[List[A]]` will use the native `Show` instance for `List` and derived instance for `A`. And it manually caches the result to the `val showFoo`. Downside user will need to write one for every type they directly need a `Show` instance
+
+There are 3 alternatives:
+1. full auto: 
+
+```scala
+import derived.auto.show._
+```
+
+The downside is that it will re-derive for every use site, which multiples the compilation time cost. 
+
+
+2. full auto cached 
+
+```scala 
+import derived.cached.show._
+```
+
+Use this one with caution. It caches the derived instance globally. So it's only applicable if the instance is global in the application. This could be problematic for libraries, which has no control over the uniqueness of an instance on use site. It relies on `shapeless.Cached` which is buggy. Mile Sabin is working on a language level mechanism for instance sharing. 
+
+3. manual semi
+```scala
+implicit val showFoo: Show[Foo] =  derived.semi.show
+```
+It has the same downside as the recommenced semi-auto practice but also suffers from the type constructor field issue. I.e. if a field type is a type constructor whose native instance relies on the instance of the parameter type, this approach will by default derive an instance for the type constructor one. To overcome this user have to first derive the instance for type parameter. 
+e.g.  given
+```scala
+case class Foo(bars: List[Bar])
+case class Bar(a: String)
+```
+Since the `bars` field of `Foo` is a `List` of `Bar` which breaks the chains of auto derivation, you will need to derive `Bar` first and then `Foo`
+```scala
+implicit val showBar: Show[Bar] =  semi.show
+implicit val showFoo: Show[Foo] =  semi.show
+```
+This way the native instance for `Show[List]` would be used.
 
 [cats]: https://github.com/typelevel/cats
 [shapeless]: https://github.com/milessabin/shapeless

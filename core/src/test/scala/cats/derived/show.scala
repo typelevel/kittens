@@ -10,7 +10,7 @@ class ShowTests extends KittensSuite {
 
 
   test("Simple case classes") {
-    implicit val sf = derive.show[Foo]
+    implicit val sf = semi.show[Foo]
     val foo = Foo(42, Option("Hello"))
     val printedFoo = "Foo(i = 42, b = Some(Hello))"
 
@@ -18,7 +18,7 @@ class ShowTests extends KittensSuite {
   }
 
   test("Nested case classes auto derive inner class") {
-    implicit val so = derive.show[Outer]
+    implicit val so = semi.show[Outer]
 
     val nested = Outer(Inner(3))
     val printedNested = "Outer(in = Inner(i = 3))"
@@ -28,7 +28,7 @@ class ShowTests extends KittensSuite {
 
   test("respect defined instance") {
     import InnerInstance._
-    implicit val so = derive.show[Outer]
+    implicit val so = semi.show[Outer]
 
     val printedNested = "Outer(in = Blah)"
     val nested = Outer(Inner(3))
@@ -38,7 +38,7 @@ class ShowTests extends KittensSuite {
 
   test("respect defined instance with full auto derivation") {
     import InnerInstance._
-    import derived.show._
+    import auto.show._
 
     val printedNested = "Outer(in = Blah)"
     val nested = Outer(Inner(3))
@@ -47,7 +47,7 @@ class ShowTests extends KittensSuite {
   }
 
   test("Recursive ADTs with no type parameters") {
-    implicit val st = derive.show[IntTree]
+    implicit val st = semi.show[IntTree]
 
     val tree: IntTree = IntNode(IntLeaf(1), IntNode(IntNode(IntLeaf(2), IntLeaf(3)), IntLeaf(4)))
     val printedTree =
@@ -57,7 +57,11 @@ class ShowTests extends KittensSuite {
   }
 
   test("Non recursive ADTs with type parameters") {
-    implicit val sg = derive.show[GenericAdt[Int]]
+    implicit val sg = {
+      import auto.show._
+      semi.show[GenericAdt[Int]]
+    }
+
     val genAdt: GenericAdt[Int] = GenericAdtCase(Some(1))
     val printedGenAdt = "GenericAdtCase(v = Some(1))"
 
@@ -65,7 +69,7 @@ class ShowTests extends KittensSuite {
   }
 
   test("Recursive ADTs with type parameters are not supported") {
-    import cats.derived.show._
+    import auto.show._
 
     val tree: Tree[Int] = Node(Leaf(1), Node(Node(Leaf(2), Leaf(3)), Leaf(4)))
     val printedTree =
@@ -75,15 +79,15 @@ class ShowTests extends KittensSuite {
   }
 
   test("Deep type hierarchy") {
-    derive.show[Top]
-    derive.show[People]
+    semi.show[Top]
+    semi.show[People]
   }
 
   test("Deep type hierarchy respect existing instance") {
     implicit val sAdd : Show[Address] = new Show[Address] {
       def show(t: Address) = t.street + " " + t.city + " " + t.state
     }
-    assert(derive.show[People].show(People(name = "Kai",
+    assert(semi.show[People].show(People(name = "Kai",
       contactInfo = ContactInfo(
         phoneNumber = "303-123-4567",
         address = Address(
@@ -95,7 +99,7 @@ class ShowTests extends KittensSuite {
     implicit val sAdd : Show[Address] = new Show[Address] {
       def show(t: Address) = t.street + " " + t.city + " " + t.state
     }
-    import derived.show._
+    import auto.show._
     assert(People(name = "Kai",
       contactInfo = ContactInfo(
         phoneNumber = "303-123-4567",
@@ -104,7 +108,28 @@ class ShowTests extends KittensSuite {
           city = "New York", state = "NY") )).show == "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))")
   }
 
+
+
+  test("semi-auto derivation respect existing instance") {
+    implicit val lifShow: Show[ListField] = {
+      import auto.show._
+      semi.show
+    }
+
+    assert(ListField(a ="a", b = List(ListFieldChild(c = 1))).show ==
+     "ListField(a = a, b = List(ListFieldChild(c = 1)))"
+    )
+  }
+  test("auto derivation respect existing instance") {
+    import auto.show._
+
+    assert(ListField(a ="a", b = List(ListFieldChild(c = 1))).show ==
+     "ListField(a = a, b = List(ListFieldChild(c = 1)))"
+    )
+  }
+
 }
+
 
 object InnerInstance {
   implicit def showInner: Show[Inner] = new Show[Inner]{

@@ -22,7 +22,15 @@ import cats._, instances.all._, kernel.laws.discipline._
 
 class MonoidKSuite extends KittensSuite {
   import SemigroupKSuite.ComplexProduct
+  {
+    implicit val m = semi.monoidK[ComplexProduct].algebra[Char]
+    checkAll("MonoidK[ComplexProduct]", MonoidTests[ComplexProduct[Char]].monoid)
 
-  implicit val m = derive.monoidK[ComplexProduct].algebra[Char]
-  checkAll("MonoidK[ComplexProduct]", MonoidTests[ComplexProduct[Char]].monoid)
+  }
+  {
+    import auto.monoidK._
+    implicit val m = MonoidK[ComplexProduct].algebra[Char]
+    checkAll("AutoMonoidK[ComplexProduct]", MonoidTests[ComplexProduct[Char]].monoid)
+
+  }
 }

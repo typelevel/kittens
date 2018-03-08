@@ -27,11 +27,21 @@ import cats.kernel.laws.discipline._
 
 class SemigroupSuite extends KittensSuite {
   import cats.instances.all._
-  implicit val sFoo = derive.semigroup[Foo]
-  checkAll("Semigroup[Foo]", SemigroupTests[Foo].semigroup)
+
+  {
+    implicit val sFoo = semi.semigroup[Foo]
+    checkAll("Semigroup[Foo]", SemigroupTests[Foo].semigroup)
+
+  }
+
+  {
+    import auto.semigroup._
+    checkAll("Auto Semigroup[Foo]", SemigroupTests[Foo].semigroup)
+
+  }
 
 
-  implicit val sOuter = derive.semigroup[Outer]
+  implicit val sOuter = semi.semigroup[Outer]
 
   implicit val eqOuter: Eq[Outer] = Eq.fromUniversalEquals
   checkAll("Semigroup[Outer]", SemigroupTests[Outer].semigroup)

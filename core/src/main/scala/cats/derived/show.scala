@@ -25,7 +25,7 @@ trait MkShowDerivation extends MkShow1 {
   implicit val emptyProductDerivedShow: MkShow[HNil] =
     instance(_ => "")
 
-  implicit def productDerivedShowFurther[K <: Symbol, V, T <: HList](
+  implicit def productDerivedShow[K <: Symbol, V, T <: HList](
        implicit key: Witness.Aux[K],
        showV: Show[V] OrElse MkShow[V],
        showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = instance { fields =>

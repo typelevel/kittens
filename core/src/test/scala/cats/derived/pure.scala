@@ -21,7 +21,7 @@ import cats._
 import shapeless.{ Id => _, _ }
 
 import TestDefns._
-import pure._, emptyK._
+import auto.pure._, auto.emptyK._
 
 class PureSuite extends KittensSuite {
 

@@ -98,6 +98,12 @@ object cached {
 
   }
 
+  object partialOrder {
+    implicit def kittensMkPartialOrder[A](
+       implicit refute: Refute[PartialOrder[A]], ord: Cached[MkPartialOrder[A]])
+    : PartialOrder[A] = ord.value
+  }
+
   object functor {
     implicit def kittensMkFunctor[F[_]](
       implicit refute: Refute[Functor[F]], ev: Cached[MkFunctor[F]])

@@ -30,6 +30,12 @@ object auto {
     ): Eq[A] = eq
   }
 
+  object partialOrder {
+    implicit def kittensMkPartialOrder[A](
+      implicit refute: Refute[PartialOrder[A]], ord: MkPartialOrder[A]
+    ): PartialOrder[A] = ord
+  }
+
 
   object functor {
     implicit def kittensMkFunctor[F[_]](
@@ -90,6 +96,12 @@ object cached {
       implicit refute: Refute[Eq[A]], ev: Cached[MkEq[A]])
     : Eq[A] = ev.value
 
+  }
+
+  object partialOrder {
+    implicit def kittensMkPartialOrder[A](
+       implicit refute: Refute[PartialOrder[A]], ord: Cached[MkPartialOrder[A]])
+    : PartialOrder[A] = ord.value
   }
 
   object functor {
@@ -163,6 +175,8 @@ object semi {
   def emptyK[F[_]](implicit F: MkEmptyK[F]): EmptyK[F] = F
 
   def eq[A](implicit ev: MkEq[A]): Eq[A] = ev
+
+  def partialOrder[A](implicit ev: MkPartialOrder[A]): MkPartialOrder[A] = ev
 
   def functor[F[_]](implicit ev: MkFunctor[F]): Functor[F] = ev
 

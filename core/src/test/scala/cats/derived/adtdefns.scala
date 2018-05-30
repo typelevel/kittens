@@ -79,7 +79,10 @@ object TestDefns {
       b <- arbitrary[Option[String]]
     } yield Foo(i, b))
 
- implicit val arbInner: Arbitrary[Inner] =
+
+  implicit val cogenFoo: Cogen[Foo] = Cogen.cogenInt.contramap[Foo](_.i)
+
+  implicit val arbInner: Arbitrary[Inner] =
     Arbitrary(for {
       i <- arbitrary[Int]
     } yield Inner(i))

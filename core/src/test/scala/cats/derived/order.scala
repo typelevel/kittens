@@ -17,83 +17,80 @@
 package cats
 package derived
 
-import cats.derived.PartialOrderSuite.Large
+import cats.derived.OrderSuite.Large
+import cats.derived.TestDefns.{Foo, Outer}
 import cats.kernel.laws.discipline._
-import cats.derived.TestDefns.{Foo, IList, Outer}
 import org.scalacheck.Prop.forAll
 
 
-class PartialOrderSuite extends KittensSuite {
+class OrderSuite extends KittensSuite {
   {
-    import auto.partialOrder._
-    import cats.instances.int._
-    checkAll("IList[Int]", PartialOrderTests[IList[Int]].partialOrder)
-  }
-  {
-
-    import auto.partialOrder._
+    import auto.order._
     import cats.instances.all._
 
-    checkAll("Outer", PartialOrderTests[Outer].partialOrder)
+    checkAll("Foo", OrderTests[Foo].order)
+  }
+  {
+
+    import auto.order._
+    import cats.instances.all._
+
+    checkAll("Outer", OrderTests[Outer].order)
   }
 
 
-  test("IList PartialOrder consistent with universal equality")(check {
+  test("Foo Order consistent with universal equality")(check {
 
-    import auto.partialOrder._
-    import cats.instances.int._
+    import auto.order._
+    import cats.instances.all._
 
-    forAll { (a: IList[Int], b: IList[Int]) =>
-      PartialOrder[IList[Int]].eqv(a, b) == (a == b)
+    forAll { (a: Foo, b: Foo) =>
+      Order[Foo].eqv(a, b) == (a == b)
     }
   })
 
 
-  test("existing PartialOrder instances in scope are respected")(check {
+  test("existing Order instances in scope are respected")(check {
 
-    import auto.partialOrder._
-    import cats.instances.double._
+    import auto.order._
 
-    // nasty local implicit PartialOrder instances that think that all things are equal
-    implicit def partialOrderInt: PartialOrder[Int] = PartialOrder.from((_, _) => 0)
-    implicit def partialOrderOption[A]: PartialOrder[Option[A]] = PartialOrder.from((_, _) => 0)
+    // nasty local implicit Order instances that think that all things are equal
+    implicit val orderInt: Order[Int] = Order.from((_, _) => 0)
+    implicit def orderOption[A]: Order[Option[A]] = Order.from((_, _) => 0)
 
     forAll { (a: Foo, b: Foo) =>
-      PartialOrder[Foo].partialCompare(a, b) == 0
+      Order[Foo].compare(a, b) == 0
     }
   })
 
-  test("semi derivation existing PartialOrder instances in scope are respected ")(check {
+  test("semi derivation existing Order instances in scope are respected ")(check {
+    // nasty local implicit Order instances that think that all things are equal
+    implicit val orderInt: Order[Int] = Order.from((_, _) => 0)
+    implicit def orderOption[A]: Order[Option[A]] = Order.from((_, _) => 0)
 
-    import cats.instances.double._
-
-    // nasty local implicit PartialOrder instances that think that all things are equal
-    implicit def partialOrderInt: PartialOrder[Int] = PartialOrder.from((_, _) => 0)
-    implicit def partialOrderOption[A]: PartialOrder[Option[A]] = PartialOrder.from((_, _) => 0)
-
-    implicit val eqF: PartialOrder[Foo] = semi.partialOrder
+    implicit val ordF: Order[Foo] = semi.order
 
     forAll { (a: Foo, b: Foo) =>
-      PartialOrder[Foo].partialCompare(a, b) == 0
+      Order[Foo].compare(a, b) == 0
     }
   })
 
   //compilation time
   {
-    import auto.partialOrder._
+    import auto.order._
     import cats.instances.all._
-    semi.partialOrder[Large]
+    semi.order[Large]
   }
 }
 
-object PartialOrderSuite{
+object OrderSuite{
   case class Large(
                     bar1: String,
                     bar2: Int,
                     bar3: Boolean,
                     bar4: Large2,
                     bar5: List[String],
-                    bar6: Set[Boolean],
+                    bar6: Boolean,
                     bar7: Double,
                     bar8: Long,
                     bar9: Char,
@@ -103,7 +100,7 @@ object PartialOrderSuite{
                     bar13: Boolean,
                     bar14: Option[String],
                     bar15: List[String],
-                    bar16: Set[Boolean],
+                    bar16: Boolean,
                     bar17: Double,
                     bar18: Long,
                     bar19: Char,
@@ -116,7 +113,7 @@ object PartialOrderSuite{
                      bar3: Boolean,
                      bar4: Option[String],
                      bar5: List[String],
-                     bar6: Set[Boolean],
+                     bar6: Boolean,
                      bar7: Double,
                      bar8: Long,
                      bar9: Char,
@@ -126,7 +123,7 @@ object PartialOrderSuite{
                      bar13: Boolean,
                      bar14: Option[String],
                      bar15: List[String],
-                     bar16: Set[Boolean],
+                     bar16: Boolean,
                      bar17: Double,
                      bar18: Long,
                      bar19: Char,

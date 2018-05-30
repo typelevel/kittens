@@ -52,7 +52,7 @@ class PartialOrderSuite extends KittensSuite {
   test("existing PartialOrder instances in scope are respected")(check {
 
     import auto.partialOrder._
-    import cats.instances.double._
+    import cats.instances.string._ //so that Option instance could be derived
 
     // nasty local implicit PartialOrder instances that think that all things are equal
     implicit def partialOrderInt: PartialOrder[Int] = PartialOrder.from((_, _) => 0)
@@ -65,7 +65,7 @@ class PartialOrderSuite extends KittensSuite {
 
   test("semi derivation existing PartialOrder instances in scope are respected ")(check {
 
-    import cats.instances.double._
+    import cats.instances.string._ //so that Option instance could be derived
 
     // nasty local implicit PartialOrder instances that think that all things are equal
     implicit def partialOrderInt: PartialOrder[Int] = PartialOrder.from((_, _) => 0)

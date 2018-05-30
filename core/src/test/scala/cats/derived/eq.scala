@@ -56,7 +56,7 @@ class EqSuite extends KittensSuite {
   test("existing Eq instances in scope are respected")(check {
 
     import auto.eq._
-    import cats.instances.boolean._
+    import cats.instances.string._ //so that Option instance could be derived
 
     // nasty local implicit Eq instances that think that all things are equal
     implicit def eqInt: Eq[Int] = Eq.instance((_, _) => true)
@@ -69,8 +69,7 @@ class EqSuite extends KittensSuite {
 
   test("semi derivation existing Eq instances in scope are respected ")(check {
 
-
-    import cats.instances.boolean._
+    import cats.instances.string._ //so that Option instance could be derived_
 
     // nasty local implicit Eq instances that think that all things are equal
     implicit def eqInt: Eq[Int] = Eq.instance((_, _) => true)

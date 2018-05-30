@@ -53,7 +53,7 @@ class OrderSuite extends KittensSuite {
   test("existing Order instances in scope are respected")(check {
 
     import auto.order._
-
+    import cats.instances.string._ //so that Option instance could be derived
     // nasty local implicit Order instances that think that all things are equal
     implicit val orderInt: Order[Int] = Order.from((_, _) => 0)
     implicit def orderOption[A]: Order[Option[A]] = Order.from((_, _) => 0)
@@ -64,6 +64,7 @@ class OrderSuite extends KittensSuite {
   })
 
   test("semi derivation existing Order instances in scope are respected ")(check {
+    import cats.instances.string._ //so that Option instance could be derived
     // nasty local implicit Order instances that think that all things are equal
     implicit val orderInt: Order[Int] = Order.from((_, _) => 0)
     implicit def orderOption[A]: Order[Option[A]] = Order.from((_, _) => 0)

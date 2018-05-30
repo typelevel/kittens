@@ -17,7 +17,6 @@
 package cats
 package derived
 
-import cats.Eq
 import cats.kernel.laws.discipline._
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary

@@ -17,7 +17,7 @@
 package cats
 package derived
 
-import cats.derived.TestDefns.{Foo, Large4, Outer}
+import cats.derived.TestDefns.{Foo, Inner, Large4, Outer}
 import cats.kernel.laws.discipline._
 import org.scalacheck.Prop.forAll
 
@@ -54,23 +54,22 @@ class OrderSuite extends KittensSuite {
     import auto.order._
 
     // nasty local implicit Order instances that think that all things are equal
-    implicit val orderInt: Order[Int] = Order.from((_, _) => 0)
-    implicit def orderOption[A]: Order[Option[A]] = Order.from((_, _) => 0)
+    implicit def orderInner: Order[Inner] = Order.from((_, _) => 0)
 
-    forAll { (a: Foo, b: Foo) =>
-      Order[Foo].compare(a, b) == 0
+    forAll { (a: Outer, b: Outer) =>
+      Order[Outer].compare(a, b) == 0
     }
   })
 
   test("semi derivation existing Order instances in scope are respected ")(check {
+
     // nasty local implicit Order instances that think that all things are equal
-    implicit val orderInt: Order[Int] = Order.from((_, _) => 0)
-    implicit def orderOption[A]: Order[Option[A]] = Order.from((_, _) => 0)
+    implicit def orderInner: Order[Inner] = Order.from((_, _) => 0)
 
-    implicit val ordF: Order[Foo] = semi.order
+    implicit val ordF: Order[Outer] = semi.order
 
-    forAll { (a: Foo, b: Foo) =>
-      Order[Foo].compare(a, b) == 0
+    forAll { (a: Outer, b: Outer) =>
+      Order[Outer].compare(a, b) == 0
     }
   })
 

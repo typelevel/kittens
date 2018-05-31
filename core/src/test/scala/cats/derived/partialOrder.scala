@@ -18,7 +18,7 @@ package cats
 package derived
 
 import cats.kernel.laws.discipline._
-import cats.derived.TestDefns.{Foo, IList, Large4, Outer}
+import cats.derived.TestDefns.{Foo, IList, Inner, Large4, Outer}
 import org.scalacheck.Prop.forAll
 
 
@@ -47,36 +47,30 @@ class PartialOrderSuite extends KittensSuite {
     }
   })
 
-
   test("existing PartialOrder instances in scope are respected")(check {
 
     import auto.partialOrder._
-    import cats.instances.double._
 
     // nasty local implicit PartialOrder instances that think that all things are equal
-    implicit def partialOrderInt: PartialOrder[Int] = PartialOrder.from((_, _) => 0)
-    implicit def partialOrderOption[A]: PartialOrder[Option[A]] = PartialOrder.from((_, _) => 0)
+    implicit def partialOrderInner: PartialOrder[Inner] = PartialOrder.from((_, _) => 0)
 
-    forAll { (a: Foo, b: Foo) =>
-      PartialOrder[Foo].partialCompare(a, b) == 0
+    forAll { (a: Outer, b: Outer) =>
+      PartialOrder[Outer].partialCompare(a, b) == 0
     }
   })
 
   test("semi derivation existing PartialOrder instances in scope are respected ")(check {
 
-    import cats.instances.double._
-
     // nasty local implicit PartialOrder instances that think that all things are equal
-    implicit def partialOrderInt: PartialOrder[Int] = PartialOrder.from((_, _) => 0)
-    implicit def partialOrderOption[A]: PartialOrder[Option[A]] = PartialOrder.from((_, _) => 0)
+    implicit def partialOrderInner: PartialOrder[Inner] = PartialOrder.from((_, _) => 0)
 
-    implicit val eqF: PartialOrder[Foo] = semi.partialOrder
+    implicit val ordF: PartialOrder[Outer] = semi.partialOrder
 
-    forAll { (a: Foo, b: Foo) =>
-      PartialOrder[Foo].partialCompare(a, b) == 0
+    forAll { (a: Outer, b: Outer) =>
+      PartialOrder[Outer].partialCompare(a, b) == 0
     }
   })
-
+  
   //compilation time
   {
     import auto.partialOrder._

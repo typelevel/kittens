@@ -49,7 +49,7 @@ class OrderSuite extends KittensSuite {
   })
 
 
-  test("existing Order instances in scope are respected")(check {
+  test("existing Order instances in scope are respected for auto derivation")(check {
 
     import auto.order._
 
@@ -61,7 +61,7 @@ class OrderSuite extends KittensSuite {
     }
   })
 
-  test("semi derivation existing Order instances in scope are respected ")(check {
+  test("existing Order instances in scope are respected for semi derivation")(check {
 
     // nasty local implicit Order instances that think that all things are equal
     implicit def orderInner: Order[Inner] = Order.from((_, _) => 0)

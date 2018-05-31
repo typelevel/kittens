@@ -47,7 +47,7 @@ class PartialOrderSuite extends KittensSuite {
     }
   })
 
-  test("existing PartialOrder instances in scope are respected")(check {
+  test("existing PartialOrder instances in scope are respected for auto derivation")(check {
 
     import auto.partialOrder._
 
@@ -59,7 +59,7 @@ class PartialOrderSuite extends KittensSuite {
     }
   })
 
-  test("semi derivation existing PartialOrder instances in scope are respected ")(check {
+  test("existing PartialOrder instances in scope are respected for semi derivation")(check {
 
     // nasty local implicit PartialOrder instances that think that all things are equal
     implicit def partialOrderInner: PartialOrder[Inner] = PartialOrder.from((_, _) => 0)

@@ -53,10 +53,9 @@ class EqSuite extends KittensSuite {
   })
 
 
-  test("existing Eq instances in scope are respected")(check {
+  test("existing Eq instances in scope are respected for auto derivation")(check {
 
     import auto.eq._
-
 
     // nasty local implicit Eq instances that think that all things are equal
     implicit def eqInner: Eq[Inner] = Eq.instance((_, _) => true)
@@ -66,7 +65,7 @@ class EqSuite extends KittensSuite {
     }
   })
 
-  test("semi derivation existing Eq instances in scope are respected ")(check {
+  test("existing Eq instances in scope are respected for semi derivation")(check {
 
 
     // nasty local implicit Eq instances that think that all things are equal

@@ -17,8 +17,7 @@
 package cats
 package derived
 
-import cats.derived.OrderSuite.Large
-import cats.derived.TestDefns.{Foo, Outer}
+import cats.derived.TestDefns.{Foo, Large4, Outer}
 import cats.kernel.laws.discipline._
 import org.scalacheck.Prop.forAll
 
@@ -79,55 +78,6 @@ class OrderSuite extends KittensSuite {
   {
     import auto.order._
     import cats.instances.all._
-    semi.order[Large]
+    semi.order[Large4]
   }
-}
-
-object OrderSuite{
-  case class Large(
-                    bar1: String,
-                    bar2: Int,
-                    bar3: Boolean,
-                    bar4: Large2,
-                    bar5: List[String],
-                    bar6: Boolean,
-                    bar7: Double,
-                    bar8: Long,
-                    bar9: Char,
-                    bar10: Float,
-                    bar11: String,
-                    bar12: String,
-                    bar13: Boolean,
-                    bar14: Option[String],
-                    bar15: List[String],
-                    bar16: Boolean,
-                    bar17: Double,
-                    bar18: Long,
-                    bar19: Char,
-                    bar20: Float
-                  )
-
-  case class Large2(
-                     bar1: String,
-                     bar2: Int,
-                     bar3: Boolean,
-                     bar4: Option[String],
-                     bar5: List[String],
-                     bar6: Boolean,
-                     bar7: Double,
-                     bar8: Long,
-                     bar9: Char,
-                     bar10: Float,
-                     bar11: String,
-                     bar12: Int,
-                     bar13: Boolean,
-                     bar14: Option[String],
-                     bar15: List[String],
-                     bar16: Boolean,
-                     bar17: Double,
-                     bar18: Long,
-                     bar19: Char,
-                     bar20: Float,
-                     bar21: String
-                   )
 }

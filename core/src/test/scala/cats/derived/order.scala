@@ -17,7 +17,7 @@
 package cats
 package derived
 
-import cats.derived.TestDefns.{Foo, Inner, Large4, Outer}
+import cats.derived.TestDefns.{Foo, IList, Inner, Large4, Outer}
 import cats.kernel.laws.discipline._
 import org.scalacheck.Prop.forAll
 
@@ -27,7 +27,7 @@ class OrderSuite extends KittensSuite {
     import auto.order._
     import cats.instances.all._
 
-    checkAll("Foo", OrderTests[Foo].order)
+    checkAll("IList", OrderTests[IList[Int]].order)
   }
   {
 

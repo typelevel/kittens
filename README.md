@@ -14,7 +14,7 @@ It is available for Scala 2.11 and 2.12, and Scala.js.
 To get started with SBT, simply add the following to your build.sbt file:
 
 ```Scala
-libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0-RC3"
+libraryDependencies += "org.typelevel" %% "kittens" % "1.0.0"
 ```
 
 [![Build Status](https://api.travis-ci.org/milessabin/kittens.png?branch=master)](https://travis-ci.org/milessabin/kittens)
@@ -77,14 +77,15 @@ scala> mike.show
 res0: String = People(name = Mike, contactInfo = ContactInfo(phoneNumber = 202-295-3928, address = 1 Main ST, Chicago, IL))
 
 ```
-Note that in this example, the derivation auto derived all referenced class but still respect the existing instance in scope. 
+Note that in this example, the derivation auto derived all referenced class but still respect the existing instance in scope. For fully auto derivation please see the [three modes of derivation below](#three-modes-of-derivation). 
 
 ### Sequence examples
-Note that to run these examples you need on partial unification to overcome [SI-2712](https://github.com/scala/bug/issues/2712). An easy way to achieve that is to use this [sbt-plugin](https://github.com/fiadliel/sbt-partial-unification), add to your `project/plugs.sbt`:
+Note that to run these examples you need partial unification enabled on scalac. For **Scala 2.11.9 or later** you should add the following to your `build.sbt`:
 
-```Scala
-addSbtPlugin("org.lyranthe.sbt" % "partial-unification" % "1.1.0")
+```scala
+scalacOptions += "-Ypartial-unification"
 ```
+
 
 
 ```scala

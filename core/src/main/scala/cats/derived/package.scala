@@ -42,6 +42,12 @@ object auto {
     ): Order[A] = ord
   }
 
+  object hash {
+    implicit def kittensMkHash[A](
+      implicit refute: Refute[Hash[A]], hash: MkHash[A]
+    ): Hash[A] = hash
+  }
+
   object functor {
     implicit def kittensMkFunctor[F[_]](
       implicit refute: Refute[Functor[F]], ev: MkFunctor[F]
@@ -113,6 +119,12 @@ object cached {
     implicit def kittensMkOrder[A](
        implicit refute: Refute[Order[A]], ord: Cached[MkOrder[A]])
     : Order[A] = ord.value
+  }
+
+  object hash {
+    implicit def kittensMkHash[A](
+       implicit refute: Refute[Hash[A]], ord: Cached[MkHash[A]])
+    : Hash[A] = ord.value
   }
 
   object functor {
@@ -190,6 +202,8 @@ object semi {
   def partialOrder[A](implicit ev: MkPartialOrder[A]): PartialOrder[A] = ev
 
   def order[A](implicit ev: MkOrder[A]): Order[A] = ev
+  
+  def hash[A](implicit ev: MkHash[A]): Hash[A] = ev
 
   def functor[F[_]](implicit ev: MkFunctor[F]): Functor[F] = ev
 

@@ -22,7 +22,7 @@ import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary
 import Arbitrary.arbitrary
 import cats.derived.EqSuite.Foo
-import cats.derived.TestDefns.{IList, Large, Outer}
+import cats.derived.TestDefns.{IList, Inner, Large, Outer}
 
 
 class EqSuite extends KittensSuite {
@@ -53,33 +53,28 @@ class EqSuite extends KittensSuite {
   })
 
 
-  test("existing Eq instances in scope are respected")(check {
+  test("existing Eq instances in scope are respected for auto derivation")(check {
 
     import auto.eq._
-    import cats.instances.boolean._
 
     // nasty local implicit Eq instances that think that all things are equal
-    implicit def eqInt: Eq[Int] = Eq.instance((_, _) => true)
-    implicit def eqOption[A]: Eq[Option[A]] = Eq.instance((_, _) => true)
+    implicit def eqInner: Eq[Inner] = Eq.instance((_, _) => true)
 
-    forAll { (a: Foo, b: Foo) =>
-      Eq[Foo].eqv(a, b)
+    forAll { (a: Outer, b: Outer) =>
+      Eq[Outer].eqv(a, b)
     }
   })
 
-  test("semi derivation existing Eq instances in scope are respected ")(check {
+  test("existing Eq instances in scope are respected for semi derivation")(check {
 
-
-    import cats.instances.boolean._
 
     // nasty local implicit Eq instances that think that all things are equal
-    implicit def eqInt: Eq[Int] = Eq.instance((_, _) => true)
-    implicit def eqOption[A]: Eq[Option[A]] = Eq.instance((_, _) => true)
+    implicit def eqInner: Eq[Inner] = Eq.instance((_, _) => true)
 
-    implicit val eqF: Eq[Foo] = semi.eq
+    implicit val eqOuter: Eq[Outer] = semi.eq
 
-    forAll { (a: Foo, b: Foo) =>
-      Eq[Foo].eqv(a, b)
+    forAll { (a: Outer, b: Outer) =>
+      Eq[Outer].eqv(a, b)
     }
   })
 

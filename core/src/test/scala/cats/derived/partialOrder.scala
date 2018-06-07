@@ -17,9 +17,8 @@
 package cats
 package derived
 
-import cats.derived.PartialOrderSuite.Large
 import cats.kernel.laws.discipline._
-import cats.derived.TestDefns.{Foo, IList, Outer}
+import cats.derived.TestDefns.{Foo, IList, Inner, Large4, Outer}
 import org.scalacheck.Prop.forAll
 
 
@@ -48,89 +47,35 @@ class PartialOrderSuite extends KittensSuite {
     }
   })
 
-
-  test("existing PartialOrder instances in scope are respected")(check {
+  test("existing PartialOrder instances in scope are respected for auto derivation")(check {
 
     import auto.partialOrder._
-    import cats.instances.double._
 
     // nasty local implicit PartialOrder instances that think that all things are equal
-    implicit def partialOrderInt: PartialOrder[Int] = PartialOrder.from((_, _) => 0)
-    implicit def partialOrderOption[A]: PartialOrder[Option[A]] = PartialOrder.from((_, _) => 0)
+    implicit def partialOrderInner: PartialOrder[Inner] = PartialOrder.from((_, _) => 0)
 
-    forAll { (a: Foo, b: Foo) =>
-      PartialOrder[Foo].partialCompare(a, b) == 0
+    forAll { (a: Outer, b: Outer) =>
+      PartialOrder[Outer].partialCompare(a, b) == 0
     }
   })
 
-  test("semi derivation existing PartialOrder instances in scope are respected ")(check {
-
-    import cats.instances.double._
+  test("existing PartialOrder instances in scope are respected for semi derivation")(check {
 
     // nasty local implicit PartialOrder instances that think that all things are equal
-    implicit def partialOrderInt: PartialOrder[Int] = PartialOrder.from((_, _) => 0)
-    implicit def partialOrderOption[A]: PartialOrder[Option[A]] = PartialOrder.from((_, _) => 0)
+    implicit def partialOrderInner: PartialOrder[Inner] = PartialOrder.from((_, _) => 0)
 
-    implicit val eqF: PartialOrder[Foo] = semi.partialOrder
+    implicit val ordF: PartialOrder[Outer] = semi.partialOrder
 
-    forAll { (a: Foo, b: Foo) =>
-      PartialOrder[Foo].partialCompare(a, b) == 0
+    forAll { (a: Outer, b: Outer) =>
+      PartialOrder[Outer].partialCompare(a, b) == 0
     }
   })
-
+  
   //compilation time
   {
     import auto.partialOrder._
     import cats.instances.all._
-    semi.partialOrder[Large]
+
+    semi.partialOrder[Large4]
   }
-}
-
-object PartialOrderSuite{
-  case class Large(
-                    bar1: String,
-                    bar2: Int,
-                    bar3: Boolean,
-                    bar4: Large2,
-                    bar5: List[String],
-                    bar6: Set[Boolean],
-                    bar7: Double,
-                    bar8: Long,
-                    bar9: Char,
-                    bar10: Float,
-                    bar11: String,
-                    bar12: String,
-                    bar13: Boolean,
-                    bar14: Option[String],
-                    bar15: List[String],
-                    bar16: Set[Boolean],
-                    bar17: Double,
-                    bar18: Long,
-                    bar19: Char,
-                    bar20: Float
-                  )
-
-  case class Large2(
-                     bar1: String,
-                     bar2: Int,
-                     bar3: Boolean,
-                     bar4: Option[String],
-                     bar5: List[String],
-                     bar6: Set[Boolean],
-                     bar7: Double,
-                     bar8: Long,
-                     bar9: Char,
-                     bar10: Float,
-                     bar11: String,
-                     bar12: Int,
-                     bar13: Boolean,
-                     bar14: Option[String],
-                     bar15: List[String],
-                     bar16: Set[Boolean],
-                     bar17: Double,
-                     bar18: Long,
-                     bar19: Char,
-                     bar20: Float,
-                     bar21: String
-                   )
 }

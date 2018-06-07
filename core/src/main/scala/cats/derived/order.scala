@@ -42,6 +42,22 @@ private[derived] abstract class MkOrderDerivation {
           ordT.compare(x.tail, y.tail)
       }
     }
+  implicit val mkOrderCnil: MkOrder[CNil] =
+    new MkOrder[CNil] {
+      override def compare(x: CNil, y: CNil): Int = 0
+    }
+
+  implicit def mkOrderCcons[L, R <: Coproduct](implicit ordL: Order[L] OrElse MkOrder[L], ordR: MkOrder[R]): MkOrder[L :+: R] = new MkOrder[L :+: R] {
+    def compare(x: L :+: R, y: L :+: R): Int = {
+      (x, y) match {
+        case (Inl(l1), Inl(l2)) => ordL.unify.compare(l1, l2)
+        case (Inr(r1), Inr(r2)) => ordR.compare(r1, r2)
+        case (Inl(_), Inr(_)) => -1
+        case _  => 1
+      }
+    }
+  }
+
 
   implicit def mkOrderGeneric[T, R](implicit gen: Generic.Aux[T, R], ordR: Lazy[MkOrder[R]]): MkOrder[T] =
     new MkOrder[T] {

@@ -181,6 +181,52 @@ object TestDefns {
                    bar20: Float,
                    bar21: String
                  )
+  case class Large4(
+                    bar1: String,
+                    bar2: Int,
+                    bar3: Boolean,
+                    bar4: Large5,
+                    bar5: List[String],
+                    bar6: List[Boolean],
+                    bar7: Double,
+                    bar8: Long,
+                    bar9: Char,
+                    bar10: Float,
+                    bar11: String,
+                    bar12: String,
+                    bar13: Boolean,
+                    bar14: Option[String],
+                    bar15: List[String],
+                    bar16: List[Boolean],
+                    bar17: Double,
+                    bar18: Long,
+                    bar19: Char,
+                    bar20: Float
+                  )
+
+  case class Large5(
+                   bar1: String,
+                   bar2: Int,
+                   bar3: Boolean,
+                   bar4: Option[String],
+                   bar5: List[String],
+                   bar6: List[Boolean],
+                   bar7: Double,
+                   bar8: Long,
+                   bar9: Char,
+                   bar10: Float,
+                   bar11: String,
+                   bar12: Int,
+                   bar13: Boolean,
+                   bar14: Option[String],
+                   bar15: List[String],
+                   bar16: List[Boolean],
+                   bar17: Double,
+                   bar18: Long,
+                   bar19: Char,
+                   bar20: Float,
+                   bar21: String
+                 )
 
   case class ListField(a: String, b: List[ListFieldChild])
 

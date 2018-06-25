@@ -62,6 +62,12 @@ object auto {
     ): Show[A] = show
   }
 
+  object showPretty {
+    implicit def kittensMkShowPretty[A](
+     implicit refute: Refute[Show[A]], showPretty: MkShowPretty[A]
+    ): ShowPretty[A] = showPretty
+  }
+
   object monoid extends MkMonoidDerivation //todo the regular approach doesn't work for monoid
 
   object semigroup {
@@ -139,6 +145,12 @@ object cached {
     : Show[A] = ev.value
   }
 
+  object showPretty {
+    implicit def kittensMkShowPretty[A](
+      implicit refute: Refute[Show[A]], ev: Cached[MkShowPretty[A]])
+    : ShowPretty[A] = ev.value
+  }
+
   object monoidK {
     implicit def kittensMkMonoidK[F[_]](
       implicit refute: Refute[MonoidK[F]], ev: Cached[MkMonoidK[F]]
@@ -202,12 +214,14 @@ object semi {
   def partialOrder[A](implicit ev: MkPartialOrder[A]): PartialOrder[A] = ev
 
   def order[A](implicit ev: MkOrder[A]): Order[A] = ev
-  
+
   def hash[A](implicit ev: MkHash[A]): Hash[A] = ev
 
   def functor[F[_]](implicit ev: MkFunctor[F]): Functor[F] = ev
 
   def show[A](implicit ev: MkShow[A]): Show[A] = ev
+
+  def showPretty[A](implicit ev: MkShowPretty[A]): ShowPretty[A] = ev
 
   def foldable[F[_]](implicit F: MkFoldable[F]): Foldable[F] = F
 

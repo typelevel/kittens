@@ -186,8 +186,8 @@ class ShowPrettyTests extends KittensSuite {
         |ListField(
         |  a = a,
         |  b = List(ListFieldChild(
-        |  c = 1
-        |))
+        |    c = 1
+        |  ))
         |)
       """.stripMargin.trim
     )
@@ -200,8 +200,8 @@ class ShowPrettyTests extends KittensSuite {
         |ListField(
         |  a = a,
         |  b = List(ListFieldChild(
-        |  c = 1
-        |))
+        |    c = 1
+        |  ))
         |)
       """.stripMargin.trim
     )

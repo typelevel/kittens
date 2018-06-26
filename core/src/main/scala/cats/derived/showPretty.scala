@@ -13,7 +13,7 @@ object ShowPretty {
   implicit def fromShow[A](implicit s: Show[A]): ShowPretty[A] =
     new ShowPretty[A] {
       override def showLines(a: A): List[String] =
-        List(s.show(a))
+        s.show(a).split("\\n")
     }
 }
 
@@ -34,7 +34,7 @@ trait MkShowPrettyDerivation extends MkShowPretty1 {
       showT: MkShowPretty[T]
   ): MkShowPretty[FieldType[K, V] :: T] = instance { fields =>
     val fieldName = key.value.name
-    val fieldValueLines = showV.unify.showLines(fields.head).flatMap(_.split("\\n"))
+    val fieldValueLines = showV.unify.showLines(fields.head)
     val nextFields = showT.showLines(fields.tail)
 
     val fieldValue = {

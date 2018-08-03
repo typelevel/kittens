@@ -17,14 +17,24 @@ To get started with SBT, simply add the following to your build.sbt file:
 libraryDependencies += "org.typelevel" %% "kittens" % "1.1.0"
 ```
 
-[![Build Status](https://api.travis-ci.org/milessabin/kittens.png?branch=master)](https://travis-ci.org/milessabin/kittens)
-[![Stories in Ready](https://badge.waffle.io/milessabin/kittens.png?label=Ready)](https://waffle.io/milessabin/kittens)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/milessabin/kittens)
+[![Build Status](https://api.travis-ci.org/typelevel/kittens.png?branch=master)](https://travis-ci.org/typelevel/kittens)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/typelevel/kittens)
 [![Maven Central](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.11.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/kittens_2.11)
 
+Instances derivations are available for the following type classes:
+
+* `Eq`
+* `PartialOrder`
+* `Order`
+* `Hash`
+* `Functor`
+* `Foldable` 
+* `Show` 
+* `Monoid` and `MonoidK`
+* `Semigroup` and `SemigroupK`
+* `Empty` (defined in Alleycats)
+
 ### Auto derived Examples
-
-
 
 ```scala
 
@@ -236,10 +246,10 @@ channels (mailing list, Gitter, github, etc.) to be welcoming environments for e
 kittens is built with SBT 0.13.9 or later, and its master branch is built with Scala 2.11.7 by default.
 
 ## Contributors
-
 + Cody Allen <ceedubs@gmail.com> [@fourierstrick](https://twitter.com/fourierstrick)
-+ Kailuo Wang <kailuo.wang@gmail.com> [@kailuowang](https://twitter.com/kailuowang)
-+ Miles Sabin <miles@milessabin.com> [@milessabin](https://twitter.com/milessabin)
 + Georgi Krastev <joro.kr.21@gmail.com> [@Joro_Kr](https://twitter.com/joro_kr)
-+ Fabio Labella <fabio.labella2@gmail.com> [@SystemFw]()
++ Fabio Labella <fabio.labella2@gmail.com> [@SystemFw](https://twitter.com/labella_fabio)
++ Miles Sabin <miles@milessabin.com> [@milessabin](https://twitter.com/milessabin)
++ Qi Wang [Qi77Qi](http://github.com/Qi77Qi)
++ Kailuo Wang <kailuo.wang@gmail.com> [@kailuowang](https://twitter.com/kailuowang)
 + Your name here :-)

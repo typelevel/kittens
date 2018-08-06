@@ -2,22 +2,56 @@ import com.typesafe.sbt.pgp.PgpKeys.publishSigned
 import org.scalajs.sbtplugin.cross.CrossProject
 import ReleaseTransformations._
 import sbt._
+import sbtcrossproject.{CrossType, crossProject}
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
   scalaVersion := "2.12.4",
-  crossScalaVersions := Seq( "2.11.12", scalaVersion.value)
+  crossScalaVersions := Seq( "2.11.12", scalaVersion.value, "2.13.0-M4")
 )
 
-val catsVersion = "1.0.1"
+val catsVersion = "1.2.0"
+
+val ScalaTestVersion = Def.setting{
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, v)) if v <= 12 =>
+      "3.0.5"
+    case _ =>
+      "3.0.6-SNAP1"
+  }
+}
+val ScalaCheckVersion = Def.setting{
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, v)) if v <= 12 =>
+      "1.13.5"
+    case _ =>
+      "1.14.0"
+  }
+}
+val DisciplineVersion = Def.setting{
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, v)) if v <= 12 =>
+      "0.9.0"
+    case _ =>
+      "0.10.0"
+  }
+}
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(
     "-feature",
     "-language:higherKinds",
     "-language:implicitConversions",
-    "-Ypartial-unification",    
     "-unchecked"
+  ),
+  scalacOptions ++= (
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, v)) if v <= 12 => Seq(
+        "-Ypartial-unification"
+      )
+      case _ => Seq(
+      )
+    }
   ),
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
@@ -28,11 +62,11 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %% "cats-core"      % catsVersion,
     "org.typelevel"   %% "alleycats-core" % catsVersion,
     "com.chuusai"     %% "shapeless"      % "2.3.3",
-    "org.scalatest"   %% "scalatest"      % "3.0.3" % "test",
-    "org.scalacheck"  %% "scalacheck"     % "1.13.5" % "test",
+    "org.scalatest"   %% "scalatest"      % ScalaTestVersion.value % "test",
+    "org.scalacheck"  %% "scalacheck"     % ScalaCheckVersion.value % "test",
     "org.typelevel"   %% "cats-laws"      % catsVersion % "test",
-    "org.typelevel"   %% "discipline"     % "0.8" % "test",
-    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
+    "org.typelevel"   %% "discipline"     % DisciplineVersion.value % "test",
+    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
   ),
   scmInfo :=
     Some(ScmInfo(
@@ -60,7 +94,7 @@ lazy val root = project.in(file("."))
   .settings(coreSettings:_*)
   .settings(noPublishSettings)
 
-lazy val core = crossProject.crossType(CrossType.Pure)
+lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
   .settings(coreSettings:_*)
   .jsSettings(commonJsSettings:_*)
@@ -78,9 +112,20 @@ addCommandAlias("root", ";project root")
 
 lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
-    scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
-    compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.patch)
-  )
+    scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided"
+  ),
+  libraryDependencies ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, v)) if v <= 12 =>
+        Seq(
+          compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.patch)
+        )
+      case _ =>
+        // if scala 2.13.0-M4 or later, macro annotations merged into scala-reflect
+        // https://github.com/scala/scala/pull/6606
+        Nil
+    }
+  }
 )
 
 lazy val crossVersionSharedSources: Seq[Setting[_]] =

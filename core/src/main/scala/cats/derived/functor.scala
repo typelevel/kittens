@@ -51,6 +51,28 @@ private[derived] abstract class MkFunctorDerivation extends MkFunctor1 {
     def safeMap[A, B](nil: CNil)(f: A => Eval[B]) = Eval.now(nil)
   }
 
+  implicit def mkFunctorConst[T]: MkFunctor[Const[T]#λ] = new MkFunctor[Const[T]#λ] {
+    def safeMap[A, B](t: T)(f: A => Eval[B]) = Eval.now(t)
+  }
+}
+
+private[derived] abstract class MkFunctor1 extends MkFunctor2 {
+  this: MkFunctorDerivation =>
+  import MkFunctor.SafeMap
+
+  implicit def mkFunctorSplit[F[_]](
+    implicit F: Split1[F, FunctorOrMk, FunctorOrMk]
+  ): MkFunctor[F] = new MkFunctor[F] {
+    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
+      F.fo.unify.safeMap(F.unpack(fa))(F.fi.unify.safeMap(_)(f)).map(F.pack)
+  }
+}
+
+private[derived] abstract class MkFunctor2 {
+  this: MkFunctorDerivation =>
+
+  import MkFunctor._
+
   implicit def mkFunctorHCons[F[_]](
     implicit F: IsHCons1[F, FunctorOrMk, MkFunctor]
   ): MkFunctor[F] = new MkFunctor[F] {
@@ -75,25 +97,5 @@ private[derived] abstract class MkFunctorDerivation extends MkFunctor1 {
   ): MkFunctor[F] = new MkFunctor[F] {
     def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
       F.fr.safeMap(F.to(fa))(f).map(F.from)
-  }
-}
-
-private[derived] abstract class MkFunctor1 extends MkFunctor2 {
-  this: MkFunctorDerivation =>
-  import MkFunctor.SafeMap
-
-  implicit def mkFunctorSplit[F[_]](
-    implicit F: Split1[F, FunctorOrMk, FunctorOrMk]
-  ): MkFunctor[F] = new MkFunctor[F] {
-    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
-      F.fo.unify.safeMap(F.unpack(fa))(F.fi.unify.safeMap(_)(f)).map(F.pack)
-  }
-}
-
-private[derived] abstract class MkFunctor2 {
-  this: MkFunctorDerivation =>
-
-  implicit def mkFunctorConst[T]: MkFunctor[Const[T]#λ] = new MkFunctor[Const[T]#λ] {
-    def safeMap[A, B](t: T)(f: A => Eval[B]) = Eval.now(t)
   }
 }

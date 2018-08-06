@@ -6,7 +6,7 @@ import sbtcrossproject.{CrossType, crossProject}
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.12.6",
   crossScalaVersions := Seq( "2.11.12", scalaVersion.value, "2.13.0-M4")
 )
 

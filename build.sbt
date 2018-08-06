@@ -36,8 +36,8 @@ lazy val commonSettings = Seq(
   ),
   scmInfo :=
     Some(ScmInfo(
-      url("https://github.com/milessabin/kittens"),
-      "scm:git:git@github.com:milessabin/kittens.git"
+      url("https://github.com/typelevel/kittens"),
+      "scm:git:git@github.com:typelevel/kittens.git"
     ))
 ) ++ crossVersionSharedSources ++ scalaMacroDependencies
 
@@ -93,7 +93,7 @@ lazy val crossVersionSharedSources: Seq[Setting[_]] =
   }
 
 lazy val publishSettings = Seq(
-  homepage := Some(url("https://github.com/milessabin/kittens")),
+  homepage := Some(url("https://github.com/typelevel/kittens")),
   licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   publishMavenStyle := true,
   publishArtifact in Test := false,

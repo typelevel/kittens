@@ -9,7 +9,7 @@ import shapeless._, labelled._
  * recursive _and_ generic in one or more type parameters.
  *
  * See:
- * https://github.com/milessabin/kittens/pull/48#issue-249836267
+ * https://github.com/typelevel/kittens/pull/48#issue-249836267
  * https://github.com/milessabin/shapeless/issues/750
  *
  * See the test suite for more precise examples of what can and cannot

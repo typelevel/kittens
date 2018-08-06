@@ -204,7 +204,7 @@ This way the native instance for `Show[List]` would be used.
 [cats]: https://github.com/typelevel/cats
 [shapeless]: https://github.com/milessabin/shapeless
 [typelevel]: http://typelevel.org/
-[source]: https://github.com/milessabin/kittens
+[source]: https://github.com/typelevel/kittens
 [sonatype]: https://oss.sonatype.org/
 
 ### kittens and Typelevel Scala

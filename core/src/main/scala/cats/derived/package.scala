@@ -92,6 +92,7 @@ object auto {
 
   object foldable extends MkFoldableDerivation
 
+  object traverse extends MkTraverseDerivation
 
 }
 

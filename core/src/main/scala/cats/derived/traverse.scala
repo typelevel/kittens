@@ -45,48 +45,54 @@ trait MkTraverseDerivation extends MkTraverse0 {
 
 trait MkTraverse0 extends MkTraverse1 {
   // Induction step for products
-  implicit def mkTraverseHcons[F[_]](implicit ihc: IsHCons1[F, Traverse, MkTraverse]): MkTraverse[F] = new MkTraverse[F] {
-    override def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] = {
-      val (hd, tl) = ihc.unpack(fa)
+  implicit def mkTraverseHcons[F[_]](implicit ihc: IsHCons1[F, TraverseOrMk, MkTraverse]): MkTraverse[F] =
+    new MkTraverse[F] {
+      override def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] = {
+        val (hd, tl) = ihc.unpack(fa)
 
-      (ihc.fh.traverse(hd)(f), ihc.ft.traverse(tl)(f)).mapN(ihc.pack(_, _))
+        (ihc.fh.unify.traverse(hd)(f), ihc.ft.traverse(tl)(f)).mapN(ihc.pack(_, _))
+      }
+
     }
-
-  }
 
   // Induction step for coproducts
-  implicit def mkTraverseCcons[F[_]](implicit icc: IsCCons1[F, Traverse, MkTraverse]): MkTraverse[F] = new MkTraverse[F] {
-    override def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] = {
-      val gUnpacked: G[Either[icc.H[B], icc.T[B]]] =
-        icc.unpack(fa) match {
-          case Left(hd) => icc.fh.traverse(hd)(f).map(Left(_))
-          case Right(tl) => icc.ft.traverse(tl)(f).map(Right(_))
-        }
+  implicit def mkTraverseCcons[F[_]](implicit icc: IsCCons1[F, TraverseOrMk, MkTraverse]): MkTraverse[F] =
+    new MkTraverse[F] {
+      override def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] = {
+        val gUnpacked: G[Either[icc.H[B], icc.T[B]]] =
+          icc.unpack(fa) match {
+            case Left(hd) => icc.fh.unify.traverse(hd)(f).map(Left(_))
+            case Right(tl) => icc.ft.traverse(tl)(f).map(Right(_))
+          }
 
-      gUnpacked.map(icc.pack)
+        gUnpacked.map(icc.pack)
+      }
+
     }
-
-  }
 
 }
 
 trait MkTraverse1 extends MkTraverse2 {
-  implicit def mkTraverseSplit[F[_]](implicit split: Split1[F, Traverse, Traverse]): MkTraverse[F] = new MkTraverse[F] {
+  implicit def mkTraverseSplit[F[_]](implicit split: Split1[F, TraverseOrMk, TraverseOrMk]): MkTraverse[F] =
+    new MkTraverse[F] {
+      override def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
+        split.fo.unify.traverse(split.unpack(fa))(split.fi.unify.traverse(_)(f)).map(split.pack)
 
-    override def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
-      split.fo.traverse(split.unpack(fa))(split.fi.traverse(_)(f)).map(split.pack)
-
-  }
+    }
 }
 
 trait MkTraverse2 extends MkTraverse3 {
-  implicit def mkTraverseGeneric[F[_]](implicit gen: Generic1[F, MkTraverse]): MkTraverse[F] = new MkTraverse[F] {
-    override def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
-      gen.fr.traverse(gen.to(fa))(f).map(gen.from)
-  }
+  implicit def mkTraverseGeneric[F[_]](implicit gen: Generic1[F, MkTraverse]): MkTraverse[F] =
+    new MkTraverse[F] {
+      override def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
+        gen.fr.traverse(gen.to(fa))(f).map(gen.from)
+    }
 }
 
 trait MkTraverse3 {
+
+  protected type TraverseOrMk[F[_]] = Traverse[F] OrElse MkTraverse[F]
+
   implicit def mkTraverseConstTraverse[T]: MkTraverse[Const[T]#λ] = new MkTraverse[Const[T]#λ] {
     def traverse[G[_] : Applicative, A, B](fa: T)(f: A => G[B]): G[T] = fa.pure[G]
   }

@@ -51,9 +51,7 @@ object MkTraverse extends MkTraverseDerivation {
   private[derived] implicit class SafeTraverse[F[_]](val F: Traverse[F]) extends AnyVal {
     def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = F match {
       case mk: MkTraverse[F] => mk.safeTraverse(fa)(f)
-      case _ =>
-        type EvalG[T] = Eval[G[T]]
-        Eval.later(F.traverse[EvalG, A, B](fa)(f)(aEval[G]).value)
+      case _ => F.traverse[λ[t => Eval[G[t]]], A, B](fa)(f)(aEval[G])
     }
   }
 }

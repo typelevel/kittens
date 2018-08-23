@@ -7,6 +7,14 @@ import shapeless._
 
 import scala.annotation.implicitNotFound
 
+/**
+  * This trait extends `Traverse` and implements it's fold methods.
+  * The overriden implementation can be removed as soon as issue
+  * <a href="https://github.com/typelevel/cats/issues/107#issuecomment-393797529">cats-107</a>
+  * gets resolved.
+  * The current implementation is based on a proposal posted by @Baccata in a comment to the issue.
+  *
+  */
 @implicitNotFound("Could not derive an instance of Traverse[${F}]")
 trait MkTraverse[F[_]] extends Traverse[F] {
 

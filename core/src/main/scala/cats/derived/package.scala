@@ -140,6 +140,18 @@ object cached {
     : Functor[F] = ev.value
   }
 
+  object foldable {
+    implicit def kittensMkFoldable[F[_]](
+       implicit refute: Refute[Foldable[F]], ev: Cached[MkFoldable[F]])
+    : Foldable[F] = ev.value
+  }
+
+  object traverse{
+    implicit def kittensMkTraverse[F[_]](
+       implicit refute: Refute[Traverse[F]], ev: Cached[MkTraverse[F]])
+    : Traverse[F] = ev.value
+  }
+
   object show {
     implicit def kittensMkshow[A](
       implicit refute: Refute[Show[A]], ev: Cached[MkShow[A]])
@@ -225,6 +237,8 @@ object semi {
   def showPretty[A](implicit ev: MkShowPretty[A]): ShowPretty[A] = ev
 
   def foldable[F[_]](implicit F: MkFoldable[F]): Foldable[F] = F
+
+  def traverse[F[_]](implicit F: MkTraverse[F]): Traverse[F] = F
 
   def monoid[T](implicit T: MkMonoid[T]): Monoid[T] = T
 

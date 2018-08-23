@@ -51,7 +51,7 @@ object MkTraverse extends MkTraverseDerivation {
   private[derived] implicit class SafeTraverse[F[_]](val F: Traverse[F]) extends AnyVal {
     def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = F match {
       case mk: MkTraverse[F] => mk.safeTraverse(fa)(f)
-      case _ => F.traverse[λ[t => Eval[G[t]]], A, B](fa)(f)(aEval[G])
+      case _ => F.traverse[λ[t => Eval[G[t]]], A, B](fa)(f)(apEval[G])
     }
   }
 }
@@ -60,9 +60,14 @@ trait MkTraverseDerivation extends MkTraverse0 {
   implicit val mkTraverseId: MkTraverse[shapeless.Id] = new MkTraverse[shapeless.Id] {
     override def safeTraverse[G[_] : Applicative, A, B](fa: Id[A])(f: A => Eval[G[B]]): Eval[G[Id[B]]] = f(fa)
   }
+
+  implicit def mkTraverseConst[T]: MkTraverse[Const[T]#λ] = new MkTraverse[Const[T]#λ] {
+    override def safeTraverse[G[_] : Applicative, A, B](fa: T)(f: A => Eval[G[B]]): Eval[G[T]] =
+      Eval.now(fa.pure[G])
+  }
 }
 
-trait MkTraverse0 extends MkTraverse1 {
+private[derived] trait MkTraverse0 extends MkTraverse1 {
   // Induction step for products
   implicit def mkTraverseHcons[F[_]](implicit ihc: IsHCons1[F, TraverseOrMk, MkTraverse]): MkTraverse[F] =
     new MkTraverse[F] {
@@ -81,17 +86,17 @@ trait MkTraverse0 extends MkTraverse1 {
       override def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = {
         val gUnpacked: Eval[G[Either[icc.H[B], icc.T[B]]]] =
           icc.unpack(fa) match {
-            case Left(hd) => aEval[G].map(icc.fh.unify.safeTraverse(hd)(f))(Left(_))
-            case Right(tl) => aEval[G].map(icc.ft.safeTraverse(tl)(f))(Right(_))
+            case Left(hd) => apEval[G].map(icc.fh.unify.safeTraverse(hd)(f))(Left(_))
+            case Right(tl) => apEval[G].map(icc.ft.safeTraverse(tl)(f))(Right(_))
           }
 
-        aEval[G].map(gUnpacked)(icc.pack)
+        apEval[G].map(gUnpacked)(icc.pack)
       }
     }
 
 }
 
-trait MkTraverse1 extends MkTraverse2 {
+private[derived] trait MkTraverse1 extends MkTraverse2 {
   implicit def mkTraverseSplit[F[_]](implicit split: Split1[F, TraverseOrMk, TraverseOrMk]): MkTraverse[F] =
     new MkTraverse[F] {
       override def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] =
@@ -99,7 +104,7 @@ trait MkTraverse1 extends MkTraverse2 {
     }
 }
 
-trait MkTraverse2 extends MkTraverse3 {
+private[derived] trait MkTraverse2 extends MkTraverseUtils {
   implicit def mkTraverseGeneric[F[_]](implicit gen: Generic1[F, MkTraverse]): MkTraverse[F] =
     new MkTraverse[F] {
       override def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] =
@@ -107,15 +112,10 @@ trait MkTraverse2 extends MkTraverse3 {
     }
 }
 
-trait MkTraverse3 {
+private[derived] trait MkTraverseUtils {
 
   protected type TraverseOrMk[F[_]] = Traverse[F] OrElse MkTraverse[F]
 
-  protected def aEval[G[_] : Applicative] = Applicative[Eval].compose[G]
+  protected def apEval[G[_] : Applicative] = Applicative[Eval].compose[G]
 
-  implicit def mkTraverseConstTraverse[T]: MkTraverse[Const[T]#λ] = new MkTraverse[Const[T]#λ] {
-    def unsafeTraverse[G[_] : Applicative, A, B](fa: T)(f: A => G[B]): G[T] = fa.pure[G]
-
-    override def safeTraverse[G[_] : Applicative, A, B](fa: T)(f: A => Eval[G[B]]): Eval[G[T]] = Eval.now(fa.pure[G])
-  }
 }

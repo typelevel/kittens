@@ -68,4 +68,9 @@ class EmptyKSuite extends KittensSuite {
 
     assert(E.empty == (Nil, Nil))
   }
+
+  test("derives an instance for Interleaved[T]") {
+    assertCompiles("semi.emptyK[TestDefns.Interleaved]")
+  }
+
 }

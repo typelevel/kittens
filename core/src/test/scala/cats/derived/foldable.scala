@@ -61,8 +61,12 @@ class FoldableSuite extends KittensSuite {
     assert(larger.value == llarge.map(_ + 1))
   }
 
-  test("Foldable[Tree]") {
-    val F = Foldable[Tree]
+  test("derives an instance for Interleaved[T]") {
+    assertCompiles("semi.foldable[TestDefns.Interleaved]")
+  }
+
+  test("foldable.semi[Tree]") {
+    val F = semi.foldable[Tree]
 
     val tree: Tree[String] =
       Node(

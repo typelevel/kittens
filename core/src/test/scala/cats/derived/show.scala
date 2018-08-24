@@ -128,6 +128,10 @@ class ShowTests extends KittensSuite {
     )
   }
 
+  test("derives an instance for Interleaved[T]") {
+    assertCompiles("semi.show[TestDefns.Interleaved[Int]]")
+  }
+
 }
 
 

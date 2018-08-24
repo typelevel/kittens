@@ -46,5 +46,8 @@ class SemigroupSuite extends KittensSuite {
   implicit val eqOuter: Eq[Outer] = Eq.fromUniversalEquals
   checkAll("Semigroup[Outer]", SemigroupTests[Outer].semigroup)
 
+  test("derives an instance for Interleaved[T]") {
+    assertCompiles("semi.semigroup[TestDefns.Interleaved[Int]]")
+  }
 
 }

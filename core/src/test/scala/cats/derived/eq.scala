@@ -86,7 +86,7 @@ class EqSuite extends KittensSuite {
   }
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.eq[TestDefns.Interleaved[Int]]")
+    semi.eq[TestDefns.Interleaved[Int]]
   }
 
 }

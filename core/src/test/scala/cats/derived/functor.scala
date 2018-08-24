@@ -105,7 +105,7 @@ class FunctorSuite extends FreeSpec with FunctorSyntax {
     }
 
     "derives an instance for Interleaved[T]" in {
-      assertCompiles("semi.functor[TestDefns.Interleaved]")
+      semi.functor[TestDefns.Interleaved]
     }
 
   }

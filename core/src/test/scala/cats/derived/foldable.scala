@@ -62,7 +62,7 @@ class FoldableSuite extends KittensSuite {
   }
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.foldable[TestDefns.Interleaved]")
+    semi.foldable[TestDefns.Interleaved]
   }
 
   test("foldable.semi[Tree]") {

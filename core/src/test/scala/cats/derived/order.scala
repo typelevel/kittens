@@ -50,7 +50,7 @@ class OrderSuite extends KittensSuite {
 
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.order[TestDefns.Interleaved[Int]]")
+    semi.order[TestDefns.Interleaved[Int]]
   }
 
 

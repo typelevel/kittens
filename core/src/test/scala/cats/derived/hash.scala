@@ -36,7 +36,7 @@ class HashSuite extends KittensSuite {
   })
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.hash[TestDefns.Interleaved[Int]]")
+    semi.hash[TestDefns.Interleaved[Int]]
   }
 
   test("existing Hash instances in scope are respected auto")(check {

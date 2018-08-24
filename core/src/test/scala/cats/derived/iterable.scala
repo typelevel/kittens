@@ -90,7 +90,7 @@ class IterableSuite extends KittensSuite {
   }
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.iterable[TestDefns.Interleaved, Int]")
+    semi.iterable[TestDefns.Interleaved, Int]
   }
 
 }

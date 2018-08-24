@@ -47,7 +47,7 @@ class SemigroupSuite extends KittensSuite {
   checkAll("Semigroup[Outer]", SemigroupTests[Outer].semigroup)
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.semigroup[TestDefns.Interleaved[Int]]")
+    semi.semigroup[TestDefns.Interleaved[Int]]
   }
 
 }

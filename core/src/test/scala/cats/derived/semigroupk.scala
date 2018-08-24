@@ -36,7 +36,7 @@ class SemigroupKSuite extends KittensSuite {
   }
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.semigroupK[TestDefns.Interleaved]")
+    semi.semigroupK[TestDefns.Interleaved]
   }
 
 }

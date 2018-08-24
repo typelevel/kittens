@@ -35,7 +35,7 @@ class MonoidKSuite extends KittensSuite {
   }
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.monoidK[TestDefns.Interleaved]")
+    semi.monoidK[TestDefns.Interleaved]
   }
 
 

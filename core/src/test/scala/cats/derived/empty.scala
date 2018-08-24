@@ -43,7 +43,7 @@ class EmptySuite extends FreeSpec {
     }
 
     "derives an instance for Interleaved[T]" in {
-      assertCompiles("semi.empty[TestDefns.Interleaved[Int]]")
+      semi.empty[TestDefns.Interleaved[Int]]
     }
 
   }

@@ -48,7 +48,7 @@ class PartialOrderSuite extends KittensSuite {
   })
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.partialOrder[TestDefns.Interleaved[Int]]")
+    semi.partialOrder[TestDefns.Interleaved[Int]]
   }
 
   test("existing PartialOrder instances in scope are respected for auto derivation")(check {

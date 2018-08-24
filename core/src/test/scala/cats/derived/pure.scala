@@ -38,7 +38,7 @@ class PureSuite extends KittensSuite {
   }
 
   test("derives an instance for Interleaved[T]") {
-    assertCompiles("semi.pure[TestDefns.Interleaved]")
+    semi.pure[TestDefns.Interleaved]
   }
 
   test("Pure[Some]") {

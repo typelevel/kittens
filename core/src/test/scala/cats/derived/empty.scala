@@ -41,6 +41,11 @@ class EmptySuite extends FreeSpec {
       implicit val E = semi.empty[Outer]
       assert(Empty[Outer].empty == Outer(Inner(1)))
     }
+
+    "derives an instance for Interleaved[T]" in {
+      assertCompiles("semi.empty[TestDefns.Interleaved[Int]]")
+    }
+
   }
 
   "full auto derivation" - {

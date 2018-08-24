@@ -88,4 +88,9 @@ class IterableSuite extends KittensSuite {
     val i = I.iterator
     assert(I.map(_.length).sum == 13)
   }
+
+  test("derives an instance for Interleaved[T]") {
+    assertCompiles("semi.iterable[TestDefns.Interleaved, Int]")
+  }
+
 }

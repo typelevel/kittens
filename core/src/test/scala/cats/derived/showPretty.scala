@@ -206,4 +206,9 @@ class ShowPrettyTests extends KittensSuite {
       """.stripMargin.trim
     )
   }
+
+  test("derives an instance for Interleaved[T]") {
+    assertCompiles("semi.showPretty[TestDefns.Interleaved[Int]]")
+  }
+
 }

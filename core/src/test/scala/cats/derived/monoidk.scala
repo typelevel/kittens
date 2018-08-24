@@ -33,4 +33,10 @@ class MonoidKSuite extends KittensSuite {
     checkAll("AutoMonoidK[ComplexProduct]", MonoidTests[ComplexProduct[Char]].monoid)
 
   }
+
+  test("derives an instance for Interleaved[T]") {
+    assertCompiles("semi.monoidK[TestDefns.Interleaved]")
+  }
+
+
 }

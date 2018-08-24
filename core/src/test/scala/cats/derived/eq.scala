@@ -84,6 +84,11 @@ class EqSuite extends KittensSuite {
     import cats.instances.all._
     semi.eq[Large]
   }
+
+  test("derives an instance for Interleaved[T]") {
+    assertCompiles("semi.eq[TestDefns.Interleaved[Int]]")
+  }
+
 }
 
 object EqSuite {

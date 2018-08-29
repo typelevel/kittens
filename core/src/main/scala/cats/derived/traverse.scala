@@ -2,7 +2,7 @@ package cats.derived
 
 import cats.derived.MkTraverse.SafeTraverse
 import cats.syntax.all._
-import cats.{Applicative, Eval, Monoid, Traverse}
+import cats.{Applicative, Endo, Eval, Monoid, Traverse}
 import shapeless._
 
 import scala.annotation.implicitNotFound
@@ -28,16 +28,16 @@ trait MkTraverse[F[_]] extends Traverse[F] {
   }
 
   override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
-    foldMap(fa)(f.curried andThen defer)(fMonoid(_ compose _)).apply(lb)
+    foldMap(fa)(f.curried andThen defer[B])(endoMonoid(_ compose _)).apply(lb)
   }
 
   override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-    foldMap[A, B => B](fa) { a => b => f(b, a) }(fMonoid(_ andThen _)).apply(b)
+    foldMap[A, B => B](fa) { a => b => f(b, a) }(endoMonoid(_ andThen _)).apply(b)
 
-  private def fMonoid[A](c: (A => A, A => A) => (A => A)): Monoid[A => A] = new Monoid[A => A] {
-    def combine(f: A => A, g: A => A): A => A = c(f, g)
+  private def endoMonoid[A](c: (Endo[A], Endo[A]) => Endo[A]): Monoid[Endo[A]] = new Monoid[Endo[A]] {
+    def combine(f: Endo[A], g: Endo[A]): Endo[A] = c(f, g)
 
-    def empty: A => A = identity
+    def empty: Endo[A] = identity
   }
 
   private def defer[B](f: Eval[B] => Eval[B]): Eval[B] => Eval[B] =
@@ -116,6 +116,7 @@ private[derived] trait MkTraverseUtils {
 
   protected type TraverseOrMk[F[_]] = Traverse[F] OrElse MkTraverse[F]
 
-  protected def apEval[G[_] : Applicative] = Applicative[Eval].compose[G]
+  protected def apEval[G[_] : Applicative]: Applicative[λ[t => Eval[G[t]]]] =
+    Applicative[Eval].compose[G]
 
 }

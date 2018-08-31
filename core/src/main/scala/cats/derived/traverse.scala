@@ -1,8 +1,9 @@
 package cats.derived
 
 import cats.derived.MkTraverse.SafeTraverse
+import cats.instances.function._
 import cats.syntax.all._
-import cats.{Applicative, Endo, Eval, Monoid, Traverse}
+import cats.{Applicative, Endo, Eval, Monoid, MonoidK, Traverse}
 import shapeless._
 
 import scala.annotation.implicitNotFound
@@ -18,7 +19,7 @@ import scala.annotation.implicitNotFound
 @implicitNotFound("Could not derive an instance of Traverse[${F}]")
 trait MkTraverse[F[_]] extends Traverse[F] {
 
-  override def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(implicit evidence$1: Applicative[G]): G[F[B]] =
+  override def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
     safeTraverse(fa)(a => Eval.now(f(a))).value
 
   def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]]
@@ -27,22 +28,16 @@ trait MkTraverse[F[_]] extends Traverse[F] {
     traverse[cats.data.Const[B, ?], A, B](fa) { a => cats.data.Const(f(a)) } getConst
   }
 
-  override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
-    foldMap(fa)(f.curried andThen defer[B])(endoMonoid(_ compose _)).apply(lb)
-  }
+  override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+    foldMap[A, Endo[Eval[B]]](fa) { a: A => (b: Eval[B]) => Eval.defer(f(a, b)) }(MonoidK[Endo].compose[Eval].algebra)(lb)
 
   override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-    foldMap[A, B => B](fa) { a => b => f(b, a) }(endoMonoid(_ andThen _)).apply(b)
+    foldMap[A, Endo[B]](fa) { a => b => f(b, a) }(dual(MonoidK[Endo].algebra))(b)
 
-  private def endoMonoid[A](c: (Endo[A], Endo[A]) => Endo[A]): Monoid[Endo[A]] = new Monoid[Endo[A]] {
-    def combine(f: Endo[A], g: Endo[A]): Endo[A] = c(f, g)
-
-    def empty: Endo[A] = identity
+  private def dual[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
+    def combine(x: A, y: A): A = m.combine(y, x)
+    def empty: A = m.empty
   }
-
-  private def defer[B](f: Eval[B] => Eval[B]): Eval[B] => Eval[B] =
-    evalB => Eval.defer(f(evalB))
-
 }
 
 object MkTraverse extends MkTraverseDerivation {
@@ -116,7 +111,6 @@ private[derived] trait MkTraverseUtils {
 
   protected type TraverseOrMk[F[_]] = Traverse[F] OrElse MkTraverse[F]
 
-  protected def apEval[G[_] : Applicative]: Applicative[λ[t => Eval[G[t]]]] =
-    Applicative[Eval].compose[G]
+  protected def apEval[G[_] : Applicative] = Applicative[Eval].compose[G]
 
 }

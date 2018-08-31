@@ -131,29 +131,31 @@ class TraverseSuite extends FreeSpec {
       assert(actual == expected)
     }
 
-    "implements folds correctly" in {
-      implicit val F = semi.traverse[IList]
+    "folds" - {
 
-      val iList = IList.fromSeq(List.range(1, 5))
+      "are implemented correctly" in {
+        implicit val F = semi.traverse[IList].asInstanceOf[MkTraverse[IList]]
 
-      // just basic sanity checks
-      assert(F.foldLeft(iList, "x")(_ + _) == "x1234")
-      assert(F.foldRight(iList, Now("x"))((buff, eval) => eval.map(_ + buff)).value == "x4321")
-      assert(F.foldMap(iList)(_.toDouble) == 10)
+        val iList = IList.fromSeq(List.range(1, 5))
+
+        // just basic sanity checks
+        assert(F.foldLeft(iList, "x")(_ + _) == "x1234")
+        assert(F.foldRight(iList, Now("x"))((i, b) => b.map(i + _)).value == "1234x")
+        assert(F.foldMap(iList)(_.toDouble) == 10)
+      }
+
+      "are stack safe" in {
+        implicit val F = semi.traverse[IList]
+
+        val n = 10000
+        val llarge = IList.fromSeq(List.range(1, n))
+
+        val expected = n * (n - 1) / 2
+        val evalActual = F.foldRight(llarge, Now(0))((buff, eval) => eval.map(_ + buff))
+
+        assert(evalActual.value == expected)
+      }
     }
-
-    "fold right is still stack safe" in {
-      implicit val F = semi.traverse[IList]
-
-      val n = 10000
-      val llarge = IList.fromSeq(List.range(1, 10000))
-
-      val expected = n * (n - 1) / 2
-      val evalActual = F.foldRight(llarge, Now(0))((buff, eval) => eval.map(_ + buff))
-
-      assert(evalActual.value == expected)
-    }
-
   }
 }
 

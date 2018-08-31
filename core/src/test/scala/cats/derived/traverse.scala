@@ -3,9 +3,8 @@ package derived
 
 import cats.derived.TestDefns._
 import cats.implicits._
-import cats.laws.discipline.TraverseTests
-import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.{Arbitrary, Gen}
+import cats.laws.discipline.{FoldableTests, TraverseTests}
+import org.scalacheck.Test
 import org.scalatest.FreeSpec
 import shapeless.test.illTyped
 
@@ -14,19 +13,10 @@ class TraverseSuite extends FreeSpec {
   "traverse" - {
 
     "passes cats traverse tests" in {
-      implicit def genTestClass[T: Arbitrary]: Arbitrary[TestTraverse[T]] = Arbitrary {
-        for {
-          i <- Gen.posNum[Int]
-          t <- arbitrary[T]
-          d <- Gen.posNum[Double]
-          tt <- Gen.listOf(arbitrary[T])
-          s <- Gen.alphaStr
-        } yield TestTraverse[T](i, t, d, tt, s)
-      }
-
-      implicit def eqTestClass[T: Eq]: Eq[TestTraverse[T]] = semi.eq
-
-      TraverseTests[TestTraverse](semi.traverse[TestTraverse]).traverse[Int, Double, String, Long, Option, Option].all.check()
+      Test.checkProperties(
+        Test.Parameters.default,
+        TraverseTests[IList](semi.traverse[IList]).traverse[Int, Double, String, Long, Option, Option].all
+      )
     }
 
     "derives an instance for" - {
@@ -115,7 +105,7 @@ class TraverseSuite extends FreeSpec {
       assert(actual == expected)
     }
 
-    "auto derivation work" in {
+    "auto derivation work for interleaved case class" in {
       import cats.derived.auto.traverse._
 
       val testInstance = TestTraverse(1, "ab", 2.0, List("cd"), "3")
@@ -132,6 +122,13 @@ class TraverseSuite extends FreeSpec {
     }
 
     "folds" - {
+
+      "pass cats fold tests" in {
+        Test.checkProperties(
+          Test.Parameters.default,
+          FoldableTests[IList](semi.traverse[IList]).foldable[Int, Double].all
+        )
+      }
 
       "are implemented correctly" in {
         implicit val F = semi.traverse[IList].asInstanceOf[MkTraverse[IList]]
@@ -157,6 +154,9 @@ class TraverseSuite extends FreeSpec {
       }
     }
   }
+
+  implicit def eqTestClass[T: Eq]: Eq[IList[T]] = semi.eq
+
 }
 
 private case class TestTraverse[T](i: Int, t: T, d: Double, tt: List[T], s: String)

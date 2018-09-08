@@ -92,6 +92,7 @@ object auto {
 
   object foldable extends MkFoldableDerivation
 
+  object traverse extends MkTraverseDerivation
 
 }
 
@@ -137,6 +138,18 @@ object cached {
     implicit def kittensMkFunctor[F[_]](
       implicit refute: Refute[Functor[F]], ev: Cached[MkFunctor[F]])
     : Functor[F] = ev.value
+  }
+
+  object foldable {
+    implicit def kittensMkFoldable[F[_]](
+       implicit refute: Refute[Foldable[F]], ev: Cached[MkFoldable[F]])
+    : Foldable[F] = ev.value
+  }
+
+  object traverse{
+    implicit def kittensMkTraverse[F[_]](
+       implicit refute: Refute[Traverse[F]], ev: Cached[MkTraverse[F]])
+    : Traverse[F] = ev.value
   }
 
   object show {
@@ -224,6 +237,8 @@ object semi {
   def showPretty[A](implicit ev: MkShowPretty[A]): ShowPretty[A] = ev
 
   def foldable[F[_]](implicit F: MkFoldable[F]): Foldable[F] = F
+
+  def traverse[F[_]](implicit F: MkTraverse[F]): Traverse[F] = F
 
   def monoid[T](implicit T: MkMonoid[T]): Monoid[T] = T
 

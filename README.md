@@ -29,6 +29,7 @@ Instances derivations are available for the following type classes:
 * `Hash`
 * `Functor`
 * `Foldable` 
+* `Traverse` 
 * `Show` 
 * `Monoid` and `MonoidK`
 * `Semigroup` and `SemigroupK`

@@ -10,7 +10,7 @@ lazy val buildSettings = Seq(
   crossScalaVersions := Seq( "2.11.12", scalaVersion.value, "2.13.0-M4")
 )
 
-val catsVersion = "1.2.0"
+val catsVersion = "1.3.1"
 
 val ScalaTestVersion = Def.setting{
   CrossVersion.partialVersion(scalaVersion.value) match {

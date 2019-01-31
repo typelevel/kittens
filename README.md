@@ -237,10 +237,10 @@ Scala.
 
 ## Participation
 
-The Kittens project supports the [Typelevel][typelevel] [code of conduct][codeofconduct] and wants all of its
+The Kittens project supports the [Scala code of conduct][codeofconduct] and wants all of its
 channels (mailing list, Gitter, github, etc.) to be welcoming environments for everyone.
 
-[codeofconduct]: http://typelevel.org/conduct.html
+[codeofconduct]: https://www.scala-lang.org/conduct/
 
 ## Building kittens
 

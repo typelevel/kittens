@@ -7,35 +7,10 @@ import sbtcrossproject.{CrossType, crossProject}
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
   scalaVersion := "2.12.6",
-  crossScalaVersions := Seq( "2.11.12", scalaVersion.value, "2.13.0-M4")
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.0-M5")
 )
 
-val catsVersion = "1.4.0"
-
-val ScalaTestVersion = Def.setting{
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, v)) if v <= 12 =>
-      "3.0.5"
-    case _ =>
-      "3.0.6-SNAP1"
-  }
-}
-val ScalaCheckVersion = Def.setting{
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, v)) if v <= 12 =>
-      "1.13.5"
-    case _ =>
-      "1.14.0"
-  }
-}
-val DisciplineVersion = Def.setting{
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, v)) if v <= 12 =>
-      "0.9.0"
-    case _ =>
-      "0.10.0"
-  }
-}
+val catsVersion = "1.5.0"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(
@@ -62,11 +37,8 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %% "cats-core"      % catsVersion,
     "org.typelevel"   %% "alleycats-core" % catsVersion,
     "com.chuusai"     %% "shapeless"      % "2.3.3",
-    "org.scalatest"   %% "scalatest"      % ScalaTestVersion.value % "test",
-    "org.scalacheck"  %% "scalacheck"     % ScalaCheckVersion.value % "test",
-    "org.typelevel"   %% "cats-laws"      % catsVersion % "test",
-    "org.typelevel"   %% "discipline"     % DisciplineVersion.value % "test",
-    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
+    "org.typelevel"   %% "cats-testkit"   % catsVersion % "test",
+    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.8")
   ),
   scmInfo :=
     Some(ScmInfo(

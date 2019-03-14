@@ -37,10 +37,6 @@ class PureSuite extends KittensSuite {
     assert(P.pure(23) == Some(23))
   }
 
-  test("derives an instance for Interleaved[T]") {
-    semi.pure[TestDefns.Interleaved]
-  }
-
   test("Pure[Some]") {
     val P = Pure[Some]
 

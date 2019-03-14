@@ -35,10 +35,6 @@ class SemigroupKSuite extends KittensSuite {
     checkAll("Auto SemigroupK[ComplexProduct]", SemigroupTests[ComplexProduct[Char]].semigroup)
   }
 
-  test("derives an instance for Interleaved[T]") {
-    semi.semigroupK[TestDefns.Interleaved]
-  }
-
 }
 
 object SemigroupKSuite {

@@ -48,6 +48,7 @@ class PartialOrderSuite extends KittensSuite {
   })
 
   test("derives an instance for Interleaved[T]") {
+    import cats.instances.all._
     semi.partialOrder[TestDefns.Interleaved[Int]]
   }
 

@@ -90,7 +90,10 @@ class IterableSuite extends KittensSuite {
   }
 
   test("derives an instance for Interleaved[T]") {
-    semi.iterable[TestDefns.Interleaved, Int]
+    import cats.instances.all._
+    val interleaved = Interleaved(42, 313, 3.17, List(1, 2, 3, 5, 7), "kittens")
+    val i = semi.iterable[TestDefns.Interleaved, Int](interleaved)
+    assert(i.toList == List(313, 1, 2, 3, 5, 7))
   }
 
 }

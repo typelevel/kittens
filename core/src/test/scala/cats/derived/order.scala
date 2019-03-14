@@ -50,6 +50,7 @@ class OrderSuite extends KittensSuite {
 
 
   test("derives an instance for Interleaved[T]") {
+    import cats.instances.all._
     semi.order[TestDefns.Interleaved[Int]]
   }
 

@@ -44,7 +44,8 @@ lazy val commonSettings = Seq(
     Some(ScmInfo(
       url("https://github.com/typelevel/kittens"),
       "scm:git:git@github.com:typelevel/kittens.git"
-    ))
+    )),
+  mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "1.2.1")
 ) ++ crossVersionSharedSources ++ scalaMacroDependencies
 
 initialCommands in console := """import shapeless._, cats._, cats.derived._"""
@@ -76,11 +77,12 @@ lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
-addCommandAlias("validate", ";root;clean;test")
+addCommandAlias("validate", ";root;clean;test;mima")
 addCommandAlias("releaseAll", ";root;release")
 addCommandAlias("js", ";project coreJS")
 addCommandAlias("jvm", ";project coreJVM")
 addCommandAlias("root", ";project root")
+addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
 
 lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(

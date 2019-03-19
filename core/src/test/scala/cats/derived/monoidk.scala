@@ -33,4 +33,6 @@ class MonoidKSuite extends KittensSuite {
     checkAll("AutoMonoidK[ComplexProduct]", MonoidTests[ComplexProduct[Char]].monoid)
 
   }
+
+
 }

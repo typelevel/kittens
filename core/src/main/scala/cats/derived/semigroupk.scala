@@ -42,6 +42,9 @@ private[derived] abstract class  MkSemigroupK0 extends MkSemigroupK0b {
         pack(fh.combineK(hx, hy), ft.combineK(tx, ty))
       }
     }
+
+  override implicit def mkSemigroupKConst[T](implicit sg: Semigroup[T]): MkSemigroupK[Const[T]#λ] =
+    super[MkSemigroupK0b].mkSemigroupKConst
 }
 
 private[derived] abstract class  MkSemigroupK0b extends MkSemigroupK1 {
@@ -102,8 +105,10 @@ private[derived] abstract class  MkSemigroupK3 extends MkSemigroupK4 {
 }
 
 trait MkSemigroupK4 {
-  implicit def mkSemigroupKConst[T](implicit sg: Semigroup[T])
-    : MkSemigroupK[Const[T]#λ] = new MkSemigroupK[Const[T]#λ] {
+
+  // For binary compatibility.
+  def mkSemigroupKConst[T](implicit sg: Semigroup[T]): MkSemigroupK[Const[T]#λ] =
+    new MkSemigroupK[Const[T]#λ] {
       def combineK[A](x: T, y: T) = sg.combine(x, y)
     }
 }

@@ -68,4 +68,5 @@ class EmptyKSuite extends KittensSuite {
 
     assert(E.empty == (Nil, Nil))
   }
+
 }

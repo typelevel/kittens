@@ -34,6 +34,7 @@ class SemigroupKSuite extends KittensSuite {
     implicit val sg = SemigroupK[ComplexProduct].algebra[Char]
     checkAll("Auto SemigroupK[ComplexProduct]", SemigroupTests[ComplexProduct[Char]].semigroup)
   }
+
 }
 
 object SemigroupKSuite {

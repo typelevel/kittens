@@ -103,6 +103,11 @@ class FunctorSuite extends FreeSpec with FunctorSyntax {
       val pair = (42, "shapeless")
       assert(F[Int].map(pair)(_.length) == (42, 9))
     }
+
+    "derives an instance for Interleaved[T]" in {
+      semi.functor[TestDefns.Interleaved]
+    }
+
   }
 
   "full auto derivation" - {

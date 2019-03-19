@@ -35,6 +35,10 @@ class HashSuite extends KittensSuite {
     }
   })
 
+  test("derives an instance for Interleaved[T]") {
+    import cats.instances.all._
+    semi.hash[TestDefns.Interleaved[Int]]
+  }
 
   test("existing Hash instances in scope are respected auto")(check {
 

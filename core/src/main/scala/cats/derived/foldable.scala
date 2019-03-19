@@ -21,9 +21,7 @@ import shapeless._
 
 trait MkFoldable[F[_]] extends Foldable[F] {
   def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B = safeFoldLeft(fa, b){ (b, a) => now(f(b, a)) }.value
-
   def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
-
   def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B]
 }
 
@@ -35,9 +33,11 @@ trait MkFoldableDerivation extends MkFoldable0 {
   implicit val mkFoldableId: MkFoldable[shapeless.Id] =
     new MkFoldable[shapeless.Id] {
       def foldRight[A, B](fa: A, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = f(fa, lb)
-
       def safeFoldLeft[A, B](fa: A, b: B)(f: (B, A) => Eval[B]): Eval[B] = now(f(b, fa).value)
     }
+
+  override implicit def mkFoldableConstFoldable[T]: MkFoldable[Const[T]#λ] =
+    super[MkFoldable0].mkFoldableConstFoldable
 }
 
 trait MkFoldable0 extends MkFoldable1 {
@@ -111,10 +111,11 @@ trait MkFoldable2 extends MkFoldable3 {
 }
 
 trait MkFoldable3 {
-  implicit def mkFoldableConstFoldable[T]: MkFoldable[Const[T]#λ] =
+
+  // For binary compatibility.
+  def mkFoldableConstFoldable[T]: MkFoldable[Const[T]#λ] =
     new MkFoldable[Const[T]#λ] {
       def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
-
       def safeFoldLeft[A, B](fa: T, b: B)(f: (B, A) => Eval[B]): Eval[B] = now(b)
     }
 

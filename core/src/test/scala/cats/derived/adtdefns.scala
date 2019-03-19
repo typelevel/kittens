@@ -21,6 +21,9 @@ import org.scalacheck.{Cogen, Arbitrary}, Arbitrary.arbitrary
 import scala.annotation.tailrec
 
 object TestDefns {
+
+  case class Interleaved[T](i: Int, t: T, d: Double, tt: List[T], s: String)
+
   sealed trait IList[A]
   final case class ICons[A](head: A, tail: IList[A]) extends IList[A]
   final case class INil[A]() extends IList[A]

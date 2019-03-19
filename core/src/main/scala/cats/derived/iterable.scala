@@ -108,6 +108,9 @@ object MkIterable extends MkIterable0 {
       def initialState[A](fa: F[A]): IterState[A] =
         ReturnI(fa.iterator)
     }
+
+  override implicit def mkIterableConst[T]: MkIterable[Const[T]#λ] =
+    super[MkIterable0].mkIterableConst
 }
 
 trait MkIterable0 extends MkIterable1 {
@@ -155,7 +158,8 @@ trait MkIterable2 extends MkIterable3 {
 trait MkIterable3 {
   import IterState._
 
-  implicit def mkIterableConst[T]: MkIterable[Const[T]#λ] =
+  // For binary compatibility.
+  def mkIterableConst[T]: MkIterable[Const[T]#λ] =
     new MkIterable[Const[T]#λ] {
       def initialState[A](fa: T): IterState[A] = Done
     }

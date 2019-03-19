@@ -39,21 +39,15 @@ object MkFunctor extends MkFunctorDerivation {
 }
 
 private[derived] abstract class MkFunctorDerivation extends MkFunctor1 {
-  import MkFunctor.SafeMap
-
   protected type FunctorOrMk[F[_]] = Functor[F] OrElse MkFunctor[F]
 
-  implicit val mkFunctorHNil: MkFunctor[Const[HNil]#λ] = new MkFunctor[Const[HNil]#λ] {
-    def safeMap[A, B](nil: HNil)(f: A => Eval[B]) = Eval.now(nil)
-  }
+  implicit val mkFunctorHNil: MkFunctor[Const[HNil]#λ] = mkFunctorConst
+  implicit val mkFunctorCNil: MkFunctor[Const[CNil]#λ] = mkFunctorConst
 
-  implicit val mkFunctorCNil: MkFunctor[Const[CNil]#λ] = new MkFunctor[Const[CNil]#λ] {
-    def safeMap[A, B](nil: CNil)(f: A => Eval[B]) = Eval.now(nil)
-  }
-
-  implicit def mkFunctorConst[T]: MkFunctor[Const[T]#λ] = new MkFunctor[Const[T]#λ] {
-    def safeMap[A, B](t: T)(f: A => Eval[B]) = Eval.now(t)
-  }
+  implicit def mkFunctorConst[T]: MkFunctor[Const[T]#λ] =
+    new MkFunctor[Const[T]#λ] {
+      def safeMap[A, B](t: T)(f: A => Eval[B]) = Eval.now(t)
+    }
 }
 
 private[derived] abstract class MkFunctor1 extends MkFunctor2 {

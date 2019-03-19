@@ -42,6 +42,9 @@ private[derived] abstract class MkMonoidK0 extends MkMonoidK0b {
         pack(fh.combineK(hx, hy), ft.combineK(tx, ty))
       }
     }
+
+  override implicit def mkMonoidKConst[T](implicit m: Monoid[T]): MkMonoidK[Const[T]#λ] =
+    super[MkMonoidK0b].mkMonoidKConst
 }
 
 private[derived] abstract class  MkMonoidK0b extends MkMonoidK1 {
@@ -108,8 +111,10 @@ private[derived] abstract class  MkMonoidK23 extends MkMonoidK4 {
 }
 
 private[derived] abstract class  MkMonoidK4 {
-  implicit def mkMonoidKConst[T](implicit m: Monoid[T])
-    : MkMonoidK[Const[T]#λ] = new MkMonoidK[Const[T]#λ] {
+
+  // For binary compatibility.
+  def mkMonoidKConst[T](implicit m: Monoid[T]): MkMonoidK[Const[T]#λ] =
+    new MkMonoidK[Const[T]#λ] {
       def empty[A] = m.empty
       def combineK[A](x: T, y: T) = m.combine(x, y)
     }

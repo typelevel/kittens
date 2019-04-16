@@ -22,7 +22,11 @@ object auto {
 
   object pure extends MkPureDerivation
 
-  object emptyK extends MkEmptyKDerivation
+  object emptyK extends {
+    implicit def kittensMkEmptyK[F[_]](
+      implicit refute: Refute[EmptyK[F]], ev: MkEmptyK[F]
+     ) : EmptyK[F] = ev
+  }
 
   object eq {
     implicit def kittensMkEq[A](

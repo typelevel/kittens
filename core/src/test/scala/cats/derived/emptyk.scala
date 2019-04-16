@@ -20,6 +20,7 @@ import alleycats.EmptyK
 
 import TestDefns._
 import auto.emptyK._
+import alleycats.std.all._
 
 class EmptyKSuite extends KittensSuite {
 

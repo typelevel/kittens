@@ -16,13 +16,15 @@ object auto {
   object empty {
     implicit def kittensMkEmpty[A](
       implicit refute: Refute[Empty[A]], ev: MkEmpty[A]
-   ) : Empty[A] = ev
+    ): Empty[A] = ev
 
   }
 
-  object pure extends MkPureDerivation
-
-  object emptyK extends MkEmptyKDerivation
+  object emptyK {
+    implicit def kittensMkEmptyK[F[_]](
+      implicit refute: Refute[EmptyK[F]], ev: MkEmptyK[F]
+     ): EmptyK[F] = ev
+  }
 
   object eq {
     implicit def kittensMkEq[A](
@@ -55,7 +57,6 @@ object auto {
 
   }
 
-
   object show {
     implicit def kittensMkShow[A](
       implicit refute: Refute[Show[A]], show: MkShow[A]
@@ -68,7 +69,7 @@ object auto {
     ): ShowPretty[A] = showPretty
   }
 
-  object monoid extends MkMonoidDerivation //todo the regular approach doesn't work for monoid
+
 
   object semigroup {
     implicit def kittensMkSemigroup[A](
@@ -90,9 +91,17 @@ object auto {
     ): MonoidK[F] = ev
   }
 
-  object foldable extends MkFoldableDerivation
+  object traverse {
+    implicit def kittensMkTraverse[F[_]](
+      implicit refute: Refute[Traverse[F]], ev: MkTraverse[F]
+    ): Traverse[F] = ev
+  }
 
-  object traverse extends MkTraverseDerivation
+  //todo: the regular approach doesn't work for the following instances
+  object pure extends MkPureDerivation
+  object foldable extends MkFoldableDerivation
+  object monoid extends MkMonoidDerivation
+
 
 }
 

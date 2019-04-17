@@ -77,7 +77,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
-addCommandAlias("validate", ";root;clean;test;mima")
+addCommandAlias("validate", ";root;clean;test") //todo: add mima back once we release 2.0
 addCommandAlias("releaseAll", ";root;release")
 addCommandAlias("js", ";project coreJS")
 addCommandAlias("jvm", ";project coreJVM")

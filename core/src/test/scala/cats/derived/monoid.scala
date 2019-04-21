@@ -16,44 +16,65 @@
 
 package cats.derived
 
-import cats._, instances.all._, kernel.laws.discipline._
-import org.scalacheck.Arbitrary, Arbitrary.arbitrary
-import TestDefns._
+import cats.{Eq, Monoid}
+import cats.instances.all._
+import cats.kernel.laws.discipline._
+import org.scalacheck.Arbitrary
 
 class MonoidSuite extends KittensSuite {
   import MonoidSuite._
+  import TestDefns._
+
+  def testMonoid(context: String)(
+    implicit foo: Monoid[Foo],
+    recursive: Monoid[Recursive],
+    interleaved: Monoid[Interleaved[Int]],
+    box: Monoid[Box[Mul]]
+  ): Unit = {
+    checkAll(s"$context.Monoid[Foo]", MonoidTests[Foo].monoid)
+    checkAll(s"$context.Monoid[Recursive]", MonoidTests[Recursive].monoid)
+    checkAll(s"$context.Monoid[Interleaved[Int]]", MonoidTests[Interleaved[Int]].monoid)
+    checkAll(s"$context.Monoid[Box[Mul]]", MonoidTests[Box[Mul]].monoid)
+
+    test(s"$context.Monoid respects existing instances") {
+      assert(box.empty.content.value == 1)
+      assert(box.combine(Box(Mul(5)), Box(Mul(5))).content.value == 25)
+    }
+  }
+
   {
     import auto.monoid._
-
-    checkAll("Auto Monoid[Foo]", MonoidTests[Foo].monoid)
-    checkAll("Auto Monoid[Rec]", MonoidTests[Rec].monoid)
+    testMonoid("auto")
   }
+
   {
-    import auto.semigroup._ //todo: required semigroup in scope
-    implicit val mfoo = semi.monoid[Foo]
-    implicit val mRec = semi.monoid[Rec]
-
-    checkAll("Monoid[Foo]", MonoidTests[Foo].monoid)
-    checkAll("Monoid[Rec]", MonoidTests[Rec].monoid)
+    import cached.monoid._
+    testMonoid("cached")
   }
 
-  test("derives an instance for Interleaved[T]") {
-    semi.monoid[TestDefns.Interleaved[Int]]
+  {
+    implicit val foo: Monoid[Foo] = semi.monoid
+    implicit lazy val recursive: Monoid[Recursive] = semi.monoid
+    implicit val interleaved: Monoid[Interleaved[Int]] = semi.monoid
+    implicit val box: Monoid[Box[Mul]] = semi.monoid
+    testMonoid("semi")
   }
-
 }
 
 object MonoidSuite {
-  final case class Rec(i: Int, is: Option[Rec])
-  object Rec {
-    implicit lazy val arb: Arbitrary[Rec] = {
-      Arbitrary(for {
-        i <- arbitrary[Int]
-        is <- arbitrary[Option[Rec]]
-      } yield Rec(i, is))
-    }
 
-    implicit val eqv: Eq[Rec] =
+  final case class Mul(value: Int)
+  object Mul {
+
+    implicit val eqv: Eq[Mul] =
       Eq.fromUniversalEquals
+
+    implicit val arbitrary: Arbitrary[Mul] =
+      Arbitrary(Arbitrary.arbitrary[Int].map(apply))
+
+    implicit val monoid: Monoid[Mul] = new Monoid[Mul] {
+      val empty = Mul(1)
+      def combine(x: Mul, y: Mul) = Mul(x.value * y.value)
+    }
   }
 }

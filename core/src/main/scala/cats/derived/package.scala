@@ -2,7 +2,7 @@ package cats
 package derived
 
 import alleycats._
-import shapeless.{Cached, Refute}
+import shapeless.{Cached, Lazy, Refute}
 
 /**
   * Fully automatically derive the instance, note that this derivation is not cached, so it
@@ -77,6 +77,12 @@ object auto {
     ): Semigroup[A] = semigroup
   }
 
+  object monoid {
+    implicit def kittensMkMonoid[A](
+      implicit refute: Refute[Monoid[A]], ev: Lazy[MkMonoid[A]]
+    ): Monoid[A] = ev.value
+  }
+
   object semigroupK {
     implicit def kittensMkSemigroupK[F[_]](
       implicit refute: Refute[SemigroupK[F]], ev: MkSemigroupK[F]
@@ -100,7 +106,6 @@ object auto {
   //todo: the regular approach doesn't work for the following instances
   object pure extends MkPureDerivation
   object foldable extends MkFoldableDerivation
-  object monoid extends MkMonoidDerivation
 
 
 }
@@ -186,6 +191,12 @@ object cached {
     ): Semigroup[A] = semigroup.value
   }
 
+  object monoid {
+    implicit def kittensMkMonoid[A](
+      implicit refute: Refute[Monoid[A]], cached: Cached[MkMonoid[A]]
+    ): Monoid[A] = cached.value
+  }
+
   object semigroupK {
     implicit def kittensMkSemigroupK[F[_]](
       implicit refute: Refute[SemigroupK[F]], ev: Cached[MkSemigroupK[F]]
@@ -249,7 +260,7 @@ object semi {
 
   def traverse[F[_]](implicit F: MkTraverse[F]): Traverse[F] = F
 
-  def monoid[T](implicit T: MkMonoid[T]): Monoid[T] = T
+  def monoid[A](implicit ev: Lazy[MkMonoid[A]]): Monoid[A] = ev.value
 
   def monoidK[F[_]](implicit F: MkMonoidK[F]): MonoidK[F] = F
 

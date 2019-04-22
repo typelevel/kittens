@@ -19,16 +19,37 @@ package cats.derived
 import cats.Monoid
 import shapeless._
 
-trait MkMonoid[T] extends Monoid[T]
+import scala.annotation.implicitNotFound
+
+@implicitNotFound("Could not derive an instance of Monoid[${A}]")
+trait MkMonoid[A] extends Monoid[A]
 
 object MkMonoid extends MkMonoidDerivation {
-  def apply[T](implicit m: MkMonoid[T]): MkMonoid[T] = m
+  def apply[A](implicit ev: MkMonoid[A]): MkMonoid[A] = ev
 }
 
 private[derived] abstract class MkMonoidDerivation {
-  implicit def mkMonoidAlgebraic[T](implicit e: Lazy[MkEmpty[T]], sg: Lazy[MkSemigroup[T]])
-    : MkMonoid[T] = new MkMonoid[T] {
-      def empty = e.value.empty
-      def combine(x: T, y: T) = sg.value.combine(x, y)
+
+  implicit val mkMonoidHNil: MkMonoid[HNil] =
+    instance[HNil](HNil)((_, _) => HNil)
+
+  implicit def mkMonoidHCons[H, T <: HList](
+    implicit H: Monoid[H] OrElse MkMonoid[H], T: MkMonoid[T]
+  ): MkMonoid[H :: T] = instance(H.unify.empty :: T.empty) {
+    case (hx :: tx, hy :: ty) => H.unify.combine(hx, hy) :: T.combine(tx, ty)
+  }
+
+
+  implicit def mkMonoidGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkMonoid[R]]): MkMonoid[A] =
+    new MkMonoid[A] {
+      // Cache empty case classes.
+      lazy val empty = A.from(R.value.empty)
+      def combine(x: A, y: A) = A.from(R.value.combine(A.to(x), A.to(y)))
+    }
+
+  private def instance[A](default: => A)(f: (A, A) => A): MkMonoid[A] =
+    new MkMonoid[A] {
+      def empty = default
+      def combine(x: A, y: A) = f(x, y)
     }
 }

@@ -25,14 +25,14 @@ class TraverseHListSuite extends KittensSuite {
 
   test("traversing Set with Set => Option")(check {
     forAll { (x: Set[Int], y: Set[String], z: Set[Float]) =>
-      val expected = (x.headOption |@| y.headOption |@| z.headOption) map (_ :: _ :: _ :: HNil)
+      val expected = (x.headOption, y.headOption, z.headOption).mapN(_ :: _ :: _ :: HNil)
       (x :: y :: z :: HNil).traverse(headOption) == expected
     }
   })
 
   test("traversing Option with Option => Validation")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
-      val expected = (optToValidation(x) |@| optToValidation(y) |@| optToValidation(z)) map (_ :: _ :: _ :: HNil)
+      val expected = (optToValidation(x), optToValidation(y), optToValidation(z)).mapN(_ :: _ :: _ :: HNil)
       (x :: y :: z :: HNil).traverse(optionToValidation) == expected
     }
   })

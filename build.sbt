@@ -17,7 +17,8 @@ lazy val commonSettings = Seq(
     "-feature",
     "-language:higherKinds",
     "-language:implicitConversions",
-    "-unchecked"
+    "-unchecked",
+    "-deprecation"
   ),
   scalacOptions ++= (
     CrossVersion.partialVersion(scalaVersion.value) match {

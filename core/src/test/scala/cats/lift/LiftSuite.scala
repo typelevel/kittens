@@ -15,9 +15,7 @@ class LiftSuite extends KittensSuite {
 
   test("lifting a ternary operation")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
-      val r1 = lifted(x, y, z)
-      val expected = x |@| y |@| z map foo
-      r1 == expected
+      lifted(x, y, z) == (x, y, z).mapN(foo)
     }
   })
 

@@ -102,7 +102,6 @@ object TestDefns {
   final case class Leaf[T](t: T) extends Tree[T]
   final case class Node[T](l: Tree[T], r: Tree[T]) extends Tree[T]
 
-
   final case class Foo(i: Int, b: Option[String])
   object Foo {
 

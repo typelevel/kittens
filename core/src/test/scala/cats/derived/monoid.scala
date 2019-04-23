@@ -37,8 +37,8 @@ class MonoidSuite extends KittensSuite {
     checkAll(s"$context.Monoid[Box[Mul]]", MonoidTests[Box[Mul]].monoid)
 
     test(s"$context.Monoid respects existing instances") {
-      assert(box.empty.content.value == 1)
-      assert(box.combine(Box(Mul(5)), Box(Mul(5))).content.value == 25)
+      assert(box.empty == Box(Mul(1)))
+      assert(box.combine(Box(Mul(5)), Box(Mul(5))) == Box(Mul(25)))
     }
   }
 

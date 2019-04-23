@@ -19,35 +19,41 @@ package derived
 
 import alleycats.Empty
 import shapeless._
-import scala.annotation.implicitNotFound
 
+import scala.annotation.implicitNotFound
 
 @implicitNotFound("Could not derive an instance of Empty[${A}]")
 trait MkEmpty[A] extends Empty[A]
 
 object MkEmpty extends MkEmptyDerivation {
-  def apply[A](implicit empty: MkEmpty[A]): MkEmpty[A] = empty
+  def apply[A](implicit ev: MkEmpty[A]): MkEmpty[A] = ev
 }
 
-private[derived] abstract class MkEmptyDerivation {
+private[derived] abstract class MkEmptyDerivation extends MkEmptyGeneric {
+  implicit val mkEmptyHNil: MkEmpty[HNil] = instance(HNil)
 
-  protected def instance[A](default: => A): MkEmpty[A] = new MkEmpty[A] {
-    def empty = default
-  }
+  implicit def mkEmptyHCons[H, T <: HList](implicit H: Empty[H] OrElse MkEmpty[H], T: MkEmpty[T]): MkEmpty[H :: T] =
+    instance(H.unify.empty :: T.empty)
 
-  implicit val mkEmptyHNil: MkEmpty[HNil] =
-    instance(HNil)
+  implicit def mkEmptyCConsLeft[L, R <: Coproduct](
+    implicit L: Empty[L] OrElse MkEmpty[L], R: Refute[MkEmpty[R]]
+  ): MkEmpty[L :+: R] = instance(Inl(L.unify.empty))
+}
 
-  implicit def mkEmptyHCons[H, T <: HList](
-    implicit H: Empty[H] OrElse MkEmpty[H], T: MkEmpty[T]
-  ): MkEmpty[H :: T] = instance {
-    H.unify.empty :: T.empty
-  }
+private[derived] abstract class MkEmptyGeneric {
 
-  implicit def mkEmptyGeneric[A, R](
-    implicit gen: Generic.Aux[A, R], R: Lazy[MkEmpty[R]]
-  ): MkEmpty[A] = new MkEmpty[A] {
-    // Cache empty case classes.
-    lazy val empty = gen.from(R.value.empty)
-  }
+  protected def instance[A](default: A): MkEmpty[A] =
+    new MkEmpty[A] {
+      def empty = default
+    }
+
+  implicit def mkEmptyCConsRight[L, R <: Coproduct](implicit R: MkEmpty[R]): MkEmpty[L :+: R] =
+    instance(Inr(R.empty))
+
+  implicit def mkEmptyGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkEmpty[R]]): MkEmpty[A] =
+    new MkEmpty[A] {
+      // Cache empty case classes.
+      lazy val empty = A.from(R.value.empty)
+    }
+
 }

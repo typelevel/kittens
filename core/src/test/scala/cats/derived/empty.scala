@@ -19,54 +19,63 @@ package derived
 
 import alleycats.Empty
 import cats.instances.all._
-import org.scalatest.FreeSpec
-import TestDefns._
 
+class EmptySuite extends KittensSuite {
+  import EmptySuite._
+  import TestDefns._
 
-class EmptySuite extends FreeSpec {
+  // `Monoid[Option[A]]` gives us `Empty[Option[A]]` but it requires a `Semigroup[A]`.
+  implicit def emptyOption[A]: Empty[Option[A]] = Empty(None)
 
-  "semi auto derivation" - {
-    "for simple product" in {
-      implicit val E = semi.empty[Foo]
-      assert(Empty[Foo].empty == Foo(0, None))
-    }
-
-    "for nested product" in {
-      implicit val E = semi.empty[Outer]
-      assert(Empty[Outer].empty == Outer(Inner(0)))
-    }
-
-    "for nested product respects existing instances" in {
-      import EmptySuite._
-      implicit val E = semi.empty[Outer]
-      assert(Empty[Outer].empty == Outer(Inner(1)))
-    }
-
-    "derives an instance for Interleaved[T]" in {
-      semi.empty[TestDefns.Interleaved[Int]]
-    }
-
+  def testEmpty(context: String)(
+    implicit foo: Empty[Foo],
+    outer: Empty[Outer],
+    interleaved: Empty[Interleaved[String]],
+    recursive: Empty[Recursive],
+    iList: Empty[IList[Int]],
+    snoc: Empty[Snoc[String => Int]],
+    box: Empty[Box[Mask]],
+    chain: Empty[Chain]
+  ): Unit = {
+    test(s"$context.Empty[Foo]")(assert(foo.empty == Foo(0, None)))
+    test(s"$context.Empty[Outer]")(assert(outer.empty == Outer(Inner(0))))
+    test(s"$context.Empty[Interleaved[String]]")(assert(interleaved.empty == Interleaved(0, "", 0.0, Nil, "")))
+    test(s"$context.Empty[Recursive]")(assert(recursive.empty == Recursive(0, None)))
+    test(s"$context.Empty[IList[Int]]")(assert(iList.empty == INil()))
+    test(s"$context.Empty[Snoc[String => Int]]")(assert(snoc.empty == SNil()))
+    test(s"$context.Empty respects existing instances")(assert(box.empty == Box(Mask(0xffffffff))))
+    // Known limitation of recursive typeclass derivation.
+    test(s"$context.Empty[Chain] throws a StackOverflowError")(assertThrows[StackOverflowError](chain.empty))
   }
 
-  "full auto derivation" - {
+  {
     import auto.empty._
+    testEmpty("auto")
+  }
 
-    "for simple product" in {
-      assert(Empty[Foo].empty == Foo(0, None))
-    }
+  {
+    import cached.empty._
+    testEmpty("cached")
+  }
 
-    "for nested product" in {
-      assert(Empty[Outer].empty == Outer(Inner(0)))
-    }
-
-    "for nested product respects existing instances" in {
-      import EmptySuite._
-      assert(Empty[Outer].empty == Outer(Inner(1)))
-    }
+  {
+    implicit val foo: Empty[Foo] = semi.empty
+    implicit val outer: Empty[Outer] = semi.empty
+    implicit val interleaved: Empty[Interleaved[String]] = semi.empty
+    implicit val recursive: Empty[Recursive] = semi.empty
+    implicit lazy val iList: Empty[IList[Int]] = semi.empty
+    implicit lazy val snoc: Empty[Snoc[String => Int]] = semi.empty
+    implicit val box: Empty[Box[Mask]] = semi.empty
+    implicit lazy val chain: Empty[Chain] = semi.empty
+    testEmpty("semi")
   }
 }
 
 object EmptySuite {
-  implicit val emptyInner: Empty[Inner] =
-    Empty(Inner(1))
+
+  final case class Chain(head: Int, tail: Chain)
+  final case class Mask(bits: Int)
+  object Mask {
+    implicit val empty: Empty[Mask] = Empty(Mask(0xffffffff))
+  }
 }

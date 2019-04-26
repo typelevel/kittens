@@ -19,63 +19,52 @@ package cats.derived
 import alleycats.ConsK
 import shapeless._
 
-object consk {
-  object exports {
-    def apply[F[_]](implicit mcff: MkConsK[F, F]) =
-      ConsK[F](
-        new ConsK[F] {
-          def cons[A](hd: A, tl: F[A]): F[A] = mcff.cons(hd, tl)
-        }
-      )
+import scala.annotation.implicitNotFound
 
-    implicit def deriveConsK[F[_]](implicit mcff: MkConsK[F, F]): ConsK[F] = apply[F]
-  }
+@implicitNotFound("Could not derive an instance of ConsK[${F}]")
+trait MkConsK[F[_], G[_]] extends Serializable {
+  def cons[A](head: A, tail: G[A]): F[A]
 }
 
-trait MkConsK[F[_], G[_]] {
-  def cons[A](hd: A, tl: G[A]): F[A]
+object MkConsK extends MkConsKDerivation {
+  def apply[F[_], G[_]](implicit ev: MkConsK[F, G]): MkConsK[F, G] = ev
+
+  def consK[F[_]](implicit F: MkConsK[F, F]): ConsK[F] =
+    new ConsK[F] {
+      def cons[A](head: A, tail: F[A]) = F.cons(head, tail)
+    }
 }
 
-object MkConsK extends MkConsK0 {
-  def apply[F[_], G[_]](implicit mcfg: MkConsK[F, G]): MkConsK[F, G] = mcfg
-}
+private[derived] abstract class MkConsKDerivation extends MkConsKRight {
 
-trait MkConsK0 extends MkConsK1 {
-  implicit def hconsL[G[_]]: MkConsK[λ[t => t :: G[t] :: HNil], G] =
+  implicit def mkConsKHConsLeft[G[_]]: MkConsK[λ[t => t :: G[t] :: HNil], G] =
     new MkConsK[λ[t => t :: G[t] :: HNil], G] {
-      def cons[A](hd: A, tl: G[A]): A :: G[A] :: HNil = hd :: tl :: HNil
+      def cons[A](head: A, tail: G[A]) = head :: tail :: HNil
     }
 
-  implicit def cconsL[F[_], G[_]]
-    (implicit icf: IsCCons1[F, MkConsK[?[_], G], Trivial1]): MkConsK[F, G] =
+  implicit def mkConsKCConsLeft[F[_], G[_]](implicit F: IsCCons1[F, MkConsK[?[_], G], Trivial1]): MkConsK[F, G] =
       new MkConsK[F, G] {
-        def cons[A](hd: A, tl: G[A]): F[A] = {
-          import icf._
-          pack(Left(fh.cons(hd, tl)))
-        }
+        def cons[A](head: A, tail: G[A]) = F.pack(Left(F.fh.cons(head, tail)))
       }
 }
 
-trait MkConsK1 extends MkConsK2 {
-  implicit def hconsR[G[_]]: MkConsK[λ[t => G[t] :: t :: HNil], G] =
+private[derived] abstract class MkConsKRight extends MkConsKGeneric {
+
+  implicit def mkConsKHConsRight[G[_]]: MkConsK[λ[t => G[t] :: t :: HNil], G] =
     new MkConsK[λ[t => G[t] :: t :: HNil], G] {
-      def cons[A](hd: A, tl: G[A]): G[A] :: A :: HNil = tl :: hd :: HNil
+      def cons[A](head: A, tail: G[A]) = tail :: head :: HNil
     }
 
-  implicit def cconsR[F[_], G[_]]
-    (implicit icf: IsCCons1[F, Trivial1, MkConsK[?[_], G]]): MkConsK[F, G] =
-      new MkConsK[F, G] {
-        def cons[A](hd: A, tl: G[A]): F[A] = {
-          import icf._
-          pack(Right(ft.cons(hd, tl)))
-        }
-      }
+  implicit def mkConsKCConsRight[F[_], G[_]](implicit F: IsCCons1[F, Trivial1, MkConsK[?[_], G]]): MkConsK[F, G] =
+    new MkConsK[F, G] {
+      def cons[A](head: A, tail: G[A]) = F.pack(Right(F.ft.cons(head, tail)))
+    }
 }
 
-trait MkConsK2 {
-  implicit def generic[F[_], G[_]]
-    (implicit gen: Generic1[F, MkConsK[?[_], G]]): MkConsK[F, G] =
-      new MkConsK[F, G] {
-        def cons[A](hd: A, tl: G[A]): F[A] = gen.from(gen.fr.cons(hd, tl))
-      }
+private[derived] abstract class MkConsKGeneric {
+
+  implicit def mkConsKGeneric[F[_], G[_]](implicit F: Generic1[F, MkConsK[?[_], G]]): MkConsK[F, G] =
+    new MkConsK[F, G] {
+      def cons[A](head: A, tail: G[A]) = F.from(F.fr.cons(head, tail))
+    }
 }

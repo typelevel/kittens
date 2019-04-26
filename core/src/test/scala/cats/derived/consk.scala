@@ -17,22 +17,34 @@
 package cats.derived
 
 import alleycats.ConsK
-import cats._
-import shapeless._
+import org.scalacheck.Arbitrary
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
-import TestDefns._
-import consk.exports._
+class ConsKSuite extends KittensSuite with GeneratorDrivenPropertyChecks {
+  import TestDefns._
 
-class ConsKSuite extends KittensSuite {
-  test("ConsK[IList]") {
-    val C = ConsK[IList]
+  def checkConsK[F[_], A: Arbitrary](nil: F[A])(fromSeq: Seq[A] => F[A])(implicit F: ConsK[F]): Unit =
+    forAll((xs: Seq[A]) => assert(xs.foldRight(nil)(F.cons) == fromSeq(xs)))
 
-    assert(C.cons(23, INil()) == ICons(23, INil()))
+  def testConsK(context: String)(implicit iList: ConsK[IList], snoc: ConsK[Snoc]): Unit = {
+    test(s"$context.ConsK[IList]")(checkConsK[IList, Int](INil())(IList.fromSeq))
+    test(s"$context.ConsK[Snoc]")(checkConsK[Snoc, Int](SNil())(xs => Snoc.fromSeq(xs.reverse)))
+    test(s"$context.ConsK is Serializable")(assert(isSerializable(iList)))
   }
 
-  test("ConsK[Snoc]") {
-    val C = ConsK[Snoc]
+  {
+    import auto.consK._
+    testConsK("auto")
+  }
 
-    assert(C.cons(23, SNil()) == SCons(SNil(), 23))
+  {
+    import cached.consK._
+    testConsK("cached")
+  }
+
+  {
+    implicit val iList: ConsK[IList] = semi.consK[IList]
+    implicit val snoc: ConsK[Snoc] = semi.consK[Snoc]
+    testConsK("semi")
   }
 }

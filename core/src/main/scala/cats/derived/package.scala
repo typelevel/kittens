@@ -107,7 +107,11 @@ object auto {
   object pure extends MkPureDerivation
   object foldable extends MkFoldableDerivation
 
-
+  object consK {
+    implicit def kittensMkConsK[F[_]](
+      implicit refute: Refute[ConsK[F]], F: Lazy[MkConsK[F, F]]
+    ): ConsK[F] = MkConsK.consK(F.value)
+  }
 }
 
 /**
@@ -203,6 +207,12 @@ object cached {
     ): SemigroupK[F] = ev.value
 
   }
+
+  object consK {
+    implicit def kittensMkConsK[F[_]](
+      implicit refute: Refute[ConsK[F]], cached: Cached[MkConsK[F, F]]
+    ): ConsK[F] = MkConsK.consK(cached.value)
+  }
 }
 
 /**
@@ -269,6 +279,8 @@ object semi {
   def semigroup[T](implicit F: MkSemigroup[T]): Semigroup[T] = F
 
   def semigroupK[F[_]](implicit F: MkSemigroupK[F]): SemigroupK[F] = F
+
+  def consK[F[_]](implicit F: Lazy[MkConsK[F, F]]): ConsK[F] = MkConsK.consK(F.value)
 
   def iterable[F[_], A](fa: F[A])(implicit mif: MkIterable[F]): Iterable[A] = mif.iterable(fa)
 }

@@ -73,8 +73,8 @@ object auto {
 
   object semigroup {
     implicit def kittensMkSemigroup[A](
-      implicit refute: Refute[Semigroup[A]], semigroup: MkSemigroup[A]
-    ): Semigroup[A] = semigroup
+      implicit refute: Refute[Semigroup[A]], ev: Lazy[MkSemigroup[A]]
+    ): Semigroup[A] = ev.value
   }
 
   object monoid {
@@ -186,9 +186,8 @@ object cached {
 
   object semigroup {
     implicit def kittensMkSemigroup[A](
-      implicit refute: Refute[Semigroup[A]],
-      semigroup: Cached[MkSemigroup[A]]
-    ): Semigroup[A] = semigroup.value
+      implicit refute: Refute[Semigroup[A]], cached: Cached[MkSemigroup[A]]
+    ): Semigroup[A] = cached.value
   }
 
   object monoid {
@@ -266,7 +265,7 @@ object semi {
 
   def pure[F[_]](implicit F: MkPure[F]): Pure[F] = F
 
-  def semigroup[T](implicit F: MkSemigroup[T]): Semigroup[T] = F
+  def semigroup[T](implicit ev: Lazy[MkSemigroup[T]]): Semigroup[T] = ev.value
 
   def semigroupK[F[_]](implicit F: MkSemigroupK[F]): SemigroupK[F] = F
 

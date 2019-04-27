@@ -15,8 +15,8 @@ object auto {
 
   object empty {
     implicit def kittensMkEmpty[A](
-      implicit refute: Refute[Empty[A]], ev: MkEmpty[A]
-    ): Empty[A] = ev
+      implicit refute: Refute[Empty[A]], ev: Lazy[MkEmpty[A]]
+    ): Empty[A] = ev.value
 
   }
 
@@ -122,9 +122,8 @@ object cached {
 
   object empty {
     implicit def kittensMkEmpty[A](
-      implicit refute: Refute[Empty[A]],
-      ev: Cached[MkEmpty[A]])
-    : Empty[A] = ev.value
+      implicit refute: Refute[Empty[A]], cached: Cached[MkEmpty[A]]
+    ): Empty[A] = cached.value
   }
 
   object eq {
@@ -247,7 +246,7 @@ object cached {
   */
 object semi {
 
-  def empty[A](implicit ev: MkEmpty[A]): Empty[A] = ev
+  def empty[A](implicit ev: Lazy[MkEmpty[A]]): Empty[A] = ev.value
 
   def emptyK[F[_]](implicit F: MkEmptyK[F]): EmptyK[F] = F
 

@@ -15,39 +15,64 @@
  */
 
 package cats
-
 package derived
 
-import cats.Semigroup
-import org.scalacheck.Prop.forAll
-import org.scalacheck.Arbitrary
-import Arbitrary.arbitrary
-import TestDefns._
+import cats.instances.all._
 import cats.kernel.laws.discipline._
+import org.scalacheck.Arbitrary
 
 class SemigroupSuite extends KittensSuite {
-  import cats.instances.all._
+  import SemigroupSuite._
+  import TestDefns._
 
-  {
-    implicit val sFoo = semi.semigroup[Foo]
-    checkAll("Semigroup[Foo]", SemigroupTests[Foo].semigroup)
 
+  def testSemigroup(context: String)(
+    implicit foo: Semigroup[Foo],
+    recursive: Semigroup[Recursive],
+    interleaved: Semigroup[Interleaved[Int]],
+    box: Semigroup[Box[Mul]]
+  ): Unit = {
+    checkAll(s"$context.Semigroup[Foo]", SemigroupTests[Foo].semigroup)
+    checkAll(s"$context.Semigroup[Recursive]", SemigroupTests[Recursive].semigroup)
+    checkAll(s"$context.Semigroup[Interleaved[Int]]", SemigroupTests[Interleaved[Int]].semigroup)
+    checkAll(s"$context.Semigroup[Box[Mul]]", SemigroupTests[Box[Mul]].semigroup)
+
+    test(s"$context.Semigroup respects existing instances") {
+      assert(box.combine(Box(Mul(5)), Box(Mul(5))).content.value == 25)
+    }
   }
 
   {
     import auto.semigroup._
-    checkAll("Auto Semigroup[Foo]", SemigroupTests[Foo].semigroup)
-
+    testSemigroup("auto")
   }
 
-
-  implicit val sOuter = semi.semigroup[Outer]
-
-  implicit val eqOuter: Eq[Outer] = Eq.fromUniversalEquals
-  checkAll("Semigroup[Outer]", SemigroupTests[Outer].semigroup)
-
-  test("derives an instance for Interleaved[T]") {
-    semi.semigroup[TestDefns.Interleaved[Int]]
+  {
+    import cached.semigroup._
+    testSemigroup("cached")
   }
 
+  {
+    implicit val foo: Semigroup[Foo] = semi.semigroup
+    implicit lazy val recursive: Semigroup[Recursive] = semi.semigroup
+    implicit val interleaved: Semigroup[Interleaved[Int]] = semi.semigroup
+    implicit val box: Semigroup[Box[Mul]] = semi.semigroup
+    testSemigroup("semi")
+  }
+}
+
+object SemigroupSuite {
+
+  final case class Mul(value: Int)
+  object Mul {
+
+    implicit val eqv: Eq[Mul] =
+      Eq.fromUniversalEquals
+
+    implicit val arbitrary: Arbitrary[Mul] =
+      Arbitrary(Arbitrary.arbitrary[Int].map(apply))
+
+    implicit val semigroup: Semigroup[Mul] =
+      Semigroup.instance((x, y) => Mul(x.value * y.value))
+  }
 }

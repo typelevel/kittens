@@ -18,29 +18,22 @@ package cats
 package derived
 
 import shapeless._
-import scala.annotation.implicitNotFound
 
+import scala.annotation.implicitNotFound
 
 @implicitNotFound("Could not derive an instance of Functor[${F}]")
 trait MkFunctor[F[_]] extends Functor[F] {
-  def map[A, B](fa: F[A])(f: A => B) = safeMap(fa)(f.andThen(Eval.now)).value
   def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]]
+
+  def map[A, B](fa: F[A])(f: A => B): F[B] =
+    safeMap(fa)(a => Eval.later(f(a))).value
 }
 
 object MkFunctor extends MkFunctorDerivation {
-  def apply[F[_]](implicit functor: MkFunctor[F]): MkFunctor[F] = functor
-
-  private[derived] implicit class SafeMap[F[_]](val F: Functor[F]) extends AnyVal {
-    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) = F match {
-      case mk: MkFunctor[F] => mk.safeMap(fa)(f)
-      case _ => Eval.later(F.map(fa)(f.andThen(_.value)))
-    }
-  }
+  def apply[F[_]](implicit F: MkFunctor[F]): MkFunctor[F] = F
 }
 
-private[derived] abstract class MkFunctorDerivation extends MkFunctor1 {
-  protected type FunctorOrMk[F[_]] = Functor[F] OrElse MkFunctor[F]
-
+private[derived] abstract class MkFunctorDerivation extends MkFunctorNested {
   implicit val mkFunctorHNil: MkFunctor[Const[HNil]#λ] = mkFunctorConst
   implicit val mkFunctorCNil: MkFunctor[Const[CNil]#λ] = mkFunctorConst
 
@@ -50,46 +43,50 @@ private[derived] abstract class MkFunctorDerivation extends MkFunctor1 {
     }
 }
 
-private[derived] abstract class MkFunctor1 extends MkFunctor2 {
-  this: MkFunctorDerivation =>
-  import MkFunctor.SafeMap
+private[derived] abstract class MkFunctorNested extends MkFunctorGeneric {
 
-  implicit def mkFunctorSplit[F[_]](
-    implicit F: Split1[F, FunctorOrMk, FunctorOrMk]
-  ): MkFunctor[F] = new MkFunctor[F] {
-    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
-      F.fo.unify.safeMap(F.unpack(fa))(F.fi.unify.safeMap(_)(f)).map(F.pack)
-  }
+  implicit def mkFunctorNested[F[_]](implicit F: Split1[F, FunctorOrMk, FunctorOrMk]): MkFunctor[F] =
+    new MkFunctor[F] {
+
+      def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
+        mkSafeMap(F.fo)(F.unpack(fa))(mkSafeMap(F.fi)(_)(f)).map(F.pack)
+    }
 }
 
-private[derived] abstract class MkFunctor2 {
-  this: MkFunctorDerivation =>
+private[derived] abstract class MkFunctorGeneric {
+  protected type FunctorOrMk[F[_]] = Functor[F] OrElse MkFunctor[F]
 
-  import MkFunctor._
-
-  implicit def mkFunctorHCons[F[_]](
-    implicit F: IsHCons1[F, FunctorOrMk, MkFunctor]
-  ): MkFunctor[F] = new MkFunctor[F] {
-    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) = for {
-      ht <- Eval.now(F.unpack(fa))
-      fh <- F.fh.unify.safeMap(ht._1)(f)
-      ft <- F.ft.safeMap(ht._2)(f)
-    } yield F.pack(fh, ft)
-  }
-
-  implicit def mkFunctorCCons[F[_]](
-    implicit F: IsCCons1[F, FunctorOrMk, MkFunctor]
-  ): MkFunctor[F] = new MkFunctor[F] {
-    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) = F.unpack(fa) match {
-      case Left(hd)  => F.fh.unify.safeMap(hd)(f).map(fh => F.pack(Left(fh)))
-      case Right(tl) => F.ft.safeMap(tl)(f).map(ft => F.pack(Right(ft)))
+  protected def mkSafeMap[F[_], A, B](F: FunctorOrMk[F])(fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
+    F.unify match {
+      case mk: MkFunctor[F] => mk.safeMap(fa)(f)
+      case p => Eval.later(p.map(fa)(f(_).value))
     }
-  }
 
-  implicit def mkFunctorGeneric[F[_]](
-    implicit F: Generic1[F, MkFunctor]
-  ): MkFunctor[F] = new MkFunctor[F] {
-    def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
-      F.fr.safeMap(F.to(fa))(f).map(F.from)
-  }
+  implicit def mkFunctorHCons[F[_]](implicit F: IsHCons1[F, FunctorOrMk, MkFunctor]): MkFunctor[F] =
+    new MkFunctor[F] {
+
+      def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
+        Eval.now(F.unpack(fa)).flatMap { case (fha, fta) =>
+          for {
+            fhb <- mkSafeMap(F.fh)(fha)(f)
+            ftb <- F.ft.safeMap(fta)(f)
+          } yield F.pack(fhb, ftb)
+        }
+    }
+
+  implicit def mkFunctorCCons[F[_]](implicit F: IsCCons1[F, FunctorOrMk, MkFunctor]): MkFunctor[F] =
+    new MkFunctor[F] {
+
+      def safeMap[A, B](fa: F[A])(f: A => Eval[B]) = F.unpack(fa) match {
+        case Left(fha) => mkSafeMap(F.fh)(fha)(f).map(fhb => F.pack(Left(fhb)))
+        case Right(fta) => F.ft.safeMap(fta)(f).map(ftb => F.pack(Right(ftb)))
+      }
+    }
+
+  implicit def mkFunctorGeneric[F[_]](implicit F: Generic1[F, MkFunctor]): MkFunctor[F] =
+    new MkFunctor[F] {
+
+      def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
+        F.fr.safeMap(F.to(fa))(f).map(F.from)
+    }
 }

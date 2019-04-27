@@ -108,7 +108,7 @@ class ShowPrettyTests extends KittensSuite {
     val printedGenAdt =
       """
         |GenericAdtCase(
-        |  v = Some(1)
+        |  value = Some(1)
         |)
       """.stripMargin.trim
 

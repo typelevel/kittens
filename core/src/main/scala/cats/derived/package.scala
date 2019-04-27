@@ -99,8 +99,8 @@ object auto {
 
   object traverse {
     implicit def kittensMkTraverse[F[_]](
-      implicit refute: Refute[Traverse[F]], ev: MkTraverse[F]
-    ): Traverse[F] = ev
+      implicit refute: Refute[Traverse[F]], F: Lazy[MkTraverse[F]]
+    ): Traverse[F] = F.value
   }
 
   //todo: the regular approach doesn't work for the following instances
@@ -165,8 +165,8 @@ object cached {
 
   object traverse{
     implicit def kittensMkTraverse[F[_]](
-       implicit refute: Refute[Traverse[F]], ev: Cached[MkTraverse[F]])
-    : Traverse[F] = ev.value
+       implicit refute: Refute[Traverse[F]], cached: Cached[MkTraverse[F]]
+    ): Traverse[F] = cached.value
   }
 
   object show {
@@ -266,7 +266,7 @@ object semi {
 
   def foldable[F[_]](implicit F: MkFoldable[F]): Foldable[F] = F
 
-  def traverse[F[_]](implicit F: MkTraverse[F]): Traverse[F] = F
+  def traverse[F[_]](implicit F: Lazy[MkTraverse[F]]): Traverse[F] = F.value
 
   def monoid[A](implicit ev: Lazy[MkMonoid[A]]): Monoid[A] = ev.value
 

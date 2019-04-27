@@ -39,7 +39,7 @@ class EmptySuite extends KittensSuite {
   ): Unit = {
     test(s"$context.Empty[Foo]")(assert(foo.empty == Foo(0, None)))
     test(s"$context.Empty[Outer]")(assert(outer.empty == Outer(Inner(0))))
-    test(s"$context.Empty[Interleaved[String]]")(assert(interleaved.empty == Interleaved(0, "", 0.0, Nil, "")))
+    test(s"$context.Empty[Interleaved[String]]")(assert(interleaved.empty == Interleaved(0, "", 0, Nil, "")))
     test(s"$context.Empty[Recursive]")(assert(recursive.empty == Recursive(0, None)))
     test(s"$context.Empty[IList[Int]]")(assert(iList.empty == INil()))
     test(s"$context.Empty[Snoc[String => Int]]")(assert(snoc.empty == SNil()))

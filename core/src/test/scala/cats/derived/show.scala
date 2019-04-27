@@ -63,7 +63,7 @@ class ShowTests extends KittensSuite {
     }
 
     val genAdt: GenericAdt[Int] = GenericAdtCase(Some(1))
-    val printedGenAdt = "GenericAdtCase(v = Some(1))"
+    val printedGenAdt = "GenericAdtCase(value = Some(1))"
 
     assert(genAdt.show == printedGenAdt)
   }

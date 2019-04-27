@@ -97,6 +97,12 @@ object auto {
     ): MonoidK[F] = ev
   }
 
+  object foldable {
+    implicit def kittensMkFoldable[F[_]](
+      implicit refute: Refute[Foldable[F]], F: Lazy[MkFoldable[F]]
+    ): Foldable[F] = F.value
+  }
+
   object traverse {
     implicit def kittensMkTraverse[F[_]](
       implicit refute: Refute[Traverse[F]], F: Lazy[MkTraverse[F]]
@@ -105,7 +111,6 @@ object auto {
 
   //todo: the regular approach doesn't work for the following instances
   object pure extends MkPureDerivation
-  object foldable extends MkFoldableDerivation
 
   object consK {
     implicit def kittensMkConsK[F[_]](
@@ -159,8 +164,8 @@ object cached {
 
   object foldable {
     implicit def kittensMkFoldable[F[_]](
-       implicit refute: Refute[Foldable[F]], ev: Cached[MkFoldable[F]])
-    : Foldable[F] = ev.value
+       implicit refute: Refute[Foldable[F]], cached: Cached[MkFoldable[F]]
+    ): Foldable[F] = cached.value
   }
 
   object traverse{
@@ -264,7 +269,7 @@ object semi {
 
   def showPretty[A](implicit ev: MkShowPretty[A]): ShowPretty[A] = ev
 
-  def foldable[F[_]](implicit F: MkFoldable[F]): Foldable[F] = F
+  def foldable[F[_]](implicit F: Lazy[MkFoldable[F]]): Foldable[F] = F.value
 
   def traverse[F[_]](implicit F: Lazy[MkTraverse[F]]): Traverse[F] = F.value
 

@@ -18,7 +18,7 @@ package cats.derived
 
 import cats.Eq
 import cats.instances.all._
-import org.scalacheck.{Cogen, Arbitrary}
+import org.scalacheck.{Arbitrary, Cogen, Gen}
 
 import scala.annotation.tailrec
 
@@ -47,20 +47,20 @@ object TestDefns {
       } yield Recursive(i, is))
   }
 
-  final case class Interleaved[T](i: Int, t: T, d: Double, tt: List[T], s: String)
+  final case class Interleaved[T](i: Int, t: T, l: Long, tt: List[T], s: String)
   object Interleaved {
 
     implicit def eqv[T: Eq]: Eq[Interleaved[T]] =
-      Eq.by(i => (i.i, i.t, i.d, i.tt, i.s))
+      Eq.by(i => (i.i, i.t, i.l, i.tt, i.s))
 
     implicit def arbitrary[T: Arbitrary]: Arbitrary[Interleaved[T]] =
       Arbitrary(for {
         i <- Arbitrary.arbitrary[Int]
         t <- Arbitrary.arbitrary[T]
-        d <- Arbitrary.arbitrary[Double]
+        l <- Arbitrary.arbitrary[Long]
         tt <- Arbitrary.arbitrary[List[T]]
         s <- Arbitrary.arbitrary[String]
-      } yield Interleaved(i, t, d, tt, s))
+      } yield Interleaved(i, t, l, tt, s))
   }
 
   sealed trait IList[A]
@@ -68,6 +68,14 @@ object TestDefns {
   final case class INil[A]() extends IList[A]
 
   object IList {
+
+    implicit def eqv[A](implicit A: Eq[A]): Eq[IList[A]] = new Eq[IList[A]] {
+      @tailrec def eqv(x: IList[A], y: IList[A]): Boolean = (x, y) match {
+        case (ICons(hx, tx), ICons(hy, ty)) => A.eqv(hx, hy) && eqv(tx, ty)
+        case (INil(), INil()) => true
+        case _ => false
+      }
+    }
 
     implicit def arbitrary[A: Arbitrary]: Arbitrary[IList[A]] =
       Arbitrary(Arbitrary.arbitrary[Seq[A]].map(fromSeq))
@@ -78,13 +86,13 @@ object TestDefns {
     def fromSeq[T](ts: Seq[T]): IList[T] =
       ts.foldRight[IList[T]](INil())(ICons.apply)
 
-    def toList[T](l: IList[T]): List[T] = {
-      @tailrec def loop(il: IList[T], acc: List[T]): List[T] = il match {
+    def toList[T](list: IList[T]): List[T] = {
+      @tailrec def loop(list: IList[T], acc: List[T]): List[T] = list match {
         case INil() => acc.reverse
-        case ICons(h, t) => loop(t, h :: acc)
+        case ICons(head, tail) => loop(tail, head :: acc)
       }
 
-      loop(l, Nil)
+      loop(list, Nil)
     }
   }
 
@@ -94,13 +102,61 @@ object TestDefns {
 
   object Snoc {
 
+    implicit def eqv[A](implicit A: Eq[A]): Eq[Snoc[A]] = new Eq[Snoc[A]] {
+      @tailrec def eqv(x: Snoc[A], y: Snoc[A]): Boolean = (x, y) match {
+        case (SCons(ix, lx), SCons(iy, ly)) => A.eqv(lx, ly) && eqv(ix, iy)
+        case (SNil(), SNil()) => true
+        case _ => false
+      }
+    }
+
+    implicit def arbitrary[A: Arbitrary]: Arbitrary[Snoc[A]] =
+      Arbitrary(Arbitrary.arbitrary[Seq[A]].map(fromSeq))
+
     def fromSeq[T](ts: Seq[T]): Snoc[T] =
       ts.foldLeft[Snoc[T]](SNil())(SCons.apply)
+
+    def toList[T](snoc: Snoc[T]): List[T] = {
+      @tailrec def loop(snoc: Snoc[T], acc: List[T]): List[T] = snoc match {
+        case SNil() => acc
+        case SCons(init, last) => loop(init, last :: acc)
+      }
+
+      loop(snoc, Nil)
+    }
   }
 
-  sealed trait Tree[T]
-  final case class Leaf[T](t: T) extends Tree[T]
-  final case class Node[T](l: Tree[T], r: Tree[T]) extends Tree[T]
+  sealed trait Tree[A]
+  final case class Leaf[A](value: A) extends Tree[A]
+  final case class Node[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+
+  object Tree {
+
+    implicit def eqv[A](implicit A: Eq[A]): Eq[Tree[A]] = new Eq[Tree[A]] {
+      def eqv(x: Tree[A], y: Tree[A]): Boolean = (x, y) match {
+        case (Leaf(vx), Leaf(vy)) => A.eqv(vx, vy)
+        case (Node(lx, rx), Node(ly, ry)) => eqv(lx, ly) && eqv(rx, ry)
+        case _ => false
+      }
+    }
+
+    implicit def arbitrary[A: Arbitrary]: Arbitrary[Tree[A]] = {
+      val leaf = Arbitrary.arbitrary[A].map(Leaf.apply)
+
+      def tree(maxDepth: Int): Gen[Tree[A]] =
+        if (maxDepth == 0) leaf
+        else Gen.oneOf(leaf, node(maxDepth))
+
+      def node(maxDepth: Int): Gen[Tree[A]] = for {
+        depthL <- Gen.choose(0, maxDepth - 1)
+        depthR <- Gen.choose(0, maxDepth - 1)
+        left <- tree(depthL)
+        right <- tree(depthR)
+      } yield Node(left, right)
+
+      Arbitrary(Gen.sized(tree))
+    }
+  }
 
   final case class Foo(i: Int, b: Option[String])
   object Foo {
@@ -143,9 +199,20 @@ object TestDefns {
   final case class IntLeaf(t: Int) extends IntTree
   final case class IntNode(l: IntTree, r: IntTree) extends IntTree
 
-  sealed trait GenericAdt[T]
-  final case class GenericAdtCase[T](v: Option[T]) extends GenericAdt[T]
-  final case class CaseClassWOption[T](a: Option[T])
+  sealed trait GenericAdt[A]
+  final case class GenericAdtCase[A](value: Option[A]) extends GenericAdt[A]
+  final case class CaseClassWOption[A](value: Option[A])
+
+  object GenericAdt {
+
+    implicit def eqv[A: Eq]: Eq[GenericAdt[A]] = {
+      val eqvOpt = Eq[Option[A]]
+      Eq.instance { case (GenericAdtCase(vx), GenericAdtCase(vy)) => eqvOpt.eqv(vx, vy) }
+    }
+
+    implicit def arbitrary[A: Arbitrary]: Arbitrary[GenericAdt[A]] =
+      Arbitrary(Arbitrary.arbitrary[Option[A]].map(GenericAdtCase.apply))
+  }
 
   final case class First(value: String)
   final case class Second(value: String)

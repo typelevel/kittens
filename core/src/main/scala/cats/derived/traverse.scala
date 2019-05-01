@@ -1,166 +1,127 @@
 package cats.derived
 
-import cats.syntax.all._
-import cats.{Applicative, Eval, Now, Traverse}
+import cats.{Applicative, Eval, Traverse}
 import shapeless._
 
 import scala.annotation.implicitNotFound
 
-/**
-  * Based on the `MkFoldable` implementation.
-  */
 @implicitNotFound("Could not derive an instance of Traverse[${F}]")
 trait MkTraverse[F[_]] extends Traverse[F] {
-
-  def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]]
-
+  def safeTraverse[G[_]: Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]]
   def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B]
-
   def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
 
-  def traverse[G[_] : Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
-    safeTraverse(fa)(a => Now(f(a))).value
+  def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
+    safeTraverse(fa)(a => Eval.later(f(a))).value
 
   def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-    safeFoldLeft(fa, b) { (b, a) => Now(f(b, a)) }.value
-
+    safeFoldLeft(fa, b)((b, a) => Eval.later(f(b, a))).value
 }
 
 object MkTraverse extends MkTraverseDerivation {
-  def apply[F[_]](implicit mff: MkTraverse[F]): MkTraverse[F] = mff
+  def apply[F[_]](implicit F: MkTraverse[F]): MkTraverse[F] = F
 }
 
-trait MkTraverseDerivation extends MkTraverse0 {
-  implicit val mkTraverseId: MkTraverse[shapeless.Id] = new MkTraverse[shapeless.Id] {
-    def safeTraverse[G[_] : Applicative, A, B](fa: Id[A])(f: A => Eval[G[B]]): Eval[G[Id[B]]] = f(fa)
-
-    def foldRight[A, B](fa: A, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = f(fa, lb)
-
-    def safeFoldLeft[A, B](fa: A, b: B)(f: (B, A) => Eval[B]): Eval[B] = Now(f(b, fa).value)
-
-  }
+private[derived] abstract class MkTraverseDerivation extends MkTraverseNested {
+  implicit val mkTraverseHNil: MkTraverse[Const[HNil]#λ] = mkTraverseConst
+  implicit val mkTraverseCNil: MkTraverse[Const[CNil]#λ] = mkTraverseConst
 
   implicit def mkTraverseConst[T]: MkTraverse[Const[T]#λ] = new MkTraverse[Const[T]#λ] {
-    override def safeTraverse[G[_] : Applicative, A, B](fa: T)(f: A => Eval[G[B]]): Eval[G[T]] =
-      Now(fa.pure[G])
-
-    def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
-
-    def safeFoldLeft[A, B](fa: T, b: B)(f: (B, A) => Eval[B]): Eval[B] = Now(b)
+    def safeTraverse[G[_], A, B](fa: T)(f: A => Eval[G[B]])(implicit G: Applicative[G]) = Eval.now(G.pure(fa))
+    def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) = lb
+    def safeFoldLeft[A, B](fa: T, b: B)(f: (B, A) => Eval[B]) = Eval.now(b)
   }
 }
 
-private[derived] trait MkTraverse0 extends MkTraverse1 {
-  // Induction step for products
-  implicit def mkTraverseHcons[F[_]](implicit ihc: IsHCons1[F, TraverseOrMk, MkTraverse]): MkTraverse[F] =
+private[derived] abstract class MkTraverseNested extends MkTraverseCons {
+
+  implicit def mkTraverseNested[F[_]](implicit F: Split1[F, TraverseOrMk, TraverseOrMk]): MkTraverse[F] =
     new MkTraverse[F] {
-      override def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = {
-        for {
-          ht <- Now(ihc.unpack(fa))
-          th <- ihc.fh.unify.safeTraverse(ht._1)(f)
-          tt <- ihc.ft.safeTraverse(ht._2)(f)
-        } yield (th, tt).mapN(ihc.pack(_, _))
-      }
 
-      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
-        import ihc._
-        val (hd, tl) = unpack(fa)
-        for {
-          t <- ft.foldRight(tl, lb)(f)
-          h <- fh.unify.foldRight(hd, Now(t))(f)
-        } yield h
-      }
+      def safeTraverse[G[_], A, B](fa: F[A])(f: A => Eval[G[B]])(implicit G: Applicative[G]) =
+        mkSafeTraverse(F.fo)(F.unpack(fa))(mkSafeTraverse(F.fi)(_)(f)).map(G.map(_)(F.pack))
 
-      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] = {
-        import ihc._
-        val (hd, tl) = unpack(fa)
-        for {
-          h <- fh.unify.safeFoldLeft(hd, b)(f)
-          t <- ft.safeFoldLeft(tl, h)(f)
-        } yield t
-      }
+      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) =
+        F.fo.unify.foldRight(F.unpack(fa), lb)((fia, lb) => F.fi.unify.foldRight(fia, lb)(f))
+
+      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]) =
+        mkSafeFoldLeft(F.fo)(F.unpack(fa), b)((b, fia) => mkSafeFoldLeft(F.fi)(fia, b)(f))
     }
+}
 
-  // Induction step for coproducts
-  implicit def mkTraverseCcons[F[_]](implicit icc: IsCCons1[F, TraverseOrMk, MkTraverse]): MkTraverse[F] =
+private[derived] abstract class MkTraverseCons extends MkTraverseGeneric {
+
+  implicit def mkTraverseHCons[F[_]](implicit F: IsHCons1[F, TraverseOrMk, MkTraverse]): MkTraverse[F] =
     new MkTraverse[F] {
-      override def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = {
-        val gUnpacked: Eval[G[Either[icc.H[B], icc.T[B]]]] =
-          icc.unpack(fa) match {
-            case Left(hd) => apEval[G].map(icc.fh.unify.safeTraverse(hd)(f))(Left(_))
-            case Right(tl) => apEval[G].map(icc.ft.safeTraverse(tl)(f))(Right(_))
-          }
 
-        apEval[G].map(gUnpacked)(icc.pack)
-      }
-
-      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
-        import icc._
-        unpack(fa) match {
-          case Left(hd) => fh.unify.foldRight(hd, lb)(f)
-          case Right(tl) => ft.foldRight(tl, lb)(f)
+      def safeTraverse[G[_], A, B](fa: F[A])(f: A => Eval[G[B]])(implicit G: Applicative[G]) =
+        Eval.now(F.unpack(fa)).flatMap { case (fha, fhb) =>
+          for {
+            gfhb <- mkSafeTraverse(F.fh)(fha)(f)
+            gftb <- F.ft.safeTraverse(fhb)(f)
+          } yield G.map2(gfhb, gftb)(F.pack(_, _))
         }
-      }
 
-      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] = {
-        import icc._
-        unpack(fa) match {
-          case Left(hd) => fh.unify.safeFoldLeft(hd, b)(f)
-          case Right(tl) => ft.safeFoldLeft(tl, b)(f)
+      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) =
+        Eval.now(F.unpack(fa)).flatMap { case (fha, fhb) =>
+          F.fh.unify.foldRight(fha, F.ft.foldRight(fhb, lb)(f))(f)
         }
-      }
+
+      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]) =
+        Eval.now(F.unpack(fa)).flatMap { case (fha, fhb) =>
+          mkSafeFoldLeft(F.fh)(fha, b)(f).flatMap(F.ft.safeFoldLeft(fhb, _)(f))
+        }
     }
 
-}
-
-private[derived] trait MkTraverse1 extends MkTraverse2 {
-  implicit def mkTraverseSplit[F[_]](implicit split: Split1[F, TraverseOrMk, TraverseOrMk]): MkTraverse[F] =
+  implicit def mkTraverseCCons[F[_]](implicit F: IsCCons1[F, TraverseOrMk, MkTraverse]): MkTraverse[F] =
     new MkTraverse[F] {
-      override def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] =
-        split.fo.unify.safeTraverse(split.unpack(fa))(split.fi.unify.safeTraverse(_)(f)).map(_.map(split.pack))
 
-      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
-        import split._
-        fo.unify.foldRight(unpack(fa), lb) { (fai, lbi) => fi.unify.foldRight(fai, lbi)(f) }
-      }
+      def safeTraverse[G[_], A, B](fa: F[A])(f: A => Eval[G[B]])(implicit G: Applicative[G]) =
+        F.unpack(fa) match {
+          case Left(fha) => mkSafeTraverse(F.fh)(fha)(f).map(G.map(_)(fhb => F.pack(Left(fhb))))
+          case Right(fta) => F.ft.safeTraverse(fta)(f).map(G.map(_)(ftb => F.pack(Right(ftb))))
+        }
 
-      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] = {
-        import split._
-        fo.unify.safeFoldLeft(unpack(fa), b) { (lbi, fai) => fi.unify.safeFoldLeft(fai, lbi)(f) }
-      }
+      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) =
+        F.unpack(fa) match {
+          case Left(fha) => F.fh.unify.foldRight(fha, lb)(f)
+          case Right(fta) => F.ft.foldRight(fta, lb)(f)
+        }
+
+      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]) =
+        F.unpack(fa) match {
+          case Left(fha) => mkSafeFoldLeft(F.fh)(fha, b)(f)
+          case Right(fta) => F.ft.safeFoldLeft(fta, b)(f)
+        }
     }
 }
 
-private[derived] trait MkTraverse2 extends MkTraverseUtils {
-  implicit def mkTraverseGeneric[F[_]](implicit gen: Generic1[F, MkTraverse]): MkTraverse[F] =
-    new MkTraverse[F] {
-      override def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] =
-        gen.fr.safeTraverse(gen.to(fa))(f).map(_.map(gen.from))
-
-      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-        gen.fr.foldRight(gen.to(fa), lb)(f)
-
-      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] =
-        gen.fr.safeFoldLeft(gen.to(fa), b)(f)
-    }
-}
-
-private[derived] trait MkTraverseUtils {
-
+private[derived] abstract class MkTraverseGeneric {
   protected type TraverseOrMk[F[_]] = Traverse[F] OrElse MkTraverse[F]
 
-  protected def apEval[G[_] : Applicative] = Applicative[Eval].compose[G]
-
-  protected implicit class SafeTraverse[F[_]](val F: Traverse[F]) {
-    def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = F match {
-      case mk: MkTraverse[F] => mk.safeTraverse(fa)(f)
-      case _ => F.traverse[λ[t => Eval[G[t]]], A, B](fa)(f)(apEval[G])
-    }
-
-    def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] = F match {
-      case mff: MkTraverse[F] => mff.safeFoldLeft(fa, b)(f)
-      case _ => Now(F.foldLeft(fa, b) { (b, a) => f(b, a).value })
-    }
+  protected def mkSafeTraverse[F[_], G[_]: Applicative, A, B](
+    F: TraverseOrMk[F]
+  )(fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = F.unify match {
+    case mk: MkTraverse[F] => mk.safeTraverse(fa)(f)
+    case other => other.traverse[λ[t => Eval[G[t]]], A, B](fa)(f)(Applicative[Eval].compose[G])
   }
 
+  protected def mkSafeFoldLeft[F[_], A, B](F: TraverseOrMk[F])(fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] =
+    F.unify match {
+      case mk: MkTraverse[F] => mk.safeFoldLeft(fa, b)(f)
+      case other => Eval.later(other.foldLeft(fa, b)(f(_, _).value))
+    }
+
+  implicit def mkTraverseGeneric[F[_]](implicit F: Generic1[F, MkTraverse]): MkTraverse[F] =
+    new MkTraverse[F] {
+
+      def safeTraverse[G[_], A, B](fa: F[A])(f: A => Eval[G[B]])(implicit G: Applicative[G]) =
+        F.fr.safeTraverse(F.to(fa))(f).map(G.map(_)(F.from))
+
+      def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) =
+        F.fr.foldRight(F.to(fa), lb)(f)
+
+      def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]) =
+        F.fr.safeFoldLeft(F.to(fa), b)(f)
+    }
 }

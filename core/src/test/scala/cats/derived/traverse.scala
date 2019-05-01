@@ -1,163 +1,83 @@
 package cats
 package derived
 
-import cats.derived.TestDefns._
-import cats.implicits._
-import cats.laws.discipline.{FoldableTests, TraverseTests}
-import org.scalacheck.Test
-import org.scalatest.FreeSpec
-import shapeless.test.illTyped
+import cats.instances.all._
+import cats.laws.discipline.TraverseTests
 
-class TraverseSuite extends FreeSpec {
+class TraverseSuite extends KittensSuite {
+  import TestDefns._
 
-  "traverse" - {
+  type OptList[A] = Option[List[A]]
+  type ListSnoc[A] = List[Snoc[A]]
+  type AndChar[A] = (A, Char)
 
-    "passes cats traverse tests" in {
-      Test.checkProperties(
-        Test.Parameters.default,
-        TraverseTests[IList](semi.traverse[IList]).traverse[Int, Double, String, Long, Option, Option].all
-      )
+  def testTraverse(context: String)(
+    implicit iList: Traverse[IList],
+    tree: Traverse[Tree],
+    genericAdt: Traverse[GenericAdt],
+    optList: Traverse[OptList],
+    listSnoc: Traverse[ListSnoc],
+    andChar: Traverse[AndChar],
+    interleaved: Traverse[Interleaved]
+  ): Unit = {
+    checkAll(s"$context.Traverse[IList]", TraverseTests[IList].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse[Tree]", TraverseTests[Tree].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse[GenericAdt]", TraverseTests[GenericAdt].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse[OptList]", TraverseTests[OptList].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse[ListSnoc]", TraverseTests[ListSnoc].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse[AndChar]", TraverseTests[AndChar].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse[Interleaved]", TraverseTests[Interleaved].traverse[Int, Double, String, Long, Option, Option])
+
+    val n = 10000
+    val largeIList: IList[Int] = IList.fromSeq(1 until n)
+    val largeSnoc: ListSnoc[Int] = Snoc.fromSeq(1 until n) :: Nil
+
+    test(s"$context.Traverse.traverse is stack safe") {
+      val actualIList = largeIList.traverse(i => Option(i + 1)).map(IList.toList)
+      val actualSnoc = largeSnoc.traverse(i => Option(i + 1)).map(_.flatMap(Snoc.toList))
+      val expected = Some(2 until n + 1)
+      assert(actualIList == expected)
+      assert(actualSnoc == expected)
     }
 
-    "derives an instance for" - {
-      // occasional map, as a special case of traverse[Id,_], is just fine and is easier to test
-      // the laws were checked in the previous test
-
-      "for a Tree" in {
-        implicit val F = semi.traverse[Tree]
-
-        val tree: Tree[String] =
-          Node(
-            Leaf("12"),
-            Node(
-              Leaf("3"),
-              Leaf("4")
-            )
-          )
-
-        val expected: List[Tree[Char]] = List(
-          Node(
-            Leaf('1'),
-            Node(
-              Leaf('3'),
-              Leaf('4')
-            )
-          ),
-          Node(
-            Leaf('2'),
-            Node(
-              Leaf('3'),
-              Leaf('4')
-            )
-          )
-        )
-
-        assert(tree.traverse(_.toCharArray.toList) == expected)
-      }
-
-      "for a nested List[List[_]] (with alias)" in {
-        illTyped("derive.traverse[λ[t => List[List[t]]]]")
-        type LList[T] = List[List[T]]
-        val F = semi.traverse[LList]
-
-        val l = List(List(1), List(2, 3), List(4, 5, 6), List(), List(7))
-        val expected = List(List(2), List(3, 4), List(5, 6, 7), List(), List(8))
-
-        assert(F.map(l)(_ + 1) == expected)
-      }
-
-      "for a pair on the left (with alias)" in {
-        illTyped("derive.traverse[(?, String)]")
-
-        def F[R]: Traverse[(?, R)] = {
-          type Pair[L] = (L, R)
-          semi.traverse[Pair]
-        }
-
-        val pair = (42, "shapeless")
-        assert(F[String].map(pair)(_ / 2) == (21, "shapeless"))
-      }
-
-      "for a pair on the right" in {
-        def F[L]: Traverse[(L, ?)] = semi.traverse[(L, ?)]
-
-        val pair = (42, "shapeless")
-        assert(F[Int].map(pair)(_.length) == (42, 9))
-      }
-
+    test(s"$context.Traverse.foldLeft is stack safe") {
+      val actualIList = largeIList.foldLeft(0)(_ + _)
+      val actualSnoc = listSnoc.foldLeft(largeSnoc, 0)(_ + _)
+      val expected = n * (n - 1) / 2
+      assert(actualIList == expected)
+      assert(actualSnoc == expected)
     }
 
-    "respects existing instances for a generic ADT " in {
-      implicit val F = semi.traverse[GenericAdt]
-      val adt: GenericAdt[Int] = GenericAdtCase(Some(2))
-      assert(adt.map(_ + 1) == GenericAdtCase(Some(3)))
-    }
-
-    "is stack safe" in {
-      implicit val F = semi.traverse[IList]
-
-      val llarge = List.range(1, 10000)
-      val large = IList.fromSeq(llarge)
-
-      val actual = large.traverse[Option, Int](i => Option(i + 1)).map(IList.toList)
-      val expected = Option(llarge.map(_ + 1))
-
-      assert(actual == expected)
-    }
-
-    "auto derivation work for interleaved case class" in {
-      import cats.derived.auto.traverse._
-
-      val testInstance = TestTraverse(1, "ab", 2.0, List("cd"), "3")
-
-      val expected = List(
-        TestTraverse(1, 'a', 2.0, List('c'), "3"),
-        TestTraverse(1, 'a', 2.0, List('d'), "3"),
-        TestTraverse(1, 'b', 2.0, List('c'), "3"),
-        TestTraverse(1, 'b', 2.0, List('d'), "3")
-      )
-      val actual = testInstance.traverse(_.toCharArray.toList)
-
-      assert(actual == expected)
-    }
-
-    "folds" - {
-
-      "pass cats fold tests" in {
-        Test.checkProperties(
-          Test.Parameters.default,
-          FoldableTests[IList](semi.traverse[IList]).foldable[Int, Double].all
-        )
-      }
-
-      "are implemented correctly" in {
-        implicit val F = semi.traverse[IList].asInstanceOf[MkTraverse[IList]]
-
-        val iList = IList.fromSeq(List.range(1, 5))
-
-        // just basic sanity checks
-        assert(F.foldLeft(iList, "x")(_ + _) == "x1234")
-        assert(F.foldRight(iList, Now("x"))((i, b) => b.map(i + _)).value == "1234x")
-        assert(F.foldMap(iList)(_.toDouble) == 10)
-      }
-
-      "are stack safe" in {
-        implicit val F = semi.traverse[IList]
-
-        val n = 10000
-        val llarge = IList.fromSeq(List.range(1, n))
-
-        val expected = n * (n - 1) / 2
-        val evalActual = F.foldRight(llarge, Now(0))((buff, eval) => eval.map(_ + buff))
-
-        assert(evalActual.value == expected)
-      }
+    test(s"$context.Traverse.foldRight is stack safe") {
+      val actualIList = largeIList.foldRight(Eval.Zero)((i, sum) => sum.map(_ + i))
+      val actualSnoc = listSnoc.foldRight(largeSnoc, Eval.Zero)((i, sum) => sum.map(_ + i))
+      val expected = n * (n - 1) / 2
+      assert(actualIList.value == expected)
+      assert(actualSnoc.value == expected)
     }
   }
 
-  implicit def eqTestClass[T: Eq]: Eq[IList[T]] = semi.eq
+  {
+    import auto.traverse._
+    testTraverse("auto")
+  }
 
+  {
+    import cached.traverse._
+    testTraverse("cached")
+  }
+
+  semiTests.run()
+
+  object semiTests {
+    implicit val iList: Traverse[IList] = semi.traverse
+    implicit val tree: Traverse[Tree] = semi.traverse
+    implicit val genericAdt: Traverse[GenericAdt] = semi.traverse
+    implicit val optList: Traverse[OptList] = semi.traverse
+    implicit val listSnoc: Traverse[ListSnoc] = semi.traverse
+    implicit val andChar: Traverse[AndChar] = semi.traverse
+    implicit val interleaved: Traverse[Interleaved] = semi.traverse
+    def run(): Unit = testTraverse("semi")
+  }
 }
-
-private case class TestTraverse[T](i: Int, t: T, d: Double, tt: List[T], s: String)
 

@@ -14,69 +14,116 @@
  * limitations under the License.
  */
 
-package cats.derived
+package cats
+package derived
 
-import cats.{ Eq, Eval, Foldable }, Eval.now
+import cats.instances.all._
+import cats.laws.discipline.FoldableTests
+import org.scalacheck.Arbitrary
 
-import TestDefns._
 class FoldableSuite extends KittensSuite {
-  // disable scalatest ===
-  override def convertToEqualizer[T](left: T): Equalizer[T] = ???
+  import FoldableSuite._
+  import TestDefns._
 
-  // exists method written in terms of foldRight
-  def contains[F[_]: Foldable, A: Eq](as: F[A], goal: A): Eval[Boolean] =
-    as.foldRight(now(false)) { (a, lb) =>
-      if (a === goal) now(true) else lb
+  type OptList[A] = Option[List[A]]
+  type ListSnoc[A] = List[Snoc[A]]
+  type AndChar[A] = (A, Char)
+  type BoxNel[A] = Box[Nel[A]]
+
+  def testFoldable(context: String)(
+    implicit iList: Foldable[IList],
+    tree: Foldable[Tree],
+    genericAdt: Foldable[GenericAdt],
+    optList: Foldable[OptList],
+    listSnoc: Foldable[ListSnoc],
+    andChar: Foldable[AndChar],
+    interleaved: Foldable[Interleaved],
+    boxNel: Foldable[BoxNel]
+  ): Unit = {
+    checkAll(s"$context.Foldable[IList]", FoldableTests[IList].foldable[Int, Long])
+    checkAll(s"$context.Foldable[Tree]", FoldableTests[Tree].foldable[Int, Long])
+    checkAll(s"$context.Foldable[GenericAdt]", FoldableTests[GenericAdt].foldable[Int, Long])
+    checkAll(s"$context.Foldable[OptList]", FoldableTests[OptList].foldable[Int, Long])
+    checkAll(s"$context.Foldable[ListSnoc]", FoldableTests[ListSnoc].foldable[Int, Long])
+    checkAll(s"$context.Foldable[AndChar]", FoldableTests[AndChar].foldable[Int, Long])
+    checkAll(s"$context.Foldable[Interleaved]", FoldableTests[Interleaved].foldable[Int, Long])
+    checkAll(s"$context.Foldable[BoxNel]]", FoldableTests[BoxNel].foldable[Int, Long])
+
+    val n = 10000
+    val largeIList = IList.fromSeq(1 until n)
+    val largeSnoc = Snoc.fromSeq(1 until n) :: Nil
+
+    test(s"$context.Traverse.foldLeft is stack safe") {
+      val actualIList = largeIList.foldLeft(0)(_ + _)
+      val actualSnoc = listSnoc.foldLeft(largeSnoc, 0)(_ + _)
+      val expected = n * (n - 1) / 2
+      assert(actualIList == expected)
+      assert(actualSnoc == expected)
     }
 
-  import auto.foldable._
-  import cats.instances.int._
+    test(s"$context.Traverse.foldRight is stack safe") {
+      val actualIList = largeIList.foldRight(Eval.Zero)((i, sum) => sum.map(_ + i))
+      val actualSnoc = listSnoc.foldRight(largeSnoc, Eval.Zero)((i, sum) => sum.map(_ + i))
+      val expected = n * (n - 1) / 2
+      assert(actualIList.value == expected)
+      assert(actualSnoc.value == expected)
+    }
 
-  test("Foldable[IList]") {
-    val F = Foldable[IList]
-
-    // some basic sanity checks
-    val lns = (1 to 10).toList
-    val ns = IList.fromSeq(lns)
-    val total = lns.sum
-    assert(F.foldLeft(ns, 0)(_ + _) == total)
-    assert(F.foldRight(ns, now(0))((x, ly) => ly.map(x + _)).value == total)
-    assert(F.fold(ns) == total)
-
-    // more basic checks
-    val lnames = List("Aaron", "Betty", "Calvin", "Deirdra")
-    val names = IList.fromSeq(lnames)
-    assert(F.foldMap(names)(_.length) == lnames.map(_.length).sum)
-
-    // test trampolining
-    val llarge = 1 to 10000
-    val large = IList.fromSeq(llarge)
-    val largeTotal = llarge.sum
-    assert(F.foldLeft(large, 0)(_ + _) == largeTotal)
-    assert(F.fold(large) == largeTotal)
-    assert(contains(large, 10000).value)
-
-    // safely build large lists
-    val larger = F.foldRight(large, now(List.empty[Int]))((x, lxs) => lxs.map((x + 1) :: _))
-    assert(larger.value == llarge.map(_ + 1))
+    test(s"$context.Foldable respects existing instances") {
+      val tail = List.range(1, 100)
+      val sum = boxNel.fold(Box(Nel(42, tail)))
+      assert(sum == tail.sum)
+    }
   }
 
-  test("derives an instance for Interleaved[T]") {
-    semi.foldable[TestDefns.Interleaved]
+  {
+    import auto.foldable._
+    testFoldable("auto")
   }
 
-  test("foldable.semi[Tree]") {
-    val F = semi.foldable[Tree]
+  {
+    import cached.foldable._
+    testFoldable("cached")
+  }
 
-    val tree: Tree[String] =
-      Node(
-        Leaf("quux"),
-        Node(
-          Leaf("foo"),
-          Leaf("wibble")
-        )
-      )
+  semiTests.run()
 
-    assert(F.foldLeft(tree, 0)(_ + _.length) == 13)
+  object semiTests {
+    implicit val iList: Foldable[IList] = semi.foldable
+    implicit val tree: Foldable[Tree] = semi.foldable
+    implicit val genericAdt: Foldable[GenericAdt] = semi.foldable
+    implicit val optList: Foldable[OptList] = semi.foldable
+    implicit val listSnoc: Foldable[ListSnoc] = semi.foldable
+    implicit val andChar: Foldable[AndChar] = semi.foldable
+    implicit val interleaved: Foldable[Interleaved] = semi.foldable
+    implicit val boxNel: Foldable[BoxNel] = semi.foldable
+    def run(): Unit = testFoldable("semi")
+  }
+}
+
+object FoldableSuite {
+
+  final case class Nel[+A](head: A, tail: List[A])
+  object Nel {
+
+    implicit def eqv[A](implicit A: Eq[A]): Eq[Nel[A]] = {
+      val listEq = Eq[List[A]]
+      Eq.instance((x, y) => A.eqv(x.head, y.head) && listEq.eqv(x.tail, y.tail))
+    }
+
+    implicit def arbitrary[A: Arbitrary]: Arbitrary[Nel[A]] =
+      Arbitrary(for {
+        head <- Arbitrary.arbitrary[A]
+        tail <- Arbitrary.arbitrary[List[A]]
+      } yield Nel(head, tail))
+
+    implicit val foldable: Foldable[Nel] = new Foldable[Nel] {
+
+      def foldLeft[A, B](fa: Nel[A], b: B)(f: (B, A) => B) =
+        Foldable[List].foldLeft(fa.tail, b)(f)
+
+      def foldRight[A, B](fa: Nel[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) =
+        Foldable[List].foldRight(fa.tail, lb)(f)
+    }
   }
 }

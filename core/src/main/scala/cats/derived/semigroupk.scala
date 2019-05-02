@@ -16,99 +16,68 @@
 
 package cats.derived
 
-import cats.{ Apply, Semigroup, SemigroupK }
+import cats.{Apply, Semigroup, SemigroupK}
 import shapeless._
 
+import scala.annotation.implicitNotFound
 
+@implicitNotFound("Could not derive an instance of SemigroupK[${F}]")
 trait MkSemigroupK[F[_]] extends SemigroupK[F]
 
-object MkSemigroupK extends MkSemigroupK0 {
-  def apply[F[_]](implicit sgk: MkSemigroupK[F]): MkSemigroupK[F] = sgk
+object MkSemigroupK extends MkSemigroupKDerivation {
+  def apply[F[_]](implicit F: MkSemigroupK[F]): MkSemigroupK[F] = F
 }
 
-private[derived] abstract class  MkSemigroupK0 extends MkSemigroupK0b {
-  implicit val mkSemigroupKHnil: MkSemigroupK[Const[HNil]#λ] =
+private[derived] abstract class MkSemigroupKDerivation extends MkSemigroupKNestedOuter {
+
+  implicit val mkSemigroupKHNil: MkSemigroupK[Const[HNil]#λ] =
     new MkSemigroupK[Const[HNil]#λ] {
-      def empty[A] = HNil
       def combineK[A](x: HNil, y: HNil) = HNil
     }
 
-  implicit def mkSemigroupKHcons[F[_]](implicit ihc: IsHCons1[F, SemigroupK, MkSemigroupK])
-    : MkSemigroupK[F] = new MkSemigroupK[F] {
-      import ihc._
+  implicit def mkSemigroupKConst[T](implicit T: Semigroup[T]): MkSemigroupK[Const[T]#λ] =
+    new MkSemigroupK[Const[T]#λ] {
+      def combineK[A](x: T, y: T) = T.combine(x, y)
+    }
+}
+
+private[derived] abstract class MkSemigroupKNestedOuter extends MkSemigroupKNestedInner {
+
+  implicit def mkSemigroupKNestedOuter[F[_]](implicit F: Split1[F, SemigroupKOrMk, Trivial1]): MkSemigroupK[F] =
+    new MkSemigroupK[F] {
+
+      def combineK[A](x: F[A], y: F[A]) =
+        F.pack(F.fo.unify.combineK(F.unpack(x), F.unpack(y)))
+    }
+}
+
+private[derived] abstract class  MkSemigroupKNestedInner extends MkSemigroupKGeneric {
+
+  implicit def mkSemigroupKNestedInner[F[_]](implicit F: Split1[F, Apply, SemigroupKOrMk]): MkSemigroupK[F] =
+    new MkSemigroupK[F] {
+
+      def combineK[A](x: F[A], y: F[A]) =
+        F.pack(F.fo.map2(F.unpack(x), F.unpack(y))(F.fi.unify.combineK(_, _)))
+    }
+}
+
+private[derived] abstract class MkSemigroupKGeneric {
+  protected type SemigroupKOrMk[F[_]] = SemigroupK[F] OrElse MkSemigroupK[F]
+
+  implicit def mkSemigroupKHCons[F[_]](implicit F: IsHCons1[F, SemigroupKOrMk, MkSemigroupK]): MkSemigroupK[F] =
+    new MkSemigroupK[F] {
+
       def combineK[A](x: F[A], y: F[A]) = {
-        val (hx, tx) = unpack(x)
-        val (hy, ty) = unpack(y)
-        pack(fh.combineK(hx, hy), ft.combineK(tx, ty))
+        val (fhx, ftx) = F.unpack(x)
+        val (fhy, fty) = F.unpack(y)
+        F.pack(F.fh.unify.combineK(fhx, fhy), F.ft.combineK(ftx, fty))
       }
     }
 
-  override implicit def mkSemigroupKConst[T](implicit sg: Semigroup[T]): MkSemigroupK[Const[T]#λ] =
-    super[MkSemigroupK0b].mkSemigroupKConst
-}
+  implicit def mkSemigroupKGeneric[F[_]](implicit F: Generic1[F, MkSemigroupK]): MkSemigroupK[F] =
+    new MkSemigroupK[F] {
 
-private[derived] abstract class  MkSemigroupK0b extends MkSemigroupK1 {
-  implicit def mkSemigroupKHconsFurther[F[_]](implicit ihc: IsHCons1[F, MkSemigroupK, MkSemigroupK])
-  : MkSemigroupK[F] = new MkSemigroupK[F] {
-    import ihc._
-    def combineK[A](x: F[A], y: F[A]) = {
-      val (hx, tx) = unpack(x)
-      val (hy, ty) = unpack(y)
-      pack(fh.combineK(hx, hy), ft.combineK(tx, ty))
-    }
-  }
-}
-
-private[derived] abstract class  MkSemigroupK1 extends MkSemigroupK1b {
-  implicit def mkSemigroupKComposed[F[_]](implicit split: Split1[F, SemigroupK, Trivial1])
-    : MkSemigroupK[F] = new MkSemigroupK[F] {
-      import split._
       def combineK[A](x: F[A], y: F[A]) =
-        pack(fo.combineK(unpack(x), unpack(y)))
-    }
-}
-
-private[derived] abstract class  MkSemigroupK1b extends MkSemigroupK2 {
-  implicit def mkSemigroupKComposedFuther[F[_]](implicit split: Split1[F, MkSemigroupK, Trivial1])
-  : MkSemigroupK[F] = new MkSemigroupK[F] {
-    import split._
-    def combineK[A](x: F[A], y: F[A]) =
-      pack(fo.combineK(unpack(x), unpack(y)))
-  }
-}
-
-private[derived] abstract class  MkSemigroupK2 extends MkSemigroupK2b {
-  implicit def mkSemigroupKApplied[F[_]](implicit split: Split1[F, Apply, SemigroupK])
-    : MkSemigroupK[F] = new MkSemigroupK[F] {
-      import split._
-      def combineK[A](x: F[A], y: F[A]) =
-        pack(fo.map2(unpack(x), unpack(y))(fi.combineK(_, _)))
-    }
-}
-
-private[derived] abstract class  MkSemigroupK2b extends MkSemigroupK3 {
-  implicit def mkSemigroupKAppliedFuther[F[_]](implicit split: Split1[F, Apply, MkSemigroupK])
-    : MkSemigroupK[F] = new MkSemigroupK[F] {
-      import split._
-      def combineK[A](x: F[A], y: F[A]) =
-        pack(fo.map2(unpack(x), unpack(y))(fi.combineK(_, _)))
-    }
-}
-
-private[derived] abstract class  MkSemigroupK3 extends MkSemigroupK4 {
-  implicit def mkSemigroupKGeneric[F[_]](implicit gen: Generic1[F, MkSemigroupK])
-    : MkSemigroupK[F] = new MkSemigroupK[F] {
-      import gen._
-      def combineK[A](x: F[A], y: F[A]) =
-        from(fr.combineK(to(x), to(y)))
-    }
-}
-
-trait MkSemigroupK4 {
-
-  // For binary compatibility.
-  def mkSemigroupKConst[T](implicit sg: Semigroup[T]): MkSemigroupK[Const[T]#λ] =
-    new MkSemigroupK[Const[T]#λ] {
-      def combineK[A](x: T, y: T) = sg.combine(x, y)
+        F.from(F.fr.combineK(F.to(x), F.to(y)))
     }
 }

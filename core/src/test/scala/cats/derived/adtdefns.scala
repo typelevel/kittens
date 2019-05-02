@@ -201,7 +201,6 @@ object TestDefns {
 
   sealed trait GenericAdt[A]
   final case class GenericAdtCase[A](value: Option[A]) extends GenericAdt[A]
-  final case class CaseClassWOption[A](value: Option[A])
 
   object GenericAdt {
 
@@ -212,6 +211,13 @@ object TestDefns {
 
     implicit def arbitrary[A: Arbitrary]: Arbitrary[GenericAdt[A]] =
       Arbitrary(Arbitrary.arbitrary[Option[A]].map(GenericAdtCase.apply))
+  }
+
+  final case class CaseClassWOption[A](value: Option[A])
+  object CaseClassWOption {
+    implicit def eqv[A: Eq]: Eq[CaseClassWOption[A]] = Eq.by(_.value)
+    implicit def arbitrary[A: Arbitrary]: Arbitrary[CaseClassWOption[A]] =
+      Arbitrary(Arbitrary.arbitrary[Option[A]].map(apply))
   }
 
   final case class First(value: String)

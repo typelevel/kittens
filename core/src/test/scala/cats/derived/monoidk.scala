@@ -21,7 +21,7 @@ import cats._, instances.all._, kernel.laws.discipline._
 
 
 class MonoidKSuite extends KittensSuite {
-  import SemigroupKSuite.ComplexProduct
+  import TestDefns.ComplexProduct
   {
     implicit val m = semi.monoidK[ComplexProduct].algebra[Char]
     checkAll("MonoidK[ComplexProduct]", MonoidTests[ComplexProduct[Char]].monoid)

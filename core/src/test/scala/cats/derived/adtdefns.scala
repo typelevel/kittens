@@ -16,13 +16,39 @@
 
 package cats.derived
 
-import cats.Eq
+import cats.{Eq, Eval}
 import cats.instances.all._
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 
 import scala.annotation.tailrec
 
 object TestDefns {
+
+  final case class ComplexProduct[T](lbl: String, set: Set[T], fns: Vector[() => T], opt: Eval[Option[T]])
+  object ComplexProduct {
+
+    implicit def eqv[T: Eq]: Eq[ComplexProduct[T]] =
+      new Eq[ComplexProduct[T]] {
+        val eqSet = Eq[Set[T]]
+        val eqVec = Eq[Vector[T]]
+        val eqOpt = Eq[Eval[Option[T]]]
+
+        def eqv(x: ComplexProduct[T], y: ComplexProduct[T]) =
+          x.lbl == y.lbl &&
+            eqSet.eqv(x.set, y.set) &&
+            eqVec.eqv(x.fns.map(_()), y.fns.map(_())) &&
+            eqOpt.eqv(x.opt, y.opt)
+      }
+
+    implicit def arbitrary[T: Arbitrary]: Arbitrary[ComplexProduct[T]] =
+      Arbitrary(for {
+        lbl <- Arbitrary.arbitrary[String]
+        set <- Arbitrary.arbitrary[Set[T]]
+        vec <- Arbitrary.arbitrary[Vector[T]]
+        fns = vec.map(x => () => x)
+        opt <- Arbitrary.arbitrary[Option[T]]
+      } yield ComplexProduct(lbl, set, fns, Eval.now(opt)))
+  }
 
   final case class Box[+A](content: A)
   object Box {

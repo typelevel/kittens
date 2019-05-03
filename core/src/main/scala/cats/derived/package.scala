@@ -74,8 +74,6 @@ object auto {
     ): ShowPretty[A] = showPretty
   }
 
-
-
   object semigroup {
     implicit def kittensMkSemigroup[A](
       implicit refute: Refute[Semigroup[A]], ev: Lazy[MkSemigroup[A]]
@@ -90,11 +88,9 @@ object auto {
 
   object semigroupK {
     implicit def kittensMkSemigroupK[F[_]](
-      implicit refute: Refute[SemigroupK[F]], ev: MkSemigroupK[F]
-    ): SemigroupK[F] = ev
-
+      implicit refute: Refute[SemigroupK[F]], F: Lazy[MkSemigroupK[F]]
+    ): SemigroupK[F] = F.value
   }
-
 
   object monoidK {
     implicit def kittensMkMonoidK[F[_]](
@@ -217,9 +213,8 @@ object cached {
 
   object semigroupK {
     implicit def kittensMkSemigroupK[F[_]](
-      implicit refute: Refute[SemigroupK[F]], ev: Cached[MkSemigroupK[F]]
-    ): SemigroupK[F] = ev.value
-
+      implicit refute: Refute[SemigroupK[F]], cached: Cached[MkSemigroupK[F]]
+    ): SemigroupK[F] = cached.value
   }
 
   object consK {
@@ -294,7 +289,7 @@ object semi {
 
   def semigroup[T](implicit ev: Lazy[MkSemigroup[T]]): Semigroup[T] = ev.value
 
-  def semigroupK[F[_]](implicit F: MkSemigroupK[F]): SemigroupK[F] = F
+  def semigroupK[F[_]](implicit F: Lazy[MkSemigroupK[F]]): SemigroupK[F] = F.value
 
   def consK[F[_]](implicit F: Lazy[MkConsK[F, F]]): ConsK[F] = MkConsK.consK(F.value)
 

@@ -17,55 +17,60 @@
 package cats
 package derived
 
-import cats._, instances.all._, kernel.laws.discipline._
-import org.scalacheck.Arbitrary, Arbitrary.arbitrary
-
-
+import cats.instances.all._
+import cats.laws.discipline.SemigroupKTests
+import org.scalacheck.Arbitrary
 
 class SemigroupKSuite extends KittensSuite {
-  import SemigroupKSuite.ComplexProduct
-  {
-    implicit val sg = semi.semigroupK[ComplexProduct].algebra[Char]
-    checkAll("SemigroupK[ComplexProduct]", SemigroupTests[ComplexProduct[Char]].semigroup)
+  import SemigroupKSuite._
+  import TestDefns._
 
+  type BoxMul[A] = Box[Mul[A]]
+
+  def testSemigroupK(context: String)(
+    implicit complexProduct: SemigroupK[ComplexProduct],
+    caseClassWOption: SemigroupK[CaseClassWOption],
+    boxMul: SemigroupK[BoxMul]
+  ): Unit = {
+    checkAll(s"$context.SemigroupK[ComplexProduct]", SemigroupKTests[ComplexProduct].semigroupK[Char])
+    checkAll(s"$context.SemigroupK[CaseClassWOption]", SemigroupKTests[CaseClassWOption].semigroupK[Char])
+    checkAll(s"$context.SemigroupK[BoxMul]", SemigroupKTests[BoxMul].semigroupK[Char])
+
+    test(s"$context.SemigroupK respects existing instances") {
+      assert(boxMul.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))).content.value == 25)
+    }
   }
+
   {
     import auto.semigroupK._
-    implicit val sg = SemigroupK[ComplexProduct].algebra[Char]
-    checkAll("Auto SemigroupK[ComplexProduct]", SemigroupTests[ComplexProduct[Char]].semigroup)
+    testSemigroupK("auto")
   }
 
+  {
+    import cached.semigroupK._
+    testSemigroupK("cached")
+  }
+
+  {
+    implicit val complexProduct: SemigroupK[ComplexProduct] = semi.semigroupK
+    implicit val caseClassWOption: SemigroupK[CaseClassWOption] = semi.semigroupK
+    implicit val boxMul: SemigroupK[BoxMul] = semi.semigroupK
+    testSemigroupK("semi")
+  }
 }
 
 object SemigroupKSuite {
 
-  case class ComplexProduct[T](
-    lbl: String,          // MkSemigroup.const
-    set: Set[T],          // provided
-    fns: Vector[() => T], // MkSemigroup.composedd
-    opt: Eval[Option[T]]) // MkSemigroup.applied
+  final case class Mul[T](value: Int)
+  object Mul {
 
-  object ComplexProduct {
-    implicit def arb[T: Arbitrary]: Arbitrary[ComplexProduct[T]] =
-      Arbitrary(for {
-        lbl <- arbitrary[String]
-        set <- arbitrary[Set[T]]
-        vec <- arbitrary[Vector[T]]
-        fns = vec.map(x => () => x)
-        opt <- arbitrary[Option[T]]
-      } yield ComplexProduct(lbl, set, fns, Eval.now(opt)))
+    implicit def eqv[T]: Eq[Mul[T]] = Eq.by(_.value)
 
-    implicit def eqv[T: Eq]: Eq[ComplexProduct[T]] =
-      new Eq[ComplexProduct[T]] {
-        val eqSet = Eq[Set[T]]
-        val eqVec = Eq[Vector[T]]
-        val eqOpt = Eq[Eval[Option[T]]]
+    implicit def arbitrary[T]: Arbitrary[Mul[T]] =
+      Arbitrary(Arbitrary.arbitrary[Int].map(apply))
 
-        def eqv(x: ComplexProduct[T], y: ComplexProduct[T]) =
-          x.lbl == y.lbl &&
-            eqSet.eqv(x.set, y.set) &&
-            eqVec.eqv(x.fns.map(_()), y.fns.map(_())) &&
-            eqOpt.eqv(x.opt, y.opt)
-      }
+    implicit val semigroupK: SemigroupK[Mul] = new SemigroupK[Mul] {
+      def combineK[A](x: Mul[A], y: Mul[A]) = Mul(x.value * y.value)
+    }
   }
 }

@@ -94,8 +94,8 @@ object auto {
 
   object monoidK {
     implicit def kittensMkMonoidK[F[_]](
-      implicit refute: Refute[MonoidK[F]], ev: MkMonoidK[F]
-    ): MonoidK[F] = ev
+      implicit refute: Refute[MonoidK[F]], F: Lazy[MkMonoidK[F]]
+    ): MonoidK[F] = F.value
   }
 
   object foldable {
@@ -195,8 +195,8 @@ object cached {
 
   object monoidK {
     implicit def kittensMkMonoidK[F[_]](
-      implicit refute: Refute[MonoidK[F]], ev: Cached[MkMonoidK[F]]
-    ): MonoidK[F] = ev.value
+      implicit refute: Refute[MonoidK[F]], cached: Cached[MkMonoidK[F]]
+    ): MonoidK[F] = cached.value
   }
 
   object semigroup {
@@ -283,7 +283,7 @@ object semi {
 
   def monoid[A](implicit ev: Lazy[MkMonoid[A]]): Monoid[A] = ev.value
 
-  def monoidK[F[_]](implicit F: MkMonoidK[F]): MonoidK[F] = F
+  def monoidK[F[_]](implicit F: Lazy[MkMonoidK[F]]): MonoidK[F] = F.value
 
   def pure[F[_]](implicit F: MkPure[F]): Pure[F] = F
 

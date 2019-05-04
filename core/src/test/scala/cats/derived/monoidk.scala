@@ -17,22 +17,62 @@
 package cats
 package derived
 
-import cats._, instances.all._, kernel.laws.discipline._
-
+import cats.instances.all._
+import cats.laws.discipline.MonoidKTests
+import org.scalacheck.Arbitrary
 
 class MonoidKSuite extends KittensSuite {
-  import TestDefns.ComplexProduct
-  {
-    implicit val m = semi.monoidK[ComplexProduct].algebra[Char]
-    checkAll("MonoidK[ComplexProduct]", MonoidTests[ComplexProduct[Char]].monoid)
+  import MonoidKSuite._
+  import TestDefns._
 
+  type BoxMul[A] = Box[Mul[A]]
+
+  def testMonoidK(context: String)(
+    implicit complexProduct: MonoidK[ComplexProduct],
+    caseClassWOption: MonoidK[CaseClassWOption],
+    boxMul: MonoidK[BoxMul]
+  ): Unit = {
+    checkAll(s"$context.MonoidK[ComplexProduct]", MonoidKTests[ComplexProduct].monoidK[Char])
+    checkAll(s"$context.MonoidK[CaseClassWOption]", MonoidKTests[CaseClassWOption].monoidK[Char])
+    checkAll(s"$context.MonoidK[BoxMul]", MonoidKTests[BoxMul].monoidK[Char])
+
+    test(s"$context.MonoidK respects existing instances") {
+      assert(boxMul.empty[Char] == Box(Mul[Char](1)))
+      assert(boxMul.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))) == Box(Mul[Char](25)))
+    }
   }
+
   {
     import auto.monoidK._
-    implicit val m = MonoidK[ComplexProduct].algebra[Char]
-    checkAll("AutoMonoidK[ComplexProduct]", MonoidTests[ComplexProduct[Char]].monoid)
-
+    testMonoidK("auto")
   }
 
+  {
+    import cached.monoidK._
+    testMonoidK("cached")
+  }
 
+  {
+    implicit val complexProduct: MonoidK[ComplexProduct] = semi.monoidK
+    implicit val caseClassWOption: MonoidK[CaseClassWOption] = semi.monoidK
+    implicit val boxMul: MonoidK[BoxMul] = semi.monoidK
+    testMonoidK("semi")
+  }
+}
+
+object MonoidKSuite {
+
+  final case class Mul[T](value: Int)
+  object Mul {
+
+    implicit def eqv[T]: Eq[Mul[T]] = Eq.by(_.value)
+
+    implicit def arbitrary[T]: Arbitrary[Mul[T]] =
+      Arbitrary(Arbitrary.arbitrary[Int].map(apply))
+
+    implicit val monoidK: MonoidK[Mul] = new MonoidK[Mul] {
+      def empty[A] = Mul(1)
+      def combineK[A](x: Mul[A], y: Mul[A]) = Mul(x.value * y.value)
+    }
+  }
 }

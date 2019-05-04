@@ -29,31 +29,29 @@ object MkEmpty extends MkEmptyDerivation {
   def apply[A](implicit ev: MkEmpty[A]): MkEmpty[A] = ev
 }
 
-private[derived] abstract class MkEmptyDerivation extends MkEmptyGeneric {
-  implicit val mkEmptyHNil: MkEmpty[HNil] = instance(HNil)
+private[derived] abstract class MkEmptyDerivation {
+  protected type EmptyOrMk[A] = Empty[A] OrElse MkEmpty[A]
 
-  implicit def mkEmptyHCons[H, T <: HList](implicit H: Empty[H] OrElse MkEmpty[H], T: MkEmpty[T]): MkEmpty[H :: T] =
+  implicit val mkEmptyHNil: MkEmpty[HNil] =
+    instance(HNil)
+
+  implicit def mkEmptyHCons[H, T <: HList](implicit H: EmptyOrMk[H], T: MkEmpty[T]): MkEmpty[H :: T] =
     instance(H.unify.empty :: T.empty)
 
-  implicit def mkEmptyCConsLeft[L, R <: Coproduct](
-    implicit L: Empty[L] OrElse MkEmpty[L], R: Refute[MkEmpty[R]]
-  ): MkEmpty[L :+: R] = instance(Inl(L.unify.empty))
-}
-
-private[derived] abstract class MkEmptyGeneric {
-
-  protected def instance[A](default: A): MkEmpty[A] =
-    new MkEmpty[A] {
-      def empty = default
-    }
-
-  implicit def mkEmptyCConsRight[L, R <: Coproduct](implicit R: MkEmpty[R]): MkEmpty[L :+: R] =
-    instance(Inr(R.empty))
+  implicit def mkEmptyCoproduct[C <: Coproduct, E <: HList, A](
+    implicit lift: util.LiftSome.Aux[EmptyOrMk, C, E],
+    unique: E <:< (EmptyOrMk[A] :: HNil),
+    inject: ops.coproduct.Inject[C, A]
+  ): MkEmpty[C] = instance(inject(lift.instances.head.unify.empty))
 
   implicit def mkEmptyGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkEmpty[R]]): MkEmpty[A] =
     new MkEmpty[A] {
-      // Cache empty case classes.
+      // Cache empty case classes and sealed traits.
       lazy val empty = A.from(R.value.empty)
     }
 
+  private def instance[A](default: A): MkEmpty[A] =
+    new MkEmpty[A] {
+      def empty = default
+    }
 }

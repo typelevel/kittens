@@ -37,7 +37,7 @@ class SemigroupKSuite extends KittensSuite {
     checkAll(s"$context.SemigroupK[BoxMul]", SemigroupKTests[BoxMul].semigroupK[Char])
 
     test(s"$context.SemigroupK respects existing instances") {
-      assert(boxMul.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))).content.value == 25)
+      assert(boxMul.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))) == Box(Mul[Char](25)))
     }
   }
 

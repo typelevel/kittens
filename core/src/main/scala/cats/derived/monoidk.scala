@@ -19,103 +19,65 @@ package cats.derived
 import cats.{Applicative, Monoid, MonoidK}
 import shapeless._
 
+import scala.annotation.implicitNotFound
+
+@implicitNotFound("Could not derive an instance of MonoidK[${F}]")
 trait MkMonoidK[F[_]] extends MonoidK[F]
 
-object MkMonoidK extends MkMonoidK0 {
-  def apply[F[_]](implicit mk: MkMonoidK[F]): MkMonoidK[F] = mk
+object MkMonoidK extends MkMonoidKDerivation {
+  def apply[F[_]](implicit F: MkMonoidK[F]): MkMonoidK[F] = F
 }
 
-private[derived] abstract class MkMonoidK0 extends MkMonoidK0b {
-  implicit val mkMonoidKHnil: MkMonoidK[Const[HNil]#λ] =
+private[derived] abstract class MkMonoidKDerivation extends MkMonoidKNestedOuter {
+
+  implicit val mkMonoidKHNil: MkMonoidK[Const[HNil]#λ] =
     new MkMonoidK[Const[HNil]#λ] {
       def empty[A] = HNil
       def combineK[A](x: HNil, y: HNil) = HNil
     }
 
-  implicit def mkMonoidKHcons[F[_]](implicit ihc: IsHCons1[F, MonoidK, MkMonoidK])
-    : MkMonoidK[F] = new MkMonoidK[F] {
-      import ihc._
-      def empty[A] = pack(fh.empty, ft.empty)
-      def combineK[A](x: F[A], y: F[A]) = {
-        val (hx, tx) = unpack(x)
-        val (hy, ty) = unpack(y)
-        pack(fh.combineK(hx, hy), ft.combineK(tx, ty))
-      }
-    }
-
-  override implicit def mkMonoidKConst[T](implicit m: Monoid[T]): MkMonoidK[Const[T]#λ] =
-    super[MkMonoidK0b].mkMonoidKConst
-}
-
-private[derived] abstract class  MkMonoidK0b extends MkMonoidK1 {
-  implicit def mkMonoidKHconsFurther[F[_]](implicit ihc: IsHCons1[F, MkMonoidK, MkMonoidK])
-  : MkMonoidK[F] = new MkMonoidK[F] {
-    import ihc._
-    def empty[A] = pack(fh.empty, ft.empty)
-    def combineK[A](x: F[A], y: F[A]) = {
-      val (hx, tx) = unpack(x)
-      val (hy, ty) = unpack(y)
-      pack(fh.combineK(hx, hy), ft.combineK(tx, ty))
-    }
-  }
-}
-
-private[derived] abstract class  MkMonoidK1 extends MkMonoidK1b {
-  implicit def mkMonoidKComposed[F[_]](implicit split: Split1[F, MonoidK, Trivial1])
-    : MkMonoidK[F] = new MkMonoidK[F] {
-      import split._
-      def empty[A] = pack(fo.empty[I[A]])
-      def combineK[A](x: F[A], y: F[A]) =
-        pack(fo.combineK(unpack(x), unpack(y)))
-    }
-}
-
-private[derived] abstract class  MkMonoidK1b extends MkMonoidK2 {
-  implicit def mkMonoidKComposedFurther[F[_]](implicit split: Split1[F, MkMonoidK, Trivial1])
-  : MkMonoidK[F] = new MkMonoidK[F] {
-    import split._
-    def empty[A] = pack(fo.empty[I[A]])
-    def combineK[A](x: F[A], y: F[A]) =
-      pack(fo.combineK(unpack(x), unpack(y)))
-  }
-}
-
-private[derived] abstract class  MkMonoidK2 extends MkMonoidK2b {
-  implicit def mkMonoidKApplicative[F[_]](implicit split: Split1[F, Applicative, MonoidK])
-    : MkMonoidK[F] = new MkMonoidK[F] {
-      import split._
-      def empty[A] = pack(fo.pure(fi.empty[A]))
-      def combineK[A](x: F[A], y: F[A]) =
-        pack(fo.map2(unpack(x), unpack(y))(fi.combineK(_, _)))
-    }
-}
-
-private[derived] abstract class  MkMonoidK2b extends MkMonoidK23 {
-  implicit def mkMonoidKApplicativeFurther[F[_]](implicit split: Split1[F, Applicative, MkMonoidK])
-  : MkMonoidK[F] = new MkMonoidK[F] {
-    import split._
-    def empty[A] = pack(fo.pure(fi.empty[A]))
-    def combineK[A](x: F[A], y: F[A]) =
-      pack(fo.map2(unpack(x), unpack(y))(fi.combineK(_, _)))
-  }
-}
-
-private[derived] abstract class  MkMonoidK23 extends MkMonoidK4 {
-  implicit def mkMonoidKGeneric[F[_]](implicit gen: Generic1[F, MkMonoidK])
-    : MkMonoidK[F] = new MkMonoidK[F] {
-      import gen._
-      def empty[A] = from(fr.empty)
-      def combineK[A](x: F[A], y: F[A]) =
-        from(fr.combineK(to(x), to(y)))
-    }
-}
-
-private[derived] abstract class  MkMonoidK4 {
-
-  // For binary compatibility.
-  def mkMonoidKConst[T](implicit m: Monoid[T]): MkMonoidK[Const[T]#λ] =
+  implicit def mkMonoidKConst[T](implicit T: Monoid[T]): MkMonoidK[Const[T]#λ] =
     new MkMonoidK[Const[T]#λ] {
-      def empty[A] = m.empty
-      def combineK[A](x: T, y: T) = m.combine(x, y)
+      def empty[A] = T.empty
+      def combineK[A](x: T, y: T) = T.combine(x, y)
+    }
+}
+
+private[derived] abstract class MkMonoidKNestedOuter extends MkMonoidKNestedInner {
+
+  implicit def mkMonoidKNestedOuter[F[_]](implicit F: Split1[F, MonoidKOrMk, Trivial1]): MkMonoidK[F] =
+    new MkMonoidK[F] {
+      def empty[A] = F.pack(F.fo.unify.empty[F.I[A]])
+      def combineK[A](x: F[A], y: F[A]) = F.pack(F.fo.unify.combineK(F.unpack(x), F.unpack(y)))
+    }
+}
+
+private[derived] abstract class MkMonoidKNestedInner extends MkMonoidKGeneric {
+
+  implicit def mkMonoidKNestedInner[F[_]](implicit F: Split1[F, Applicative, MonoidKOrMk]): MkMonoidK[F] =
+    new MkMonoidK[F] {
+      def empty[A] = F.pack(F.fo.pure(F.fi.unify.empty[A]))
+      def combineK[A](x: F[A], y: F[A]) = F.pack(F.fo.map2(F.unpack(x), F.unpack(y))(F.fi.unify.combineK(_, _)))
+    }
+}
+
+private[derived] abstract class MkMonoidKGeneric {
+  protected type MonoidKOrMk[F[_]] = MonoidK[F] OrElse MkMonoidK[F]
+
+  implicit def mkMonoidKHcons[F[_]](implicit F: IsHCons1[F, MonoidKOrMk, MkMonoidK]): MkMonoidK[F] =
+    new MkMonoidK[F] {
+      def empty[A] = F.pack(F.fh.unify.empty, F.ft.empty)
+
+      def combineK[A](x: F[A], y: F[A]) = {
+        val (fhx, ftx) = F.unpack(x)
+        val (fhy, fty) = F.unpack(y)
+        F.pack(F.fh.unify.combineK(fhx, fhy), F.ft.combineK(ftx, fty))
+      }
+  }
+
+  implicit def mkMonoidKGeneric[F[_]](implicit F: Generic1[F, MkMonoidK]): MkMonoidK[F] =
+    new MkMonoidK[F] {
+      def empty[A] = F.from(F.fr.empty)
+      def combineK[A](x: F[A], y: F[A]) = F.from(F.fr.combineK(F.to(x), F.to(y)))
     }
 }

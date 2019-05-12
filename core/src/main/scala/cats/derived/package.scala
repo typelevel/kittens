@@ -62,6 +62,12 @@ object auto {
     ): Apply[F] = F.value
   }
 
+  object applicative {
+    implicit def kittensMkApplicative[F[_]](
+      implicit refute: Refute[Applicative[F]], F: Lazy[MkApplicative[F]]
+    ): Applicative[F] = F.value
+  }
+
   object show {
     implicit def kittensMkShow[A](
       implicit refute: Refute[Show[A]], show: MkShow[A]
@@ -169,6 +175,12 @@ object cached {
     ): Apply[F] = cached.value
   }
 
+  object applicative {
+    implicit def kittensMkApplicative[F[_]](
+      implicit refute: Refute[Applicative[F]], cached: Cached[MkApplicative[F]]
+    ): Applicative[F] = cached.value
+  }
+
   object foldable {
     implicit def kittensMkFoldable[F[_]](
        implicit refute: Refute[Foldable[F]], cached: Cached[MkFoldable[F]]
@@ -272,6 +284,8 @@ object semi {
   def functor[F[_]](implicit F: Lazy[MkFunctor[F]]): Functor[F] = F.value
 
   def apply[F[_]](implicit F: Lazy[MkApply[F]]): Apply[F] = F.value
+
+  def applicative[F[_]](implicit F: Lazy[MkApplicative[F]]): Applicative[F] = F.value
 
   def show[A](implicit ev: MkShow[A]): Show[A] = ev
 

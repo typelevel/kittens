@@ -19,6 +19,7 @@ package derived
 
 import alleycats.Empty
 import cats.instances.all._
+import shapeless.test.illTyped
 
 class EmptySuite extends KittensSuite {
   import EmptySuite._
@@ -32,8 +33,8 @@ class EmptySuite extends KittensSuite {
     outer: Empty[Outer],
     interleaved: Empty[Interleaved[String]],
     recursive: Empty[Recursive],
-    iList: Empty[IList[Int]],
-    snoc: Empty[Snoc[String => Int]],
+    iList: Empty[IList[Dummy]],
+    snoc: Empty[Snoc[Dummy]],
     box: Empty[Box[Mask]],
     chain: Empty[Chain]
   ): Unit = {
@@ -41,8 +42,8 @@ class EmptySuite extends KittensSuite {
     test(s"$context.Empty[Outer]")(assert(outer.empty == Outer(Inner(0))))
     test(s"$context.Empty[Interleaved[String]]")(assert(interleaved.empty == Interleaved(0, "", 0, Nil, "")))
     test(s"$context.Empty[Recursive]")(assert(recursive.empty == Recursive(0, None)))
-    test(s"$context.Empty[IList[Int]]")(assert(iList.empty == INil()))
-    test(s"$context.Empty[Snoc[String => Int]]")(assert(snoc.empty == SNil()))
+    test(s"$context.Empty[IList[Dummy]]")(assert(iList.empty == INil()))
+    test(s"$context.Empty[Snoc[Dummy]]")(assert(snoc.empty == SNil()))
     test(s"$context.Empty respects existing instances")(assert(box.empty == Box(Mask(0xffffffff))))
     // Known limitation of recursive typeclass derivation.
     test(s"$context.Empty[Chain] throws a StackOverflowError")(assertThrows[StackOverflowError](chain.empty))
@@ -51,11 +52,17 @@ class EmptySuite extends KittensSuite {
   {
     import auto.empty._
     testEmpty("auto")
+    illTyped("Empty[IList[Int]]")
+    illTyped("Empty[Snoc[Int]]")
+    illTyped("Empty[Rgb]")
   }
 
   {
     import cached.empty._
     testEmpty("cached")
+    illTyped("Empty[IList[Int]]")
+    illTyped("Empty[Snoc[Int]]")
+    illTyped("Empty[Rgb]")
   }
 
   {
@@ -63,16 +70,20 @@ class EmptySuite extends KittensSuite {
     implicit val outer: Empty[Outer] = semi.empty
     implicit val interleaved: Empty[Interleaved[String]] = semi.empty
     implicit val recursive: Empty[Recursive] = semi.empty
-    implicit lazy val iList: Empty[IList[Int]] = semi.empty
-    implicit lazy val snoc: Empty[Snoc[String => Int]] = semi.empty
+    implicit lazy val iList: Empty[IList[Dummy]] = semi.empty
+    implicit lazy val snoc: Empty[Snoc[Dummy]] = semi.empty
     implicit val box: Empty[Box[Mask]] = semi.empty
     implicit lazy val chain: Empty[Chain] = semi.empty
     testEmpty("semi")
+    illTyped("semi.empty[IList[Int]]")
+    illTyped("semi.empty[Snoc[Int]]")
+    illTyped("semi.empty[Rgb]")
   }
 }
 
 object EmptySuite {
 
+  trait Dummy
   final case class Chain(head: Int, tail: Chain)
   final case class Mask(bits: Int)
   object Mask {

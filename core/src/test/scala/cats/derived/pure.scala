@@ -49,11 +49,11 @@ class PureSuite extends KittensSuite {
     assert(P.pure(23) == List(23))
   }
 
-  test("Pure[IList]") {
-    val P = cachedImplicit[Pure[IList]]
-
-    assert(P.pure(23) == ICons(23, INil()))
-  }
+//  test("Pure[IList]") {
+//    val P = cachedImplicit[Pure[IList]]
+//
+//    assert(P.pure(23) == ICons(23, INil()))
+//  }
 
   test("Pure[λ[t => Option[Option[t]]]]") {
     type OOption[t] = Option[Option[t]]

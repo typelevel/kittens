@@ -16,58 +16,72 @@
 
 package cats.derived
 
-import alleycats.EmptyK
-
-import TestDefns._
-import auto.emptyK._
+import alleycats.{EmptyK, Pure}
 import alleycats.std.all._
+import cats.data.NonEmptyList
+import cats.instances.all._
+import shapeless.test.illTyped
 
 class EmptyKSuite extends KittensSuite {
+  import EmptyKSuite._
+  import TestDefns._
 
-  test("EmptyK[Option]") {
-    val E = EmptyK[Option]
+  type LOption[A] = List[Option[A]]
+  type PList[A] = (List[A], List[A])
+  type NelOption[A] = NonEmptyList[Option[A]]
+  type BoxColor[A] = Box[Color[A]]
 
-    assert(E.empty == None)
+  def testEmptyK(context: String)(
+    implicit lOption: EmptyK[LOption],
+    pList: EmptyK[PList],
+    caseClassWOption: EmptyK[CaseClassWOption],
+    nelOption: EmptyK[NelOption],
+    boxColor: EmptyK[BoxColor]
+  ): Unit = {
+    test(s"$context.EmptyK[LOption]")(assert(lOption.empty == Nil))
+    test(s"$context.EmptyK[PList]")(assert(pList.empty == (Nil, Nil)))
+    test(s"$context.EmptyK[CaseClassWOption]")(assert(caseClassWOption.empty == CaseClassWOption(None)))
+    test(s"$context.EmptyK[NelOption]")(assert(nelOption.empty == NonEmptyList.of(None)))
+    test(s"$context.EmptyK respects existing instances")(assert(boxColor.empty == Box(Color(255, 255, 255))))
   }
 
-  test("EmptyK[List]") {
-    val E = EmptyK[List]
-
-    assert(E.empty == Nil)
+  implicit val pureBox: Pure[Box] = new Pure[Box] {
+    def pure[A](a: A) = Box(a)
   }
 
-  test("EmptyK[IList]") {
-    val E = EmptyK[IList]
-
-    assert(E.empty == INil())
+  {
+    import auto.emptyK._
+    testEmptyK("auto")
+    illTyped("EmptyK[IList]")
+    illTyped("EmptyK[Snoc]")
   }
 
-  test("EmptyK[λ[t => Option[Option[t]]]]") {
-    type OOption[t] = Option[Option[t]]
-    val E = EmptyK[OOption]
-
-    assert(E.empty == None)
+  {
+    import cached.emptyK._
+    testEmptyK("cached")
+    illTyped("EmptyK[IList]")
+    illTyped("EmptyK[Snoc]")
   }
 
-  test("EmptyK[λ[t => List[Option[t]]]]") {
-    type LOption[t] = List[Option[t]]
-    val E = EmptyK[LOption]
-
-    assert(E.empty == Nil)
+  {
+    implicit val lOption: EmptyK[LOption] = semi.emptyK
+    implicit val pList: EmptyK[PList] = semi.emptyK
+    implicit val caseClassWOption: EmptyK[CaseClassWOption] = semi.emptyK
+    implicit val nelOption: EmptyK[NelOption] = semi.emptyK
+    implicit val boxColor: EmptyK[BoxColor] = semi.emptyK
+    testEmptyK("semi")
+    illTyped("semi.emptyK[IList]")
+    illTyped("semi.emptyK[Snoc]")
   }
+}
 
-  test("EmptyK[λ[t => List[List[t]]]]") {
-    type LList[t] = List[List[t]]
-    val E = EmptyK[LList]
+object EmptyKSuite {
 
-    assert(E.empty == Nil)
+  final case class Color[A](r: Int, g: Int, b: Int)
+  object Color {
+
+    implicit val emptyK: EmptyK[Color] = new EmptyK[Color] {
+      def empty[A] = Color(255, 255, 255)
+    }
   }
-
-  test("EmptyK[λ[t => (List[t], List[t])]]") {
-    type PList[t] = (List[t], List[t])
-    val E = EmptyK[PList]
-
-    assert(E.empty == (Nil, Nil))
-  }
-
 }

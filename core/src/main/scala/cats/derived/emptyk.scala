@@ -16,73 +16,60 @@
 
 package cats.derived
 
-import alleycats.{ EmptyK, Pure }
+import alleycats.{Empty, EmptyK, Pure}
 import shapeless._
 
+import scala.annotation.implicitNotFound
 
+@implicitNotFound("Could not derive an instance of EmptyK[${F}]")
 trait MkEmptyK[F[_]] extends EmptyK[F]
 
 object MkEmptyK extends MkEmptyKDerivation {
-  def apply[F[_]](implicit mef: MkEmptyK[F]): MkEmptyK[F] = mef
+  def apply[F[_]](implicit F: MkEmptyK[F]): MkEmptyK[F] = F
 }
 
-trait MkEmptyKDerivation extends MkEmptyK0 {
+private[derived] abstract class MkEmptyKDerivation extends MkEmptyKNestedOuter {
 
-  implicit val mkEmptyKHnil: MkEmptyK[Const[HNil]#λ] =
+  implicit val mkEmptyKHNil: MkEmptyK[Const[HNil]#λ] =
     new MkEmptyK[Const[HNil]#λ] {
-      def empty[A]: HNil = HNil
+      def empty[A] = HNil
     }
 
-  implicit def mkEmptyKHcons[F[_]](implicit ihf: IsHCons1[F, EmptyK, MkEmptyK]): MkEmptyK[F] =
-    new MkEmptyK[F] {
-      def empty[A]: F[A] = {
-        import ihf._
-        pack((fh.empty, ft.empty))
-      }
-    }
-
-  implicit def mkEmptyKCcons0[F[_]](implicit icf: IsCCons1[F, EmptyK, Trivial1]): MkEmptyK[F] =
-    new MkEmptyK[F] {
-      def empty[A]: F[A] = {
-        import icf._
-        pack(Left(fh.empty))
-      }
+  implicit def mkEmptyKConst[T](implicit T: Empty[T]): MkEmptyK[Const[T]#λ] =
+    new MkEmptyK[Const[T]#λ] {
+      def empty[A] = T.empty
     }
 }
 
-trait MkEmptyK0 extends MkEmptyK1 {
-  implicit def mkEmptyKCcons1[F[_]](implicit icf: IsCCons1[F, Trivial1, MkEmptyK]): MkEmptyK[F] =
+private[derived] abstract class MkEmptyKNestedOuter extends MkEmptyKNestedInner {
+
+  implicit def mkEmptyKNestedOuter[F[_]](implicit F: Split1[F, EmptyKOrMk, Trivial1]): MkEmptyK[F] =
     new MkEmptyK[F] {
-      def empty[A]: F[A] = {
-        import icf._
-        pack(Right(ft.empty))
-      }
+      def empty[A] = F.pack(F.fo.unify.empty)
     }
 }
 
-trait MkEmptyK1 extends MkEmptyK2 {
-  implicit def mkEmptyKSplit0[F[_]](implicit split: Split1[F, EmptyK, Trivial1]): MkEmptyK[F] =
+private[derived] abstract class MkEmptyKNestedInner extends MkEmptyKCons {
+
+  implicit def mkEmptyKNestedInner[F[_]](implicit F: Split1[F, Pure, EmptyKOrMk]): MkEmptyK[F] =
     new MkEmptyK[F] {
-      def empty[A]: F[A] = {
-        import split._
-        pack(fo.empty)
-      }
+      def empty[A] = F.pack(F.fo.pure(F.fi.unify.empty))
     }
 }
 
-trait MkEmptyK2 extends MkEmptyK3 {
-  implicit def mkEmptyKSplit1[F[_]](implicit split: Split1[F, Pure, EmptyK]): MkEmptyK[F] =
+private[derived] abstract class MkEmptyKCons extends MkEmptyKGeneric {
+
+  implicit def mkEmptyKHCons[F[_]](implicit F: IsHCons1[F, EmptyKOrMk, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
-      def empty[A]: F[A] = {
-        import split._
-        pack(fo.pure(fi.empty))
-      }
+      def empty[A] = F.pack((F.fh.unify.empty, F.ft.empty))
     }
 }
 
-trait MkEmptyK3 {
-  implicit def mkEmptyKGeneric[F[_]](implicit gen: Generic1[F, MkEmptyK]): MkEmptyK[F] =
+private[derived] abstract class MkEmptyKGeneric {
+  protected type EmptyKOrMk[F[_]] = EmptyK[F] OrElse MkEmptyK[F]
+  
+  implicit def mkEmptyKGeneric[F[_]](implicit F: Generic1[F, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
-      def empty[A]: F[A] = gen.from(gen.fr.empty)
+      def empty[A] = F.from(F.fr.empty)
     }
 }

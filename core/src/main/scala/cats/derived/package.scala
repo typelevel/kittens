@@ -116,8 +116,11 @@ object auto {
     ): Traverse[F] = F.value
   }
 
-  //todo: the regular approach doesn't work for the following instances
-  object pure extends MkPureDerivation
+  object pure {
+    implicit def kittensMkPure[F[_]](
+      implicit refute: Refute[Pure[F]], F: Lazy[MkPure[F]]
+    ): Pure[F] = F.value
+  }
 
   object consK {
     implicit def kittensMkConsK[F[_]](
@@ -142,6 +145,12 @@ object cached {
     implicit def kittensMkEmptyK[F[_]](
       implicit refute: Refute[EmptyK[F]], cached: Cached[MkEmptyK[F]]
     ): EmptyK[F] = cached.value
+  }
+
+  object pure {
+    implicit def kittensMkPure[F[_]](
+      implicit refute: Refute[Pure[F]], cached: Cached[MkPure[F]]
+    ): Pure[F] = cached.value
   }
 
   object eq {
@@ -305,7 +314,7 @@ object semi {
 
   def monoidK[F[_]](implicit F: Lazy[MkMonoidK[F]]): MonoidK[F] = F.value
 
-  def pure[F[_]](implicit F: MkPure[F]): Pure[F] = F
+  def pure[F[_]](implicit F: Lazy[MkPure[F]]): Pure[F] = F.value
 
   def semigroup[T](implicit ev: Lazy[MkSemigroup[T]]): Semigroup[T] = ev.value
 

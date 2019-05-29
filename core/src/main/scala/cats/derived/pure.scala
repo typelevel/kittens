@@ -16,65 +16,52 @@
 
 package cats.derived
 
-import alleycats.{EmptyK, Pure}
+import alleycats.{Empty, Pure}
 import shapeless._
 
+import scala.annotation.implicitNotFound
 
+@implicitNotFound("Could not derive an instance of Pure[${F}]")
 trait MkPure[F[_]] extends Pure[F]
 
 object MkPure extends MkPureDerivation {
-  def apply[F[_]](implicit mpf: MkPure[F]): MkPure[F] = mpf
+  def apply[F[_]](implicit F: MkPure[F]): MkPure[F] = F
 }
 
-trait MkPureDerivation extends MkPure0 {
-  implicit def mkPureHcons0[F[_]](implicit ihf: IsHCons1[F, Pure, EmptyK]): MkPure[F] =
-    new MkPure[F] {
-      def pure[A](a: A): F[A] = {
-        import ihf._
-        pack((fh.pure(a), ft.empty))
-      }
+private[derived] abstract class MkPureDerivation extends MkPureNested {
+
+  implicit val mkPureHNil: MkPure[Const[HNil]#λ] =
+    new MkPure[Const[HNil]#λ] {
+      def pure[A](a: A) = HNil
     }
 
-  implicit def mkPureCcons0[F[_]](implicit icf: IsCCons1[F, Pure, Trivial1]): MkPure[F] =
-    new MkPure[F] {
-      def pure[A](a: A): F[A] = {
-        import icf._
-        pack(Left(fh.pure(a)))
-      }
+  implicit def mkPureConst[T](implicit T: Empty[T]): MkPure[Const[T]#λ] =
+    new MkPure[Const[T]#λ] {
+      def pure[A](a: A) = T.empty
     }
 }
 
-trait MkPure0 extends MkPure1 {
-  implicit def mkPureHcons1[F[_]](implicit ihf: IsHCons1[F, EmptyK, MkPure]): MkPure[F] =
-    new MkPure[F] {
-      def pure[A](a: A): F[A] = {
-        import ihf._
-        pack((fh.empty, ft.pure(a)))
-      }
-    }
+private[derived] abstract class MkPureNested extends MkPureCons {
 
-  implicit def mkPureCcons1[F[_]](implicit icf: IsCCons1[F, Trivial1, MkPure]): MkPure[F] =
+  implicit def mkPureNested[F[_]](implicit F: Split1[F, PureOrMk, PureOrMk]): MkPure[F] =
     new MkPure[F] {
-      def pure[A](a: A): F[A] = {
-        import icf._
-        pack(Right(ft.pure(a)))
-      }
+      def pure[A](a: A) = F.pack(F.fo.unify.pure(F.fi.unify.pure(a)))
     }
 }
 
-trait MkPure1 extends MkPure2 {
-  implicit def mkPureSplit[F[_]](implicit split: Split1[F, Pure, Pure]): MkPure[F] =
+private[derived] abstract class MkPureCons extends MkPureGeneric {
+
+  implicit def mkPureHCons[F[_]](implicit F: IsHCons1[F, PureOrMk, MkPure]): MkPure[F] =
     new MkPure[F] {
-      def pure[A](a: A): F[A] = {
-        import split._
-        pack(fo.pure(fi.pure(a)))
-      }
+      def pure[A](a: A) = F.pack((F.fh.unify.pure(a), F.ft.pure(a)))
     }
 }
 
-trait MkPure2 {
-  implicit def mkPureGeneric[F[_]](implicit gen: Generic1[F, MkPure]): MkPure[F] =
+private[derived] abstract class MkPureGeneric {
+  protected type PureOrMk[F[_]] = Pure[F] OrElse MkPure[F]
+
+  implicit def mkPureGeneric[F[_]](implicit F: Generic1[F, MkPure]): MkPure[F] =
     new MkPure[F] {
-      def pure[A](a: A): F[A] = gen.from(gen.fr.pure(a))
+      def pure[A](a: A) = F.from(F.fr.pure(a))
     }
 }

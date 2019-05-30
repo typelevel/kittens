@@ -66,16 +66,16 @@ object TestDefns {
   }
 
   final case class Recursive(i: Int, is: Option[Recursive])
-  object Recursive {
+  object Recursive extends ((Int, Option[Recursive]) => Recursive) {
 
     implicit val eqv: Eq[Recursive] =
       Eq.fromUniversalEquals
 
-    implicit lazy val arbitrary: Arbitrary[Recursive] =
-      Arbitrary(for {
-        i <- Arbitrary.arbitrary[Int]
-        is <- Arbitrary.arbitrary[Option[Recursive]]
-      } yield Recursive(i, is))
+    implicit val arbitrary: Arbitrary[Recursive] =
+      Arbitrary(Arbitrary.arbitrary[(Int, Option[Recursive])].map(tupled))
+
+    implicit val cogen: Cogen[Recursive] =
+      Cogen[(Int, Option[Recursive])].contramap(unapply(_).get)
   }
 
   final case class Interleaved[T](i: Int, t: T, l: Long, tt: List[T], s: String)
@@ -85,13 +85,10 @@ object TestDefns {
       Eq.by(i => (i.i, i.t, i.l, i.tt, i.s))
 
     implicit def arbitrary[T: Arbitrary]: Arbitrary[Interleaved[T]] =
-      Arbitrary(for {
-        i <- Arbitrary.arbitrary[Int]
-        t <- Arbitrary.arbitrary[T]
-        l <- Arbitrary.arbitrary[Long]
-        tt <- Arbitrary.arbitrary[List[T]]
-        s <- Arbitrary.arbitrary[String]
-      } yield Interleaved(i, t, l, tt, s))
+      Arbitrary(Arbitrary.arbitrary[(Int, T, Long, List[T], String)].map((apply[T] _).tupled))
+
+    implicit def cogen[T: Cogen]: Cogen[Interleaved[T]] =
+      Cogen[(Int, T, Long, List[T], String)].contramap(unapply(_).get)
   }
 
   sealed trait IList[A]
@@ -186,6 +183,17 @@ object TestDefns {
       } yield Node(left, right)
 
       Arbitrary(Gen.sized(tree))
+    }
+
+    implicit def cogen[A: Cogen]: Cogen[Tree[A]] = {
+      lazy val cogen: Cogen[Tree[A]] = Cogen { (seed, tree) =>
+        tree match {
+          case Leaf(value) => Cogen[A].perturb(seed, value)
+          case Node(left, right) => cogen.perturb(cogen.perturb(seed, left), right)
+        }
+      }
+
+      cogen
     }
   }
 

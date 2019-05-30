@@ -17,70 +17,74 @@
 package cats
 package derived
 
+import cats.instances.all._
 import cats.kernel.laws.discipline._
-import cats.derived.TestDefns.{Foo, IList, Inner, Large4, Outer}
-import org.scalacheck.Prop.forAll
-
+import org.scalacheck.{Arbitrary, Cogen}
 
 class PartialOrderSuite extends KittensSuite {
+  import PartialOrderSuite._
+  import TestDefns._
+
+  def testPartialOrder(context: String)(
+    implicit iList: PartialOrder[IList[Int]],
+    inner: PartialOrder[Inner],
+    outer: PartialOrder[Outer],
+    interleaved: PartialOrder[Interleaved[Int]],
+    tree: PartialOrder[Tree[Int]],
+    recursive: PartialOrder[Recursive],
+    large: PartialOrder[Large4],
+    boxKeyValue: PartialOrder[Box[KeyValue]]
+  ): Unit = {
+    checkAll(s"$context.PartialOrder[IList[Int]]", PartialOrderTests[IList[Int]].partialOrder)
+    checkAll(s"$context.PartialOrder[Inner]", PartialOrderTests[Inner].partialOrder)
+    checkAll(s"$context.PartialOrder[Outer]", PartialOrderTests[Outer].partialOrder)
+    checkAll(s"$context.PartialOrder[Interleaved[Int]]", PartialOrderTests[Interleaved[Int]].partialOrder)
+    checkAll(s"$context.PartialOrder[Tree[Int]]", PartialOrderTests[Tree[Int]].partialOrder)
+    checkAll(s"$context.PartialOrder[Recursive]", PartialOrderTests[Recursive].partialOrder)
+    checkAll(s"$context.PartialOrder[Box[KeyValue]]", PartialOrderTests[Interleaved[Int]].partialOrder)
+
+    test(s"$context.PartialOrder respects existing instances") {
+      val x = Box(KeyValue("red", 1))
+      val y = Box(KeyValue("red", 2))
+      val z = Box(KeyValue("blue", 1))
+      assert(boxKeyValue.partialCompare(x, y) < 0)
+      assert(boxKeyValue.partialCompare(y, z).isNaN)
+    }
+  }
+
   {
     import auto.partialOrder._
-    import cats.instances.int._
-    checkAll("IList[Int]", PartialOrderTests[IList[Int]].partialOrder)
+    testPartialOrder("auto")
   }
+
   {
-
-    import auto.partialOrder._
-    import cats.instances.all._
-
-    checkAll("Outer", PartialOrderTests[Outer].partialOrder)
+    import cached.partialOrder._
+    testPartialOrder("cached")
   }
 
+  semiTests.run()
 
-  test("IList PartialOrder consistent with universal equality")(check {
-
-    import auto.partialOrder._
-    import cats.instances.int._
-
-    forAll { (a: IList[Int], b: IList[Int]) =>
-      PartialOrder[IList[Int]].eqv(a, b) == (a == b)
-    }
-  })
-
-  test("derives an instance for Interleaved[T]") {
-    import cats.instances.all._
-    semi.partialOrder[TestDefns.Interleaved[Int]]
+  object semiTests {
+    implicit val iList: PartialOrder[IList[Int]] = semi.partialOrder
+    implicit val inner: PartialOrder[Inner] = semi.partialOrder
+    implicit val outer: PartialOrder[Outer] = semi.partialOrder
+    implicit val interleaved: PartialOrder[Interleaved[Int]] = semi.partialOrder
+    implicit val tree: PartialOrder[Tree[Int]] = semi.partialOrder
+    implicit val recursive: PartialOrder[Recursive] = semi.partialOrder
+    implicit val large: PartialOrder[Large4] = semi.partialOrder
+    implicit val boxKeyValue: PartialOrder[Box[KeyValue]] = semi.partialOrder
+    def run(): Unit = testPartialOrder("semi")
   }
+}
 
-  test("existing PartialOrder instances in scope are respected for auto derivation")(check {
+object PartialOrderSuite {
 
-    import auto.partialOrder._
+  final case class KeyValue(key: String, value: Int)
+  object KeyValue extends ((String, Int) => KeyValue) {
+    implicit val arbitrary: Arbitrary[KeyValue] = Arbitrary(Arbitrary.arbitrary[(String, Int)].map(tupled))
+    implicit val cogen: Cogen[KeyValue] = Cogen[(String, Int)].contramap(unapply(_).get)
 
-    // nasty local implicit PartialOrder instances that think that all things are equal
-    implicit def partialOrderInner: PartialOrder[Inner] = PartialOrder.from((_, _) => 0)
-
-    forAll { (a: Outer, b: Outer) =>
-      PartialOrder[Outer].partialCompare(a, b) == 0
-    }
-  })
-
-  test("existing PartialOrder instances in scope are respected for semi derivation")(check {
-
-    // nasty local implicit PartialOrder instances that think that all things are equal
-    implicit def partialOrderInner: PartialOrder[Inner] = PartialOrder.from((_, _) => 0)
-
-    implicit val ordF: PartialOrder[Outer] = semi.partialOrder
-
-    forAll { (a: Outer, b: Outer) =>
-      PartialOrder[Outer].partialCompare(a, b) == 0
-    }
-  })
-  
-  //compilation time
-  {
-    import auto.partialOrder._
-    import cats.instances.all._
-
-    semi.partialOrder[Large4]
+    implicit val partialOrder: PartialOrder[KeyValue] =
+      PartialOrder.from((x, y) => if (x.key == y.key) x.value - y.value else Double.NaN)
   }
 }

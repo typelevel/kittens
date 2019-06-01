@@ -19,47 +19,40 @@ package cats.derived
 import cats.PartialOrder
 import shapeless._
 
-trait MkPartialOrder[T] extends PartialOrder[T]
+import scala.annotation.implicitNotFound
+
+@implicitNotFound("Could not derive an instance of PartialOrder[${A}]")
+trait MkPartialOrder[A] extends PartialOrder[A]
 
 object MkPartialOrder extends MkPartialOrderDerivation {
-  def apply[T](implicit met: MkPartialOrder[T]): MkPartialOrder[T] = met
+  def apply[A](implicit ev: MkPartialOrder[A]): MkPartialOrder[A] = ev
 }
 
 private[derived] abstract class MkPartialOrderDerivation {
-  implicit val mkPartialOrderHnil: MkPartialOrder[HNil] =
-    new MkPartialOrder[HNil] {
-      override def partialCompare(x: HNil, y: HNil): Double = 0
-    }
+  implicit val mkPartialOrderHNil: MkPartialOrder[HNil] = instance((_, _) => 0)
+  implicit val mkPartialOrderCNil: MkPartialOrder[CNil] = instance((_, _) => 0)
 
-  // Compare product from left to right
-  implicit def mkPartialOrderHcons[H, T <: HList](implicit ordH: PartialOrder[H] OrElse MkPartialOrder[H], ordT: MkPartialOrder[T]): MkPartialOrder[H :: T] =
-    new MkPartialOrder[H :: T] {
-      override def partialCompare(x: H :: T, y: H :: T): Double = {
-        val compareHead = ordH.unify.partialCompare(x.head, y.head)
-        if(compareHead != 0)
-          compareHead
-        else
-          ordT.partialCompare(x.tail, y.tail)
-      }
-    }
-
-  implicit val mkPartialOrderCnil: MkPartialOrder[CNil] =
-    new MkPartialOrder[CNil] {
-      override def partialCompare(x: CNil, y: CNil): Double = 0
-    }
-
-  implicit def mkPartialOrderCcons[L, R <: Coproduct](implicit ordL: PartialOrder[L] OrElse MkPartialOrder[L], ordR: MkPartialOrder[R]): MkPartialOrder[L :+: R] = new MkPartialOrder[L :+: R] {
-    override def partialCompare(x: L :+: R, y: L :+: R): Double = {
-      (x, y) match {
-        case (Inl(l1), Inl(l2)) => ordL.unify.partialCompare(l1, l2)
-        case (Inr(r1), Inr(r2)) => ordR.partialCompare(r1, r2)
-        case _ => Double.NaN
-      }
-    }
+  implicit def mkPartialOrderHcons[H, T <: HList](
+    implicit H: PartialOrder[H] OrElse MkPartialOrder[H], T: MkPartialOrder[T]
+  ): MkPartialOrder[H :: T] = instance { case (hx :: tx, hy :: ty) =>
+    val cmpH = H.unify.partialCompare(hx, hy)
+    if (cmpH != 0) cmpH else T.partialCompare(tx, ty)
   }
 
-  implicit def mkPartialOrderGeneric[T, R](implicit gen: Generic.Aux[T, R], ordR: Lazy[MkPartialOrder[R]]): MkPartialOrder[T] =
-    new MkPartialOrder[T] {
-      override def partialCompare(x: T, y: T): Double = ordR.value.partialCompare(gen.to(x), gen.to(y))
+  implicit def mkPartialOrderCCons[L, R <: Coproduct](
+    implicit L: PartialOrder[L] OrElse MkPartialOrder[L], R: MkPartialOrder[R]
+  ): MkPartialOrder[L :+: R] = instance {
+    case (Inl(lx), Inl(ly)) => L.unify.partialCompare(lx, ly)
+    case (Inr(rx), Inr(ry)) => R.partialCompare(rx, ry)
+    case _ => Double.NaN
+  }
+
+  implicit def mkPartialOrderGeneric[A, R](
+    implicit A: Generic.Aux[A, R], R: Lazy[MkPartialOrder[R]]
+  ): MkPartialOrder[A] = instance((x, y) => R.value.partialCompare(A.to(x), A.to(y)))
+
+  private def instance[A](f: (A, A) => Double): MkPartialOrder[A] =
+    new MkPartialOrder[A] {
+      def partialCompare(x: A, y: A) = f(x, y)
     }
 }

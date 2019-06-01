@@ -63,6 +63,9 @@ object TestDefns {
 
     implicit def arbitrary[A: Arbitrary]: Arbitrary[Box[A]] =
       Arbitrary(Arbitrary.arbitrary[A].map(apply))
+
+    implicit def cogen[A: Cogen]: Cogen[Box[A]] =
+      Cogen[A].contramap(_.content)
   }
 
   final case class Recursive(i: Int, is: Option[Recursive])
@@ -250,6 +253,9 @@ object TestDefns {
 
     implicit def arbitrary[A: Arbitrary]: Arbitrary[GenericAdt[A]] =
       Arbitrary(Arbitrary.arbitrary[Option[A]].map(GenericAdtCase.apply))
+
+    implicit def cogen[A: Cogen]: Cogen[GenericAdt[A]] =
+      Cogen[Option[A]].contramap({ case GenericAdtCase(value) => value })
   }
 
   final case class CaseClassWOption[A](value: Option[A])

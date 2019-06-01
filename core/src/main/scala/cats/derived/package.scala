@@ -40,8 +40,8 @@ object auto {
 
   object order {
     implicit def kittensMkOrder[A](
-      implicit refute: Refute[Order[A]], ord: MkOrder[A]
-    ): Order[A] = ord
+      implicit refute: Refute[Order[A]], ev: Lazy[MkOrder[A]]
+    ): Order[A] = ev.value
   }
 
   object hash {
@@ -168,8 +168,8 @@ object cached {
 
   object order {
     implicit def kittensMkOrder[A](
-       implicit refute: Refute[Order[A]], ord: Cached[MkOrder[A]])
-    : Order[A] = ord.value
+      implicit refute: Refute[Order[A]], cached: Cached[MkOrder[A]]
+    ): Order[A] = cached.value
   }
 
   object hash {
@@ -292,7 +292,7 @@ object semi {
 
   def partialOrder[A](implicit ev: Lazy[MkPartialOrder[A]]): PartialOrder[A] = ev.value
 
-  def order[A](implicit ev: MkOrder[A]): Order[A] = ev
+  def order[A](implicit ev: Lazy[MkOrder[A]]): Order[A] = ev.value
 
   def hash[A](implicit ev: MkHash[A]): Hash[A] = ev
 

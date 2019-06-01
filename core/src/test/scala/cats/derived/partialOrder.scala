@@ -32,7 +32,6 @@ class PartialOrderSuite extends KittensSuite {
     interleaved: PartialOrder[Interleaved[Int]],
     tree: PartialOrder[Tree[Int]],
     recursive: PartialOrder[Recursive],
-    large: PartialOrder[Large4],
     boxKeyValue: PartialOrder[Box[KeyValue]]
   ): Unit = {
     checkAll(s"$context.PartialOrder[IList[Int]]", PartialOrderTests[IList[Int]].partialOrder)
@@ -41,7 +40,7 @@ class PartialOrderSuite extends KittensSuite {
     checkAll(s"$context.PartialOrder[Interleaved[Int]]", PartialOrderTests[Interleaved[Int]].partialOrder)
     checkAll(s"$context.PartialOrder[Tree[Int]]", PartialOrderTests[Tree[Int]].partialOrder)
     checkAll(s"$context.PartialOrder[Recursive]", PartialOrderTests[Recursive].partialOrder)
-    checkAll(s"$context.PartialOrder[Box[KeyValue]]", PartialOrderTests[Interleaved[Int]].partialOrder)
+    checkAll(s"$context.PartialOrder[Box[KeyValue]]", PartialOrderTests[Box[KeyValue]].partialOrder)
 
     test(s"$context.PartialOrder respects existing instances") {
       val x = Box(KeyValue("red", 1))
@@ -71,7 +70,6 @@ class PartialOrderSuite extends KittensSuite {
     implicit val interleaved: PartialOrder[Interleaved[Int]] = semi.partialOrder
     implicit val tree: PartialOrder[Tree[Int]] = semi.partialOrder
     implicit val recursive: PartialOrder[Recursive] = semi.partialOrder
-    implicit val large: PartialOrder[Large4] = semi.partialOrder
     implicit val boxKeyValue: PartialOrder[Box[KeyValue]] = semi.partialOrder
     def run(): Unit = testPartialOrder("semi")
   }
@@ -85,6 +83,6 @@ object PartialOrderSuite {
     implicit val cogen: Cogen[KeyValue] = Cogen[(String, Int)].contramap(unapply(_).get)
 
     implicit val partialOrder: PartialOrder[KeyValue] =
-      PartialOrder.from((x, y) => if (x.key == y.key) x.value - y.value else Double.NaN)
+      PartialOrder.from((x, y) => if (x.key == y.key) x.value.toDouble - y.value.toDouble else Double.NaN)
   }
 }

@@ -17,72 +17,44 @@
 package cats
 package derived
 
-import cats.derived.TestDefns.{Foo, IList, Inner, Large4, Outer}
 import cats.kernel.laws.discipline._
-import org.scalacheck.Prop.forAll
-
+import cats.instances.all._
 
 class OrderSuite extends KittensSuite {
-  {
-    import auto.order._
-    import cats.instances.all._
+  import TestDefns._
 
-    checkAll("IList", OrderTests[IList[Int]].order)
-  }
-  {
-
-    import auto.order._
-    import cats.instances.all._
-
-    checkAll("Outer", OrderTests[Outer].order)
-  }
-
-
-  test("Foo Order consistent with universal equality")(check {
-
-    import auto.order._
-    import cats.instances.all._
-
-    forAll { (a: Foo, b: Foo) =>
-      Order[Foo].eqv(a, b) == (a == b)
-    }
-  })
-
-
-  test("derives an instance for Interleaved[T]") {
-    import cats.instances.all._
-    semi.order[TestDefns.Interleaved[Int]]
+  def testOrder(context: String)(
+    implicit inner: Order[Inner],
+    outer: Order[Outer],
+    interleaved: Order[Interleaved[Int]],
+    recursive: Order[Recursive],
+    genericAdt: Order[GenericAdt[Int]]
+  ): Unit = {
+    checkAll(s"$context.Order[Inner]", OrderTests[Inner].order)
+    checkAll(s"$context.Order[Outer]", OrderTests[Outer].order)
+    checkAll(s"$context.Order[Interleaved[Int]]", OrderTests[Interleaved[Int]].order)
+    checkAll(s"$context.Order[Recursive]", OrderTests[Recursive].order)
+    checkAll(s"$context.Order[GenericAdt[Int]]", OrderTests[GenericAdt[Int]].order)
   }
 
-
-  test("existing Order instances in scope are respected for auto derivation")(check {
-
-    import auto.order._
-
-    // nasty local implicit Order instances that think that all things are equal
-    implicit def orderInner: Order[Inner] = Order.from((_, _) => 0)
-
-    forAll { (a: Outer, b: Outer) =>
-      Order[Outer].compare(a, b) == 0
-    }
-  })
-
-  test("existing Order instances in scope are respected for semi derivation")(check {
-
-    // nasty local implicit Order instances that think that all things are equal
-    implicit def orderInner: Order[Inner] = Order.from((_, _) => 0)
-
-    implicit val ordF: Order[Outer] = semi.order
-
-    forAll { (a: Outer, b: Outer) =>
-      Order[Outer].compare(a, b) == 0
-    }
-  })
-
-  //compilation time
   {
     import auto.order._
-    import cats.instances.all._
-    semi.order[Large4]
+    testOrder("auto")
+  }
+
+  {
+    import cached.order._
+    testOrder("cached")
+  }
+
+  semiTests.run()
+
+  object semiTests {
+    implicit val inner: Order[Inner] = semi.order
+    implicit val outer: Order[Outer] = semi.order
+    implicit val interleaved: Order[Interleaved[Int]] = semi.order
+    implicit val recursive: Order[Recursive] = semi.order
+    implicit val genericAdt: Order[GenericAdt[Int]] = semi.order
+    def run(): Unit = testOrder("semi")
   }
 }

@@ -76,8 +76,8 @@ object auto {
 
   object showPretty {
     implicit def kittensMkShowPretty[A](
-     implicit refute: Refute[Show[A]], showPretty: MkShowPretty[A]
-    ): ShowPretty[A] = showPretty
+      implicit refute: Refute[Show[A]], ev: Lazy[MkShowPretty[A]]
+    ): ShowPretty[A] = ev.value
   }
 
   object semigroup {
@@ -216,8 +216,8 @@ object cached {
 
   object showPretty {
     implicit def kittensMkShowPretty[A](
-      implicit refute: Refute[Show[A]], ev: Cached[MkShowPretty[A]])
-    : ShowPretty[A] = ev.value
+      implicit refute: Refute[Show[A]], cached: Cached[MkShowPretty[A]]
+    ): ShowPretty[A] = cached.value
   }
 
   object monoidK {
@@ -304,7 +304,7 @@ object semi {
 
   def show[A](implicit ev: Lazy[MkShow[A]]): Show[A] = ev.value
 
-  def showPretty[A](implicit ev: MkShowPretty[A]): ShowPretty[A] = ev
+  def showPretty[A](implicit ev: Lazy[MkShowPretty[A]]): ShowPretty[A] = ev.value
 
   def foldable[F[_]](implicit F: Lazy[MkFoldable[F]]): Foldable[F] = F.value
 

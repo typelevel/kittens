@@ -4,92 +4,75 @@ import cats.Show
 import shapeless._
 import shapeless.labelled._
 
+import scala.annotation.implicitNotFound
+
 trait ShowPretty[A] extends Show[A] {
   def showLines(a: A): List[String]
   def show(a: A): String = showLines(a).mkString("\n")
 }
 
 object ShowPretty {
-  implicit def fromShow[A](implicit s: Show[A]): ShowPretty[A] =
-    new ShowPretty[A] {
-      override def showLines(a: A): List[String] =
-        s.show(a).split("\\n").toList
-    }
+  def apply[A: ShowPretty]: ShowPretty[A] = implicitly
 }
 
+@implicitNotFound("Could not derive an instance of ShowPretty[${A}]")
 trait MkShowPretty[A] extends ShowPretty[A]
 
 object MkShowPretty extends MkShowPrettyDerivation {
-  def apply[A](implicit showPretty: MkShowPretty[A]): MkShowPretty[A] =
-    showPretty
+  def apply[A](implicit ev: MkShowPretty[A]): MkShowPretty[A] = ev
 }
 
-trait MkShowPrettyDerivation extends MkShowPretty1 {
-  implicit val emptyProductDerivedShowPretty: MkShowPretty[HNil] =
-    instance(_ => Nil)
+private[derived] abstract class MkShowPrettyDerivation extends MkShowPrettyGenericCoproduct {
+  implicit val mkShowPrettyHNil: MkShowPretty[HNil] = instance(_ => Nil)
+  implicit val mkShowPrettyCNil: MkShowPretty[CNil] = instance(_ => Nil)
 
-  implicit def productDerivedShowPretty[K <: Symbol, V, T <: HList](
-      implicit key: Witness.Aux[K],
-      showV: ShowPretty[V] OrElse MkShowPretty[V],
-      showT: MkShowPretty[T]
-  ): MkShowPretty[FieldType[K, V] :: T] = instance { fields =>
-    val fieldName = key.value.name
-    val fieldValueLines = showV.unify.showLines(fields.head)
-    val nextFields = showT.showLines(fields.tail)
+  implicit def mkShowPrettyLabelledHCons[K <: Symbol, V, T <: HList](
+    implicit K: Witness.Aux[K], V: Show[V] OrElse MkShowPretty[V], T: MkShowPretty[T]
+  ): MkShowPretty[FieldType[K, V] :: T] = instance { case v :: t =>
+    val name = K.value.name
+    val valueLines = mkShowLines(V)(v)
+    val middleLines = valueLines.drop(1)
+    val tailLines = T.showLines(t)
+    val middleEmpty = middleLines.isEmpty
+    val tailEmpty = tailLines.isEmpty
+    val value = valueLines.headOption.mkString
+    val headLine = if (tailEmpty || !middleEmpty) s"$name = $value" else s"$name = $value,"
 
-    val fieldValue = {
-      val head = fieldValueLines.headOption.mkString
-      if (nextFields.isEmpty || fieldValueLines.size > 1) head
-      else s"$head,"
-    }
-
-    val remainingLines =
-      if (fieldValueLines.size > 1) {
-        val tail = fieldValueLines.tail
-        if (nextFields.isEmpty) tail
-        else tail.init ++ tail.lastOption.map(s => s"$s,")
-      } else Nil
-
-    List(s"$fieldName = $fieldValue") ++ remainingLines ++ nextFields
+    if (tailEmpty) headLine :: middleLines
+    else if (middleEmpty) headLine :: tailLines
+    else headLine :: middleLines.init ::: s"${middleLines.last}," :: tailLines
   }
 
-  implicit def emptyCoproductDerivedShowPretty: MkShowPretty[CNil] =
-    instance(_ => Nil)
-}
-
-trait MkShowPretty1 extends MkShowPretty2 {
-  implicit def coproductDerivedShowPretty[K <: Symbol, V, T <: Coproduct](
-      implicit key: Witness.Aux[K],
-      showV: ShowPretty[V] OrElse MkShowPretty[V],
-      showT: MkShowPretty[T]
-  ): MkShowPretty[FieldType[K, V] :+: T] = instance {
-    case Inl(l) => showV.unify.showLines(l)
-    case Inr(r) => showT.showLines(r)
+  implicit def mkShowPrettyCCons[L, R <: Coproduct](
+    implicit L: Show[L] OrElse MkShowPretty[L], R: MkShowPretty[R]
+  ): MkShowPretty[L :+: R] = instance {
+    case Inl(l) => mkShowLines(L)(l)
+    case Inr(r) => R.showLines(r)
   }
-}
 
-trait MkShowPretty2 extends MkShowPretty3 {
-  implicit def genericDerivedShowPrettyProduct[A, R <: HList](
-      implicit repr: LabelledGeneric.Aux[A, R],
-      t: Typeable[A],
-      s: Lazy[MkShowPretty[R]]
+  implicit def mkShowPrettyGenericProduct[A, R <: HList](
+    implicit A: LabelledGeneric.Aux[A, R], T: Typeable[A], R: Lazy[MkShowPretty[R]]
   ): MkShowPretty[A] = instance { a =>
-    val name = t.describe.takeWhile(_ != '[')
-    val contentLines = s.value.showLines(repr.to(a))
-    val contents = contentLines.map(s => s"  $s")
-    List(s"$name(") ++ contents ++ List(")")
+    val name = T.describe.takeWhile(_ != '[')
+    val lines = R.value.showLines(A.to(a)).map("  " + _)
+    s"$name(" :: lines ::: ")" :: Nil
   }
 }
 
-trait MkShowPretty3 {
+private[derived] abstract class MkShowPrettyGenericCoproduct {
+
   protected def instance[A](f: A => List[String]): MkShowPretty[A] =
     new MkShowPretty[A] {
-      def showLines(a: A): List[String] = f(a)
+      def showLines(a: A) = f(a)
     }
 
-  implicit def genericDerivedShowPrettyCoproduct[A, R <: Coproduct](
-      implicit repr: LabelledGeneric.Aux[A, R],
-      s: Lazy[MkShowPretty[R]]
-  ): MkShowPretty[A] =
-    instance(a => s.value.showLines(repr.to(a)))
+  protected def mkShowLines[A](show: Show[A] OrElse MkShowPretty[A])(a: A): List[String] =
+    show.fold({
+      case pretty: ShowPretty[A] => pretty.showLines(a)
+      case other => other.show(a).split('\n').toList
+    }, _.showLines(a))
+
+  implicit def mkShowPrettyGenericCoproduct[A, R <: Coproduct](
+    implicit A: Generic.Aux[A, R], R: Lazy[MkShowPretty[R]]
+  ): MkShowPretty[A] = instance(a => R.value.showLines(A.to(a)))
 }

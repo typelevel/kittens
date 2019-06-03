@@ -4,29 +4,39 @@ package derived
 import cats.instances.all._
 import shapeless.test.illTyped
 
-class ShowPrettyTests extends KittensSuite {
+class ShowPrettySuite extends KittensSuite {
+  import ShowPrettySuite._
   import TestDefns._
 
-  test("Simple case classes") {
-    implicit val sf: ShowPretty[Foo] = semi.showPretty[Foo]
-    val foo = Foo(42, Option("Hello"))
-    val printedFoo =
-      """
+  implicit val showAddress: Show[Address] = Show.show { a =>
+    List(a.street, a.city, a.state).mkString(" ")
+  }
+
+  def testShowPretty(context: String)(
+    implicit foo: ShowPretty[Foo],
+    outer: ShowPretty[Outer],
+    intTree: ShowPretty[IntTree],
+    genericAdt: ShowPretty[GenericAdt[Int]],
+    people: ShowPretty[People],
+    listField: ShowPretty[ListField],
+    interleaved: ShowPretty[Interleaved[Int]],
+    boxBogus: ShowPretty[Box[Bogus]]
+  ): Unit = {
+    test(s"$context.ShowPretty[Foo]") {
+      val value = Foo(42, Option("Hello"))
+      val pretty = """
         |Foo(
         |  i = 42,
         |  b = Some(Hello)
         |)
       """.stripMargin.trim
 
-    assert(foo.show == printedFoo)
-  }
+      assert(value.show == pretty)
+    }
 
-  test("Nested case classes auto derive inner class") {
-    implicit val so = semi.showPretty[Outer]
-
-    val nested = Outer(Inner(3))
-    val printedNested =
-      """
+    test(s"$context.ShowPretty[Outer]") {
+      val value = Outer(Inner(3))
+      val pretty = """
         |Outer(
         |  in = Inner(
         |    i = 3
@@ -34,47 +44,12 @@ class ShowPrettyTests extends KittensSuite {
         |)
       """.stripMargin.trim
 
-    assert(nested.show == printedNested)
-  }
+      assert(value.show == pretty)
+    }
 
-  test("respect defined instance") {
-    import InnerInstance._
-    implicit val so = semi.showPretty[Outer]
-
-    val printedNested =
-      """
-        |Outer(
-        |  in = Blah
-        |)
-      """.stripMargin.trim
-
-    val nested = Outer(Inner(3))
-
-    assert(nested.show == printedNested)
-  }
-
-  test("respect defined instance with full auto derivation") {
-    import InnerInstance._
-    import auto.showPretty._
-
-    val printedNested =
-      """
-        |Outer(
-        |  in = Blah
-        |)
-      """.stripMargin.trim
-
-    val nested = Outer(Inner(3))
-
-    assert(nested.show == printedNested)
-  }
-
-  test("Recursive ADTs with no type parameters") {
-    implicit val st = semi.showPretty[IntTree]
-
-    val tree: IntTree = IntNode(IntLeaf(1), IntNode(IntNode(IntLeaf(2), IntLeaf(3)), IntLeaf(4)))
-    val printedTree =
-      """
+    test(s"$context.ShowPretty[IntTree]") {
+      val value: IntTree = IntNode(IntLeaf(1), IntNode(IntNode(IntLeaf(2), IntLeaf(3)), IntLeaf(4)))
+      val pretty = """
         |IntNode(
         |  l = IntLeaf(
         |    t = 1
@@ -95,44 +70,23 @@ class ShowPrettyTests extends KittensSuite {
         |)
       """.stripMargin.trim
 
-    assert(tree.show == printedTree)
-  }
-
-  test("Non recursive ADTs with type parameters") {
-    implicit val sg = {
-      import auto.showPretty._
-      semi.showPretty[GenericAdt[Int]]
+      assert(value.show == pretty)
     }
 
-    val genAdt: GenericAdt[Int] = GenericAdtCase(Some(1))
-    val printedGenAdt =
-      """
+    test(s"$context.ShowPretty[GenericAdt[Int]]") {
+      val value: GenericAdt[Int] = GenericAdtCase(Some(1))
+      val pretty = """
         |GenericAdtCase(
         |  value = Some(1)
         |)
       """.stripMargin.trim
 
-    assert(genAdt.show == printedGenAdt)
-  }
-
-  test("Recursive ADTs with type parameters are not supported") {
-    import auto.showPretty._
-    val tree: Tree[Int] = Node(Leaf(1), Node(Node(Leaf(2), Leaf(3)), Leaf(4)))
-    illTyped("Show[Tree[Int]]")
-  }
-
-  test("Deep type hierarchy") {
-    semi.showPretty[Top]
-    semi.showPretty[People]
-  }
-
-  test("Deep type hierarchy respect existing instance") {
-    implicit val sAdd : Show[Address] = new Show[Address] {
-      def show(t: Address) = t.street + " " + t.city + " " + t.state
+      assert(value.show == pretty)
     }
 
-    val printed =
-      """
+    test(s"$context.ShowPretty[People]") {
+      val value = People("Kai", ContactInfo("303-123-4567", Address("123 1st St", "New York", "NY")))
+      val pretty = """
         |People(
         |  name = Kai,
         |  contactInfo = ContactInfo(
@@ -142,47 +96,12 @@ class ShowPrettyTests extends KittensSuite {
         |)
       """.stripMargin.trim
 
-    assert(semi.showPretty[People].show(People(name = "Kai",
-      contactInfo = ContactInfo(
-        phoneNumber = "303-123-4567",
-        address = Address(
-          street = "123 1st St",
-          city = "New York", state = "NY") ))) == printed)
-  }
-
-  test("Deep type hierarchy respect existing instance in full auto derivation") {
-    implicit val sAdd : Show[Address] = new Show[Address] {
-      def show(t: Address) = t.street + " " + t.city + " " + t.state
+      assert(value.show == pretty)
     }
 
-    val printed =
-      """
-        |People(
-        |  name = Kai,
-        |  contactInfo = ContactInfo(
-        |    phoneNumber = 303-123-4567,
-        |    address = 123 1st St New York NY
-        |  )
-        |)
-      """.stripMargin.trim
-
-    import auto.showPretty._
-    assert(People(name = "Kai",
-      contactInfo = ContactInfo(
-        phoneNumber = "303-123-4567",
-        address = Address(
-          street = "123 1st St",
-          city = "New York", state = "NY") )).show == printed)
-  }
-
-  test("semi-auto derivation respect existing instance") {
-    implicit val lifShow: Show[ListField] = {
-      import auto.showPretty._
-      semi.showPretty
-    }
-
-    assert(ListField(a ="a", b = List(ListFieldChild(c = 1))).show ==
-      """
+    test(s"$context.ShowPretty[ListField]") {
+      val value = ListField("a", List(ListFieldChild(1)))
+      val pretty = """
         |ListField(
         |  a = a,
         |  b = List(ListFieldChild(
@@ -190,33 +109,70 @@ class ShowPrettyTests extends KittensSuite {
         |  ))
         |)
       """.stripMargin.trim
-    )
-  }
-  test("auto derivation respect existing instance") {
-    import auto.showPretty._
 
-    assert(ListField(a ="a", b = List(ListFieldChild(c = 1))).show ==
-      """
-        |ListField(
-        |  a = a,
-        |  b = List(ListFieldChild(
-        |    c = 1
-        |  ))
+      assert(value.show == pretty)
+    }
+
+    test(s"$context.ShowPretty[Interleaved[Int]]") {
+      val value = Interleaved(1, 2, 3, List(4, 5, 6), "789")
+      val pretty = """
+        |Interleaved(
+        |  i = 1,
+        |  t = 2,
+        |  l = 3,
+        |  tt = List(4, 5, 6),
+        |  s = 789
         |)
       """.stripMargin.trim
-    )
+
+      assert(value.show == pretty)
+    }
+
+    test(s"$context.ShowPretty respects existing instances") {
+      val value = Box(Bogus(42))
+      val pretty = """
+        |Box(
+        |  content = Blah
+        |)
+      """.stripMargin.trim
+
+      assert(value.show == pretty)
+    }
   }
 
-  test("derives an instance for Interleaved[T]") {
-    semi.showPretty[TestDefns.Interleaved[Int]]
+  {
+    import auto.showPretty._
+    testShowPretty("auto")
+    illTyped("ShowPretty[Tree[Int]]")
   }
 
+  {
+    import cached.showPretty._
+    testShowPretty("cached")
+    illTyped("ShowPretty[Tree[Int]]")
+  }
+
+  semiTests.run()
+
+  object semiTests {
+    implicit val foo: ShowPretty[Foo] = semi.showPretty
+    implicit val outer: ShowPretty[Outer] = semi.showPretty
+    implicit val intTree: ShowPretty[IntTree] = semi.showPretty
+    implicit val genericAdt: ShowPretty[GenericAdt[Int]] = semi.showPretty
+    implicit val people: ShowPretty[People] = semi.showPretty
+    implicit val listFieldChild: ShowPretty[ListFieldChild] = semi.showPretty
+    implicit val listField: ShowPretty[ListField] = semi.showPretty
+    implicit val interleaved: ShowPretty[Interleaved[Int]] = semi.showPretty
+    implicit val boxBogus: ShowPretty[Box[Bogus]] = semi.showPretty
+    illTyped("semi.showPretty[Tree[Int]]")
+    def run(): Unit = testShowPretty("semi")
+  }
 }
 
-object InnerInstance {
-  import TestDefns.Inner
+object ShowPrettySuite {
 
-  implicit def showInner: Show[Inner] = new Show[Inner]{
-    def show(t: Inner): String = "Blah"
+  final case class Bogus(value: Int)
+  object Bogus {
+    implicit val show: Show[Bogus] = Show.show(_ => "Blah")
   }
 }

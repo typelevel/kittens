@@ -1,142 +1,109 @@
 package cats
 package derived
 
-import cats.Show
 import cats.instances.all._
 import shapeless.test.illTyped
-import TestDefns._
 
-class ShowTests extends KittensSuite {
+class ShowSuite extends KittensSuite {
+  import ShowSuite._
+  import TestDefns._
 
-
-  test("Simple case classes") {
-    implicit val sf = semi.show[Foo]
-    val foo = Foo(42, Option("Hello"))
-    val printedFoo = "Foo(i = 42, b = Some(Hello))"
-
-    assert(foo.show == printedFoo)
+  implicit val showAddress: Show[Address] = Show.show { a =>
+    List(a.street, a.city, a.state).mkString(" ")
   }
 
-  test("Nested case classes auto derive inner class") {
-    implicit val so = semi.show[Outer]
-
-    val nested = Outer(Inner(3))
-    val printedNested = "Outer(in = Inner(i = 3))"
-
-    assert(nested.show == printedNested)
-  }
-
-  test("respect defined instance") {
-    import InnerInstance._
-    implicit val so = semi.show[Outer]
-
-    val printedNested = "Outer(in = Blah)"
-    val nested = Outer(Inner(3))
-
-    assert(nested.show == printedNested)
-  }
-
-  test("respect defined instance with full auto derivation") {
-    import InnerInstance._
-    import auto.show._
-
-    val printedNested = "Outer(in = Blah)"
-    val nested = Outer(Inner(3))
-
-    assert(nested.show == printedNested)
-  }
-
-  test("Recursive ADTs with no type parameters") {
-    implicit val st = semi.show[IntTree]
-
-    val tree: IntTree = IntNode(IntLeaf(1), IntNode(IntNode(IntLeaf(2), IntLeaf(3)), IntLeaf(4)))
-    val printedTree =
-      "IntNode(l = IntLeaf(t = 1), r = IntNode(l = IntNode(l = IntLeaf(t = 2), r = IntLeaf(t = 3)), r = IntLeaf(t = 4)))"
-
-    assert(tree.show == printedTree)
-  }
-
-  test("Non recursive ADTs with type parameters") {
-    implicit val sg = {
-      import auto.show._
-      semi.show[GenericAdt[Int]]
+  def testShow(context: String)(
+    implicit foo: Show[Foo],
+    outer: Show[Outer],
+    intTree: Show[IntTree],
+    genericAdt: Show[GenericAdt[Int]],
+    people: Show[People],
+    listField: Show[ListField],
+    interleaved: Show[Interleaved[Int]],
+    boxBogus: Show[Box[Bogus]]
+  ): Unit = {
+    test(s"$context.Show[Foo]") {
+      val value = Foo(42, Option("Hello"))
+      val shown = "Foo(i = 42, b = Some(Hello))"
+      assert(value.show == shown)
     }
 
-    val genAdt: GenericAdt[Int] = GenericAdtCase(Some(1))
-    val printedGenAdt = "GenericAdtCase(value = Some(1))"
+    test(s"$context.Show[Outer]") {
+      val value = Outer(Inner(3))
+      val shown = "Outer(in = Inner(i = 3))"
+      assert(value.show == shown)
+    }
 
-    assert(genAdt.show == printedGenAdt)
+    test(s"$context.Show[IntTree]") {
+      val value: IntTree = IntNode(IntLeaf(1), IntNode(IntNode(IntLeaf(2), IntLeaf(3)), IntLeaf(4)))
+      val shown = "IntNode(l = IntLeaf(t = 1), r = IntNode(l = IntNode(l = IntLeaf(t = 2), r = IntLeaf(t = 3)), r = IntLeaf(t = 4)))"
+      assert(value.show == shown)
+    }
+
+    test(s"$context.Show[GenericAdt[Int]]") {
+      val value: GenericAdt[Int] = GenericAdtCase(Some(1))
+      val shown = "GenericAdtCase(value = Some(1))"
+      assert(value.show == shown)
+    }
+
+    test(s"$context.Show[People]") {
+      val value = People("Kai", ContactInfo("303-123-4567", Address("123 1st St", "New York", "NY")))
+      val shown = "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))"
+      assert(value.show == shown)
+    }
+
+    test(s"$context.Show[ListField]") {
+      val value = ListField("a", List(ListFieldChild(1)))
+      val shown = "ListField(a = a, b = List(ListFieldChild(c = 1)))"
+      assert(value.show == shown)
+    }
+
+    test(s"$context.Show[Interleaved[Int]]") {
+      val value = Interleaved(1, 2, 3, List(4, 5, 6), "789")
+      val shown = "Interleaved(i = 1, t = 2, l = 3, tt = List(4, 5, 6), s = 789)"
+      assert(value.show == shown)
+    }
+
+    test(s"$context.Show respects existing instances") {
+      val value = Box(Bogus(42))
+      val shown = "Box(content = Blah)"
+      assert(value.show == shown)
+    }
   }
 
-  test("Recursive ADTs with type parameters are not supported") {
+  {
     import auto.show._
-
-    val tree: Tree[Int] = Node(Leaf(1), Node(Node(Leaf(2), Leaf(3)), Leaf(4)))
-    val printedTree =
-      "Node(l = Leaf(t = 1), r = Node(l = Node(l = Leaf(t = 2), r = Leaf(t = 3)), r = Leaf(t = 4)))"
-
+    testShow("auto")
     illTyped("Show[Tree[Int]]")
   }
 
-  test("Deep type hierarchy") {
-    semi.show[Top]
-    semi.show[People]
+  {
+    import cached.show._
+    testShow("cached")
+    illTyped("Show[Tree[Int]]")
   }
 
-  test("Deep type hierarchy respect existing instance") {
-    implicit val sAdd : Show[Address] = new Show[Address] {
-      def show(t: Address) = t.street + " " + t.city + " " + t.state
-    }
-    assert(semi.show[People].show(People(name = "Kai",
-      contactInfo = ContactInfo(
-        phoneNumber = "303-123-4567",
-        address = Address(
-          street = "123 1st St",
-          city = "New York", state = "NY") ))) == "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))")
+  semiTests.run()
+
+  object semiTests {
+    implicit val foo: Show[Foo] = semi.show
+    implicit val outer: Show[Outer] = semi.show
+    implicit val intTree: Show[IntTree] = semi.show
+    implicit val genericAdt: Show[GenericAdt[Int]] = semi.show
+    implicit val people: Show[People] = semi.show
+    implicit val listFieldChild: Show[ListFieldChild] = semi.show
+    implicit val listField: Show[ListField] = semi.show
+    implicit val interleaved: Show[Interleaved[Int]] = semi.show
+    implicit val boxBogus: Show[Box[Bogus]] = semi.show
+    illTyped("semi.show[Tree[Int]]")
+    def run(): Unit = testShow("semi")
   }
-
-  test("Deep type hierarchy respect existing instance in full auto derivation") {
-    implicit val sAdd : Show[Address] = new Show[Address] {
-      def show(t: Address) = t.street + " " + t.city + " " + t.state
-    }
-    import auto.show._
-    assert(People(name = "Kai",
-      contactInfo = ContactInfo(
-        phoneNumber = "303-123-4567",
-        address = Address(
-          street = "123 1st St",
-          city = "New York", state = "NY") )).show == "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))")
-  }
-
-
-
-  test("semi-auto derivation respect existing instance") {
-    implicit val lifShow: Show[ListField] = {
-      import auto.show._
-      semi.show
-    }
-
-    assert(ListField(a ="a", b = List(ListFieldChild(c = 1))).show ==
-     "ListField(a = a, b = List(ListFieldChild(c = 1)))"
-    )
-  }
-  test("auto derivation respect existing instance") {
-    import auto.show._
-
-    assert(ListField(a ="a", b = List(ListFieldChild(c = 1))).show ==
-     "ListField(a = a, b = List(ListFieldChild(c = 1)))"
-    )
-  }
-
-  test("derives an instance for Interleaved[T]") {
-    semi.show[TestDefns.Interleaved[Int]]
-  }
-
 }
 
+object ShowSuite {
 
-object InnerInstance {
-  implicit def showInner: Show[Inner] = new Show[Inner]{
-    def show(t: Inner): String = "Blah"
+  final case class Bogus(value: Int)
+  object Bogus {
+    implicit val show: Show[Bogus] = Show.show(_ => "Blah")
   }
 }

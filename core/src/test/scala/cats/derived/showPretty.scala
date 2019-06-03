@@ -1,14 +1,14 @@
 package cats
 package derived
 
-import cats.Show
 import cats.instances.all._
 import shapeless.test.illTyped
-import TestDefns._
 
 class ShowPrettyTests extends KittensSuite {
+  import TestDefns._
+
   test("Simple case classes") {
-    implicit val sf = semi.showPretty[Foo]
+    implicit val sf: ShowPretty[Foo] = semi.showPretty[Foo]
     val foo = Foo(42, Option("Hello"))
     val printedFoo =
       """
@@ -211,4 +211,12 @@ class ShowPrettyTests extends KittensSuite {
     semi.showPretty[TestDefns.Interleaved[Int]]
   }
 
+}
+
+object InnerInstance {
+  import TestDefns.Inner
+
+  implicit def showInner: Show[Inner] = new Show[Inner]{
+    def show(t: Inner): String = "Blah"
+  }
 }

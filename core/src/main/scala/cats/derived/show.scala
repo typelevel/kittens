@@ -1,7 +1,10 @@
-package cats.derived
+package cats
+package derived
 
-import cats.Show
-import shapeless._, labelled._
+import shapeless._
+import shapeless.labelled._
+
+import scala.annotation.implicitNotFound
 
 /**
  * Due to a limitation in the way Shapeless' `describe` is currently
@@ -15,69 +18,48 @@ import shapeless._, labelled._
  * See the test suite for more precise examples of what can and cannot
  * be derived.
  */
+@implicitNotFound("Could not derive an instance of Show[${A}]")
 trait MkShow[A] extends Show[A]
 
 object MkShow extends MkShowDerivation {
-  def apply[A](implicit show: MkShow[A]): MkShow[A] = show
+  def apply[A](implicit ev: MkShow[A]): MkShow[A] = ev
 }
 
-trait MkShowDerivation extends MkShow1 {
-  implicit val emptyProductDerivedShow: MkShow[HNil] =
-    instance(_ => "")
+private[derived] abstract class MkShowDerivation {
+  implicit val mkShowHNil: MkShow[HNil] = instance(_ => "")
+  implicit val mkShowCNil: MkShow[CNil] = instance(_ => "")
 
-  implicit def productDerivedShow[K <: Symbol, V, T <: HList](
-       implicit key: Witness.Aux[K],
-       showV: Show[V] OrElse MkShow[V],
-       showT: MkShow[T]): MkShow[FieldType[K, V] :: T] = instance { fields =>
-    val fieldName = key.value.name
-    val fieldValue = showV.unify.show(fields.head)
-    val nextFields = showT.show(fields.tail)
-
-    if (nextFields.isEmpty)
-      s"$fieldName = $fieldValue"
-    else
-      s"$fieldName = $fieldValue, $nextFields"
+  implicit def mkShowLabelledHCons[K <: Symbol, V, T <: HList](
+    implicit K: Witness.Aux[K], V: Show[V] OrElse MkShow[V], T: MkShow[T]
+  ): MkShow[FieldType[K, V] :: T] = instance { case v :: t =>
+    val name = K.value.name
+    val value = V.unify.show(v)
+    val tail = T.show(t)
+    if (tail.isEmpty) s"$name = $value"
+    else s"$name = $value, $tail"
   }
 
-
-  implicit def emptyCoproductDerivedShow: MkShow[CNil] =
-    instance(_ => "")
-
-}
-
-trait MkShow1 extends MkShow2 {
-  // used when Show[V] (a member of the coproduct) has to be derived.
-  implicit def coproductDerivedShow[K <: Symbol, V, T <: Coproduct](
-     implicit key: Witness.Aux[K],
-     showV: Show[V] OrElse MkShow[V],
-     showT: MkShow[T]): MkShow[FieldType[K, V] :+: T] = instance {
-    case Inl(l) => showV.unify.show(l)
-    case Inr(r) => showT.show(r)
+  implicit def mkShowCCons[L, R <: Coproduct](
+    implicit L: Show[L] OrElse MkShow[L], R: MkShow[R]
+  ): MkShow[L :+: R] = instance {
+    case Inl(l) => L.unify.show(l)
+    case Inr(r) => R.show(r)
   }
 
-}
-
-trait MkShow2 extends MkShow3 {
-
-
-  implicit def genericDerivedShowProduct[A, R <: HList](
-                                                         implicit repr: LabelledGeneric.Aux[A, R],
-                                                         t: Typeable[A],
-                                                         s: Lazy[MkShow[R]]): MkShow[A] = instance { a =>
-    val name = t.describe.takeWhile(_ != '[')
-    val contents = s.value.show(repr.to(a))
-
-    s"$name($contents)"
-  }
-}
-
-trait MkShow3 {
-  protected def instance[A](body: A => String): MkShow[A] = new MkShow[A] {
-    def show(value: A): String = body(value)
+  implicit def mkShowGenericProduct[A, R <: HList](
+    implicit A: LabelledGeneric.Aux[A, R], T: Typeable[A], R: Lazy[MkShow[R]]
+  ): MkShow[A] = instance { a =>
+    val name = T.describe.takeWhile(_ != '[')
+    val fields = R.value.show(A.to(a))
+    s"$name($fields)"
   }
 
-  implicit def genericDerivedShowCoproduct[A, R <: Coproduct](
-      implicit repr: LabelledGeneric.Aux[A, R],
-      s: Lazy[MkShow[R]]): MkShow[A] =
-    instance(a => s.value.show(repr.to(a)))
+  implicit def mkShowGenericCoproduct[A, R <: Coproduct](
+    implicit A: Generic.Aux[A, R], R: Lazy[MkShow[R]]
+  ): MkShow[A] = instance(a => R.value.show(A.to(a)))
+
+  private def instance[A](f: A => String): MkShow[A] =
+    new MkShow[A] {
+      def show(value: A): String = f(value)
+    }
 }

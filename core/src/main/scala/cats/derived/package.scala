@@ -70,8 +70,8 @@ object auto {
 
   object show {
     implicit def kittensMkShow[A](
-      implicit refute: Refute[Show[A]], show: MkShow[A]
-    ): Show[A] = show
+      implicit refute: Refute[Show[A]], ev: Lazy[MkShow[A]]
+    ): Show[A] = ev.value
   }
 
   object showPretty {
@@ -210,8 +210,8 @@ object cached {
 
   object show {
     implicit def kittensMkshow[A](
-      implicit refute: Refute[Show[A]], ev: Cached[MkShow[A]])
-    : Show[A] = ev.value
+      implicit refute: Refute[Show[A]], cached: Cached[MkShow[A]]
+    ): Show[A] = cached.value
   }
 
   object showPretty {
@@ -302,7 +302,7 @@ object semi {
 
   def applicative[F[_]](implicit F: Lazy[MkApplicative[F]]): Applicative[F] = F.value
 
-  def show[A](implicit ev: MkShow[A]): Show[A] = ev
+  def show[A](implicit ev: Lazy[MkShow[A]]): Show[A] = ev.value
 
   def showPretty[A](implicit ev: MkShowPretty[A]): ShowPretty[A] = ev
 

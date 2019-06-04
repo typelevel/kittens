@@ -17,7 +17,7 @@
 package cats.derived
 
 import cats.syntax.AllSyntax
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.typelevel.discipline.scalatest.Discipline
 
 import scala.util.control.NonFatal
@@ -28,7 +28,7 @@ import scala.util.control.NonFatal
  * CatsSuite in the Cat project, this trait does not mix in any
  * instances.
  */
-trait KittensSuite extends FunSuite with Discipline with AllSyntax with SerializableTest
+trait KittensSuite extends AnyFunSuite with Discipline with AllSyntax with SerializableTest
 
 
 trait SerializableTest {

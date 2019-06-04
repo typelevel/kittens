@@ -46,8 +46,8 @@ object auto {
 
   object hash {
     implicit def kittensMkHash[A](
-      implicit refute: Refute[Hash[A]], hash: MkHash[A]
-    ): Hash[A] = hash
+      implicit refute: Refute[Hash[A]], ev: Lazy[MkHash[A]]
+    ): Hash[A] = ev.value
   }
 
   object functor {
@@ -174,8 +174,8 @@ object cached {
 
   object hash {
     implicit def kittensMkHash[A](
-       implicit refute: Refute[Hash[A]], ord: Cached[MkHash[A]])
-    : Hash[A] = ord.value
+      implicit refute: Refute[Hash[A]], cached: Cached[MkHash[A]]
+    ): Hash[A] = cached.value
   }
 
   object functor {
@@ -294,7 +294,7 @@ object semi {
 
   def order[A](implicit ev: Lazy[MkOrder[A]]): Order[A] = ev.value
 
-  def hash[A](implicit ev: MkHash[A]): Hash[A] = ev
+  def hash[A](implicit ev: Lazy[MkHash[A]]): Hash[A] = ev.value
 
   def functor[F[_]](implicit F: Lazy[MkFunctor[F]]): Functor[F] = F.value
 

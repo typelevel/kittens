@@ -8,7 +8,7 @@ import scala.annotation.implicitNotFound
 
 trait ShowPretty[A] extends Show[A] {
   def showLines(a: A): List[String]
-  def show(a: A): String = showLines(a).mkString("\n")
+  def show(a: A): String = showLines(a).mkString(System.lineSeparator)
 }
 
 object ShowPretty {
@@ -69,7 +69,7 @@ private[derived] abstract class MkShowPrettyGenericCoproduct {
   protected def mkShowLines[A](show: Show[A] OrElse MkShowPretty[A])(a: A): List[String] =
     show.fold({
       case pretty: ShowPretty[A] => pretty.showLines(a)
-      case other => other.show(a).split('\n').toList
+      case other => other.show(a).split(System.lineSeparator).toList
     }, _.showLines(a))
 
   implicit def mkShowPrettyGenericCoproduct[A, R <: Coproduct](

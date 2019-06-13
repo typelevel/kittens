@@ -6,11 +6,11 @@ import sbtcrossproject.{CrossType, crossProject}
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
-  scalaVersion := "2.12.8",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.0-M5")
+  scalaVersion := "2.13.0",
+  crossScalaVersions := Seq("2.11.12", "2.12.8", scalaVersion.value)
 )
 
-val catsVersion = "1.6.0"
+val catsVersion = "2.0.0-M4"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(
@@ -22,11 +22,8 @@ lazy val commonSettings = Seq(
   ),
   scalacOptions ++= (
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, v)) if v <= 12 => Seq(
-        "-Ypartial-unification"
-      )
-      case _ => Seq(
-      )
+      case Some((2, v)) if v <= 12 => Seq("-Ypartial-unification")
+      case _ => Seq.empty
     }
   ),
   resolvers ++= Seq(
@@ -39,7 +36,7 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %% "alleycats-core" % catsVersion,
     "com.chuusai"     %% "shapeless"      % "2.3.3",
     "org.typelevel"   %% "cats-testkit"   % catsVersion % "test",
-    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.9")
+    compilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3")
   ),
   scmInfo :=
     Some(ScmInfo(

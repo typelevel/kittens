@@ -17,14 +17,13 @@
 package cats.derived
 
 import alleycats.ConsK
-import org.scalacheck.Arbitrary
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.prop.{Generator, GeneratorDrivenPropertyChecks}
 
 class ConsKSuite extends KittensSuite with GeneratorDrivenPropertyChecks {
   import TestDefns._
 
-  def checkConsK[F[_], A: Arbitrary](nil: F[A])(fromSeq: Seq[A] => F[A])(implicit F: ConsK[F]): Unit =
-    forAll((xs: Seq[A]) => assert(xs.foldRight(nil)(F.cons) == fromSeq(xs)))
+  def checkConsK[F[_], A: Generator](nil: F[A])(fromSeq: Seq[A] => F[A])(implicit F: ConsK[F]): Unit =
+    forAll((xs: List[A]) => assert(xs.foldRight(nil)(F.cons) == fromSeq(xs)))
 
   def testConsK(context: String)(implicit iList: ConsK[IList], snoc: ConsK[Snoc]): Unit = {
     test(s"$context.ConsK[IList]")(checkConsK[IList, Int](INil())(IList.fromSeq))

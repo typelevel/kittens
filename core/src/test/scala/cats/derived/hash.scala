@@ -1,93 +1,48 @@
 package cats
 package derived
 
-import cats.derived.TestDefns._
 import cats.kernel.laws.discipline.HashTests
-import org.scalacheck.Prop.forAll
-
-import scala.util.hashing.Hashing
-
+import cats.instances.all._
 
 class HashSuite extends KittensSuite {
-  {
+  import TestDefns._
 
-    import auto.hash._
-    import cats.instances.int._
-
-    checkAll("IList[Int]", HashTests[IList[Int]].hash)
-  }
-  {
-
-    import auto.hash._
-    import cats.instances.all._
-
-    checkAll("Outer", HashTests[Outer].hash)
-  }
-
-
-  test("IList Hash consistent with universal equality")(check {
-
-    import auto.hash._
-    import cats.instances.int._
-
-    forAll { (a: IList[Int], b: IList[Int]) =>
-      Hash[IList[Int]].eqv(a, b) == (a == b)
-    }
-  })
-
-  test("derives an instance for Interleaved[T]") {
-    import cats.instances.all._
-    semi.hash[TestDefns.Interleaved[Int]]
+  def testHash(context: String)(
+    implicit iList: Hash[IList[Int]],
+    inner: Hash[Inner],
+    outer: Hash[Outer],
+    interleaved: Hash[Interleaved[Int]],
+    tree: Hash[Tree[Int]],
+    recursive: Hash[Recursive]
+  ): Unit = {
+    checkAll(s"$context.Hash[IList[Int]]", HashTests[IList[Int]].hash)
+    checkAll(s"$context.Hash[Inner]", HashTests[Inner].hash)
+    checkAll(s"$context.Hash[Outer]", HashTests[Outer].hash)
+    // FIXME: typelevel/cats#2878
+    // checkAll(s"$context.Hash[Interleaved[Int]]", HashTests[Interleaved[Int]].hash)
+    checkAll(s"$context.Hash[Tree[Int]]", HashTests[Tree[Int]].hash)
+    checkAll(s"$context.Hash[Recursive]", HashTests[Recursive].hash)
   }
 
-  test("existing Hash instances in scope are respected auto")(check {
-
-    import auto.hash._
-    import cats.instances.all._
-
-    forAll { (a: Outer) =>
-      val hashWithoutLocalInstance = {
-        a.hash
-      }
-      val hashWithLocalInstance = {
-        implicit val hashInner: Hash[Inner] = new Hash[Inner] {
-          def hash(x: Inner): Int = 1
-          def eqv(x: Inner, y: Inner): Boolean = x == y
-        }
-        a.hash
-      }
-      hashWithoutLocalInstance != hashWithLocalInstance
-    }
-
-  })
-  test("existing Hash instances in scope are respected semi")(check {
-
-
-    import cats.instances.all._
-
-    forAll { (a: Outer) =>
-
-      val hashWithoutLocalInstance = {
-        implicit val hashOuter: Hash[Outer] = derived.semi.hash
-        a.hash
-      }
-      val hashWithLocalInstance = {
-        implicit val hashInner: Hash[Inner] = new Hash[Inner] {
-          def hash(x: Inner): Int = 1
-          def eqv(x: Inner, y: Inner): Boolean = x == y
-        }
-        implicit val hashOuter: Hash[Outer] = derived.semi.hash
-        a.hash
-      }
-      hashWithoutLocalInstance != hashWithLocalInstance
-    }
-
-  })
-
-  //compilation time
   {
-    import auto.order._
-    import cats.instances.all._
-    semi.order[Large4]
+    import auto.hash._
+    testHash("auto")
+  }
+
+  {
+    import cached.hash._
+    testHash("cached")
+  }
+
+  semiTests.run()
+
+  object semiTests {
+    implicit val iList: Hash[IList[Int]] = semi.hash
+    implicit val inner: Hash[Inner] = semi.hash
+    implicit val outer: Hash[Outer] = semi.hash
+    implicit val interleaved: Hash[Interleaved[Int]] = semi.hash
+    implicit val tree: Hash[Tree[Int]] = semi.hash
+    implicit val recursive: Hash[Recursive] = semi.hash
+    def run(): Unit = testHash("semi")
   }
 }

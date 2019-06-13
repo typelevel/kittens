@@ -2,6 +2,7 @@ package cats.derived
 
 import cats.{Applicative, Eval, Traverse}
 import shapeless._
+import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 

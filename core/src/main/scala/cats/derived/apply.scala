@@ -18,6 +18,7 @@ package cats
 package derived
 
 import shapeless._
+import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 

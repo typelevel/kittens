@@ -16,7 +16,8 @@
 
 package cats.derived
 
-trait Trivial1[F[_]]
+sealed abstract class Trivial1[F[_]]
 object Trivial1 {
-  implicit def mkTrivial1[F[_]]: Trivial1[F] = new Trivial1[F] {}
+  private[this] val instance: Trivial1[Any] = new Trivial1[Any] {}
+  implicit def mkTrivial1[F[_]]: Trivial1[F] = instance.asInstanceOf[Trivial1[F]]
 }

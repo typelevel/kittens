@@ -3,6 +3,7 @@ package cats.derived
 import cats.Show
 import shapeless._
 import shapeless.labelled._
+import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 

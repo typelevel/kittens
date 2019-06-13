@@ -25,8 +25,10 @@ private[derived] trait HashBuilder[A] {
   }
 }
 
+import shapeless._
+import util.VersionSpecific.{OrElse, Lazy}
+
 private[derived] object HashBuilder {
-  import shapeless._
 
   implicit val hashBuilderHNil: HashBuilder[HNil] =
     instance(_ => Nil, (_, _) => true)
@@ -46,7 +48,6 @@ private[derived] object HashBuilder {
 }
 
 private[derived] abstract class MkHashDerivation extends MkHashGenericProduct {
-  import shapeless._
 
   implicit val mkHashCNil: MkHash[CNil] =
     instance(_ => 0, (_, _) => true)
@@ -66,8 +67,7 @@ private[derived] abstract class MkHashDerivation extends MkHashGenericProduct {
     instance(_.hashCode, (_, _) => true)
 }
 
-private[derived] abstract class MkHashGenericProduct extends MkHashGeneric {
-  import shapeless._
+private[derived] abstract class MkHashGenericProduct extends MkHashGenericHList {
 
   implicit def mkHashGenericProduct[A, R <: HList](
     implicit A: Generic.Aux[A, R], R: Lazy[HashBuilder[R]], ev: A <:< Product
@@ -77,8 +77,7 @@ private[derived] abstract class MkHashGenericProduct extends MkHashGeneric {
   )
 }
 
-private[derived] abstract class MkHashGeneric {
-  import shapeless._
+private[derived] abstract class MkHashGenericHList extends MkHashGenericCoproduct {
 
   implicit def mkHashGenericHList[A, R <: HList](
     implicit A: Generic.Aux[A, R], R: Lazy[HashBuilder[R]]
@@ -86,6 +85,9 @@ private[derived] abstract class MkHashGeneric {
     x => R.value.hash(A.to(x), MurmurHash3.productSeed),
     (x, y) => R.value.eqv(A.to(x), A.to(y))
   )
+}
+
+private[derived] abstract class MkHashGenericCoproduct {
 
   implicit def mkHashGenericCoproduct[A, R <: Coproduct](
     implicit A: Generic.Aux[A, R], R: Lazy[MkHash[R]]

@@ -2,7 +2,6 @@ package cats
 package derived
 
 import cats.instances.all._
-import shapeless.test.illTyped
 
 class ShowPrettySuite extends KittensSuite {
   import ShowPrettySuite._
@@ -143,13 +142,15 @@ class ShowPrettySuite extends KittensSuite {
   {
     import auto.showPretty._
     testShowPretty("auto")
-    illTyped("ShowPretty[Tree[Int]]")
+    // NOTE: This typechecks but crashes the compiler on Scala 2.13
+//    println(ShowPretty[Tree[Int]])
   }
 
   {
     import cached.showPretty._
     testShowPretty("cached")
-    illTyped("ShowPretty[Tree[Int]]")
+    // NOTE: This typechecks but crashes the compiler on Scala 2.13
+//    println(ShowPretty[Tree[Int]])
   }
 
   semiTests.run()
@@ -164,7 +165,8 @@ class ShowPrettySuite extends KittensSuite {
     implicit val listField: ShowPretty[ListField] = semi.showPretty
     implicit val interleaved: ShowPretty[Interleaved[Int]] = semi.showPretty
     implicit val boxBogus: ShowPretty[Box[Bogus]] = semi.showPretty
-    illTyped("semi.showPretty[Tree[Int]]")
+    // NOTE: This typechecks but crashes the compiler on Scala 2.13
+//    println(semi.showPretty[Tree[Int]])
     def run(): Unit = testShowPretty("semi")
   }
 }

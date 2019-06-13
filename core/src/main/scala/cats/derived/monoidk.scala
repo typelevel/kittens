@@ -18,6 +18,7 @@ package cats.derived
 
 import cats.{Applicative, Monoid, MonoidK}
 import shapeless._
+import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 

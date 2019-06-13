@@ -18,6 +18,7 @@ package cats.derived
 
 import cats.Order
 import shapeless._
+import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 

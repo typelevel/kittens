@@ -52,32 +52,37 @@ class EmptySuite extends KittensSuite {
   {
     import auto.empty._
     testEmpty("auto")
-    illTyped("Empty[IList[Int]]")
-    illTyped("Empty[Snoc[Int]]")
+    // NOTE: These typecheck but crash the compiler on Scala 2.13
+//    println(Empty[IList[Int]])
+//    println(Empty[Snoc[Int]])
     illTyped("Empty[Rgb]")
   }
 
   {
     import cached.empty._
     testEmpty("cached")
-    illTyped("Empty[IList[Int]]")
-    illTyped("Empty[Snoc[Int]]")
+    // NOTE: These typecheck but crash the compiler on Scala 2.13
+//    println(Empty[IList[Int]])
+//    println(Empty[Snoc[Int]])
     illTyped("Empty[Rgb]")
   }
 
-  {
+  semiTests.run()
+
+  object semiTests {
     implicit val foo: Empty[Foo] = semi.empty
     implicit val outer: Empty[Outer] = semi.empty
     implicit val interleaved: Empty[Interleaved[String]] = semi.empty
     implicit val recursive: Empty[Recursive] = semi.empty
-    implicit lazy val iList: Empty[IList[Dummy]] = semi.empty
-    implicit lazy val snoc: Empty[Snoc[Dummy]] = semi.empty
+    implicit val iList: Empty[IList[Dummy]] = semi.empty
+    implicit val snoc: Empty[Snoc[Dummy]] = semi.empty
     implicit val box: Empty[Box[Mask]] = semi.empty
-    implicit lazy val chain: Empty[Chain] = semi.empty
-    testEmpty("semi")
-    illTyped("semi.empty[IList[Int]]")
-    illTyped("semi.empty[Snoc[Int]]")
+    implicit val chain: Empty[Chain] = semi.empty
+    // NOTE: These typecheck but crash the compiler on Scala 2.13
+//    println(semi.empty[IList[Int]])
+//    println(semi.empty[Snoc[Int]])
     illTyped("semi.empty[Rgb]")
+    def run(): Unit = testEmpty("semi")
   }
 }
 

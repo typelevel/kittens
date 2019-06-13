@@ -18,6 +18,7 @@ package cats
 package derived
 
 import shapeless._
+import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
@@ -43,7 +44,7 @@ private[derived] abstract class MkFunctorDerivation extends MkFunctorNested {
     }
 }
 
-private[derived] abstract class MkFunctorNested extends MkFunctorGeneric {
+private[derived] abstract class MkFunctorNested extends MkFunctorCons {
 
   implicit def mkFunctorNested[F[_]](implicit F: Split1[F, FunctorOrMk, FunctorOrMk]): MkFunctor[F] =
     new MkFunctor[F] {
@@ -53,14 +54,7 @@ private[derived] abstract class MkFunctorNested extends MkFunctorGeneric {
     }
 }
 
-private[derived] abstract class MkFunctorGeneric {
-  protected type FunctorOrMk[F[_]] = Functor[F] OrElse MkFunctor[F]
-
-  protected def mkSafeMap[F[_], A, B](F: FunctorOrMk[F])(fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
-    F.unify match {
-      case mk: MkFunctor[F] => mk.safeMap(fa)(f)
-      case p => Eval.later(p.map(fa)(f(_).value))
-    }
+private[derived] abstract class MkFunctorCons extends MkFunctorGeneric {
 
   implicit def mkFunctorHCons[F[_]](implicit F: IsHCons1[F, FunctorOrMk, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
@@ -81,6 +75,16 @@ private[derived] abstract class MkFunctorGeneric {
         case Left(fha) => mkSafeMap(F.fh)(fha)(f).map(fhb => F.pack(Left(fhb)))
         case Right(fta) => F.ft.safeMap(fta)(f).map(ftb => F.pack(Right(ftb)))
       }
+    }
+}
+
+private[derived] abstract class MkFunctorGeneric {
+  protected type FunctorOrMk[F[_]] = Functor[F] OrElse MkFunctor[F]
+
+  protected def mkSafeMap[F[_], A, B](F: FunctorOrMk[F])(fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
+    F.unify match {
+      case mk: MkFunctor[F] => mk.safeMap(fa)(f)
+      case p => Eval.later(p.map(fa)(f(_).value))
     }
 
   implicit def mkFunctorGeneric[F[_]](implicit F: Generic1[F, MkFunctor]): MkFunctor[F] =

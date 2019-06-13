@@ -2,7 +2,8 @@ package cats
 package derived
 
 import alleycats._
-import shapeless.{Cached, Lazy, Refute}
+import shapeless.{Cached, Refute}
+import util.VersionSpecific.Lazy
 
 /**
   * Fully automatically derive the instance, note that this derivation is not cached, so it

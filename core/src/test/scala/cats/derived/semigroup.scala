@@ -24,7 +24,7 @@ import org.scalacheck.Arbitrary
 class SemigroupSuite extends KittensSuite {
   import SemigroupSuite._
   import TestDefns._
-
+  import TestEqInstances._
 
   def testSemigroup(context: String)(
     implicit foo: Semigroup[Foo],

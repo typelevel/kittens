@@ -32,19 +32,6 @@ object TestDefns {
   final case class ComplexProduct[T](lbl: String, set: Set[T], fns: Vector[() => T], opt: Eval[Option[T]])
   object ComplexProduct {
 
-    implicit def eqv[T: Eq]: Eq[ComplexProduct[T]] =
-      new Eq[ComplexProduct[T]] {
-        val eqSet = Eq[Set[T]]
-        val eqVec = Eq[Vector[T]]
-        val eqOpt = Eq[Eval[Option[T]]]
-
-        def eqv(x: ComplexProduct[T], y: ComplexProduct[T]) =
-          x.lbl == y.lbl &&
-            eqSet.eqv(x.set, y.set) &&
-            eqVec.eqv(x.fns.map(_()), y.fns.map(_())) &&
-            eqOpt.eqv(x.opt, y.opt)
-      }
-
     implicit def arbitrary[T: Arbitrary]: Arbitrary[ComplexProduct[T]] =
       Arbitrary(for {
         lbl <- Arbitrary.arbitrary[String]
@@ -58,9 +45,6 @@ object TestDefns {
   final case class Box[+A](content: A)
   object Box {
 
-    implicit def eqv[A: Eq]: Eq[Box[A]] =
-      Eq.by(_.content)
-
     implicit def arbitrary[A: Arbitrary]: Arbitrary[Box[A]] =
       Arbitrary(Arbitrary.arbitrary[A].map(apply))
 
@@ -71,9 +55,6 @@ object TestDefns {
   final case class Recursive(i: Int, is: Option[Recursive])
   object Recursive extends ((Int, Option[Recursive]) => Recursive) {
 
-    implicit val eqv: Eq[Recursive] =
-      Eq.fromUniversalEquals
-
     implicit val arbitrary: Arbitrary[Recursive] =
       Arbitrary(Arbitrary.arbitrary[(Int, Option[Recursive])].map(tupled))
 
@@ -83,9 +64,6 @@ object TestDefns {
 
   final case class Interleaved[T](i: Int, t: T, l: Long, tt: List[T], s: String)
   object Interleaved {
-
-    implicit def eqv[T: Eq]: Eq[Interleaved[T]] =
-      Eq.by(i => (i.i, i.t, i.l, i.tt, i.s))
 
     implicit def arbitrary[T: Arbitrary]: Arbitrary[Interleaved[T]] =
       Arbitrary(Arbitrary.arbitrary[(Int, T, Long, List[T], String)].map((apply[T] _).tupled))
@@ -99,14 +77,6 @@ object TestDefns {
   final case class INil[A]() extends IList[A]
 
   object IList {
-
-    implicit def eqv[A](implicit A: Eq[A]): Eq[IList[A]] = new Eq[IList[A]] {
-      @tailrec def eqv(x: IList[A], y: IList[A]): Boolean = (x, y) match {
-        case (ICons(hx, tx), ICons(hy, ty)) => A.eqv(hx, hy) && eqv(tx, ty)
-        case (INil(), INil()) => true
-        case _ => false
-      }
-    }
 
     implicit def arbitrary[A: Arbitrary]: Arbitrary[IList[A]] =
       Arbitrary(Arbitrary.arbitrary[Seq[A]].map(fromSeq))
@@ -133,14 +103,6 @@ object TestDefns {
 
   object Snoc {
 
-    implicit def eqv[A](implicit A: Eq[A]): Eq[Snoc[A]] = new Eq[Snoc[A]] {
-      @tailrec def eqv(x: Snoc[A], y: Snoc[A]): Boolean = (x, y) match {
-        case (SCons(ix, lx), SCons(iy, ly)) => A.eqv(lx, ly) && eqv(ix, iy)
-        case (SNil(), SNil()) => true
-        case _ => false
-      }
-    }
-
     implicit def arbitrary[A: Arbitrary]: Arbitrary[Snoc[A]] =
       Arbitrary(Arbitrary.arbitrary[Seq[A]].map(fromSeq))
 
@@ -162,14 +124,6 @@ object TestDefns {
   final case class Node[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
   object Tree {
-
-    implicit def eqv[A](implicit A: Eq[A]): Eq[Tree[A]] = new Eq[Tree[A]] {
-      def eqv(x: Tree[A], y: Tree[A]): Boolean = (x, y) match {
-        case (Leaf(vx), Leaf(vy)) => A.eqv(vx, vy)
-        case (Node(lx, rx), Node(ly, ry)) => eqv(lx, ly) && eqv(rx, ry)
-        case _ => false
-      }
-    }
 
     implicit def arbitrary[A: Arbitrary]: Arbitrary[Tree[A]] = {
       val leaf = Arbitrary.arbitrary[A].map(Leaf.apply)
@@ -202,9 +156,6 @@ object TestDefns {
 
   final case class Foo(i: Int, b: Option[String])
   object Foo {
-
-    implicit val eqv: Eq[Foo] =
-      Eq.fromUniversalEquals
 
     implicit val cogen: Cogen[Foo] =
       Cogen[Int].contramap(_.i)
@@ -246,11 +197,6 @@ object TestDefns {
 
   object GenericAdt {
 
-    implicit def eqv[A: Eq]: Eq[GenericAdt[A]] = {
-      val eqvOpt = Eq[Option[A]]
-      Eq.instance { case (GenericAdtCase(vx), GenericAdtCase(vy)) => eqvOpt.eqv(vx, vy) }
-    }
-
     implicit def arbitrary[A: Arbitrary]: Arbitrary[GenericAdt[A]] =
       Arbitrary(Arbitrary.arbitrary[Option[A]].map(GenericAdtCase.apply))
 
@@ -260,7 +206,6 @@ object TestDefns {
 
   final case class CaseClassWOption[A](value: Option[A])
   object CaseClassWOption {
-    implicit def eqv[A: Eq]: Eq[CaseClassWOption[A]] = Eq.by(_.value)
     implicit def arbitrary[A: Arbitrary]: Arbitrary[CaseClassWOption[A]] =
       Arbitrary(Arbitrary.arbitrary[Option[A]].map(apply))
   }
@@ -394,4 +339,65 @@ object TestDefns {
     bar20: Float,
     bar21: String
   )
+}
+
+object TestEqInstances {
+  import TestDefns._
+
+  implicit def eqComplexProduct[T: Eq]: Eq[ComplexProduct[T]] =
+    new Eq[ComplexProduct[T]] {
+      val eqSet = Eq[Set[T]]
+      val eqVec = Eq[Vector[T]]
+      val eqOpt = Eq[Eval[Option[T]]]
+
+      def eqv(x: ComplexProduct[T], y: ComplexProduct[T]) =
+        x.lbl == y.lbl &&
+          eqSet.eqv(x.set, y.set) &&
+          eqVec.eqv(x.fns.map(_()), y.fns.map(_())) &&
+          eqOpt.eqv(x.opt, y.opt)
+    }
+
+  implicit def eqBox[A: Eq]: Eq[Box[A]] =
+    Eq.by(_.content)
+
+  implicit val eqRecursive: Eq[Recursive] =
+    Eq.fromUniversalEquals
+
+  implicit def eqInterleaved[T: Eq]: Eq[Interleaved[T]] =
+    Eq.by(i => (i.i, i.t, i.l, i.tt, i.s))
+
+  implicit def eqIList[A](implicit A: Eq[A]): Eq[IList[A]] = new Eq[IList[A]] {
+    @tailrec def eqv(x: IList[A], y: IList[A]): Boolean = (x, y) match {
+      case (ICons(hx, tx), ICons(hy, ty)) => A.eqv(hx, hy) && eqv(tx, ty)
+      case (INil(), INil()) => true
+      case _ => false
+    }
+  }
+
+  implicit def eqSnoc[A](implicit A: Eq[A]): Eq[Snoc[A]] = new Eq[Snoc[A]] {
+    @tailrec def eqv(x: Snoc[A], y: Snoc[A]): Boolean = (x, y) match {
+      case (SCons(ix, lx), SCons(iy, ly)) => A.eqv(lx, ly) && eqv(ix, iy)
+      case (SNil(), SNil()) => true
+      case _ => false
+    }
+  }
+
+  implicit def eqTree[A](implicit A: Eq[A]): Eq[Tree[A]] = new Eq[Tree[A]] {
+    def eqv(x: Tree[A], y: Tree[A]): Boolean = (x, y) match {
+      case (Leaf(vx), Leaf(vy)) => A.eqv(vx, vy)
+      case (Node(lx, rx), Node(ly, ry)) => eqv(lx, ly) && eqv(rx, ry)
+      case _ => false
+    }
+  }
+
+  implicit val eqFoo: Eq[Foo] =
+    Eq.fromUniversalEquals
+
+  implicit def eqGenericAdt[A: Eq]: Eq[GenericAdt[A]] = {
+    val eqvOpt = Eq[Option[A]]
+    Eq.instance { case (GenericAdtCase(vx), GenericAdtCase(vy)) => eqvOpt.eqv(vx, vy) }
+  }
+
+  implicit def eqCaseClassWOption[A: Eq]: Eq[CaseClassWOption[A]] =
+    Eq.by(_.value)
 }

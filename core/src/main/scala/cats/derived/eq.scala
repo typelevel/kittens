@@ -19,42 +19,34 @@ package cats.derived
 import cats.Eq
 import shapeless._
 
+import scala.annotation.implicitNotFound
 
-trait MkEq[T] extends Eq[T]
+@implicitNotFound("Could not derive an instance of Eq[${A}]")
+trait MkEq[A] extends Eq[A]
 
 object MkEq extends MkEqDerivation {
-  def apply[T](implicit met: MkEq[T]): MkEq[T] = met
+  def apply[A](implicit ev: MkEq[A]): MkEq[A] = ev
 }
 
 private[derived] abstract class MkEqDerivation {
-  implicit val mkEqHnil: MkEq[HNil] =
-    new MkEq[HNil] {
-      def eqv(a: HNil, b: HNil) = true
+  implicit val mkEqHNil: MkEq[HNil] = instance((_, _) => true)
+  implicit val mkEqCNil: MkEq[CNil] = instance((_, _) => true)
+
+  implicit def mkEqHCons[H, T <: HList](implicit H: Eq[H] OrElse MkEq[H], T: MkEq[T]): MkEq[H :: T] =
+    instance { case (hx :: tx, hy :: ty) => H.unify.eqv(hx, hy) && T.eqv(tx, ty) }
+
+  implicit def mkEqCCons[L, R <: Coproduct](implicit L: Eq[L] OrElse MkEq[L], R: MkEq[R]): MkEq[L :+: R] =
+    instance {
+      case (Inl(lx), Inl(ly)) => L.unify.eqv(lx, ly)
+      case (Inr(rx), Inr(ry)) => R.eqv(rx, ry)
+      case _ => false
     }
 
-  implicit def mkEqHcons[H, T <: HList](implicit eqH: Eq[H] OrElse MkEq[H], eqT: MkEq[T]): MkEq[H :: T] =
-    new MkEq[H :: T] {
-      def eqv(a: H :: T, b: H :: T) =
-        eqH.unify.eqv(a.head, b.head) && eqT.eqv(a.tail, b.tail)
-    }
+  implicit def mkEqGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkEq[R]]): MkEq[A] =
+    instance((x, y) => R.value.eqv(A.to(x), A.to(y)))
 
-  implicit val mkEqCnil: MkEq[CNil] =
-    new MkEq[CNil] {
-      def eqv(a: CNil, b: CNil) = true
-    }
-
-  implicit def mkEqCcons[L, R <: Coproduct](implicit eqL: Eq[L] OrElse MkEq[L], eqR: MkEq[R]): MkEq[L :+: R] = new MkEq[L :+: R] {
-    def eqv(a: L :+: R, b: L :+: R) = {
-      (a, b) match {
-        case (Inl(l1), Inl(l2)) => eqL.unify.eqv(l1, l2)
-        case (Inr(r1), Inr(r2)) => eqR.eqv(r1, r2)
-        case _ => false
-      }
-    }
-  }
-
-  implicit def mkEqGeneric[T, R](implicit gen: Generic.Aux[T, R], eqR: Lazy[MkEq[R]]): MkEq[T] =
-    new MkEq[T] {
-      def eqv(a: T, b: T) = eqR.value.eqv(gen.to(a), gen.to(b))
+  private def instance[A](f: (A, A) => Boolean): MkEq[A] =
+    new MkEq[A] {
+      def eqv(x: A, y: A) = f(x, y)
     }
 }

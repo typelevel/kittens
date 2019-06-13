@@ -28,8 +28,8 @@ object auto {
 
   object eq {
     implicit def kittensMkEq[A](
-      implicit refute: Refute[Eq[A]], eq: MkEq[A]
-    ): Eq[A] = eq
+      implicit refute: Refute[Eq[A]], ev: Lazy[MkEq[A]]
+    ): Eq[A] = ev.value
   }
 
   object partialOrder {
@@ -155,9 +155,8 @@ object cached {
 
   object eq {
     implicit def kittensMkEq[A](
-      implicit refute: Refute[Eq[A]], ev: Cached[MkEq[A]])
-    : Eq[A] = ev.value
-
+      implicit refute: Refute[Eq[A]], cached: Cached[MkEq[A]]
+    ): Eq[A] = cached.value
   }
 
   object partialOrder {
@@ -288,7 +287,7 @@ object semi {
 
   def emptyK[F[_]](implicit F: Lazy[MkEmptyK[F]]): EmptyK[F] = F.value
 
-  def eq[A](implicit ev: MkEq[A]): Eq[A] = ev
+  def eq[A](implicit ev: Lazy[MkEq[A]]): Eq[A] = ev.value
 
   def partialOrder[A](implicit ev: Lazy[MkPartialOrder[A]]): PartialOrder[A] = ev.value
 

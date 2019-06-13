@@ -24,6 +24,7 @@ import org.scalacheck.Arbitrary
 class FoldableSuite extends KittensSuite {
   import FoldableSuite._
   import TestDefns._
+  import TestEqInstances._
 
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]

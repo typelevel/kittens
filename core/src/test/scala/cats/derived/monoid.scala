@@ -24,6 +24,7 @@ import org.scalacheck.Arbitrary
 class MonoidSuite extends KittensSuite {
   import MonoidSuite._
   import TestDefns._
+  import TestEqInstances._
 
   def testMonoid(context: String)(
     implicit foo: Monoid[Foo],

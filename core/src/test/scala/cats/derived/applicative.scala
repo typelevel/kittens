@@ -23,6 +23,7 @@ import cats.laws.discipline.SemigroupalTests.Isomorphisms
 
 class ApplicativeSuite extends KittensSuite {
   import TestDefns._
+  import TestEqInstances._
 
   type OptList[A] = Option[List[A]]
   type AndInt[A] = (A, Int)

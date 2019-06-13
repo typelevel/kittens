@@ -24,6 +24,7 @@ import org.scalacheck.Arbitrary
 class SemigroupKSuite extends KittensSuite {
   import SemigroupKSuite._
   import TestDefns._
+  import TestEqInstances._
 
   type BoxMul[A] = Box[Mul[A]]
 

@@ -6,6 +6,7 @@ import cats.laws.discipline.TraverseTests
 
 class TraverseSuite extends KittensSuite {
   import TestDefns._
+  import TestEqInstances._
 
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]

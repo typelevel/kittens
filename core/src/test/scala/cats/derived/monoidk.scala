@@ -24,6 +24,7 @@ import org.scalacheck.Arbitrary
 class MonoidKSuite extends KittensSuite {
   import MonoidKSuite._
   import TestDefns._
+  import TestEqInstances._
 
   type BoxMul[A] = Box[Mul[A]]
 

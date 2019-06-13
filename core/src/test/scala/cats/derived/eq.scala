@@ -18,88 +18,49 @@ package cats
 package derived
 
 import cats.kernel.laws.discipline._
-import org.scalacheck.Prop.forAll
-import org.scalacheck.Arbitrary
-import Arbitrary.arbitrary
-import cats.derived.EqSuite.Foo
-import cats.derived.TestDefns.{IList, Inner, Large, Outer}
-
+import cats.instances.all._
 
 class EqSuite extends KittensSuite {
+  import TestDefns._
 
+  def testEq(context: String)(
+    implicit foo: Eq[Foo],
+    iList: Eq[IList[Int]],
+    inner: Eq[Inner],
+    outer: Eq[Outer],
+    interleaved: Eq[Interleaved[Int]],
+    tree: Eq[Tree[Int]],
+    recursive: Eq[Recursive]
+  ): Unit = {
+    checkAll(s"$context.Eq[Foo]]", EqTests[Foo].eqv)
+    checkAll(s"$context.Eq[IList[Int]]", EqTests[IList[Int]].eqv)
+    checkAll(s"$context.Eq[Inner]", EqTests[Inner].eqv)
+    checkAll(s"$context.Eq[Outer]", EqTests[Outer].eqv)
+    checkAll(s"$context.Eq[Interleaved[Int]]", EqTests[Interleaved[Int]].eqv)
+    checkAll(s"$context.Eq[Tree[Int]]", EqTests[Tree[Int]].eqv)
+    checkAll(s"$context.Eq[Recursive]", EqTests[Recursive].eqv)
+  }
 
   {
     import auto.eq._
-
-    import cats.instances.int._
-    checkAll("IList[Int]", EqTests[IList[Int]].eqv)
+    testEq("auto")
   }
+
   {
-
-    import auto.eq._
-    import cats.instances.all._
-    checkAll("Outer", EqTests[Outer].eqv)
+    import cached.eq._
+    testEq("cached")
   }
 
+  semiTests.run()
 
-  test("IList Eq consistent with universal equality")(check {
-
-    import auto.eq._
-    import cats.instances.int._
-
-    forAll { (a: IList[Int], b: IList[Int]) =>
-      Eq[IList[Int]].eqv(a, b) == (a == b)
-    }
-  })
-
-
-  test("existing Eq instances in scope are respected for auto derivation")(check {
-
-    import auto.eq._
-
-    // nasty local implicit Eq instances that think that all things are equal
-    implicit def eqInner: Eq[Inner] = Eq.instance((_, _) => true)
-
-    forAll { (a: Outer, b: Outer) =>
-      Eq[Outer].eqv(a, b)
-    }
-  })
-
-  test("existing Eq instances in scope are respected for semi derivation")(check {
-
-
-    // nasty local implicit Eq instances that think that all things are equal
-    implicit def eqInner: Eq[Inner] = Eq.instance((_, _) => true)
-
-    implicit val eqOuter: Eq[Outer] = semi.eq
-
-    forAll { (a: Outer, b: Outer) =>
-      Eq[Outer].eqv(a, b)
-    }
-  })
-
-  //compilation time
-  {
-    import auto.eq._
-    import cats.instances.all._
-    semi.eq[Large]
+  object semiTests {
+    implicit val foo: Eq[Foo] = semi.eq
+    implicit val iList: Eq[IList[Int]] = semi.eq
+    implicit val inner: Eq[Inner] = semi.eq
+    implicit val outer: Eq[Outer] = semi.eq
+    implicit val interleaved: Eq[Interleaved[Int]] = semi.eq
+    implicit val tree: Eq[Tree[Int]] = semi.eq
+    implicit val recursive: Eq[Recursive] = semi.eq
+    def run(): Unit = testEq("semi")
   }
-
-  test("derives an instance for Interleaved[T]") {
-    import cats.instances.all._
-    semi.eq[TestDefns.Interleaved[Int]]
-  }
-
-}
-
-object EqSuite {
-
-  //redefine this because the one in TestDefn comes with a Eq instance and there is no way to shadow it.
-  final case class Foo(i: Int, b: Option[String])
-  implicit val arbFoo: Arbitrary[Foo] =
-    Arbitrary(for {
-      i <- arbitrary[Int]
-      b <- arbitrary[Option[String]]
-    } yield Foo(i, b))
-
 }

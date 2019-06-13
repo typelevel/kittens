@@ -22,6 +22,7 @@ import cats.laws.discipline.FunctorTests
 
 class FunctorSuite extends KittensSuite {
   import TestDefns._
+  import TestEqInstances._
 
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]

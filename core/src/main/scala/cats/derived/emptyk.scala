@@ -18,6 +18,7 @@ package cats.derived
 
 import alleycats.{Empty, EmptyK, Pure}
 import shapeless._
+import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 

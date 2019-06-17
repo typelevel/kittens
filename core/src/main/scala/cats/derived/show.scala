@@ -3,6 +3,7 @@ package derived
 
 import shapeless._
 import shapeless.labelled._
+import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
@@ -25,7 +26,7 @@ object MkShow extends MkShowDerivation {
   def apply[A](implicit ev: MkShow[A]): MkShow[A] = ev
 }
 
-private[derived] abstract class MkShowDerivation {
+private[derived] abstract class MkShowDerivation extends MkShowGenericCoproduct {
   implicit val mkShowHNil: MkShow[HNil] = instance(_ => "")
   implicit val mkShowCNil: MkShow[CNil] = instance(_ => "")
 
@@ -53,12 +54,15 @@ private[derived] abstract class MkShowDerivation {
     val fields = R.value.show(A.to(a))
     s"$name($fields)"
   }
+}
+
+private[derived] abstract class MkShowGenericCoproduct {
 
   implicit def mkShowGenericCoproduct[A, R <: Coproduct](
     implicit A: Generic.Aux[A, R], R: Lazy[MkShow[R]]
   ): MkShow[A] = instance(a => R.value.show(A.to(a)))
 
-  private def instance[A](f: A => String): MkShow[A] =
+  protected def instance[A](f: A => String): MkShow[A] =
     new MkShow[A] {
       def show(value: A): String = f(value)
     }

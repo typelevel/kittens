@@ -19,6 +19,7 @@ package derived
 
 import alleycats.Empty
 import shapeless._
+import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 

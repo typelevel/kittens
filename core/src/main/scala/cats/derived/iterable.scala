@@ -16,151 +16,121 @@
 
 package cats.derived
 
-import scala.annotation.tailrec
-
 import shapeless._
 
-trait IterableDerivationFromMkIterable {
+import scala.annotation.{implicitNotFound, tailrec}
 
-  implicit def mkIterableLegacy[F[_], A](fa: F[A])(implicit mif: MkIterable[F]): Iterable[A] =
-    mif.iterable(fa)
-
-}
-
+@implicitNotFound("Could not convert ${F} to an Iterable")
 trait MkIterable[F[_]] {
-  import IterState._
-
   def initialState[A](fa: F[A]): IterState[A]
 
-  def iterable[A](fa: F[A]): Iterable[A] =
-    new Iterable[A] {
-      lazy val initial: IterState[A] = initialState(fa)
-      def iterator: Iterator[A] =
-        new Iterator[A] {
-          var first = initial
-          var rest: List[() => IterState[A]] = Nil
+  def iterable[A](fa: F[A]): Iterable[A] = new Iterable[A] {
+    def iterator: Iterator[A] = new Iterator[A] {
+      var first = initialState(fa)
+      var rest: List[() => IterState[A]] = Nil
 
-          @tailrec
-          def hasNext: Boolean =
-            first match {
-              case Return(_) => true
-              case ReturnI(ia) =>
-                if(ia.hasNext) true
-                else if(rest.isEmpty) false
-                else {
-                  first = rest.head()
-                  rest = rest.tail
-                  hasNext
-                }
-              case Cont(hd, tl) =>
-                first = hd
-                rest = tl :: rest
-                hasNext
-              case Done =>
-                if(rest.isEmpty) false
-                else {
-                  first = rest.head()
-                  rest = rest.tail
-                  hasNext
-                }
-            }
-
-          def next: A = {
-            if(!hasNext)
-              throw new NoSuchElementException("next on empty iterator")
-            (first: @unchecked) match {
-              case Return(a) =>
-                first = Done
-                a
-              case ReturnI(ia) =>
-                ia.next
-            }
+      @tailrec def hasNext: Boolean = first match {
+        case IterState.Return(_) => true
+        case IterState.Iterate(it) =>
+          it.hasNext || rest.nonEmpty && {
+            first = rest.head()
+            rest = rest.tail
+            hasNext
           }
+        case IterState.Cont(head, tail) =>
+          first = head
+          rest = tail :: rest
+          hasNext
+        case IterState.Done =>
+          rest.nonEmpty && {
+            first = rest.head()
+            rest = rest.tail
+            hasNext
+          }
+      }
+
+      def next: A =
+        if (!hasNext) Iterator.empty.next()
+        else (first: @unchecked) match {
+          case IterState.Return(a) =>
+            first = IterState.Done
+            a
+          case IterState.Iterate(it) =>
+            it.next
         }
     }
+  }
 }
 
 sealed trait IterState[+A]
 object IterState {
-  case class Return[A](a: A) extends IterState[A]
-  case class ReturnI[A](ia: Iterator[A]) extends IterState[A]
-  case class Cont[A](hd: IterState[A], tl: () => IterState[A]) extends IterState[A]
+  final case class Return[A](a: A) extends IterState[A]
+  final case class Iterate[A](it: Iterator[A]) extends IterState[A]
+  final case class Cont[A](head: IterState[A], tail: () => IterState[A]) extends IterState[A]
   case object Done extends IterState[Nothing]
 }
 
-object MkIterable extends MkIterable0 {
-  import IterState._
+object MkIterable extends MkIterableDerivation {
+  def apply[F[_]](implicit F: MkIterable[F]): MkIterable[F] = F
+}
 
-  def apply[F[_]](implicit mif: MkIterable[F]): MkIterable[F] = mif
+private[derived] abstract class MkIterableDerivation extends MkIterableNested {
+  implicit val mkIterableHNil: MkIterable[Const[HNil]#λ] = mkIterableConst
+  implicit val mkIterableCNil: MkIterable[Const[CNil]#λ] = mkIterableConst
 
   implicit val mkIterableId: MkIterable[Id] =
     new MkIterable[Id] {
-      def initialState[A](fa: A): IterState[A] = Return(fa)
+      def initialState[A](fa: A) = IterState.Return(fa)
     }
 
   implicit val mkIterableOption: MkIterable[Option] =
     new MkIterable[Option] {
-      def initialState[A](fa: Option[A]): IterState[A] = ReturnI(fa.iterator)
+      def initialState[A](fa: Option[A]) = IterState.Iterate(fa.iterator)
     }
 
   implicit def mkIterableIterable[F[t] <: Iterable[t]]: MkIterable[F] =
     new MkIterable[F] {
-      def initialState[A](fa: F[A]): IterState[A] =
-        ReturnI(fa.iterator)
+      def initialState[A](fa: F[A]) = IterState.Iterate(fa.iterator)
     }
 
-  override implicit def mkIterableConst[T]: MkIterable[Const[T]#λ] =
-    super[MkIterable0].mkIterableConst
-}
-
-trait MkIterable0 extends MkIterable1 {
-  import IterState._
-
-  implicit def mkIterableHcons[F[_]](implicit F: IsHCons1[F, MkIterable, MkIterable]): MkIterable[F] =
-    new MkIterable[F] {
-      def initialState[A](fa: F[A]): IterState[A] = {
-        val (hd, tl) = F.unpack(fa)
-        if(tl == HNil) F.fh.initialState(hd)
-        else Cont(F.fh.initialState(hd), () => F.ft.initialState(tl))
-      }
-    }
-
-  implicit def mkIterableCcons[F[_]](implicit F: IsCCons1[F, MkIterable, MkIterable]): MkIterable[F] =
-    new MkIterable[F] {
-      def initialState[A](fa: F[A]): IterState[A] = {
-        F.unpack(fa) match {
-          case Left(hd) => F.fh.initialState(hd)
-          case Right(tl) => F.ft.initialState(tl)
-        }
-      }
+  implicit def mkIterableConst[T]: MkIterable[Const[T]#λ] =
+    new MkIterable[Const[T]#λ] {
+      def initialState[A](fa: T) = IterState.Done
     }
 }
 
-trait MkIterable1 extends MkIterable2 {
-  import IterState._
+private[derived] abstract class MkIterableNested extends MkIterableGeneric {
 
-  implicit def mkIterableCplit[F[_]](implicit split: Split1[F, MkIterable, MkIterable]): MkIterable[F] =
+  implicit def mkIterableNested[F[_]](implicit F: Split1[F, MkIterable, MkIterable]): MkIterable[F] =
     new MkIterable[F] {
-      def initialState[A](fa: F[A]): IterState[A] = {
-        import split._
-        ReturnI(fo.iterable(unpack(fa)).iterator.flatMap { ia => fi.iterable(ia).iterator })
-      }
+
+      def initialState[A](fa: F[A]) =
+        IterState.Iterate(F.fo.iterable(F.unpack(fa)).iterator.flatMap(F.fi.iterable(_).iterator))
     }
 }
 
-trait MkIterable2 extends MkIterable3 {
+private[derived] abstract class MkIterableGeneric {
+
+  implicit def mkIterableHCons[F[_]](implicit F: IsHCons1[F, MkIterable, MkIterable]): MkIterable[F] =
+    new MkIterable[F] {
+
+      def initialState[A](fa: F[A]) = {
+        val (fha, fta) = F.unpack(fa)
+        IterState.Cont(F.fh.initialState(fha), () => F.ft.initialState(fta))
+      }
+    }
+
+  implicit def mkIterableCCons[F[_]](implicit F: IsCCons1[F, MkIterable, MkIterable]): MkIterable[F] =
+    new MkIterable[F] {
+
+      def initialState[A](fa: F[A]) = F.unpack(fa) match {
+        case Left(fha) => F.fh.initialState(fha)
+        case Right(fta) => F.ft.initialState(fta)
+      }
+    }
+
   implicit def mkIterableGeneric[F[_]](implicit F: Generic1[F, MkIterable]): MkIterable[F] =
     new MkIterable[F] {
-      def initialState[A](fa: F[A]): IterState[A] = F.fr.initialState(F.to(fa))
-    }
-}
-
-trait MkIterable3 {
-  import IterState._
-
-  // For binary compatibility.
-  def mkIterableConst[T]: MkIterable[Const[T]#λ] =
-    new MkIterable[Const[T]#λ] {
-      def initialState[A](fa: T): IterState[A] = Done
+      def initialState[A](fa: F[A]) = F.fr.initialState(F.to(fa))
     }
 }

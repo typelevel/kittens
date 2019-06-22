@@ -16,9 +16,11 @@
 
 package cats.derived
 
-import TestDefns._, auto.iterable._
+import cats.instances.all._
 
 class IterableSuite extends KittensSuite {
+  import TestDefns._
+  import auto.iterable._
 
   test("IList[T] => Iterable[T]") {
     // test trampolining
@@ -84,16 +86,12 @@ class IterableSuite extends KittensSuite {
       )
 
     val I: Iterable[String] = MkIterable[Tree].iterable(tree)
-
-    val i = I.iterator
     assert(I.map(_.length).sum == 13)
   }
 
-  test("derives an instance for Interleaved[T]") {
-    import cats.instances.all._
+  test("Interleaved[T] => Iterable[T]") {
     val interleaved = Interleaved(42, 313, 3, List(1, 2, 3, 5, 7), "kittens")
     val i = semi.iterable[TestDefns.Interleaved, Int](interleaved)
     assert(i.toList == List(313, 1, 2, 3, 5, 7))
   }
-
 }

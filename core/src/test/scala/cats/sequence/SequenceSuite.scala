@@ -4,15 +4,15 @@
 package cats.sequence
 
 import cats.data._
-import cats.instances.option._
+import cats.derived._
 import cats.instances.either._
 import cats.instances.function._
-import org.scalacheck.Arbitrary
-import shapeless._, shapeless.syntax.singleton._
-import cats.derived._
-import org.scalacheck.Prop.forAll
-import shapeless.record.Record
+import cats.instances.option._
 import cats.laws.discipline.arbitrary._
+import org.scalacheck.Prop.forAll
+import shapeless._
+import shapeless.record.Record
+import shapeless.syntax.singleton._
 
 class SequenceSuite extends KittensSuite {
 
@@ -27,7 +27,7 @@ class SequenceSuite extends KittensSuite {
     // We can't simply use HNil.sequence, because F would be ambiguous.
     // However, we can explicitly grab the Sequencer for Option and use it.
     check {
-      implicitly[Sequencer.Aux[HNil, Option, HNil]].apply(HNil) == Some(HNil)
+      implicitly[Sequencer.Aux[HNil, Option, HNil]].apply(HNil) contains HNil
     })
 
   test("sequencing Either")(check {
@@ -49,50 +49,48 @@ class SequenceSuite extends KittensSuite {
     val f1 = (_: String).length
     val f2 = (_: String).reverse
     val f3 = (_: String).toDouble
-
     val f = (f1 :: f2 :: f3 :: HNil).sequence
-    assert( f("42.0") == 4 :: "0.24" :: 42.0 :: HNil)
+    assert(f("42.0") == 4 :: "0.24" :: 42.0 :: HNil)
   }
 
   test("sequencing Function using ProductArgs"){
     val f1 = (_: String).length
     val f2 = (_: String).reverse
     val f3 = (_: String).toDouble
-
     val f = sequence(f1, f2, f3)
-    assert( f("42.0") == 4 :: "0.24" :: 42.0 :: HNil )
-
+    assert(f("42.0") == 4 :: "0.24" :: 42.0 :: HNil)
   }
 
   test("sequencing Klesilis through ProductArgs") {
     val f1 = ((_: String).length) andThen Option.apply
     val f2 = ((_: String).reverse) andThen Option.apply
     val f3 = ((_: String).toDouble) andThen Option.apply
-
     val f = sequence(Kleisli(f1), Kleisli(f2), Kleisli(f3))
-    assert( f.run("42.0") == Some(('a ->> 4) :: ('b ->> "0.24") :: ('c ->> 42.0) :: HNil))
+    val expected = Some((Symbol("a") ->> 4) :: (Symbol("b") ->> "0.24") :: (Symbol("c") ->> 42.0) :: HNil)
+    assert(f.run("42.0") == expected)
   }
 
   test("sequencing record of Option")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
-      val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
-      (('a ->> x) :: ('b ->> y) :: ('c ->> z) :: HNil).sequence == expected
+      val expected = for (a <- x; b <- y; c <- z)
+        yield (Symbol("a") ->> a) :: (Symbol("b") ->> b) :: (Symbol("c") ->> c) :: HNil
+      ((Symbol("a") ->> x) :: (Symbol("b") ->> y) :: (Symbol("c") ->> z) :: HNil).sequence == expected
     }
   })
 
   test("sequencing record of Option using RecordArgs")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
-
-      val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
+      val expected = for (a <- x; b <- y; c <- z)
+        yield (Symbol("a") ->> a) :: (Symbol("b") ->> b) :: (Symbol("c") ->> c) :: HNil
       sequenceRecord(a = x, b = y, c = z) == expected
     }
   })
 
   test("sequencing record of Either")(check {
     forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
-
-      val expected = for ( a <- x; b <- y; c <- z ) yield ('a ->> a) :: ('b ->> b) :: ( 'c ->> c) :: HNil
-      (('a ->> x) :: ('b ->> y) :: ('c ->> z) :: HNil).sequence == expected
+      val expected = for (a <- x; b <- y; c <- z)
+        yield (Symbol("a") ->> a) :: (Symbol("b") ->> b) :: (Symbol("c") ->> c) :: HNil
+      ((Symbol("a") ->> x) :: (Symbol("b") ->> y) :: (Symbol("c") ->> z) :: HNil).sequence == expected
     }
   })
 
@@ -100,18 +98,18 @@ class SequenceSuite extends KittensSuite {
     val f1 = (_: String).length
     val f2 = (_: String).reverse
     val f3 = (_: String).toDouble
-
     val f = sequenceRecord(a = f1, b = f2, c = f3)
-    assert( f("42.0") == ('a ->> 4) :: ('b ->> "0.24") :: ('c ->> 42.0) :: HNil )
+    val expected = (Symbol("a") ->> 4) :: (Symbol("b") ->> "0.24") :: (Symbol("c") ->> 42.0) :: HNil
+    assert(f("42.0") == expected)
   }
 
   test("sequencing record of Kleisli through RecordArgs") {
     val f1 = ((_: String).length) andThen Option.apply
     val f2 = ((_: String).reverse) andThen Option.apply
     val f3 = ((_: String).toDouble) andThen Option.apply
-
     val f = sequenceRecord(a = Kleisli(f1), b = Kleisli(f2), c = Kleisli(f3))
-    assert( f.run("42.0") == Some(('a ->> 4) :: ('b ->> "0.24") :: ('c ->> 42.0) :: HNil))
+    val expected = Some((Symbol("a") ->> 4) :: (Symbol("b") ->> "0.24") :: (Symbol("c") ->> 42.0) :: HNil)
+    assert(f.run("42.0") == expected)
   }
 
   case class MyCase(a: Int, b: String, c: Float)
@@ -120,7 +118,6 @@ class SequenceSuite extends KittensSuite {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
       val myGen = sequenceGeneric[MyCase]
       val expected = (x, y, z) mapN MyCase.apply
-
       myGen(a = x, b = y, c = z) == expected
     }
   })
@@ -129,7 +126,6 @@ class SequenceSuite extends KittensSuite {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
       val myGen = sequenceGeneric[MyCase]
       val expected = (x, y, z) mapN MyCase.apply
-
       myGen(b = y, a = x, c = z) == expected
     }
   })
@@ -138,7 +134,6 @@ class SequenceSuite extends KittensSuite {
     forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
       val myGen = sequenceGeneric[MyCase]
       val expected = (x, y, z) mapN MyCase.apply
-
       myGen(a = x, b = y, c = z) == expected
     }
   })
@@ -147,31 +142,25 @@ class SequenceSuite extends KittensSuite {
     val f1 = (_: String).length
     val f2 = (_: String).reverse
     val f3 = (_: String).toFloat
-
     val myGen = sequenceGeneric[MyCase]
     val f = myGen(a = f1, b = f2, c = f3)
-
-    assert( f("42.0") == MyCase(4, "0.24", 42.0f))
+    assert(f("42.0") == MyCase(4, "0.24", 42.0f))
   }
 
   test("sequence gen for Klesili") {
     val f1 = ((_: String).length) andThen Option.apply
     val f2 = ((_: String).reverse) andThen Option.apply
     val f3 = ((_: String).toFloat) andThen Option.apply
-
     val myGen = sequenceGeneric[MyCase]
     val f = myGen(a = Kleisli(f1), b = Kleisli(f2), c = Kleisli(f3))
-
-    assert( f.run("42.0") == Some(MyCase(4, "0.24", 42.0f)))
+    assert(f.run("42.0") == Some(MyCase(4, "0.24", 42.0f)))
   }
 
   //wait until cats 0.5.0 release to bring unapply to serializable
   test("RecordSequencer is serializable") {
-    import java.io.{ ObjectOutputStream, ByteArrayOutputStream }
     val r = Record.`'a -> Option[Int], 'b -> Option[String]`
     type Rec = r.T
     val rs = the[RecordSequencer[Rec]]
-    assert( isSerializable(rs) )
+    assert(isSerializable(rs))
   }
-
 }

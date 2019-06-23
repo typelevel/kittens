@@ -12,7 +12,10 @@ import util.VersionSpecific.Lazy
   */
 object auto {
 
-  object iterable extends IterableDerivationFromMkIterable
+  object iterable {
+    implicit def kittensMkIterable[F[_], A](fa: F[A])(implicit F: MkIterable[F]): Iterable[A] =
+      F.iterable(fa)
+  }
 
   object empty {
     implicit def kittensMkEmpty[A](
@@ -322,6 +325,6 @@ object semi {
 
   def consK[F[_]](implicit F: Lazy[MkConsK[F, F]]): ConsK[F] = MkConsK.consK(F.value)
 
-  def iterable[F[_], A](fa: F[A])(implicit mif: MkIterable[F]): Iterable[A] = mif.iterable(fa)
+  def iterable[F[_], A](fa: F[A])(implicit F: MkIterable[F]): Iterable[A] = F.iterable(fa)
 }
 

@@ -156,10 +156,8 @@ class SequenceSuite extends KittensSuite {
     assert(f.run("42.0") == Some(MyCase(4, "0.24", 42.0f)))
   }
 
-  //wait until cats 0.5.0 release to bring unapply to serializable
   test("RecordSequencer is serializable") {
-    val r = Record.`'a -> Option[Int], 'b -> Option[String]`
-    type Rec = r.T
+    type Rec = Record.`'a -> Option[Int], 'b -> Option[String]`.T
     val rs = the[RecordSequencer[Rec]]
     assert(isSerializable(rs))
   }

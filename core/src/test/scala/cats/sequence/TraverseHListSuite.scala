@@ -4,16 +4,15 @@
 package cats.sequence
 
 import cats.data._
-import cats.instances.all._
-
-import shapeless._
 import cats.derived._
+import cats.instances.all._
 import org.scalacheck.Prop.forAll
-
+import shapeless._
 
 class TraverseHListSuite extends KittensSuite {
 
-  def optToValidation[T](opt: Option[T]): Validated[String, T] = Validated.fromOption(opt, "Nothing Here")
+  def optToValidation[T](opt: Option[T]): Validated[String, T] =
+    Validated.fromOption(opt, "Nothing Here")
 
   object headOption extends Poly1 {
     implicit def caseSet[T] = at[Set[T]](_.headOption)
@@ -36,5 +35,4 @@ class TraverseHListSuite extends KittensSuite {
       (x :: y :: z :: HNil).traverse(optionToValidation) == expected
     }
   })
-
 }

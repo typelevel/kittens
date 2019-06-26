@@ -5,9 +5,8 @@ package cats.sequence
 
 import cats.data._
 import cats.derived._
-import cats.instances.either._
-import cats.instances.function._
-import cats.instances.option._
+import cats.instances.all._
+import cats.laws.discipline.SerializableTests
 import cats.laws.discipline.arbitrary._
 import org.scalacheck.Prop.forAll
 import shapeless._
@@ -156,9 +155,8 @@ class SequenceSuite extends KittensSuite {
     assert(f.run("42.0") == Some(MyCase(4, "0.24", 42.0f)))
   }
 
-  test("RecordSequencer is serializable") {
-    type Rec = Record.`'a -> Option[Int], 'b -> Option[String]`.T
-    val rs = the[RecordSequencer[Rec]]
-    assert(isSerializable(rs))
-  }
+  checkAll(
+    "RecordSequencer is Serializable",
+    SerializableTests.serializable(the[RecordSequencer[Record.`'a -> Option[Int], 'b -> Option[String]`.T]])
+  )
 }

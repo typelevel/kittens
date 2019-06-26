@@ -1,7 +1,7 @@
 package cats
 package derived
 
-import cats.kernel.laws.discipline.HashTests
+import cats.kernel.laws.discipline.{HashTests, SerializableTests}
 import cats.instances.all._
 
 class HashSuite extends KittensSuite {
@@ -22,6 +22,7 @@ class HashSuite extends KittensSuite {
     // checkAll(s"$context.Hash[Interleaved[Int]]", HashTests[Interleaved[Int]].hash)
     checkAll(s"$context.Hash[Tree[Int]]", HashTests[Tree[Int]].hash)
     checkAll(s"$context.Hash[Recursive]", HashTests[Recursive].hash)
+    checkAll(s"$context.Hash is Serializable", SerializableTests.serializable(Hash[Tree[Int]]))
   }
 
   {

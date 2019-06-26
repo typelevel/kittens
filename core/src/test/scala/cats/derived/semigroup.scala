@@ -18,7 +18,7 @@ package cats
 package derived
 
 import cats.instances.all._
-import cats.kernel.laws.discipline._
+import cats.kernel.laws.discipline.{SemigroupTests, SerializableTests}
 import org.scalacheck.Arbitrary
 
 class SemigroupSuite extends KittensSuite {
@@ -36,6 +36,7 @@ class SemigroupSuite extends KittensSuite {
     checkAll(s"$context.Semigroup[Recursive]", SemigroupTests[Recursive].semigroup)
     checkAll(s"$context.Semigroup[Interleaved[Int]]", SemigroupTests[Interleaved[Int]].semigroup)
     checkAll(s"$context.Semigroup[Box[Mul]]", SemigroupTests[Box[Mul]].semigroup)
+    checkAll(s"$context.Semigroup is Serializable", SerializableTests.serializable(Semigroup[Interleaved[Int]]))
 
     test(s"$context.Semigroup respects existing instances") {
       assert(box.combine(Box(Mul(5)), Box(Mul(5))).content.value == 25)

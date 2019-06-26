@@ -17,7 +17,7 @@
 package cats
 package derived
 
-import cats.kernel.laws.discipline._
+import cats.kernel.laws.discipline.{OrderTests, SerializableTests}
 import cats.instances.all._
 
 class OrderSuite extends KittensSuite {
@@ -35,6 +35,7 @@ class OrderSuite extends KittensSuite {
     checkAll(s"$context.Order[Interleaved[Int]]", OrderTests[Interleaved[Int]].order)
     checkAll(s"$context.Order[Recursive]", OrderTests[Recursive].order)
     checkAll(s"$context.Order[GenericAdt[Int]]", OrderTests[GenericAdt[Int]].order)
+    checkAll(s"$context.Order is Serializable", SerializableTests.serializable(Order[Interleaved[Int]]))
   }
 
   {

@@ -2,14 +2,11 @@ package cats
 package derived
 
 import cats.instances.all._
+import cats.laws.discipline.SerializableTests
 
 class ShowPrettySuite extends KittensSuite {
   import ShowPrettySuite._
   import TestDefns._
-
-  implicit val showAddress: Show[Address] = Show.show { a =>
-    List(a.street, a.city, a.state).mkString(" ")
-  }
 
   def testShowPretty(context: String)(
     implicit foo: ShowPretty[Foo],
@@ -21,6 +18,8 @@ class ShowPrettySuite extends KittensSuite {
     interleaved: ShowPretty[Interleaved[Int]],
     boxBogus: ShowPretty[Box[Bogus]]
   ): Unit = {
+    checkAll(s"$context.ShowPretty is Serializable", SerializableTests.serializable(ShowPretty[IntTree]))
+
     test(s"$context.ShowPretty[Foo]") {
       val value = Foo(42, Option("Hello"))
       val pretty = """
@@ -153,9 +152,25 @@ class ShowPrettySuite extends KittensSuite {
 //    println(ShowPretty[Tree[Int]])
   }
 
-  semiTests.run()
+  {
+    import semiInstances._
+    testShowPretty("semi")
+  }
+}
 
-  object semiTests {
+object ShowPrettySuite {
+  import TestDefns._
+
+  implicit val showAddress: Show[Address] = Show.show { a =>
+    List(a.street, a.city, a.state).mkString(" ")
+  }
+
+  final case class Bogus(value: Int)
+  object Bogus {
+    implicit val show: Show[Bogus] = Show.show(_ => "Blah")
+  }
+
+  object semiInstances {
     implicit val foo: ShowPretty[Foo] = semi.showPretty
     implicit val outer: ShowPretty[Outer] = semi.showPretty
     implicit val intTree: ShowPretty[IntTree] = semi.showPretty
@@ -166,15 +181,6 @@ class ShowPrettySuite extends KittensSuite {
     implicit val interleaved: ShowPretty[Interleaved[Int]] = semi.showPretty
     implicit val boxBogus: ShowPretty[Box[Bogus]] = semi.showPretty
     // NOTE: This typechecks but crashes the compiler on Scala 2.13
-//    println(semi.showPretty[Tree[Int]])
-    def run(): Unit = testShowPretty("semi")
-  }
-}
-
-object ShowPrettySuite {
-
-  final case class Bogus(value: Int)
-  object Bogus {
-    implicit val show: Show[Bogus] = Show.show(_ => "Blah")
+    //    println(semi.showPretty[Tree[Int]])
   }
 }

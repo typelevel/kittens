@@ -2,12 +2,12 @@ package cats.derived.util
 
 import scala.util.hashing.MurmurHash3
 
-private[derived] object VersionSpecific {
+object VersionSpecific {
 
-  def productSeed(x: Product): Int =
+  private[derived] def productSeed(x: Product): Int =
     MurmurHash3.mix(MurmurHash3.productSeed, x.productPrefix.hashCode)
 
-  abstract class Lazy[+A] {
+  abstract class Lazy[+A] extends Serializable {
     def value(): A
   }
 
@@ -15,7 +15,7 @@ private[derived] object VersionSpecific {
     implicit def instance[A](implicit ev: => A): Lazy[A] = () => ev
   }
 
-  sealed trait OrElse[+A, +B] {
+  sealed trait OrElse[+A, +B] extends Serializable {
     def fold[C](prim: A => C, sec: B => C): C
     def unify[C >: A](implicit ev: B <:< C): C = fold(identity, ev)
   }

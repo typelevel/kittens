@@ -11,7 +11,7 @@ object MkHash extends MkHashDerivation {
   def apply[A](implicit ev: MkHash[A]): MkHash[A] = ev
 }
 
-private[derived] trait HashBuilder[A] {
+private[derived] trait HashBuilder[A] extends Serializable {
   def hashes(x: A): List[Int]
   def eqv(x: A, y: A): Boolean
 

@@ -18,7 +18,7 @@ package cats
 package derived
 
 import cats.instances.all._
-import cats.kernel.laws.discipline._
+import cats.kernel.laws.discipline.{PartialOrderTests, SerializableTests}
 import org.scalacheck.{Arbitrary, Cogen}
 
 class PartialOrderSuite extends KittensSuite {
@@ -41,6 +41,7 @@ class PartialOrderSuite extends KittensSuite {
     checkAll(s"$context.PartialOrder[Tree[Int]]", PartialOrderTests[Tree[Int]].partialOrder)
     checkAll(s"$context.PartialOrder[Recursive]", PartialOrderTests[Recursive].partialOrder)
     checkAll(s"$context.PartialOrder[Box[KeyValue]]", PartialOrderTests[Box[KeyValue]].partialOrder)
+    checkAll(s"$context.PartialOrder is Serialiable", SerializableTests.serializable(PartialOrder[Tree[Int]]))
 
     test(s"$context.PartialOrder respects existing instances") {
       val x = Box(KeyValue("red", 1))

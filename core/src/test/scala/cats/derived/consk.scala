@@ -17,6 +17,7 @@
 package cats.derived
 
 import alleycats.ConsK
+import cats.laws.discipline.SerializableTests
 import org.scalatest.prop.{Generator, GeneratorDrivenPropertyChecks}
 
 class ConsKSuite extends KittensSuite with GeneratorDrivenPropertyChecks {
@@ -28,7 +29,7 @@ class ConsKSuite extends KittensSuite with GeneratorDrivenPropertyChecks {
   def testConsK(context: String)(implicit iList: ConsK[IList], snoc: ConsK[Snoc]): Unit = {
     test(s"$context.ConsK[IList]")(checkConsK[IList, Int](INil())(IList.fromSeq))
     test(s"$context.ConsK[Snoc]")(checkConsK[Snoc, Int](SNil())(xs => Snoc.fromSeq(xs.reverse)))
-    test(s"$context.ConsK is Serializable")(assert(isSerializable(iList)))
+    checkAll(s"$context.ConsK is Serializable", SerializableTests.serializable(ConsK[IList]))
   }
 
   {

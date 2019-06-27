@@ -18,7 +18,7 @@ package cats.derived
 
 import cats.{Eq, Monoid}
 import cats.instances.all._
-import cats.kernel.laws.discipline._
+import cats.kernel.laws.discipline.{MonoidTests, SerializableTests}
 import org.scalacheck.Arbitrary
 
 class MonoidSuite extends KittensSuite {
@@ -36,6 +36,7 @@ class MonoidSuite extends KittensSuite {
     checkAll(s"$context.Monoid[Recursive]", MonoidTests[Recursive].monoid)
     checkAll(s"$context.Monoid[Interleaved[Int]]", MonoidTests[Interleaved[Int]].monoid)
     checkAll(s"$context.Monoid[Box[Mul]]", MonoidTests[Box[Mul]].monoid)
+    checkAll(s"$context.Monoid is Serializable", SerializableTests.serializable(Monoid[Interleaved[Int]]))
 
     test(s"$context.Monoid respects existing instances") {
       assert(box.empty == Box(Mul(1)))

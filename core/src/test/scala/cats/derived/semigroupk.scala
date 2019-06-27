@@ -18,7 +18,7 @@ package cats
 package derived
 
 import cats.instances.all._
-import cats.laws.discipline.SemigroupKTests
+import cats.laws.discipline.{SemigroupKTests, SerializableTests}
 import org.scalacheck.Arbitrary
 
 class SemigroupKSuite extends KittensSuite {
@@ -36,6 +36,7 @@ class SemigroupKSuite extends KittensSuite {
     checkAll(s"$context.SemigroupK[ComplexProduct]", SemigroupKTests[ComplexProduct].semigroupK[Char])
     checkAll(s"$context.SemigroupK[CaseClassWOption]", SemigroupKTests[CaseClassWOption].semigroupK[Char])
     checkAll(s"$context.SemigroupK[BoxMul]", SemigroupKTests[BoxMul].semigroupK[Char])
+    checkAll(s"$context.SemigroupK is Serializable", SerializableTests.serializable(SemigroupK[ComplexProduct]))
 
     test(s"$context.SemigroupK respects existing instances") {
       assert(boxMul.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))) == Box(Mul[Char](25)))

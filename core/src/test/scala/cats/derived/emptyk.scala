@@ -19,6 +19,7 @@ package cats.derived
 import alleycats.{EmptyK, Pure}
 import alleycats.std.all._
 import cats.data.NonEmptyList
+import cats.laws.discipline.SerializableTests
 import cats.instances.all._
 import shapeless.test.illTyped
 
@@ -43,6 +44,7 @@ class EmptyKSuite extends KittensSuite {
     test(s"$context.EmptyK[CaseClassWOption]")(assert(caseClassWOption.empty == CaseClassWOption(None)))
     test(s"$context.EmptyK[NelOption]")(assert(nelOption.empty == NonEmptyList.of(None)))
     test(s"$context.EmptyK respects existing instances")(assert(boxColor.empty == Box(Color(255, 255, 255))))
+    checkAll(s"$context.EmptyK is Serializable", SerializableTests.serializable(EmptyK[PList]))
   }
 
   implicit val pureBox: Pure[Box] = new Pure[Box] {

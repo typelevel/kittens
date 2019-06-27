@@ -18,7 +18,7 @@ package cats
 package derived
 
 import cats.instances.all._
-import cats.laws.discipline.FunctorTests
+import cats.laws.discipline.{FunctorTests, SerializableTests}
 
 class FunctorSuite extends KittensSuite {
   import TestDefns._
@@ -44,6 +44,7 @@ class FunctorSuite extends KittensSuite {
     checkAll(s"$context.Functor[ListSnoc]", FunctorTests[ListSnoc].functor[Int, String, Long])
     checkAll(s"$context.Functor[AndChar]", FunctorTests[AndChar].functor[Int, String, Long])
     checkAll(s"$context.Functor[Interleaved]", FunctorTests[Interleaved].functor[Int, String, Long])
+    checkAll(s"$context.Functor is Serializable", SerializableTests.serializable(Functor[Tree]))
 
     test(s"$context.Functor.map is stack safe") {
       val n = 10000

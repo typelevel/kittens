@@ -18,7 +18,7 @@ package cats
 package derived
 
 import cats.instances.all._
-import cats.laws.discipline.FoldableTests
+import cats.laws.discipline.{FoldableTests, SerializableTests}
 import org.scalacheck.Arbitrary
 
 class FoldableSuite extends KittensSuite {
@@ -49,6 +49,7 @@ class FoldableSuite extends KittensSuite {
     checkAll(s"$context.Foldable[AndChar]", FoldableTests[AndChar].foldable[Int, Long])
     checkAll(s"$context.Foldable[Interleaved]", FoldableTests[Interleaved].foldable[Int, Long])
     checkAll(s"$context.Foldable[BoxNel]]", FoldableTests[BoxNel].foldable[Int, Long])
+    checkAll(s"$context.Foldable is Serializable", SerializableTests.serializable(Foldable[Tree]))
 
     val n = 10000
     val largeIList = IList.fromSeq(1 until n)

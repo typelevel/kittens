@@ -2,7 +2,7 @@ package cats
 package derived
 
 import cats.instances.all._
-import cats.laws.discipline.TraverseTests
+import cats.laws.discipline.{SerializableTests, TraverseTests}
 
 class TraverseSuite extends KittensSuite {
   import TestDefns._
@@ -28,6 +28,7 @@ class TraverseSuite extends KittensSuite {
     checkAll(s"$context.Traverse[ListSnoc]", TraverseTests[ListSnoc].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$context.Traverse[AndChar]", TraverseTests[AndChar].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$context.Traverse[Interleaved]", TraverseTests[Interleaved].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse is Serializable", SerializableTests.serializable(Traverse[Tree]))
 
     val n = 10000
     val largeIList: IList[Int] = IList.fromSeq(1 until n)

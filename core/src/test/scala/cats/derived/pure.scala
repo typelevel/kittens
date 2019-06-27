@@ -18,8 +18,9 @@ package cats
 package derived
 
 import alleycats.Pure
-import cats.instances.all._
 import cats.data.NonEmptyList
+import cats.instances.all._
+import cats.laws.discipline.SerializableTests
 import shapeless.test.illTyped
 
 class PureSuite extends KittensSuite {
@@ -45,6 +46,7 @@ class PureSuite extends KittensSuite {
     test(s"$context.Pure[NelOption]")(assert(nelOption.pure(42) == NonEmptyList.of(Some(42))))
     test(s"$context.Pure[Interleaved]")(assert(interleaved.pure('x') == Interleaved(0, 'x', 0, 'x' :: Nil, "")))
     test(s"$context.Pure respects existing instances")(assert(boxColor.pure(()) == Box(Color(255, 255, 255))))
+    checkAll(s"$context.Pure is Serializable", SerializableTests.serializable(Pure[Interleaved]))
   }
 
   {

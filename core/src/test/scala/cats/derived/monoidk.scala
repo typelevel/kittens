@@ -18,7 +18,7 @@ package cats
 package derived
 
 import cats.instances.all._
-import cats.laws.discipline.MonoidKTests
+import cats.laws.discipline.{MonoidKTests, SerializableTests}
 import org.scalacheck.Arbitrary
 
 class MonoidKSuite extends KittensSuite {
@@ -36,6 +36,7 @@ class MonoidKSuite extends KittensSuite {
     checkAll(s"$context.MonoidK[ComplexProduct]", MonoidKTests[ComplexProduct].monoidK[Char])
     checkAll(s"$context.MonoidK[CaseClassWOption]", MonoidKTests[CaseClassWOption].monoidK[Char])
     checkAll(s"$context.MonoidK[BoxMul]", MonoidKTests[BoxMul].monoidK[Char])
+    checkAll(s"$context.MonoidK is Serializable", SerializableTests.serializable(MonoidK[ComplexProduct]))
 
     test(s"$context.MonoidK respects existing instances") {
       assert(boxMul.empty[Char] == Box(Mul[Char](1)))

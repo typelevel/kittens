@@ -19,6 +19,7 @@ package derived
 
 import alleycats.Empty
 import cats.instances.all._
+import cats.laws.discipline.SerializableTests
 import shapeless.test.illTyped
 
 class EmptySuite extends KittensSuite {
@@ -47,6 +48,7 @@ class EmptySuite extends KittensSuite {
     test(s"$context.Empty respects existing instances")(assert(box.empty == Box(Mask(0xffffffff))))
     // Known limitation of recursive typeclass derivation.
     test(s"$context.Empty[Chain] throws a StackOverflowError")(assertThrows[StackOverflowError](chain.empty))
+    checkAll(s"$context.Empty is Serializable", SerializableTests.serializable(Empty[Interleaved[String]]))
   }
 
   {

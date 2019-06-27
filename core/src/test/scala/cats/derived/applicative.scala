@@ -18,7 +18,7 @@ package cats
 package derived
 
 import cats.instances.all._
-import cats.laws.discipline.ApplicativeTests
+import cats.laws.discipline.{ApplicativeTests, SerializableTests}
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
 
 class ApplicativeSuite extends KittensSuite {
@@ -44,6 +44,7 @@ class ApplicativeSuite extends KittensSuite {
     checkAll(s"$context.Applicative[AndInt]", ApplicativeTests[AndInt].applicative[Int, String, Long])
     checkAll(s"$context.Applicative[Interleaved]", ApplicativeTests[Interleaved].applicative[Int, String, Long])
     checkAll(s"$context.Applicative[ListBox]", ApplicativeTests[ListBox].applicative[Int, String, Long])
+    checkAll(s"$context.Applicative is Serializable", SerializableTests.serializable(Applicative[Interleaved]))
   }
 
   {

@@ -2,14 +2,11 @@ package cats
 package derived
 
 import cats.instances.all._
+import cats.laws.discipline.SerializableTests
 
 class ShowSuite extends KittensSuite {
   import ShowSuite._
   import TestDefns._
-
-  implicit val showAddress: Show[Address] = Show.show { a =>
-    List(a.street, a.city, a.state).mkString(" ")
-  }
 
   def testShow(context: String)(
     implicit foo: Show[Foo],
@@ -21,6 +18,8 @@ class ShowSuite extends KittensSuite {
     interleaved: Show[Interleaved[Int]],
     boxBogus: Show[Box[Bogus]]
   ): Unit = {
+    checkAll(s"$context.Show is Serializable", SerializableTests.serializable(Show[IntTree]))
+
     test(s"$context.Show[Foo]") {
       val value = Foo(42, Option("Hello"))
       val shown = "Foo(i = 42, b = Some(Hello))"
@@ -84,9 +83,25 @@ class ShowSuite extends KittensSuite {
 //    println(Show[Tree[Int]])
   }
 
-  semiTests.run()
+  {
+    import semiInstances._
+    testShow("semi")
+  }
+}
 
-  object semiTests {
+object ShowSuite {
+  import TestDefns._
+
+  implicit val showAddress: Show[Address] = Show.show { a =>
+    List(a.street, a.city, a.state).mkString(" ")
+  }
+
+  final case class Bogus(value: Int)
+  object Bogus {
+    implicit val show: Show[Bogus] = Show.show(_ => "Blah")
+  }
+
+  object semiInstances {
     implicit val foo: Show[Foo] = semi.show
     implicit val outer: Show[Outer] = semi.show
     implicit val intTree: Show[IntTree] = semi.show
@@ -97,15 +112,6 @@ class ShowSuite extends KittensSuite {
     implicit val interleaved: Show[Interleaved[Int]] = semi.show
     implicit val boxBogus: Show[Box[Bogus]] = semi.show
     // NOTE: This typechecks but crashes the compiler on Scala 2.13
-//    println(semi.show[Tree[Int]])
-    def run(): Unit = testShow("semi")
-  }
-}
-
-object ShowSuite {
-
-  final case class Bogus(value: Int)
-  object Bogus {
-    implicit val show: Show[Bogus] = Show.show(_ => "Blah")
+    //    println(semi.show[Tree[Int]])
   }
 }

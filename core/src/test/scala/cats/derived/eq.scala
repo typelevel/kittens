@@ -17,7 +17,7 @@
 package cats
 package derived
 
-import cats.kernel.laws.discipline._
+import cats.kernel.laws.discipline.{EqTests, SerializableTests}
 import cats.instances.all._
 
 class EqSuite extends KittensSuite {
@@ -39,6 +39,7 @@ class EqSuite extends KittensSuite {
     checkAll(s"$context.Eq[Interleaved[Int]]", EqTests[Interleaved[Int]].eqv)
     checkAll(s"$context.Eq[Tree[Int]]", EqTests[Tree[Int]].eqv)
     checkAll(s"$context.Eq[Recursive]", EqTests[Recursive].eqv)
+    checkAll(s"$context.Eq is Serializable", SerializableTests.serializable(Eq[Tree[Int]]))
   }
 
   {

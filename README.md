@@ -28,6 +28,7 @@ Instances derivations are available for the following type classes:
 * `Order`
 * `Hash`
 * `Functor`
+- `Contravariant`
 * `Foldable` 
 * `Traverse` 
 * `Show` 

@@ -27,6 +27,7 @@ class FunctorSuite extends KittensSuite {
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]
   type AndChar[A] = (A, Char)
+  type Pred[-A] = A => Boolean
 
   def testFunctor(context: String)(
     implicit iList: Functor[IList],
@@ -35,7 +36,8 @@ class FunctorSuite extends KittensSuite {
     optList: Functor[OptList],
     listSnoc: Functor[ListSnoc],
     andChar: Functor[AndChar],
-    interleaved: Functor[Interleaved]
+    interleaved: Functor[Interleaved],
+    twiceNest: Functor[Lambda[A => Pred[Pred[A]]]]
   ): Unit = {
     checkAll(s"$context.Functor[IList]", FunctorTests[IList].functor[Int, String, Long])
     checkAll(s"$context.Functor[Tree]", FunctorTests[Tree].functor[Int, String, Long])
@@ -59,11 +61,13 @@ class FunctorSuite extends KittensSuite {
   }
 
   {
+    import auto.contravariant._
     import auto.functor._
     testFunctor("auto")
   }
 
   {
+    import cached.contravariant._
     import cached.functor._
     testFunctor("cached")
   }
@@ -78,6 +82,8 @@ class FunctorSuite extends KittensSuite {
     implicit val listSnoc: Functor[ListSnoc] = semi.functor
     implicit val andChar: Functor[AndChar] = semi.functor
     implicit val interleaved: Functor[Interleaved] = semi.functor
+    implicit val twiceNest: Functor[Lambda[A => Pred[Pred[A]]]] = semi.functor[Lambda[A => Pred[Pred[A]]]]
+
     def run(): Unit = testFunctor("semi")
   }
 }

@@ -299,6 +299,8 @@ object semi {
 
   def hash[A](implicit ev: Lazy[MkHash[A]]): Hash[A] = ev.value
 
+  def contravariant[F[_]](implicit F: Lazy[MkContravariant[F]]): Contravariant[F] = F.value
+
   def functor[F[_]](implicit F: Lazy[MkFunctor[F]]): Functor[F] = F.value
 
   def apply[F[_]](implicit F: Lazy[MkApply[F]]): Apply[F] = F.value

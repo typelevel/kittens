@@ -29,7 +29,7 @@ class ContravariantSuite extends KittensSuite {
   type OptPred[A] = Option[A => Boolean]
   type ListPred[A] = List[A => Boolean]
   type GenericAdtF[A] = GenericAdt[A => Boolean]
-  type ListFToInt[A] = List[A => Int]
+  type ListFToInt[A] = List[Snoc[A => Int]]
   type InterleavedF[A] = Interleaved[A => Int]
   type AndCharF[A] = (A => Int, Char)
   type TreeF[A] = Tree[A => Int]
@@ -66,8 +66,8 @@ class ContravariantSuite extends KittensSuite {
 
     test(s"$context.Contravariant.contramap is stack safe") {
       val n = 10000
-      val largeBoxed = (1 until n).toList.map((j: Int) => (i: Int) => i + j)
-      val actualBoxed = ListFToInt.contramap[Int, Int](largeBoxed)((j: Int) => j + 1)
+      val largeBoxed = Snoc.fromSeq((1 until n).map((j: Int) => (i: Int) => i + j)) :: Nil
+      val actualBoxed = ListFToInt.contramap[Int, Int](largeBoxed)((j: Int) => j + 1).flatMap(Snoc.toList)
       val expected = (3 until n + 2).toList
       assert(actualBoxed.map(_.apply(1)) == expected)
     }

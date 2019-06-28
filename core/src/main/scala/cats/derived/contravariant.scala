@@ -93,4 +93,3 @@ private[derived] abstract class MkContravariantGeneric {
         F.fr.safeContramap(F.to(fa))(f).map(F.from[B])
     }
 }
-

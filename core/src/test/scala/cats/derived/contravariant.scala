@@ -17,10 +17,9 @@
 package cats
 package derived
 
-import cats.data.Const
 import cats.instances.all._
 import cats.laws.discipline.{ContravariantTests, SerializableTests}
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Gen
 import org.scalacheck.Gen.Choose
 
 class ContravariantSuite extends KittensSuite {
@@ -35,6 +34,10 @@ class ContravariantSuite extends KittensSuite {
   type AndCharF[A] = (A => Int, Char)
   type TreeF[A] = Tree[A => Int]
 
+  case class Pred[A](run: A => Boolean)
+  case class TwiceNest[A](run: Pred[Pred[A]])
+  case class ThriceNest[A](run: Pred[TwiceNest[A]])
+
   implicit def eqIntPred[A: Numeric: Choose, B: Eq]: Eq[A => B] = new Eq[A => B] {
     def diagonal[A](a: A): (A, A) = (a, a)
     override def eqv(x: A => B, y: A => B): Boolean =
@@ -42,10 +45,6 @@ class ContravariantSuite extends KittensSuite {
         .sample
         .exists(diagonal[A] _ andThen (x *** y) andThen (Eq[B].eqv _).tupled)
   }
-
-  implicit def arbitraryConst[A: Arbitrary, B]: Arbitrary[Const[A, B]] = Arbitrary(
-    Arbitrary.arbitrary[A].map(Const.apply[A, B])
-  )
 
   def testContravariant(context: String)(
     implicit
@@ -94,6 +93,8 @@ class ContravariantSuite extends KittensSuite {
     implicit val interleaveF: Contravariant[InterleavedF] = semi.contravariant[InterleavedF]
     implicit val andCharF: Contravariant[AndCharF] = semi.contravariant[AndCharF]
     implicit val treeF: Contravariant[TreeF] = semi.contravariant[TreeF]
+    implicit val pred: Contravariant[Pred] = semi.contravariant[Pred]
+
 
     def run(): Unit = testContravariant("semi")
   }

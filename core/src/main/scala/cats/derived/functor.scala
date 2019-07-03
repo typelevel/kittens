@@ -52,6 +52,15 @@ private[derived] abstract class MkFunctorNested extends MkFunctorCons {
       def safeMap[A, B](fa: F[A])(f: A => Eval[B]) =
         mkSafeMap(F.fo)(F.unpack(fa))(mkSafeMap(F.fi)(_)(f)).map(F.pack)
     }
+
+  implicit def mkFunctorFromContraNested[F[_]](implicit F: Split1[F, Contravariant, Contravariant]): MkFunctor[F] =
+    new MkFunctor[F] {
+
+      override def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
+        Eval.later(F.fo.contramap(F.unpack(fa))(
+          (b: F.I[B]) => F.fi.contramap(b)(f andThen (_.value))
+        )).map(F.pack)
+    }
 }
 
 private[derived] abstract class MkFunctorCons extends MkFunctorGeneric {

@@ -41,19 +41,12 @@ private[derived] abstract class MkContravariantDerivation extends MkContravarian
 }
 
 private[derived] abstract class MkContravariantNested extends MkContravariantCons {
-  protected type FunctorOrMk[F[_]] = Functor[F] OrElse MkFunctor[F]
-  protected def mkSafeMap[F[_], A, B](F: FunctorOrMk[F])(fa: F[A])(f: A => Eval[B]): Eval[F[B]] =
-    F.unify match {
-      case mk: MkFunctor[F] => mk.safeMap(fa)(f)
-      case p => Eval.later(p.map(fa)(f(_).value))
-    }
-
-  implicit def mkContravariantFunctorNested[F[_]](implicit F: Split1[F, FunctorOrMk, ContraOrMk]): MkContravariant[F] =
+  implicit def mkContravariantFunctorNested[F[_]](implicit F: Split1[F, Functor, ContraOrMk]): MkContravariant[F] =
     new MkContravariant[F] {
       def safeContramap[A, B](fa: F[A])(f: B => Eval[A]): Eval[F[B]] =
-        mkSafeMap(F.fo)(F.unpack(fa))(
-          (a: F.I[A]) => mkContraSafe(F.fi)(a)(f)
-        ).map(F.pack)
+        Eval.later(F.fo.map(F.unpack(fa))(
+          (a: F.I[A]) => mkContraSafe(F.fi)(a)(f).value
+        )).map(F.pack[B])
     }
 }
 

@@ -17,10 +17,11 @@
 package cats
 package derived
 
-import cats.instances.all._
-import cats.laws.discipline.{ContravariantTests, SerializableTests}
-import org.scalacheck.Gen
-import org.scalacheck.Gen.Choose
+import cats.implicits._
+import cats.laws.discipline._
+import cats.laws.discipline.arbitrary._
+import cats.laws.discipline.eq._
+import cats.laws.discipline._
 
 class ContravariantSuite extends KittensSuite {
   import TestDefns._
@@ -30,21 +31,13 @@ class ContravariantSuite extends KittensSuite {
   type ListPred[A] = List[A => Boolean]
   type GenericAdtF[A] = GenericAdt[A => Boolean]
   type ListFToInt[A] = List[Snoc[A => Int]]
-  type InterleavedF[A] = Interleaved[A => Int]
-  type AndCharF[A] = (A => Int, Char)
-  type TreeF[A] = Tree[A => Int]
+  type InterleavedF[A] = Interleaved[A => Boolean]
+  type AndCharF[A] = (A => Boolean, Char)
+  type TreeF[A] = Tree[A => Boolean]
 
   case class Pred[A](run: A => Boolean)
   case class TwiceNest[A](run: Pred[Pred[A]])
   case class ThriceNest[A](run: Pred[TwiceNest[A]])
-
-  implicit def eqIntPred[A: Numeric: Choose, B: Eq]: Eq[A => B] = new Eq[A => B] {
-    def diagonal[A](a: A): (A, A) = (a, a)
-    override def eqv(x: A => B, y: A => B): Boolean =
-      Gen.posNum[A]
-        .sample
-        .exists(diagonal[A] _ andThen (x *** y) andThen (Eq[B].eqv _).tupled)
-  }
 
   def testContravariant(context: String)(
     implicit
@@ -56,12 +49,12 @@ class ContravariantSuite extends KittensSuite {
     interleaved: Contravariant[InterleavedF],
     andCharF: Contravariant[AndCharF]
   ): Unit = {
-    checkAll(s"$context.Contravariant[OptPred]", ContravariantTests[OptPred].contravariant[Int, String, Long])
-    checkAll(s"$context.Contravariant[TreeF]", ContravariantTests[TreeF].contravariant[Int, String, Long])
-    checkAll(s"$context.Contravariant[ListPred]", ContravariantTests[ListPred].contravariant[Int, String, Long])
-    checkAll(s"$context.Contravariant[GenAdtF]", ContravariantTests[GenericAdtF].contravariant[Int, String, Long])
-    checkAll(s"$context.Contravariant[InterleavedF]", ContravariantTests[InterleavedF].contravariant[Int, String, Long])
-    checkAll(s"$context.Contravariant[AndCharF]", ContravariantTests[AndCharF].contravariant[Int, String, Long])
+    checkAll(s"$context.Contravariant[OptPred]", ContravariantTests[OptPred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Contravariant[TreeF]", ContravariantTests[TreeF].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Contravariant[ListPred]", ContravariantTests[ListPred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Contravariant[GenAdtF]", ContravariantTests[GenericAdtF].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Contravariant[InterleavedF]", ContravariantTests[InterleavedF].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Contravariant[AndCharF]", ContravariantTests[AndCharF].contravariant[MiniInt, String, Boolean])
     checkAll(s"$context.Contravariant is Serializable", SerializableTests.serializable(Contravariant[TreeF]))
 
     test(s"$context.Contravariant.contramap is stack safe") {

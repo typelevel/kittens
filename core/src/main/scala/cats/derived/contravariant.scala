@@ -41,7 +41,7 @@ private[derived] abstract class MkContravariantDerivation extends MkContravarian
 }
 
 private[derived] abstract class MkContravariantNested1 extends MkContravariantCons {
-  implicit def mkContravariantFunctorNested[F[_]](implicit F: Split1[F, Functor, ContraOrMk]): MkContravariant[F] =
+  implicit def mkFunctorContravariantNested[F[_]](implicit F: Split1[F, Functor, ContraOrMk]): MkContravariant[F] =
     new MkContravariant[F] {
       def safeContramap[A, B](fa: F[A])(f: B => Eval[A]): Eval[F[B]] =
         Eval.later(F.fo.map(F.unpack(fa))(
@@ -71,7 +71,7 @@ private[derived] abstract class MkContravariantCons extends MkContravariantNeste
     }
 }
 private[derived] abstract class MkContravariantNested0 extends MkContravariantGeneric {
-  implicit def mkMkContravariantNestedFunctor[F[_]](implicit F: Split1[F, ContraOrMk, Functor]): MkContravariant[F] =
+  implicit def mkContravariantFunctorNested[F[_]](implicit F: Split1[F, ContraOrMk, Functor]): MkContravariant[F] =
     new MkContravariant[F] {
       def safeContramap[A, B](fa: F[A])(f: B => Eval[A]): Eval[F[B]] =
         mkContraSafe(F.fo)(F.unpack(fa))(

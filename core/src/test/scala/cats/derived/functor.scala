@@ -27,7 +27,7 @@ class FunctorSuite extends KittensSuite {
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]
   type AndChar[A] = (A, Char)
-  case class Pred[A](run: A => Boolean)
+  type Pred[-A] = A => Boolean
 
   def testFunctor(context: String)(
     implicit iList: Functor[IList],
@@ -82,7 +82,6 @@ class FunctorSuite extends KittensSuite {
     implicit val listSnoc: Functor[ListSnoc] = semi.functor
     implicit val andChar: Functor[AndChar] = semi.functor
     implicit val interleaved: Functor[Interleaved] = semi.functor
-    implicit val pred: Contravariant[Pred] = semi.contravariant[Pred]
     implicit val twiceNest: Functor[Lambda[A => Pred[Pred[A]]]] = semi.functor[Lambda[A => Pred[Pred[A]]]]
 
     def run(): Unit = testFunctor("semi")

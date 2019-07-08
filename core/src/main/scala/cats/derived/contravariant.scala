@@ -30,7 +30,7 @@ trait MkContravariant[F[_]] extends Contravariant[F] {
 object MkContravariant extends MkContravariantDerivation {
   def apply[F[_]](implicit F: MkContravariant[F]): MkContravariant[F] = F
 }
-private[derived] abstract class MkContravariantDerivation extends MkContravariantNested {
+private[derived] abstract class MkContravariantDerivation extends MkContravariantNested1 {
   implicit val mkContraHNil: MkContravariant[Const[HNil]#λ] = mkContraConst
   implicit val mkContraCNil: MkContravariant[Const[CNil]#λ] = mkContraConst
 
@@ -40,7 +40,7 @@ private[derived] abstract class MkContravariantDerivation extends MkContravarian
     }
 }
 
-private[derived] abstract class MkContravariantNested extends MkContravariantCons {
+private[derived] abstract class MkContravariantNested1 extends MkContravariantCons {
   implicit def mkContravariantFunctorNested[F[_]](implicit F: Split1[F, Functor, ContraOrMk]): MkContravariant[F] =
     new MkContravariant[F] {
       def safeContramap[A, B](fa: F[A])(f: B => Eval[A]): Eval[F[B]] =
@@ -50,7 +50,7 @@ private[derived] abstract class MkContravariantNested extends MkContravariantCon
     }
 }
 
-private[derived] abstract class MkContravariantCons extends MkContravariantGeneric {
+private[derived] abstract class MkContravariantCons extends MkContravariantNested0 {
   implicit def mkContraHCons[F[_]](implicit F: IsHCons1[F, ContraOrMk, MkContravariant]): MkContravariant[F] =
     new MkContravariant[F] {
       def safeContramap[A, B](fa: F[A])(f: B => Eval[A]): Eval[F[B]] =
@@ -70,7 +70,16 @@ private[derived] abstract class MkContravariantCons extends MkContravariantGener
       }
     }
 }
+private[derived] abstract class MkContravariantNested0 extends MkContravariantGeneric {
+  implicit def mkMkContravariantNestedFunctor[F[_]](implicit F: Split1[F, ContraOrMk, Functor]): MkContravariant[F] =
+    new MkContravariant[F] {
+      def safeContramap[A, B](fa: F[A])(f: B => Eval[A]): Eval[F[B]] =
+        mkContraSafe(F.fo)(F.unpack(fa))(
+          (a: F.I[B]) => Eval.later(F.fi.map(a)(f andThen (_.value)))
+        ).map(F.pack[B])
+    }
 
+}
 private[derived] abstract class MkContravariantGeneric {
   protected type ContraOrMk[F[_]] = Contravariant[F] OrElse MkContravariant[F]
 
@@ -80,9 +89,10 @@ private[derived] abstract class MkContravariantGeneric {
       case p => Eval.later(p.contramap(fa)(f(_).value))
     }
 
-  implicit def mkFunctorGeneric[F[_]](implicit F: Generic1[F, MkContravariant]): MkContravariant[F] =
+  implicit def mkContraGeneric[F[_]](implicit F: Generic1[F, MkContravariant]): MkContravariant[F] =
     new MkContravariant[F] {
       def safeContramap[A, B](fa: F[A])(f: B => Eval[A]): Eval[F[B]] =
         F.fr.safeContramap(F.to(fa))(f).map(F.from[B])
     }
 }
+

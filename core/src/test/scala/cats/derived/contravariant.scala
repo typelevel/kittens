@@ -36,8 +36,6 @@ class ContravariantSuite extends KittensSuite {
   type TreeF[A] = Tree[A => Boolean]
 
   case class Pred[A](run: A => Boolean)
-  case class TwiceNest[A](run: Pred[Pred[A]])
-  case class ThriceNest[A](run: Pred[TwiceNest[A]])
 
   def testContravariant(context: String)(
     implicit
@@ -47,7 +45,8 @@ class ContravariantSuite extends KittensSuite {
     genadt: Contravariant[GenericAdtF],
     ListFToInt: Contravariant[ListFToInt],
     interleaved: Contravariant[InterleavedF],
-    andCharF: Contravariant[AndCharF]
+    andCharF: Contravariant[AndCharF],
+    thriceNest: Contravariant[Lambda[A => Pred[Pred[Pred[A]]]]]
   ): Unit = {
     checkAll(s"$context.Contravariant[OptPred]", ContravariantTests[OptPred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$context.Contravariant[TreeF]", ContravariantTests[TreeF].contravariant[MiniInt, String, Boolean])
@@ -67,11 +66,13 @@ class ContravariantSuite extends KittensSuite {
   }
 
   {
+    import auto.functor._
     import auto.contravariant._
     testContravariant("auto")
   }
 
   {
+    import cached.functor._
     import cached.contravariant._
     testContravariant("cached")
   }
@@ -81,13 +82,14 @@ class ContravariantSuite extends KittensSuite {
   object semiTests {
     implicit val optPred: Contravariant[OptPred] = semi.contravariant[OptPred]
     implicit val listPred: Contravariant[ListPred] = semi.contravariant[ListPred]
-    implicit val thriceNest: Contravariant[GenericAdtF] = semi.contravariant[GenericAdtF]
+    implicit val gadt: Contravariant[GenericAdtF] = semi.contravariant[GenericAdtF]
     implicit val listSnocendo: Contravariant[ListFToInt] = semi.contravariant[ListFToInt]
     implicit val interleaveF: Contravariant[InterleavedF] = semi.contravariant[InterleavedF]
     implicit val andCharF: Contravariant[AndCharF] = semi.contravariant[AndCharF]
     implicit val treeF: Contravariant[TreeF] = semi.contravariant[TreeF]
     implicit val pred: Contravariant[Pred] = semi.contravariant[Pred]
-
+    implicit val twiceNest: Functor[Lambda[A => Pred[Pred[A]]]] = semi.functor[Lambda[A => Pred[Pred[A]]]]
+    implicit val thriceNest: Contravariant[Lambda[A => Pred[Pred[Pred[A]]]]] = semi.contravariant[Lambda[A => Pred[Pred[Pred[A]]]]]
 
     def run(): Unit = testContravariant("semi")
   }

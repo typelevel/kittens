@@ -2,7 +2,7 @@ import com.typesafe.sbt.pgp.PgpKeys.publishSigned
 import org.scalajs.sbtplugin.cross.CrossProject
 import ReleaseTransformations._
 import sbt._
-import sbtcrossproject.{CrossType, crossProject}
+import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
@@ -32,10 +32,10 @@ lazy val commonSettings = Seq(
     "bintray/non" at "http://dl.bintray.com/non/maven"
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel"   %% "cats-core"      % catsVersion,
-    "org.typelevel"   %% "alleycats-core" % catsVersion,
-    "com.chuusai"     %% "shapeless"      % "2.3.3",
-    "org.typelevel"   %% "cats-testkit"   % catsVersion % "test",
+    "org.typelevel"   %%% "cats-core"      % catsVersion,
+    "org.typelevel"   %%% "alleycats-core" % catsVersion,
+    "com.chuusai"     %%% "shapeless"      % "2.3.3",
+    "org.typelevel"   %%% "cats-testkit"   % catsVersion % "test",
     compilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3")
   ),
   scmInfo :=
@@ -43,6 +43,7 @@ lazy val commonSettings = Seq(
       url("https://github.com/typelevel/kittens"),
       "scm:git:git@github.com:typelevel/kittens.git"
     )),
+  testOptions += Tests.Argument("-oF"),
   mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "1.2.1")
 ) ++ crossVersionSharedSources ++ scalaMacroDependencies
 

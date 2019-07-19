@@ -48,7 +48,7 @@ class FoldableSuite extends KittensSuite {
     checkAll(s"$context.Foldable[ListSnoc]", FoldableTests[ListSnoc].foldable[Int, Long])
     checkAll(s"$context.Foldable[AndChar]", FoldableTests[AndChar].foldable[Int, Long])
     checkAll(s"$context.Foldable[Interleaved]", FoldableTests[Interleaved].foldable[Int, Long])
-    checkAll(s"$context.Foldable[BoxNel]]", FoldableTests[BoxNel].foldable[Int, Long])
+    checkAll(s"$context.Foldable[BoxNel]", FoldableTests[BoxNel].foldable[Int, Long])
     checkAll(s"$context.Foldable is Serializable", SerializableTests.serializable(Foldable[Tree]))
 
     val n = 10000

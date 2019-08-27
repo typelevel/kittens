@@ -10,7 +10,7 @@ lazy val buildSettings = Seq(
   crossScalaVersions := Seq("2.11.12", "2.12.8", scalaVersion.value)
 )
 
-val catsVersion = "2.0.0-M4"
+val catsVersion = "2.0.0-RC2"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(

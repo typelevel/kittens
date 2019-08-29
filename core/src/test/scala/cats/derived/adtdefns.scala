@@ -56,7 +56,7 @@ object TestDefns {
   object Recursive extends ((Int, Option[Recursive]) => Recursive) {
 
     implicit val arbitrary: Arbitrary[Recursive] =
-      Arbitrary(Arbitrary.arbitrary[(Int, Option[Recursive])].map(tupled))
+      Arbitrary(Gen.delay(Arbitrary.arbitrary[(Int, Option[Recursive])]).map(tupled))
 
     implicit val cogen: Cogen[Recursive] =
       Cogen[(Int, Option[Recursive])].contramap(unapply(_).get)

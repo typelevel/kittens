@@ -21,7 +21,6 @@ import cats.implicits._
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.eq._
-import cats.laws.discipline._
 
 class ContravariantSuite extends KittensSuite {
   import TestDefns._
@@ -29,50 +28,45 @@ class ContravariantSuite extends KittensSuite {
 
   type OptPred[A] = Option[A => Boolean]
   type ListPred[A] = List[A => Boolean]
-  type GenericAdtF[A] = GenericAdt[A => Boolean]
-  type ListFToInt[A] = List[Snoc[A => Int]]
-  type InterleavedF[A] = Interleaved[A => Boolean]
-  type AndCharF[A] = (A => Boolean, Char)
-  type TreeF[A] = Tree[A => Boolean]
-
-  case class Pred[A](run: A => Boolean)
+  type GenericAdtPred[A] = GenericAdt[A => Boolean]
+  type ListSnocF[A] = List[Snoc[A => Int]]
+  type InterleavedPred[A] = Interleaved[A => Boolean]
+  type AndCharPred[A] = (A => Boolean, Char)
+  type TreePred[A] = Tree[A => Boolean]
 
   def testContravariant(context: String)(
     implicit
-    optList: Contravariant[OptPred],
-    tree: Contravariant[TreeF],
+    optPred: Contravariant[OptPred],
+    treePred: Contravariant[TreePred],
     listPred: Contravariant[ListPred],
-    genadt: Contravariant[GenericAdtF],
-    ListFToInt: Contravariant[ListFToInt],
-    interleaved: Contravariant[InterleavedF],
-    andCharF: Contravariant[AndCharF],
-    thriceNest: Contravariant[Lambda[A => Pred[Pred[Pred[A]]]]]
+    genericAdtPred: Contravariant[GenericAdtPred],
+    liftSnocF: Contravariant[ListSnocF],
+    interleavedPred: Contravariant[InterleavedPred],
+    andCharPred: Contravariant[AndCharPred]
   ): Unit = {
     checkAll(s"$context.Contravariant[OptPred]", ContravariantTests[OptPred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[TreeF]", ContravariantTests[TreeF].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Contravariant[TreePred]", ContravariantTests[TreePred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$context.Contravariant[ListPred]", ContravariantTests[ListPred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[GenAdtF]", ContravariantTests[GenericAdtF].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[InterleavedF]", ContravariantTests[InterleavedF].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[AndCharF]", ContravariantTests[AndCharF].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant is Serializable", SerializableTests.serializable(Contravariant[TreeF]))
+    checkAll(s"$context.Contravariant[GenericAdtPred]", ContravariantTests[GenericAdtPred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Contravariant[InterleavedPred]", ContravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Contravariant[AndCharPred]", ContravariantTests[AndCharPred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Contravariant is Serializable", SerializableTests.serializable(Contravariant[TreePred]))
 
     test(s"$context.Contravariant.contramap is stack safe") {
       val n = 10000
       val largeBoxed = Snoc.fromSeq((1 until n).map((j: Int) => (i: Int) => i + j)) :: Nil
-      val actualBoxed = ListFToInt.contramap[Int, Int](largeBoxed)((j: Int) => j + 1).flatMap(Snoc.toList)
+      val actualBoxed = liftSnocF.contramap[Int, Int](largeBoxed)((j: Int) => j + 1).flatMap(Snoc.toList)
       val expected = (3 until n + 2).toList
       assert(actualBoxed.map(_.apply(1)) == expected)
     }
   }
 
   {
-    import auto.functor._
     import auto.contravariant._
     testContravariant("auto")
   }
 
   {
-    import cached.functor._
     import cached.contravariant._
     testContravariant("cached")
   }
@@ -80,17 +74,13 @@ class ContravariantSuite extends KittensSuite {
   semiTests.run()
 
   object semiTests {
-    implicit val optPred: Contravariant[OptPred] = semi.contravariant[OptPred]
-    implicit val listPred: Contravariant[ListPred] = semi.contravariant[ListPred]
-    implicit val gadt: Contravariant[GenericAdtF] = semi.contravariant[GenericAdtF]
-    implicit val listSnocendo: Contravariant[ListFToInt] = semi.contravariant[ListFToInt]
-    implicit val interleaveF: Contravariant[InterleavedF] = semi.contravariant[InterleavedF]
-    implicit val andCharF: Contravariant[AndCharF] = semi.contravariant[AndCharF]
-    implicit val treeF: Contravariant[TreeF] = semi.contravariant[TreeF]
-    implicit val pred: Contravariant[Pred] = semi.contravariant[Pred]
-    implicit val twiceNest: Functor[Lambda[A => Pred[Pred[A]]]] = semi.functor[Lambda[A => Pred[Pred[A]]]]
-    implicit val thriceNest: Contravariant[Lambda[A => Pred[Pred[Pred[A]]]]] = semi.contravariant[Lambda[A => Pred[Pred[Pred[A]]]]]
-
+    implicit val optPred: Contravariant[OptPred] = semi.contravariant
+    implicit val listPred: Contravariant[ListPred] = semi.contravariant
+    implicit val genericAdtPred: Contravariant[GenericAdtPred] = semi.contravariant
+    implicit val listSnocF: Contravariant[ListSnocF] = semi.contravariant
+    implicit val interleavePred: Contravariant[InterleavedPred] = semi.contravariant
+    implicit val andCharPred: Contravariant[AndCharPred] = semi.contravariant
+    implicit val treePred: Contravariant[TreePred] = semi.contravariant
     def run(): Unit = testContravariant("semi")
   }
 }

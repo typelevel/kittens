@@ -55,7 +55,7 @@ object auto {
   }
 
   object contravariant {
-    implicit def kittensMkContra[F[_]](
+    implicit def kittensMkContravariant[F[_]](
       implicit refute: Refute[Contravariant[F]], F: Lazy[MkContravariant[F]]
     ): Contravariant[F] = F.value
   }

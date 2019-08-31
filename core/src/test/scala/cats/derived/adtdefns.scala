@@ -55,8 +55,13 @@ object TestDefns {
   final case class Recursive(i: Int, is: Option[Recursive])
   object Recursive extends ((Int, Option[Recursive]) => Recursive) {
 
-    implicit val arbitrary: Arbitrary[Recursive] =
-      Arbitrary(Gen.delay(Arbitrary.arbitrary[(Int, Option[Recursive])].map(tupled)))
+    implicit val arbitrary: Arbitrary[Recursive] = {
+      def recursive(size: Int): Gen[Recursive] = for {
+        i <- Arbitrary.arbitrary[Int]
+        is <- if (size <= 0) Gen.const(None) else Gen.option(recursive(size / 2))
+      } yield Recursive(i, is)
+      Arbitrary(Gen.sized(recursive))
+    }
 
     implicit val cogen: Cogen[Recursive] =
       Cogen[(Int, Option[Recursive])].contramap(unapply(_).get)
@@ -129,7 +134,7 @@ object TestDefns {
       val leaf = Arbitrary.arbitrary[A].map(Leaf.apply)
 
       def tree(maxDepth: Int): Gen[Tree[A]] =
-        if (maxDepth == 0) leaf
+        if (maxDepth <= 0) leaf
         else Gen.oneOf(leaf, node(maxDepth))
 
       def node(maxDepth: Int): Gen[Tree[A]] = for {

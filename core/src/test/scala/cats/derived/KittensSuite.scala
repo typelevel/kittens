@@ -17,6 +17,7 @@
 package cats.derived
 
 import cats.syntax.AllSyntax
+import cats.tests.TestSettings
 import org.scalatest.funsuite.AnyFunSuite
 import org.typelevel.discipline.scalatest.Discipline
 
@@ -26,4 +27,6 @@ import org.typelevel.discipline.scalatest.Discipline
  * CatsSuite in the Cat project, this trait does not mix in any
  * instances.
  */
-trait KittensSuite extends AnyFunSuite with Discipline with AllSyntax
+trait KittensSuite extends AnyFunSuite with Discipline with TestSettings with AllSyntax {
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration = checkConfiguration
+}

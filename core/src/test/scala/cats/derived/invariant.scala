@@ -45,8 +45,7 @@ class InvariantSuite extends KittensSuite {
     genadt: Invariant[GenericAdtF],
     ListFToInt: Invariant[ListFToInt],
     interleaved: Invariant[InterleavedF],
-    andCharF: Invariant[AndCharF],
-    thriceNest: Invariant[Lambda[A => Pred[Pred[Pred[A]]]]]
+    andCharF: Invariant[AndCharF]
   ): Unit = {
     checkAll(s"$context.Invariant[OptPred]", InvariantTests[OptPred].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[TreeF]", InvariantTests[TreeF].invariant[MiniInt, String, Boolean])

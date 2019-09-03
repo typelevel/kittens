@@ -54,6 +54,12 @@ object auto {
     ): Hash[A] = ev.value
   }
 
+  object invariant {
+    implicit def kittensMkInvariant[F[_]](
+      implicit refute: Refute[Invariant[F]], F: Lazy[MkInvariant[F]]
+    ): Invariant[F] = F.value
+  }
+
   object functor {
     implicit def kittensMkFunctor[F[_]](
       implicit refute: Refute[Functor[F]], F: Lazy[MkFunctor[F]]
@@ -205,6 +211,12 @@ object cached {
     ): Foldable[F] = cached.value
   }
 
+  object invariant {
+    implicit def kittensMkInvariant[F[_]](
+      implicit refute: Refute[Invariant[F]], cached: Cached[MkInvariant[F]]
+    ): Invariant[F] = cached.value
+  }
+
   object traverse{
     implicit def kittensMkTraverse[F[_]](
        implicit refute: Refute[Traverse[F]], cached: Cached[MkTraverse[F]]
@@ -326,5 +338,7 @@ object semi {
   def consK[F[_]](implicit F: Lazy[MkConsK[F, F]]): ConsK[F] = MkConsK.consK(F.value)
 
   def iterable[F[_], A](fa: F[A])(implicit F: MkIterable[F]): Iterable[A] = F.iterable(fa)
+
+  def invariant[F[_]](implicit F: Lazy[MkInvariant[F]]): Invariant[F] = F.value
 }
 

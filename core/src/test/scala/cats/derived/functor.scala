@@ -32,7 +32,7 @@ class FunctorSuite extends KittensSuite {
   type NestedPred[A] = Pred[Pred[A]]
 
   implicit val exhaustivePred: ExhaustiveCheck[Pred[Boolean]] =
-    ExhaustiveCheck.instance(Stream(_ => true, _ => false, identity, !_))
+    ExhaustiveCheck.instance(List(_ => true, _ => false, identity, !_))
 
   def testFunctor(context: String)(
     implicit iList: Functor[IList],

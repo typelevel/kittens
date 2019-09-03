@@ -16,7 +16,9 @@
 
 package cats.derived
 
+import cats.platform.Platform
 import cats.syntax.AllSyntax
+import org.scalactic.anyvals.{PosInt, PosZDouble, PosZInt}
 import org.scalatest.funsuite.AnyFunSuite
 import org.typelevel.discipline.scalatest.Discipline
 
@@ -26,4 +28,15 @@ import org.typelevel.discipline.scalatest.Discipline
  * CatsSuite in the Cat project, this trait does not mix in any
  * instances.
  */
-trait KittensSuite extends AnyFunSuite with Discipline with AllSyntax
+trait KittensSuite extends AnyFunSuite with Discipline with AllSyntax {
+
+  // Copied from former `CatsSuite`.
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    PropertyCheckConfiguration(
+      minSuccessful = if (Platform.isJvm) PosInt(50) else PosInt(5),
+      maxDiscardedFactor = if (Platform.isJvm) PosZDouble(5.0) else PosZDouble(50.0),
+      minSize = PosZInt(0),
+      sizeRange = if (Platform.isJvm) PosZInt(10) else PosZInt(5),
+      workers = if (Platform.isJvm) PosInt(2) else PosInt(1)
+    )
+}

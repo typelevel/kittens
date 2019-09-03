@@ -155,8 +155,9 @@ class SequenceSuite extends KittensSuite {
     assert(f.run("42.0") == Some(MyCase(4, "0.24", 42.0f)))
   }
 
-  checkAll(
-    "RecordSequencer is Serializable",
-    SerializableTests.serializable(the[RecordSequencer[Record.`'a -> Option[Int], 'b -> Option[String]`.T]])
-  )
+  checkAll("RecordSequencer is Serializable", SerializableTests.serializable(SequenceSuite.recordSequencer))
+}
+
+object SequenceSuite {
+  val recordSequencer = the[RecordSequencer[Record.`'a -> Option[Int], 'b -> Option[String]`.T]]
 }

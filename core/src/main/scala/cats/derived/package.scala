@@ -58,6 +58,11 @@ object auto {
     implicit def kittensMkInvariant[F[_]](
       implicit refute: Refute[Invariant[F]], F: Lazy[MkInvariant[F]]
     ): Invariant[F] = F.value
+
+   object contravariant {
+    implicit def kittensMkContravariant[F[_]](
+      implicit refute: Refute[Contravariant[F]], F: Lazy[MkContravariant[F]]
+    ): Contravariant[F] = F.value
   }
 
   object functor {
@@ -187,6 +192,12 @@ object cached {
     ): Hash[A] = cached.value
   }
 
+  object contravariant {
+    implicit def kittensMkContravariant[F[_]](
+      implicit refute: Refute[Contravariant[F]], cached: Cached[MkContravariant[F]]
+    ): Contravariant[F] = cached.value
+  }
+  
   object functor {
     implicit def kittensMkFunctor[F[_]](
       implicit refute: Refute[Functor[F]], cached: Cached[MkFunctor[F]]
@@ -310,6 +321,8 @@ object semi {
   def order[A](implicit ev: Lazy[MkOrder[A]]): Order[A] = ev.value
 
   def hash[A](implicit ev: Lazy[MkHash[A]]): Hash[A] = ev.value
+
+  def contravariant[F[_]](implicit F: Lazy[MkContravariant[F]]): Contravariant[F] = F.value
 
   def functor[F[_]](implicit F: Lazy[MkFunctor[F]]): Functor[F] = F.value
 

@@ -1,16 +1,16 @@
-import com.typesafe.sbt.pgp.PgpKeys.publishSigned
-import org.scalajs.sbtplugin.cross.CrossProject
-import ReleaseTransformations._
 import sbt._
-import sbtcrossproject.{CrossType, crossProject}
+import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
   scalaVersion := "2.13.0",
-  crossScalaVersions := Seq("2.11.12", "2.12.8", scalaVersion.value)
+  crossScalaVersions := Seq("2.11.12", "2.12.9", scalaVersion.value)
 )
 
-val catsVersion = "2.0.0-M4"
+val catsVersion = "2.0.0-RC2"
+val shapelessVersion = "2.3.3"
+val disciplineVersion = "1.0.0-M1"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(
@@ -32,10 +32,11 @@ lazy val commonSettings = Seq(
     "bintray/non" at "http://dl.bintray.com/non/maven"
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel"   %% "cats-core"      % catsVersion,
-    "org.typelevel"   %% "alleycats-core" % catsVersion,
-    "com.chuusai"     %% "shapeless"      % "2.3.3",
-    "org.typelevel"   %% "cats-testkit"   % catsVersion % "test",
+    "org.typelevel"   %%% "cats-core"      % catsVersion,
+    "org.typelevel"   %%% "alleycats-core" % catsVersion,
+    "com.chuusai"     %%% "shapeless"      % shapelessVersion,
+    "org.typelevel"   %%% "cats-testkit"   % catsVersion % "test",
+    "org.typelevel"   %%% "discipline-scalatest" % disciplineVersion % "test",
     compilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3")
   ),
   scmInfo :=
@@ -43,6 +44,7 @@ lazy val commonSettings = Seq(
       url("https://github.com/typelevel/kittens"),
       "scm:git:git@github.com:typelevel/kittens.git"
     )),
+  testOptions += Tests.Argument("-oF"),
   mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "1.2.1")
 ) ++ crossVersionSharedSources ++ scalaMacroDependencies
 
@@ -122,7 +124,7 @@ lazy val publishSettings = Seq(
     else
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   },
-  pomExtra := (
+  pomExtra :=
     <developers>
       <developer>
         <id>milessabin</id>
@@ -130,12 +132,11 @@ lazy val publishSettings = Seq(
         <url>http://milessabin.com/blog</url>
       </developer>
     </developers>
-  )
 )
 
 lazy val noPublishSettings = Seq(
-  publish := (()),
-  publishLocal := (()),
+  publish := {},
+  publishLocal := {},
   publishArtifact := false
 )
 

@@ -78,8 +78,6 @@ class InvariantSuite extends KittensSuite {
     implicit val andCharF: Invariant[AndCharF] = semi.invariant[AndCharF]
     implicit val treeF: Invariant[TreeF] = semi.invariant[TreeF]
     implicit val pred: Invariant[Pred] = semi.invariant[Pred]
-    implicit val twiceNest: Invariant[Lambda[A => Pred[Pred[A]]]] = semi.invariant[Lambda[A => Pred[Pred[A]]]]
-    implicit val thriceNest: Invariant[Lambda[A => Pred[Pred[Pred[A]]]]] = semi.invariant[Lambda[A => Pred[Pred[Pred[A]]]]]
 
     def run(): Unit = testInvariant("semi")
   }

@@ -27,8 +27,6 @@ class InvariantSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  type OptPred[A] = Option[A => Boolean]
-  type ListPred[A] = List[A => Boolean]
   type ListSnoc[A] = List[Snoc[A]]
   type GenericAdtF[A] = GenericAdt[A => Boolean]
   type ListFToInt[A] = List[Snoc[A => Int]]
@@ -38,9 +36,7 @@ class InvariantSuite extends KittensSuite {
 
   def testInvariant(context: String)(
     implicit
-    optList: Invariant[OptPred],
     tree: Invariant[TreeF],
-    listPred: Invariant[ListPred],
     genadt: Invariant[GenericAdtF],
     ListFToInt: Invariant[ListFToInt],
     listSnoc: Invariant[ListSnoc],
@@ -49,9 +45,7 @@ class InvariantSuite extends KittensSuite {
     bivariant: Invariant[Bivariant],
     ilist: Invariant[IList]
   ): Unit = {
-    checkAll(s"$context.Invariant[OptPred]", InvariantTests[OptPred].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[TreeF]", InvariantTests[TreeF].invariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Invariant[ListPred]", InvariantTests[ListPred].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[GenAdtF]", InvariantTests[GenericAdtF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[InterleavedF]", InvariantTests[InterleavedF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[AndCharF]", InvariantTests[AndCharF].invariant[MiniInt, String, Boolean])
@@ -85,8 +79,6 @@ class InvariantSuite extends KittensSuite {
   semiTests.run()
 
   object semiTests {
-    implicit val optPred: Invariant[OptPred] = semi.invariant[OptPred]
-    implicit val listPred: Invariant[ListPred] = semi.invariant[ListPred]
     implicit val gadt: Invariant[GenericAdtF] = semi.invariant[GenericAdtF]
     implicit val listSnocendo: Invariant[ListFToInt] = semi.invariant[ListFToInt]
     implicit val interleaveF: Invariant[InterleavedF] = semi.invariant[InterleavedF]

@@ -77,6 +77,18 @@ object TestDefns {
       Cogen[(Int, T, Long, List[T], String)].contramap(unapply(_).get)
   }
 
+  case class Bivariant[A](run: A => Boolean, store: A)
+  object Bivariant {
+      implicit def arbitrary[A: Arbitrary]: Arbitrary[Bivariant[A]] = Arbitrary(
+        for {
+          a <- Arbitrary.arbitrary[A]
+          f <- Arbitrary.arbitrary[Boolean].map(Function.const[Boolean, A])
+        } yield Bivariant[A](f, a)
+      )
+  }
+
+  case class Pred[A](run: A => Boolean)
+
   sealed trait IList[A]
   final case class ICons[A](head: A, tail: IList[A]) extends IList[A]
   final case class INil[A]() extends IList[A]
@@ -392,6 +404,13 @@ object TestEqInstances {
       case (Leaf(vx), Leaf(vy)) => A.eqv(vx, vy)
       case (Node(lx, rx), Node(ly, ry)) => eqv(lx, ly) && eqv(rx, ry)
       case _ => false
+    }
+  }
+
+  implicit def eqBivariant[A](implicit A: Eq[A]): Eq[Bivariant[A]] = new Eq[Bivariant[A]] {
+    override def eqv(x: Bivariant[A], y: Bivariant[A]): Boolean = (x, y) match {
+      case (Bivariant(runX, storeX), Bivariant(runY, storeY)) =>
+        A.eqv(storeX, storeY) && Eq[Boolean].eqv(runX(storeX), runY(storeY))
     }
   }
 

@@ -29,13 +29,12 @@ class InvariantSuite extends KittensSuite {
 
   type OptPred[A] = Option[A => Boolean]
   type ListPred[A] = List[A => Boolean]
+  type ListSnoc[A] = List[Snoc[A]]
   type GenericAdtF[A] = GenericAdt[A => Boolean]
   type ListFToInt[A] = List[Snoc[A => Int]]
   type InterleavedF[A] = Interleaved[A => Boolean]
   type AndCharF[A] = (A => Boolean, Char)
   type TreeF[A] = Tree[A => Boolean]
-
-  case class Pred[A](run: A => Boolean)
 
   def testInvariant(context: String)(
     implicit
@@ -44,8 +43,11 @@ class InvariantSuite extends KittensSuite {
     listPred: Invariant[ListPred],
     genadt: Invariant[GenericAdtF],
     ListFToInt: Invariant[ListFToInt],
+    listSnoc: Invariant[ListSnoc],
     interleaved: Invariant[InterleavedF],
-    andCharF: Invariant[AndCharF]
+    andCharF: Invariant[AndCharF],
+    bivariant: Invariant[Bivariant],
+    ilist: Invariant[IList]
   ): Unit = {
     checkAll(s"$context.Invariant[OptPred]", InvariantTests[OptPred].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[TreeF]", InvariantTests[TreeF].invariant[MiniInt, String, Boolean])
@@ -53,7 +55,21 @@ class InvariantSuite extends KittensSuite {
     checkAll(s"$context.Invariant[GenAdtF]", InvariantTests[GenericAdtF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[InterleavedF]", InvariantTests[InterleavedF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[AndCharF]", InvariantTests[AndCharF].invariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Invariant[ListSnoc", InvariantTests[ListSnoc].invariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Invariant[Bivariant]", InvariantTests[Bivariant].invariant[MiniInt, String, Boolean])
+
     checkAll(s"$context.Invariant is Serializable", SerializableTests.serializable(Invariant[TreeF]))
+
+    test(s"$context.Invariant.imap is stack safe") {
+      val n = 10000
+      val largeIList = IList.fromSeq(1 until n)
+      val largeSnoc = Snoc.fromSeq(1 until n) :: Nil
+      val actualIList = IList.toList(largeIList.imap(_ + 1)(_ - 1))
+      val actualSnoc = listSnoc.imap(largeSnoc)(_ + 1)(_ - 1).flatMap(Snoc.toList)
+      val expected = (2 until n + 1).toList
+      assert(actualIList == expected)
+      assert(actualSnoc == expected)
+    }
   }
 
   {
@@ -77,6 +93,9 @@ class InvariantSuite extends KittensSuite {
     implicit val andCharF: Invariant[AndCharF] = semi.invariant[AndCharF]
     implicit val treeF: Invariant[TreeF] = semi.invariant[TreeF]
     implicit val pred: Invariant[Pred] = semi.invariant[Pred]
+    implicit val snoc: Invariant[ListSnoc] = semi.invariant[ListSnoc]
+    implicit val bivariant: Invariant[Bivariant] = semi.invariant[Bivariant]
+    implicit val ilist: Invariant[IList] = semi.invariant[IList]
 
     def run(): Unit = testInvariant("semi")
   }

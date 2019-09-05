@@ -26,7 +26,7 @@ import scala.annotation.implicitNotFound
 trait MkInvariant[F[_]] extends Invariant[F] {
   def safeImap[A, B](fa: F[A])(g: A => Eval[B])(f: B => Eval[A]): Eval[F[B]]
   def imap[A, B](fa: F[A])(g: A => B)(f: B => A): F[B] =
-    safeImap(fa)(g andThen Eval.now)(f andThen Eval.now).value
+    safeImap(fa)(a => Eval.later(g(a)))(b => Eval.later(f(b))).value
 }
 object MkInvariant extends MkInvariantDerivation {
   def apply[F[_]](implicit F: MkInvariant[F]): MkInvariant[F] = F

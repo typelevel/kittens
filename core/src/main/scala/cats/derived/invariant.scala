@@ -42,14 +42,13 @@ private[derived] abstract class MkInvariantDerivation extends MkInvariantNested 
 }
 
 private[derived] abstract class MkInvariantNested extends MkInvariantCons {
-  implicit def mkFunctorInvariantNested[F[_]](implicit F: Split1[F, Invariant, InvariantOrMk]): MkInvariant[F] =
+  implicit def mkFunctorInvariantNested[F[_]](implicit F: Split1[F, InvariantOrMk, InvariantOrMk]): MkInvariant[F] =
     new MkInvariant[F] {
       def safeImap[A, B](fa: F[A])(g: A => Eval[B])(f: B => Eval[A]): Eval[F[B]] =
-        Eval.later(F.fo.imap(F.unpack(fa))(
-          (a: F.I[A]) => mkImapSafe(F.fi)(a)(g)(f).value
-        )(
-          (b: F.I[B]) => mkImapSafe(F.fi)(b)(f)(g).value
-        )).map(F.pack[B])
+        mkImapSafe[F.O, F.I[B], F.I[A]](F.fo)(F.unpack(fa))(
+          mkImapSafe(F.fi)(_)(g)(f))(
+          mkImapSafe(F.fi)(_)(f)(g)
+        ).map(F.pack)
     }
 }
 

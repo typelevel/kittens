@@ -18,6 +18,7 @@ package cats.derived
 
 import cats.{Eq, Eval}
 import cats.instances.all._
+import org.scalacheck.rng.Seed
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 
 import scala.annotation.tailrec
@@ -63,8 +64,17 @@ object TestDefns {
       Arbitrary(Gen.sized(recursive))
     }
 
-    implicit val cogen: Cogen[Recursive] =
-      Cogen[(Int, Option[Recursive])].contramap(unapply(_).get)
+    implicit val cogen: Cogen[Recursive] = {
+      @tailrec def perturb(seed: Seed, rec: Recursive): Seed = {
+        val i = Cogen[Int].perturb(seed, rec.i)
+        rec.is match {
+          case Some(is) => perturb(i, is)
+          case None => i
+        }
+      }
+
+      Cogen(perturb _)
+    }
   }
 
   final case class Interleaved[T](i: Int, t: T, l: Long, tt: List[T], s: String)

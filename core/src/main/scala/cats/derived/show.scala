@@ -19,7 +19,12 @@ import scala.annotation.implicitNotFound
  * See the test suite for more precise examples of what can and cannot
  * be derived.
  */
-@implicitNotFound("Could not derive an instance of Show[${A}]")
+@implicitNotFound("""
+Could not derive an instance of Show[A] where A = ${A}.
+Make sure that A satisfies one of the following conditions:
+  * it is a case class where all fields have a Show instance
+  * it is a sealed trait where all subclasses have a Show instance
+""".trim)
 trait MkShow[A] extends Show[A]
 
 object MkShow extends MkShowDerivation {

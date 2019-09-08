@@ -22,7 +22,15 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Could not derive an instance of Applicative[${F}]")
+@implicitNotFound("""
+Could not derive an instance of Applicative[F] where F = ${F}.
+Make sure that F[_] satisfies one of the following conditions:
+  * it is a constant type λ[x => T] where T: Monoid
+  * it is a nested type λ[x => G[H[x]]] where G: Applicative and H: Applicative
+  * it is a generic case class where all fields have an Applicative instance
+
+Note: using kind-projector notation - https://github.com/typelevel/kind-projector
+""".trim)
 trait MkApplicative[F[_]] extends Applicative[F]
 
 object MkApplicative extends MkApplicativeDerivation {

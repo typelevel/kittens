@@ -8,7 +8,7 @@ lazy val buildSettings = Seq(
   crossScalaVersions := Seq("2.11.12", "2.12.9", scalaVersion.value)
 )
 
-val catsVersion = "2.0.0-RC2"
+val catsVersion = "2.0.0-RC3"
 val shapelessVersion = "2.3.3"
 val disciplineVersion = "1.0.0-M1"
 

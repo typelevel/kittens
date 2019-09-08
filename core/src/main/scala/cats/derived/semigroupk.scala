@@ -22,7 +22,16 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Could not derive an instance of SemigroupK[${F}]")
+@implicitNotFound("""
+Could not derive an instance of SemigroupK[F] where F = ${F}.
+Make sure that F[_] satisfies one of the following conditions:
+  * it is a constant type λ[x => T] where T: Semigroup
+  * it is a nested type λ[x => G[H[x]]] where G: SemigroupK
+  * it is a nested type λ[x => G[H[x]]] where G: Apply and H: SemigroupK
+  * it is a generic case class where all fields have a SemigroupK instance
+
+Note: using kind-projector notation - https://github.com/typelevel/kind-projector
+""".trim)
 trait MkSemigroupK[F[_]] extends SemigroupK[F]
 
 object MkSemigroupK extends MkSemigroupKDerivation {

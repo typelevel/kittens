@@ -6,7 +6,16 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Could not derive an instance of Traverse[${F}]")
+@implicitNotFound("""
+Could not derive an instance of Traverse[F] where F = ${F}.
+Make sure that F[_] satisfies one of the following conditions:
+  * it is a constant type λ[x => T]
+  * it is a nested type λ[x => G[H[x]]] where G: Traverse and H: Traverse
+  * it is a generic case class where all fields have a Traverse instance
+  * it is a generic sealed trait where all subclasses have a Traverse instance
+
+Note: using kind-projector notation - https://github.com/typelevel/kind-projector
+""".trim)
 trait MkTraverse[F[_]] extends Traverse[F] {
   def safeTraverse[G[_]: Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]]
   def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B]

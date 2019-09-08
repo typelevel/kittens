@@ -22,7 +22,12 @@ import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Could not derive an instance of PartialOrder[${A}]")
+@implicitNotFound("""
+Could not derive an instance of PartialOrder[A] where A = ${A}.
+Make sure that A satisfies one of the following conditions:
+  * it is a case class where all fields have a PartialOrder instance
+  * it is a sealed trait where all subclasses have a PartialOrder instance
+""".trim)
 trait MkPartialOrder[A] extends PartialOrder[A]
 
 object MkPartialOrder extends MkPartialOrderDerivation {

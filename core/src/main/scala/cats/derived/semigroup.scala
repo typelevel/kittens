@@ -22,7 +22,10 @@ import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Could not derive an instance of Semigroup[${A}]")
+@implicitNotFound("""
+Could not derive an instance of Semigroup[A] where A = ${A}.
+Make sure that A is a case class where all fields have a Semigroup instance.
+""".trim)
 trait MkSemigroup[A] extends Semigroup[A]
 
 object MkSemigroup extends MkSemigroupDerivation {

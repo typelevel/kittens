@@ -22,16 +22,14 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""
-Could not derive an instance of EmptyK[F] where F = ${F}.
+@implicitNotFound("""Could not derive an instance of EmptyK[F] where F = ${F}.
 Make sure that F[_] satisfies one of the following conditions:
   * it is a constant type λ[x => T] where T: Empty
   * it is a nested type λ[x => G[H[x]]] where G: EmptyK
   * it is a nested type λ[x => G[H[x]]] where G: Pure and H: EmptyK
   * it is a generic case class where all fields have an EmptyK instance
 
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector
-""".trim)
+Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
 trait MkEmptyK[F[_]] extends EmptyK[F]
 
 object MkEmptyK extends MkEmptyKDerivation {
@@ -77,7 +75,7 @@ private[derived] abstract class MkEmptyKCons extends MkEmptyKGeneric {
 
 private[derived] abstract class MkEmptyKGeneric {
   protected type EmptyKOrMk[F[_]] = EmptyK[F] OrElse MkEmptyK[F]
-  
+
   implicit def mkEmptyKGeneric[F[_]](implicit F: Generic1[F, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
       def empty[A] = F.from(F.fr.empty)

@@ -22,16 +22,14 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""
-Could not derive an instance of Invariant[F] where F = ${F}.
+@implicitNotFound("""Could not derive an instance of Invariant[F] where F = ${F}.
 Make sure that F[_] satisfies one of the following conditions:
   * it is a constant type λ[x => T]
   * it is a nested type λ[x => G[H[x]]] where G: Invariant and H: Invariant
   * it is a generic case class where all fields have an Invariant instance
   * it is a generic sealed trait where all subclasses have an Invariant instance
 
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector
-""".trim)
+Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
 trait MkInvariant[F[_]] extends Invariant[F] {
   def safeImap[A, B](fa: F[A])(g: A => Eval[B])(f: B => Eval[A]): Eval[F[B]]
   def imap[A, B](fa: F[A])(g: A => B)(f: B => A): F[B] =

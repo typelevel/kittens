@@ -22,15 +22,13 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""
-Could not derive an instance of Apply[F] where F = ${F}.
+@implicitNotFound("""Could not derive an instance of Apply[F] where F = ${F}.
 Make sure that F[_] satisfies one of the following conditions:
   * it is a constant type λ[x => T] where T: Semigroup
   * it is a nested type λ[x => G[H[x]]] where G: Apply and H: Apply
   * it is a generic case class where all fields have an Apply instance
 
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector
-""".trim)
+Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
 trait MkApply[F[_]] extends Apply[F]
 
 object MkApply extends MkApplyDerivation {

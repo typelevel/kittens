@@ -22,16 +22,14 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""
-Could not derive an instance of MonoidK[F] where F = ${F}.
+@implicitNotFound("""Could not derive an instance of MonoidK[F] where F = ${F}.
 Make sure that F[_] satisfies one of the following conditions:
   * it is a constant type λ[x => T] where T: Monoid
   * it is a nested type λ[x => G[H[x]]] where G: MonoidK
   * it is a nested type λ[x => G[H[x]]] where G: Applicative and H: MonoidK
   * it is a generic case class where all fields have a MonoidK instance
 
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector
-""".trim)
+Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
 trait MkMonoidK[F[_]] extends MonoidK[F]
 
 object MkMonoidK extends MkMonoidKDerivation {

@@ -16,12 +16,10 @@ object ShowPretty {
   def apply[A: ShowPretty]: ShowPretty[A] = implicitly
 }
 
-@implicitNotFound("""
-Could not derive an instance of ShowPretty[A] where A = ${A}.
+@implicitNotFound("""Could not derive an instance of ShowPretty[A] where A = ${A}.
 Make sure that A satisfies one of the following conditions:
   * it is a case class where all fields have a Show instance
-  * it is a sealed trait where all subclasses have a Show instance
-""".trim)
+  * it is a sealed trait where all subclasses have a Show instance""")
 trait MkShowPretty[A] extends ShowPretty[A]
 
 object MkShowPretty extends MkShowPrettyDerivation {

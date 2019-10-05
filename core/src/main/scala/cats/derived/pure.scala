@@ -22,15 +22,13 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""
-Could not derive an instance of Pure[F] where F = ${F}.
+@implicitNotFound("""Could not derive an instance of Pure[F] where F = ${F}.
 Make sure that F[_] satisfies one of the following conditions:
   * it is a constant type λ[x => T] where T: Empty
   * it is a nested type λ[x => G[H[x]]] where G: Pure and H: Pure
   * it is a generic case class where all fields have a Pure instance
 
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector
-""".trim)
+Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
 trait MkPure[F[_]] extends Pure[F]
 
 object MkPure extends MkPureDerivation {

@@ -22,12 +22,10 @@ import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""
-Could not derive an instance of Order[A] where A = ${A}.
+@implicitNotFound("""Could not derive an instance of Order[A] where A = ${A}.
 Make sure that A satisfies one of the following conditions:
   * it is a case class where all fields have an Order instance
-  * it is a sealed trait with exactly one subclass that has an Order instance
-""".trim)
+  * it is a sealed trait with exactly one subclass that has an Order instance""")
 trait MkOrder[A] extends Order[A]
 
 object MkOrder extends MkOrderDerivation {

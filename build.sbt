@@ -10,7 +10,7 @@ lazy val buildSettings = Seq(
 
 val catsVersion = "2.0.0"
 val shapelessVersion = "2.3.3"
-val disciplineVersion = "1.0.0-M1"
+val disciplineVersion = "1.0.0-RC1"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(

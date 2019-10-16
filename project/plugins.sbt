@@ -1,4 +1,4 @@
-addSbtPlugin("com.github.gseitz"                 % "sbt-release"            % "1.0.11")
+addSbtPlugin("com.github.gseitz"                 % "sbt-release"            % "1.0.12")
 addSbtPlugin("com.jsuereth"                      % "sbt-pgp"                % "2.0.0")
 addSbtPlugin("com.typesafe.sbt"                  % "sbt-git"                % "1.0.0")
 addSbtPlugin("org.scala-js"                      % "sbt-scalajs"            % "0.6.29")

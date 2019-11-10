@@ -44,7 +44,7 @@ lazy val commonSettings = Seq(
       "scm:git:git@github.com:typelevel/kittens.git"
     )),
   testOptions += Tests.Argument("-oF"),
-  mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "1.2.1")
+  mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.0.0")
 ) ++ crossVersionSharedSources
 
 initialCommands in console := """import shapeless._, cats._, cats.derived._"""
@@ -76,7 +76,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
-addCommandAlias("validate", ";root;clean;test") //todo: add mima back once we release 2.0
+addCommandAlias("validate", ";root;clean;test;mima")
 addCommandAlias("releaseAll", ";root;release")
 addCommandAlias("js", ";project coreJS")
 addCommandAlias("jvm", ";project coreJVM")

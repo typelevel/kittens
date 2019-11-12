@@ -5,7 +5,7 @@ import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
   scalaVersion := "2.13.1",
-  crossScalaVersions := Seq("2.11.12", "2.12.9", scalaVersion.value)
+  crossScalaVersions := Seq("2.11.12", "2.12.10", scalaVersion.value)
 )
 
 val catsVersion = "2.0.0"

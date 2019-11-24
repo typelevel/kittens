@@ -18,9 +18,9 @@ script:
           "${TRAVIS_BRANCH}" == "master" &&
           $(cat version.sbt) =~ "-SNAPSHOT"
     ]]; then
-      travis_wait 50 sbt ++${TRAVIS_SCALA_VERSION} validate publish ;
+      sbt ++${TRAVIS_SCALA_VERSION} validate publish ;
     else
-      travis_wait 50 sbt ++${TRAVIS_SCALA_VERSION} validate ;
+      sbt ++${TRAVIS_SCALA_VERSION} validate ;
     fi
 
 sudo: false

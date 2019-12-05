@@ -59,7 +59,7 @@ private[derived] abstract class MkFoldableNested extends MkFoldableCons {
     new MkFoldable[F] {
 
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) =
-        F.fo.unify.foldRight(F.unpack(fa), lb)((fia, lb) => Eval.defer(F.fi.unify.foldRight(fia, lb)(f)))
+        F.fo.unify.foldRight(F.unpack(fa), lb)(F.fi.unify.foldRight(_, _)(f))
 
       def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]) =
         mkSafeFoldLeft(F.fo)(F.unpack(fa), b)((b, fia) => mkSafeFoldLeft(F.fi)(fia, b)(f))
@@ -102,7 +102,7 @@ private[derived] abstract class MkFoldableCons extends MkFoldableGeneric {
 private[derived] abstract class MkFoldableGeneric {
   protected type FoldableOrMk[F[_]] = Foldable[F] OrElse MkFoldable[F]
 
-  protected def mkSafeFoldLeft[F[_], A, B](F: FoldableOrMk[F])(fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] =
+  private[derived] def mkSafeFoldLeft[F[_], A, B](F: FoldableOrMk[F])(fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] =
     F.unify match {
       case mk: MkFoldable[F] => mk.safeFoldLeft(fa, b)(f)
       case other => Eval.later(other.foldLeft(fa, b)(f(_, _).value))

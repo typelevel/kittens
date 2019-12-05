@@ -103,6 +103,15 @@ object TestDefns {
   final case class ICons[A](head: A, tail: IList[A]) extends IList[A]
   final case class INil[A]() extends IList[A]
 
+  object ICons {
+
+    implicit def arbitrary[A: Arbitrary]: Arbitrary[ICons[A]] =
+      Arbitrary(for {
+        head <- Arbitrary.arbitrary[A]
+        tail <- Arbitrary.arbitrary[IList[A]]
+      } yield ICons(head, tail))
+  }
+
   object IList {
 
     implicit def arbitrary[A: Arbitrary]: Arbitrary[IList[A]] =
@@ -144,6 +153,15 @@ object TestDefns {
 
       loop(snoc, Nil)
     }
+  }
+
+  object SCons {
+
+    implicit def arbitrary[A: Arbitrary]: Arbitrary[SCons[A]] =
+      Arbitrary(for {
+        init <- Arbitrary.arbitrary[Snoc[A]]
+        last <- Arbitrary.arbitrary[A]
+      } yield SCons(init, last))
   }
 
   sealed trait Tree[A]
@@ -408,6 +426,9 @@ object TestEqInstances {
       case _ => false
     }
   }
+
+  implicit def eqICons[A: Eq]: Eq[ICons[A]] = Eq.by(identity[IList[A]])
+  implicit def eqSCons[A: Eq]: Eq[SCons[A]] = Eq.by(identity[Snoc[A]])
 
   implicit def eqTree[A](implicit A: Eq[A]): Eq[Tree[A]] = new Eq[Tree[A]] {
     def eqv(x: Tree[A], y: Tree[A]): Boolean = (x, y) match {

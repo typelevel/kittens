@@ -55,7 +55,7 @@ class FoldableSuite extends KittensSuite {
     val largeIList = IList.fromSeq(1 until n)
     val largeSnoc = Snoc.fromSeq(1 until n) :: Nil
 
-    test(s"$context.Traverse.foldLeft is stack safe") {
+    test(s"$context.Foldable.foldLeft is stack safe") {
       val actualIList = largeIList.foldLeft(0)(_ + _)
       val actualSnoc = listSnoc.foldLeft(largeSnoc, 0)(_ + _)
       val expected = n * (n - 1) / 2
@@ -63,7 +63,7 @@ class FoldableSuite extends KittensSuite {
       assert(actualSnoc == expected)
     }
 
-    test(s"$context.Traverse.foldRight is stack safe") {
+    test(s"$context.Foldable.foldRight is stack safe") {
       val actualIList = largeIList.foldRight(Eval.Zero)((i, sum) => sum.map(_ + i))
       val actualSnoc = listSnoc.foldRight(largeSnoc, Eval.Zero)((i, sum) => sum.map(_ + i))
       val expected = n * (n - 1) / 2
@@ -72,7 +72,7 @@ class FoldableSuite extends KittensSuite {
     }
 
     test(s"$context.Foldable respects existing instances") {
-      val tail = List.range(1, 100)
+      val tail = List.range(1, 10)
       val sum = boxNel.fold(Box(Nel(42, tail)))
       assert(sum == tail.sum)
     }

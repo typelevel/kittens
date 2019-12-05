@@ -126,6 +126,12 @@ object auto {
     ): Foldable[F] = F.value
   }
 
+  object reducible {
+    implicit def kittensMkReducible[F[_]](
+      implicit refute: Refute[Reducible[F]], F: Lazy[MkReducible[F]]
+    ): Reducible[F] = F.value
+  }
+
   object traverse {
     implicit def kittensMkTraverse[F[_]](
       implicit refute: Refute[Traverse[F]], F: Lazy[MkTraverse[F]]
@@ -223,13 +229,19 @@ object cached {
     ): Foldable[F] = cached.value
   }
 
+  object reducible {
+    implicit def kittensMkReducible[F[_]](
+      implicit refute: Refute[Reducible[F]], cached: Cached[MkReducible[F]]
+    ): Reducible[F] = cached.value
+  }
+
   object invariant {
     implicit def kittensMkInvariant[F[_]](
       implicit refute: Refute[Invariant[F]], cached: Cached[MkInvariant[F]]
     ): Invariant[F] = cached.value
   }
 
-  object traverse{
+  object traverse {
     implicit def kittensMkTraverse[F[_]](
        implicit refute: Refute[Traverse[F]], cached: Cached[MkTraverse[F]]
     ): Traverse[F] = cached.value
@@ -336,6 +348,8 @@ object semi {
   def showPretty[A](implicit ev: Lazy[MkShowPretty[A]]): ShowPretty[A] = ev.value
 
   def foldable[F[_]](implicit F: Lazy[MkFoldable[F]]): Foldable[F] = F.value
+
+  def reducible[F[_]](implicit F: Lazy[MkReducible[F]]): Reducible[F] = F.value
 
   def traverse[F[_]](implicit F: Lazy[MkTraverse[F]]): Traverse[F] = F.value
 

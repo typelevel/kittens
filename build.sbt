@@ -11,6 +11,7 @@ lazy val buildSettings = Seq(
 val catsVersion = "2.0.0"
 val shapelessVersion = "2.3.3"
 val disciplineVersion = "1.0.0-RC1"
+val testKitVersion = "1.0.0-RC1"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(
@@ -34,8 +35,8 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %%% "cats-core"      % catsVersion,
     "org.typelevel"   %%% "alleycats-core" % catsVersion,
     "com.chuusai"     %%% "shapeless"      % shapelessVersion,
-    "org.typelevel"   %%% "cats-testkit"   % catsVersion % "test",
-    "org.typelevel"   %%% "discipline-scalatest" % disciplineVersion % "test",
+    "org.typelevel"   %%% "discipline-scalatest" % disciplineVersion % Test,
+    "org.typelevel"   %%% "cats-testkit-scalatest" % testKitVersion % Test,
     compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
   ),
   scmInfo :=

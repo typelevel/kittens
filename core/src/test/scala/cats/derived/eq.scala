@@ -21,6 +21,7 @@ import cats.kernel.laws.discipline.{EqTests, SerializableTests}
 import cats.instances.all._
 
 class EqSuite extends KittensSuite {
+  import EqSuite._
   import TestDefns._
 
   def testEq(context: String)(
@@ -52,16 +53,22 @@ class EqSuite extends KittensSuite {
     testEq("cached")
   }
 
-  semiTests.run()
+  {
+    import semiInstances._
+    testEq("semiauto")
+  }
+}
 
-  object semiTests {
-    implicit val foo: Eq[Foo] = semi.eq
-    implicit val iList: Eq[IList[Int]] = semi.eq
-    implicit val inner: Eq[Inner] = semi.eq
-    implicit val outer: Eq[Outer] = semi.eq
-    implicit val interleaved: Eq[Interleaved[Int]] = semi.eq
-    implicit val tree: Eq[Tree[Int]] = semi.eq
-    implicit val recursive: Eq[Recursive] = semi.eq
-    def run(): Unit = testEq("semi")
+object EqSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val foo: Eq[Foo] = semiauto.eq
+    implicit val iList: Eq[IList[Int]] = semiauto.eq
+    implicit val inner: Eq[Inner] = semiauto.eq
+    implicit val outer: Eq[Outer] = semiauto.eq
+    implicit val interleaved: Eq[Interleaved[Int]] = semiauto.eq
+    implicit val tree: Eq[Tree[Int]] = semiauto.eq
+    implicit val recursive: Eq[Recursive] = semiauto.eq
   }
 }

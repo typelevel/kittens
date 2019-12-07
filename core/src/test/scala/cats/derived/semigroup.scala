@@ -54,15 +54,20 @@ class SemigroupSuite extends KittensSuite {
   }
 
   {
-    implicit val foo: Semigroup[Foo] = semi.semigroup
-    implicit lazy val recursive: Semigroup[Recursive] = semi.semigroup
-    implicit val interleaved: Semigroup[Interleaved[Int]] = semi.semigroup
-    implicit val box: Semigroup[Box[Mul]] = semi.semigroup
-    testSemigroup("semi")
+    import semiInstances._
+    testSemigroup("semiauto")
   }
 }
 
 object SemigroupSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val foo: Semigroup[Foo] = semiauto.semigroup
+    implicit lazy val recursive: Semigroup[Recursive] = semiauto.semigroup
+    implicit val interleaved: Semigroup[Interleaved[Int]] = semiauto.semigroup
+    implicit val box: Semigroup[Box[Mul]] = semiauto.semigroup
+  }
 
   final case class Mul(value: Int)
   object Mul {

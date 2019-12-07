@@ -26,8 +26,6 @@ class MonoidKSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  type BoxMul[A] = Box[Mul[A]]
-
   def testMonoidK(context: String)(
     implicit complexProduct: MonoidK[ComplexProduct],
     caseClassWOption: MonoidK[CaseClassWOption],
@@ -55,14 +53,21 @@ class MonoidKSuite extends KittensSuite {
   }
 
   {
-    implicit val complexProduct: MonoidK[ComplexProduct] = semi.monoidK
-    implicit val caseClassWOption: MonoidK[CaseClassWOption] = semi.monoidK
-    implicit val boxMul: MonoidK[BoxMul] = semi.monoidK
+    import semiInstances._
     testMonoidK("semi")
   }
 }
 
 object MonoidKSuite {
+  import TestDefns._
+
+  type BoxMul[A] = Box[Mul[A]]
+
+  object semiInstances {
+    implicit val complexProduct: MonoidK[ComplexProduct] = semiauto.monoidK
+    implicit val caseClassWOption: MonoidK[CaseClassWOption] = semiauto.monoidK
+    implicit val boxMul: MonoidK[BoxMul] = semiauto.monoidK
+  }
 
   final case class Mul[T](value: Int)
   object Mul {

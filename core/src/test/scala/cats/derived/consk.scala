@@ -22,6 +22,7 @@ import org.scalacheck.Arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 class ConsKSuite extends KittensSuite with ScalaCheckDrivenPropertyChecks {
+  import ConsKSuite._
   import TestDefns._
 
   def checkConsK[F[_], A : Arbitrary](nil: F[A])(fromSeq: Seq[A] => F[A])(implicit F: ConsK[F]): Unit =
@@ -44,8 +45,16 @@ class ConsKSuite extends KittensSuite with ScalaCheckDrivenPropertyChecks {
   }
 
   {
-    implicit val iList: ConsK[IList] = semi.consK[IList]
-    implicit val snoc: ConsK[Snoc] = semi.consK[Snoc]
+    import semiInstances._
     testConsK("semi")
+  }
+}
+
+object ConsKSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val iList: ConsK[IList] = semiauto.consK[IList]
+    implicit val snoc: ConsK[Snoc] = semiauto.consK[Snoc]
   }
 }

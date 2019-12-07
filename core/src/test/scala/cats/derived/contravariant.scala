@@ -23,16 +23,9 @@ import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.eq._
 
 class ContravariantSuite extends KittensSuite {
+  import ContravariantSuite._
   import TestDefns._
   import TestEqInstances._
-
-  type OptPred[A] = Option[A => Boolean]
-  type ListPred[A] = List[A => Boolean]
-  type GenericAdtPred[A] = GenericAdt[A => Boolean]
-  type ListSnocF[A] = List[Snoc[A => Int]]
-  type InterleavedPred[A] = Interleaved[A => Boolean]
-  type AndCharPred[A] = (A => Boolean, Char)
-  type TreePred[A] = Tree[A => Boolean]
 
   def testContravariant(context: String)(
     implicit
@@ -71,17 +64,31 @@ class ContravariantSuite extends KittensSuite {
     testContravariant("cached")
   }
 
-  semiTests.run()
+  {
+    import semiInstances._
+    testContravariant("semiauto")
+  }
+}
 
-  object semiTests {
-    implicit val optPred: Contravariant[OptPred] = semi.contravariant
-    implicit val listPred: Contravariant[ListPred] = semi.contravariant
-    implicit val genericAdtPred: Contravariant[GenericAdtPred] = semi.contravariant
-    implicit val listSnocF: Contravariant[ListSnocF] = semi.contravariant
-    implicit val interleavePred: Contravariant[InterleavedPred] = semi.contravariant
-    implicit val andCharPred: Contravariant[AndCharPred] = semi.contravariant
-    implicit val treePred: Contravariant[TreePred] = semi.contravariant
-    def run(): Unit = testContravariant("semi")
+object ContravariantSuite {
+  import TestDefns._
+
+  type OptPred[A] = Option[A => Boolean]
+  type ListPred[A] = List[A => Boolean]
+  type GenericAdtPred[A] = GenericAdt[A => Boolean]
+  type ListSnocF[A] = List[Snoc[A => Int]]
+  type InterleavedPred[A] = Interleaved[A => Boolean]
+  type AndCharPred[A] = (A => Boolean, Char)
+  type TreePred[A] = Tree[A => Boolean]
+
+  object semiInstances {
+    implicit val optPred: Contravariant[OptPred] = semiauto.contravariant
+    implicit val listPred: Contravariant[ListPred] = semiauto.contravariant
+    implicit val genericAdtPred: Contravariant[GenericAdtPred] = semiauto.contravariant
+    implicit val listSnocF: Contravariant[ListSnocF] = semiauto.contravariant
+    implicit val interleavePred: Contravariant[InterleavedPred] = semiauto.contravariant
+    implicit val andCharPred: Contravariant[AndCharPred] = semiauto.contravariant
+    implicit val treePred: Contravariant[TreePred] = semiauto.contravariant
   }
 }
 

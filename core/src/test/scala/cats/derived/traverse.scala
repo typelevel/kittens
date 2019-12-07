@@ -7,10 +7,7 @@ import cats.laws.discipline.{SerializableTests, TraverseTests}
 class TraverseSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
-
-  type OptList[A] = Option[List[A]]
-  type ListSnoc[A] = List[Snoc[A]]
-  type AndChar[A] = (A, Char)
+  import TraverseSuite._
 
   def testTraverse(context: String)(
     implicit iList: Traverse[IList],
@@ -69,17 +66,26 @@ class TraverseSuite extends KittensSuite {
     testTraverse("cached")
   }
 
-  semiTests.run()
-
-  object semiTests {
-    implicit val iList: Traverse[IList] = semi.traverse
-    implicit val tree: Traverse[Tree] = semi.traverse
-    implicit val genericAdt: Traverse[GenericAdt] = semi.traverse
-    implicit val optList: Traverse[OptList] = semi.traverse
-    implicit val listSnoc: Traverse[ListSnoc] = semi.traverse
-    implicit val andChar: Traverse[AndChar] = semi.traverse
-    implicit val interleaved: Traverse[Interleaved] = semi.traverse
-    def run(): Unit = testTraverse("semi")
+  {
+    import semiInstances._
+    testTraverse("semiauto")
   }
 }
 
+object TraverseSuite {
+  import TestDefns._
+
+  type OptList[A] = Option[List[A]]
+  type ListSnoc[A] = List[Snoc[A]]
+  type AndChar[A] = (A, Char)
+
+  object semiInstances {
+    implicit val iList: Traverse[IList] = semiauto.traverse
+    implicit val tree: Traverse[Tree] = semiauto.traverse
+    implicit val genericAdt: Traverse[GenericAdt] = semiauto.traverse
+    implicit val optList: Traverse[OptList] = semiauto.traverse
+    implicit val listSnoc: Traverse[ListSnoc] = semiauto.traverse
+    implicit val andChar: Traverse[AndChar] = semiauto.traverse
+    implicit val interleaved: Traverse[Interleaved] = semiauto.traverse
+  }
+}

@@ -84,8 +84,8 @@ class ShowSuite extends KittensSuite {
 
   {
     import semiInstances._
-    testShow("semi")
     illTyped("semi.show[Tree[Int]]")
+    testShow("semiauto")
   }
 }
 
@@ -102,14 +102,14 @@ object ShowSuite {
   }
 
   object semiInstances {
-    implicit val foo: Show[Foo] = semi.show
-    implicit val outer: Show[Outer] = semi.show
-    implicit val intTree: Show[IntTree] = semi.show
-    implicit val genericAdt: Show[GenericAdt[Int]] = semi.show
-    implicit val people: Show[People] = semi.show
-    implicit val listFieldChild: Show[ListFieldChild] = semi.show
-    implicit val listField: Show[ListField] = semi.show
-    implicit val interleaved: Show[Interleaved[Int]] = semi.show
-    implicit val boxBogus: Show[Box[Bogus]] = semi.show
+    implicit val foo: Show[Foo] = semiauto.show
+    implicit val outer: Show[Outer] = semiauto.show
+    implicit val intTree: Show[IntTree] = semiauto.show
+    implicit val genericAdt: Show[GenericAdt[Int]] = semiauto.show
+    implicit val people: Show[People] = semiauto.show
+    implicit val listFieldChild: Show[ListFieldChild] = semiauto.show
+    implicit val listField: Show[ListField] = semiauto.show
+    implicit val interleaved: Show[Interleaved[Int]] = semiauto.show
+    implicit val boxBogus: Show[Box[Bogus]] = semiauto.show
   }
 }

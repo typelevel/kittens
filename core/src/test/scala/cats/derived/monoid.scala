@@ -55,15 +55,20 @@ class MonoidSuite extends KittensSuite {
   }
 
   {
-    implicit val foo: Monoid[Foo] = semi.monoid
-    implicit lazy val recursive: Monoid[Recursive] = semi.monoid
-    implicit val interleaved: Monoid[Interleaved[Int]] = semi.monoid
-    implicit val box: Monoid[Box[Mul]] = semi.monoid
-    testMonoid("semi")
+    import semiInstances._
+    testMonoid("semiauto")
   }
 }
 
 object MonoidSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val foo: Monoid[Foo] = semiauto.monoid
+    implicit lazy val recursive: Monoid[Recursive] = semiauto.monoid
+    implicit val interleaved: Monoid[Interleaved[Int]] = semiauto.monoid
+    implicit val box: Monoid[Box[Mul]] = semiauto.monoid
+  }
 
   final case class Mul(value: Int)
   object Mul {

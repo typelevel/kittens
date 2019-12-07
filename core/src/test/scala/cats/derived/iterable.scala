@@ -91,7 +91,7 @@ class IterableSuite extends KittensSuite {
 
   test("Interleaved[T] => Iterable[T]") {
     val interleaved = Interleaved(42, 313, 3, List(1, 2, 3, 5, 7), "kittens")
-    val i = semi.iterable[TestDefns.Interleaved, Int](interleaved)
+    val i = semiauto.iterable[TestDefns.Interleaved, Int](interleaved)
     assert(i.toList == List(313, 1, 2, 3, 5, 7))
   }
 }

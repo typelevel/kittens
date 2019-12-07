@@ -27,11 +27,6 @@ class PureSuite extends KittensSuite {
   import PureSuite._
   import TestDefns._
 
-  type LOption[A] = List[Option[A]]
-  type PList[A] = (List[A], List[A])
-  type NelOption[A] = NonEmptyList[Option[A]]
-  type BoxColor[A] = Box[Color[A]]
-
   def testPure(context: String)(
     implicit lOption: Pure[LOption],
     pList: Pure[PList],
@@ -64,19 +59,29 @@ class PureSuite extends KittensSuite {
   }
 
   {
-    implicit val lOption: Pure[LOption] = semi.pure
-    implicit val pList: Pure[PList] = semi.pure
-    implicit val caseClassWOption: Pure[CaseClassWOption] = semi.pure
-    implicit val nelOption: Pure[NelOption] = semi.pure
-    implicit val interleaved: Pure[Interleaved] = semi.pure
-    implicit val boxColor: Pure[BoxColor] = semi.pure
-    testPure("semi")
-    illTyped("semi.pure[IList]")
-    illTyped("semi.pure[Snoc]")
+    import semiInstances._
+    testPure("semiauto")
+    illTyped("semiauto.pure[IList]")
+    illTyped("semiauto.pure[Snoc]")
   }
 }
 
 object PureSuite {
+  import TestDefns._
+
+  type LOption[A] = List[Option[A]]
+  type PList[A] = (List[A], List[A])
+  type NelOption[A] = NonEmptyList[Option[A]]
+  type BoxColor[A] = Box[Color[A]]
+
+  object semiInstances {
+    implicit val lOption: Pure[LOption] = semiauto.pure
+    implicit val pList: Pure[PList] = semiauto.pure
+    implicit val caseClassWOption: Pure[CaseClassWOption] = semiauto.pure
+    implicit val nelOption: Pure[NelOption] = semiauto.pure
+    implicit val interleaved: Pure[Interleaved] = semiauto.pure
+    implicit val boxColor: Pure[BoxColor] = semiauto.pure
+  }
 
   final case class Color[A](r: Int, g: Int, b: Int)
   object Color {

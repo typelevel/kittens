@@ -1,5 +1,6 @@
 package cats.derived.util
 
+import scala.annotation.implicitNotFound
 import scala.util.hashing.MurmurHash3
 
 object VersionSpecific {
@@ -7,6 +8,7 @@ object VersionSpecific {
   private[derived] def productSeed(x: Product): Int =
     MurmurHash3.mix(MurmurHash3.productSeed, x.productPrefix.hashCode)
 
+  @implicitNotFound("could not find Lazy implicit value of type ${A}")
   abstract class Lazy[+A] extends Serializable {
     def value(): A
   }

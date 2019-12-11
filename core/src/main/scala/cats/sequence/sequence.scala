@@ -5,7 +5,7 @@
  */
 package cats.sequence
 
-import cats.{Applicative, Apply, Functor}
+import cats.{Applicative, Apply, Functor, Parallel}
 import shapeless._
 import shapeless.ops.hlist.{Align, ZipWithKeys}
 import shapeless.ops.record.{Keys, UnzipFields}
@@ -18,6 +18,8 @@ trait Sequencer[L <: HList] extends Serializable {
   type LOut <: HList
   type Out = F[LOut]
   def apply(hl: L): Out
+  protected[sequence] def par(hl: L)(implicit P: Parallel[F]): P.F[LOut]
+  final def parApply(hl: L)(implicit P: Parallel[F]): Out = P.sequential(par(hl)(P))
 }
 
 private[sequence] abstract class MkHConsSequencer {
@@ -33,6 +35,8 @@ private[sequence] abstract class MkHConsSequencer {
     type F[X] = F0[X]
     type LOut = H :: T
     def apply(hl: F[H] :: FT) = F.map2(hl.head, tailSequencer(hl.tail))(_ :: _)
+    protected[sequence] def par(hl: F[H] :: FT)(implicit P: Parallel[F]): P.F[LOut] =
+      P.apply.map2(P.parallel(hl.head), tailSequencer.par(hl.tail))(_ :: _)
   }
 }
 
@@ -44,6 +48,7 @@ object Sequencer extends MkHConsSequencer {
     type F[X] = F0[X]
     type LOut = HNil
     def apply(nil: HNil) = F.pure(nil)
+    protected[sequence] def par(nil: HNil)(implicit P: Parallel[F]): P.F[HNil] = P.applicative.pure(nil)
   }
 
   implicit def mkSingletonSequencer[F0[_], H](
@@ -52,6 +57,8 @@ object Sequencer extends MkHConsSequencer {
     type F[X] = F0[X]
     type LOut = H :: HNil
     def apply(singleton: F[H] :: HNil) = F.map(singleton.head)(_ :: HNil)
+    protected[sequence] def par(singleton: F[H] :: HNil)(implicit P: Parallel[F]): P.F[H :: HNil] =
+      P.apply.map(P.parallel(singleton.head))(_ :: HNil)
   }
 }
 
@@ -129,6 +136,11 @@ object SequenceOps {
   // Syntax for non-records
   class NonRecordOps[L <: HList](self: L) {
     def sequence(implicit seq: Sequencer[L]): seq.Out = seq(self)
+
+    def parSequence[F0[_]](implicit
+      seq: Sequencer[L] { type F[x] = F0[x] },
+      par: Parallel[F0]
+    ): seq.Out = seq.parApply(self)
   }
 
   // Syntax for records

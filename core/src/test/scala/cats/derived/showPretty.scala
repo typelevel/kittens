@@ -3,6 +3,7 @@ package derived
 
 import cats.instances.all._
 import cats.laws.discipline.SerializableTests
+import shapeless.test.illTyped
 
 class ShowPrettySuite extends KittensSuite {
   import ShowPrettySuite._
@@ -141,20 +142,19 @@ class ShowPrettySuite extends KittensSuite {
   {
     import auto.showPretty._
     testShowPretty("auto")
-    // NOTE: This typechecks but crashes the compiler on Scala 2.13
-//    println(ShowPretty[Tree[Int]])
+    illTyped("ShowPretty[Tree[Int]]")
   }
 
   {
     import cached.showPretty._
     testShowPretty("cached")
-    // NOTE: This typechecks but crashes the compiler on Scala 2.13
-//    println(ShowPretty[Tree[Int]])
+    illTyped("ShowPretty[Tree[Int]]")
   }
 
   {
     import semiInstances._
     testShowPretty("semi")
+    illTyped("semi.showPretty[Tree[Int]]")
   }
 }
 
@@ -180,7 +180,5 @@ object ShowPrettySuite {
     implicit val listField: ShowPretty[ListField] = semi.showPretty
     implicit val interleaved: ShowPretty[Interleaved[Int]] = semi.showPretty
     implicit val boxBogus: ShowPretty[Box[Bogus]] = semi.showPretty
-    // NOTE: This typechecks but crashes the compiler on Scala 2.13
-    //    println(semi.showPretty[Tree[Int]])
   }
 }

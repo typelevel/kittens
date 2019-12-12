@@ -137,10 +137,10 @@ object SequenceOps {
   class NonRecordOps[L <: HList](self: L) {
     def sequence(implicit seq: Sequencer[L]): seq.Out = seq(self)
 
-    def parSequence[F0[_]](implicit
-      seq: Sequencer[L] { type F[x] = F0[x] },
-      par: Parallel[F0]
-    ): seq.Out = seq.parApply(self)
+    def parSequence[F[_], LOut](implicit
+      seq: Sequencer.Aux[L, F, LOut],
+      par: Parallel[F]
+    ): F[LOut] = seq.parApply(self)
   }
 
   // Syntax for records

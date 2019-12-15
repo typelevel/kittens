@@ -138,6 +138,12 @@ object auto {
     ): Traverse[F] = F.value
   }
 
+  object nonEmptyTraverse {
+    implicit def kittensMkNonEmptyTraverse[F[_]](
+      implicit refute: Refute[NonEmptyTraverse[F]], F: Lazy[MkNonEmptyTraverse[F]]
+    ): NonEmptyTraverse[F] = F.value
+  }
+
   object pure {
     implicit def kittensMkPure[F[_]](
       implicit refute: Refute[Pure[F]], F: Lazy[MkPure[F]]
@@ -247,6 +253,12 @@ object cached {
     ): Traverse[F] = cached.value
   }
 
+  object nonEmptyTraverse {
+    implicit def kittensMkNonEmptyTraverse[F[_]](
+      implicit refute: Refute[NonEmptyTraverse[F]], cached: Cached[MkNonEmptyTraverse[F]]
+    ): NonEmptyTraverse[F] = cached.value
+  }
+
   object show {
     implicit def kittensMkshow[A](
       implicit refute: Refute[Show[A]], cached: Cached[MkShow[A]]
@@ -352,6 +364,8 @@ object semi {
   def reducible[F[_]](implicit F: Lazy[MkReducible[F]]): Reducible[F] = F.value
 
   def traverse[F[_]](implicit F: Lazy[MkTraverse[F]]): Traverse[F] = F.value
+
+  def nonEmptyTraverse[F[_]](implicit F: Lazy[MkNonEmptyTraverse[F]]): NonEmptyTraverse[F] = F.value
 
   def monoid[A](implicit ev: Lazy[MkMonoid[A]]): Monoid[A] = ev.value
 

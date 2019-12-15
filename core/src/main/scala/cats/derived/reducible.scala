@@ -80,9 +80,7 @@ private[derived] abstract class MkReducibleBase extends MkReducibleCons {
     }
 
   implicit val mkReducibleCNil: MkReducible[Const[CNil]#λ] =
-    new MkReducible[Const[CNil]#λ] {
-      def safeFoldLeft[A, B](fa: CNil, b: B)(f: (B, A) => Eval[B]): Eval[B] = Eval.now(b)
-      def foldRight[A, B](fa: CNil, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
+    new MkReducibleInstance[Const[CNil]#λ](MkFoldable.mkFoldableCNil) {
       def safeReduceLeftTo[A, B](fa: CNil)(f: A => B)(g: (B, A) => Eval[B]) = unexpected
       def reduceRightTo[A, B](fa: CNil)(f: A => B)(g: (A, Eval[B]) => Eval[B]) = unexpected
     }

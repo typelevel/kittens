@@ -14,16 +14,15 @@ Make sure that F[_] satisfies one of the following conditions:
   * it is a generic sealed trait where all subclasses have a Traverse instance
 
 Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
-trait MkTraverse[F[_]] extends Traverse[F] {
+trait MkTraverse[F[_]] extends Traverse[F] with MkFoldable[F] {
   def safeTraverse[G[_]: Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]]
-  def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B]
   def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
 
   def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
     safeTraverse(fa)(a => Eval.later(f(a))).value
 
-  def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-    safeFoldLeft(fa, b)((b, a) => Eval.later(f(b, a))).value
+  override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B) =
+    super[MkFoldable].foldLeft(fa, b)(f)
 }
 
 object MkTraverse extends MkTraverseDerivation {
@@ -63,21 +62,21 @@ private[derived] abstract class MkTraverseCons extends MkTraverseGeneric {
     new MkTraverse[F] {
 
       def safeTraverse[G[_], A, B](fa: F[A])(f: A => Eval[G[B]])(implicit G: Applicative[G]) =
-        Eval.now(F.unpack(fa)).flatMap { case (fha, fhb) =>
+        Eval.now(F.unpack(fa)).flatMap { case (fha, fta) =>
           for {
             gfhb <- mkSafeTraverse(F.fh)(fha)(f)
-            gftb <- F.ft.safeTraverse(fhb)(f)
+            gftb <- F.ft.safeTraverse(fta)(f)
           } yield G.map2(gfhb, gftb)(F.pack(_, _))
         }
 
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) =
-        Eval.now(F.unpack(fa)).flatMap { case (fha, fhb) =>
-          F.fh.unify.foldRight(fha, F.ft.foldRight(fhb, lb)(f))(f)
+        Eval.now(F.unpack(fa)).flatMap { case (fha, fta) =>
+          F.fh.unify.foldRight(fha, F.ft.foldRight(fta, lb)(f))(f)
         }
 
       def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]) =
-        Eval.now(F.unpack(fa)).flatMap { case (fha, fhb) =>
-          mkSafeFoldLeft(F.fh)(fha, b)(f).flatMap(F.ft.safeFoldLeft(fhb, _)(f))
+        Eval.now(F.unpack(fa)).flatMap { case (fha, fta) =>
+          mkSafeFoldLeft(F.fh)(fha, b)(f).flatMap(F.ft.safeFoldLeft(fta, _)(f))
         }
     }
 
@@ -107,7 +106,7 @@ private[derived] abstract class MkTraverseCons extends MkTraverseGeneric {
 private[derived] abstract class MkTraverseGeneric {
   protected type TraverseOrMk[F[_]] = Traverse[F] OrElse MkTraverse[F]
 
-  protected def mkSafeTraverse[F[_], G[_]: Applicative, A, B](
+  private[derived] def mkSafeTraverse[F[_], G[_]: Applicative, A, B](
     F: TraverseOrMk[F]
   )(fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = F.unify match {
     case mk: MkTraverse[F] => mk.safeTraverse(fa)(f)

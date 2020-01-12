@@ -53,9 +53,9 @@ class CommutativeSemigroupSuite extends KittensSuite {
   }
 
   {
-    implicit val foo: CommutativeSemigroup[CommutativeFoo] = semi.commutativeSemigroup
-    implicit lazy val recursive: CommutativeSemigroup[Recursive] = semi.commutativeSemigroup
-    implicit val box: CommutativeSemigroup[Box[Mul]] = semi.commutativeSemigroup
+    implicit val foo: CommutativeSemigroup[CommutativeFoo] = semiauto.commutativeSemigroup
+    implicit lazy val recursive: CommutativeSemigroup[Recursive] = semiauto.commutativeSemigroup
+    implicit val box: CommutativeSemigroup[Box[Mul]] = semiauto.commutativeSemigroup
     testCommutativeSemigroup("semi")
   }
 }

@@ -9,7 +9,7 @@ import cats.instances.all._
 import org.scalacheck.Prop.forAll
 import shapeless._
 
-class TraverseHListSuite extends KittensSuite {
+class TraverseSuite extends KittensSuite {
 
   def optToValidation[T](opt: Option[T]): Validated[String, T] =
     Validated.fromOption(opt, "Nothing Here")
@@ -20,6 +20,10 @@ class TraverseHListSuite extends KittensSuite {
 
   object optionToValidation extends Poly1 {
     implicit def caseOption[T] = at[Option[T]](optToValidation)
+  }
+
+  object optionToEither extends Poly1 {
+    implicit def caseOption[T] = at[Option[T]](_.toRight("Nothing Here"))
   }
 
   test("traversing Set with Set => Option")(check {
@@ -33,6 +37,17 @@ class TraverseHListSuite extends KittensSuite {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
       val expected = (optToValidation(x), optToValidation(y), optToValidation(z)).mapN(_ :: _ :: _ :: HNil)
       (x :: y :: z :: HNil).traverse(optionToValidation) == expected
+    }
+  })
+
+  test("parallel traversing Option with Option => Either")(check {
+    forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
+      val expected = (
+        optToValidation(x),
+        optToValidation(y),
+        optToValidation(z)
+      ).mapN(_ :: _ :: _ :: HNil).toEither
+      (x :: y :: z :: HNil).parTraverse(optionToEither) == expected
     }
   })
 }

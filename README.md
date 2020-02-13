@@ -9,7 +9,7 @@ kittens is part of the [Typelevel][typelevel] family of projects. It is an Open 
 License v2, hosted on [GitHub][source]. Binary artefacts will be published to the [Sonatype OSS Repository Hosting
 service][sonatype] and synced to Maven Central.
 
-It is available for Scala 2.11 and 2.12, and Scala.js.
+It is available for Scala 2.11, 2.12, 2.13, and Scala.js.
 
 To get started with SBT, simply add the following to your build.sbt file:
 

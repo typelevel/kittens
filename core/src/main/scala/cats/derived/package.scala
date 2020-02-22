@@ -1,6 +1,7 @@
 package cats
 package derived
 
+import cats.kernel.{CommutativeMonoid, CommutativeSemigroup}
 import alleycats._
 import shapeless.{Cached, Refute}
 import util.VersionSpecific.Lazy
@@ -102,10 +103,22 @@ object auto {
     ): Semigroup[A] = ev.value
   }
 
+  object commutativeSemigroup {
+    implicit def kittensMkCommutativeSemigroup[A](
+      implicit refute: Refute[CommutativeSemigroup[A]], ev: Lazy[MkCommutativeSemigroup[A]]
+    ): CommutativeSemigroup[A] = ev.value
+  }
+
   object monoid {
     implicit def kittensMkMonoid[A](
       implicit refute: Refute[Monoid[A]], ev: Lazy[MkMonoid[A]]
     ): Monoid[A] = ev.value
+  }
+
+  object commutativeMonoid {
+    implicit def kittensMkCommutativeMonoid[A](
+      implicit refute: Refute[CommutativeMonoid[A]], ev: Lazy[MkCommutativeMonoid[A]]
+    ): CommutativeMonoid[A] = ev.value
   }
 
   object semigroupK {
@@ -283,10 +296,22 @@ object cached {
     ): Semigroup[A] = cached.value
   }
 
+  object commutativeSemigroup {
+    implicit def kittensMkCommutativeSemigroup[A](
+      implicit refute: Refute[CommutativeSemigroup[A]], cached: Cached[MkCommutativeSemigroup[A]]
+    ): CommutativeSemigroup[A] = cached.value
+  }
+
   object monoid {
     implicit def kittensMkMonoid[A](
       implicit refute: Refute[Monoid[A]], cached: Cached[MkMonoid[A]]
     ): Monoid[A] = cached.value
+  }
+
+  object commutativeMonoid {
+    implicit def kittensMkCommutativeMonoid[A](
+      implicit refute: Refute[CommutativeMonoid[A]], cached: Cached[MkCommutativeMonoid[A]]
+    ): CommutativeMonoid[A] = cached.value
   }
 
   object semigroupK {
@@ -369,11 +394,15 @@ object semi {
 
   def monoid[A](implicit ev: Lazy[MkMonoid[A]]): Monoid[A] = ev.value
 
+  def commutativeMonoid[A](implicit ev: Lazy[MkCommutativeMonoid[A]]): CommutativeMonoid[A] = ev.value
+
   def monoidK[F[_]](implicit F: Lazy[MkMonoidK[F]]): MonoidK[F] = F.value
 
   def pure[F[_]](implicit F: Lazy[MkPure[F]]): Pure[F] = F.value
 
   def semigroup[T](implicit ev: Lazy[MkSemigroup[T]]): Semigroup[T] = ev.value
+
+  def commutativeSemigroup[T](implicit ev: Lazy[MkCommutativeSemigroup[T]]): CommutativeSemigroup[T] = ev.value
 
   def semigroupK[F[_]](implicit F: Lazy[MkSemigroupK[F]]): SemigroupK[F] = F.value
 

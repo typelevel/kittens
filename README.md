@@ -32,8 +32,8 @@ Instances derivations are available for the following type classes:
 * `Foldable` 
 * `Traverse` 
 * `Show` 
-* `Monoid` and `MonoidK`
-* `Semigroup` and `SemigroupK`
+* `Monoid`, `CommutativeMonoid`, and `MonoidK`
+* `Semigroup`, `CommutativeSemigroup`, and `SemigroupK`
 * `Empty` (defined in Alleycats)
 
 ### Auto derived Examples

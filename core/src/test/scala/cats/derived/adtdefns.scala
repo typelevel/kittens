@@ -212,6 +212,19 @@ object TestDefns {
       } yield Foo(i, b))
   }
 
+  final case class CommutativeFoo(i: Int, b: Option[Long])
+  object CommutativeFoo {
+
+    implicit val cogen: Cogen[CommutativeFoo] =
+      Cogen[(Int, Option[Long])].contramap(x => (x.i, x.b))
+
+    implicit val arbitrary: Arbitrary[CommutativeFoo] =
+      Arbitrary(for {
+        i <- Arbitrary.arbitrary[Int]
+        b <- Arbitrary.arbitrary[Option[Long]]
+      } yield CommutativeFoo(i, b))
+  }
+
   case class Inner(i: Int)
   case class Outer(in: Inner)
 
@@ -446,6 +459,9 @@ object TestEqInstances {
   }
 
   implicit val eqFoo: Eq[Foo] =
+    Eq.fromUniversalEquals
+
+  implicit val eqCommutativeFoo: Eq[CommutativeFoo] =
     Eq.fromUniversalEquals
 
   implicit def eqGenericAdt[A: Eq]: Eq[GenericAdt[A]] = {

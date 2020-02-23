@@ -5,12 +5,11 @@ import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
   scalaVersion := "2.13.1",
-  crossScalaVersions := Seq("2.11.12", "2.12.10", scalaVersion.value)
+  crossScalaVersions := Seq("2.12.10", scalaVersion.value)
 )
 
-val catsVersion = "2.0.0"
+val catsVersion = "2.1.0"
 val shapelessVersion = "2.3.3"
-val disciplineVersion = "1.0.0-RC1"
 val testKitVersion = "1.0.0-RC1"
 
 lazy val commonSettings = Seq(
@@ -35,7 +34,6 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %%% "cats-core"      % catsVersion,
     "org.typelevel"   %%% "alleycats-core" % catsVersion,
     "com.chuusai"     %%% "shapeless"      % shapelessVersion,
-    "org.typelevel"   %%% "discipline-scalatest" % disciplineVersion % Test,
     "org.typelevel"   %%% "cats-testkit-scalatest" % testKitVersion % Test,
     compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
   ),

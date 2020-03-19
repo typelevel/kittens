@@ -20,7 +20,8 @@ import cats.syntax.AllSyntax
 import cats.tests.{StrictCatsEquality, TestSettings}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import org.typelevel.discipline.scalatest.Discipline
+import org.scalatestplus.scalacheck.Checkers
+import org.typelevel.discipline.scalatest.FunSuiteDiscipline
 
 /**
  * An opinionated stack of traits to improve consistency and reduce
@@ -30,7 +31,8 @@ import org.typelevel.discipline.scalatest.Discipline
  */
 abstract class KittensSuite extends AnyFunSuite
   with Matchers
-  with Discipline
+  with Checkers
+  with FunSuiteDiscipline
   with TestSettings
   with AllSyntax
   with StrictCatsEquality {

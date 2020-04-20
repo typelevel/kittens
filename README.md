@@ -9,17 +9,17 @@ kittens is part of the [Typelevel][typelevel] family of projects. It is an Open 
 License v2, hosted on [GitHub][source]. Binary artefacts will be published to the [Sonatype OSS Repository Hosting
 service][sonatype] and synced to Maven Central.
 
-It is available for Scala 2.11, 2.12, 2.13, and Scala.js.
+It is available for Scala 2.12, 2.13, and Scala.js.
 
 To get started with SBT, simply add the following to your build.sbt file:
 
 ```Scala
-libraryDependencies += "org.typelevel" %% "kittens" % "2.0.0"
+libraryDependencies += "org.typelevel" %% "kittens" % "2.1.0"
 ```
 
 [![Build Status](https://api.travis-ci.org/typelevel/kittens.png?branch=master)](https://travis-ci.org/typelevel/kittens)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/typelevel/kittens)
-[![Maven Central](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.11.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/kittens_2.11)
+[![Maven Central](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.12.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/kittens_2.12)
 
 Instances derivations are available for the following type classes:
 

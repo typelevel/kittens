@@ -27,11 +27,6 @@ class EmptyKSuite extends KittensSuite {
   import EmptyKSuite._
   import TestDefns._
 
-  type LOption[A] = List[Option[A]]
-  type PList[A] = (List[A], List[A])
-  type NelOption[A] = NonEmptyList[Option[A]]
-  type BoxColor[A] = Box[Color[A]]
-
   def testEmptyK(context: String)(
     implicit lOption: EmptyK[LOption],
     pList: EmptyK[PList],
@@ -66,18 +61,28 @@ class EmptyKSuite extends KittensSuite {
   }
 
   {
-    implicit val lOption: EmptyK[LOption] = semi.emptyK
-    implicit val pList: EmptyK[PList] = semi.emptyK
-    implicit val caseClassWOption: EmptyK[CaseClassWOption] = semi.emptyK
-    implicit val nelOption: EmptyK[NelOption] = semi.emptyK
-    implicit val boxColor: EmptyK[BoxColor] = semi.emptyK
-    testEmptyK("semi")
-    illTyped("semi.emptyK[IList]")
-    illTyped("semi.emptyK[Snoc]")
+    import semiInstances._
+    testEmptyK("semiauto")
+    illTyped("semiauto.emptyK[IList]")
+    illTyped("semiauto.emptyK[Snoc]")
   }
 }
 
 object EmptyKSuite {
+  import TestDefns._
+
+  type LOption[A] = List[Option[A]]
+  type PList[A] = (List[A], List[A])
+  type NelOption[A] = NonEmptyList[Option[A]]
+  type BoxColor[A] = Box[Color[A]]
+
+  object semiInstances {
+    implicit val lOption: EmptyK[LOption] = semiauto.emptyK
+    implicit val pList: EmptyK[PList] = semiauto.emptyK
+    implicit val caseClassWOption: EmptyK[CaseClassWOption] = semiauto.emptyK
+    implicit val nelOption: EmptyK[NelOption] = semiauto.emptyK
+    implicit val boxColor: EmptyK[BoxColor] = semiauto.emptyK
+  }
 
   final case class Color[A](r: Int, g: Int, b: Int)
   object Color {

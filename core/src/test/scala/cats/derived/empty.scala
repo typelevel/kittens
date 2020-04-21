@@ -26,9 +26,6 @@ class EmptySuite extends KittensSuite {
   import EmptySuite._
   import TestDefns._
 
-  // `Monoid[Option[A]]` gives us `Empty[Option[A]]` but it requires a `Semigroup[A]`.
-  implicit def emptyOption[A]: Empty[Option[A]] = Empty(None)
-
   def testEmpty(context: String)(
     implicit foo: Empty[Foo],
     outer: Empty[Outer],
@@ -73,26 +70,30 @@ class EmptySuite extends KittensSuite {
   }
 
   {
-    semiTests.run()
+    import semiInstances._
     illTyped("semi.empty[IList[Int]]")
     illTyped("semi.empty[Snoc[Int]]")
     illTyped("semi.empty[Rgb]")
-  }
-
-  object semiTests {
-    implicit val foo: Empty[Foo] = semi.empty
-    implicit val outer: Empty[Outer] = semi.empty
-    implicit val interleaved: Empty[Interleaved[String]] = semi.empty
-    implicit val recursive: Empty[Recursive] = semi.empty
-    implicit val iList: Empty[IList[Dummy]] = semi.empty
-    implicit val snoc: Empty[Snoc[Dummy]] = semi.empty
-    implicit val box: Empty[Box[Mask]] = semi.empty
-    implicit val chain: Empty[Chain] = semi.empty
-    def run(): Unit = testEmpty("semi")
+    testEmpty("semiauto")
   }
 }
 
 object EmptySuite {
+  import TestDefns._
+
+  // `Monoid[Option[A]]` gives us `Empty[Option[A]]` but it requires a `Semigroup[A]`.
+  implicit def emptyOption[A]: Empty[Option[A]] = Empty(None)
+
+  object semiInstances {
+    implicit val foo: Empty[Foo] = semiauto.empty
+    implicit val outer: Empty[Outer] = semiauto.empty
+    implicit val interleaved: Empty[Interleaved[String]] = semiauto.empty
+    implicit val recursive: Empty[Recursive] = semiauto.empty
+    implicit val iList: Empty[IList[Dummy]] = semiauto.empty
+    implicit val snoc: Empty[Snoc[Dummy]] = semiauto.empty
+    implicit val box: Empty[Box[Mask]] = semiauto.empty
+    implicit val chain: Empty[Chain] = semiauto.empty
+  }
 
   trait Dummy
   final case class Chain(head: Int, tail: Chain)

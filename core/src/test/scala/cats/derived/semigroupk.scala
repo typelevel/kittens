@@ -26,8 +26,6 @@ class SemigroupKSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  type BoxMul[A] = Box[Mul[A]]
-
   def testSemigroupK(context: String)(
     implicit complexProduct: SemigroupK[ComplexProduct],
     caseClassWOption: SemigroupK[CaseClassWOption],
@@ -54,14 +52,21 @@ class SemigroupKSuite extends KittensSuite {
   }
 
   {
-    implicit val complexProduct: SemigroupK[ComplexProduct] = semi.semigroupK
-    implicit val caseClassWOption: SemigroupK[CaseClassWOption] = semi.semigroupK
-    implicit val boxMul: SemigroupK[BoxMul] = semi.semigroupK
-    testSemigroupK("semi")
+    import semiInstances._
+    testSemigroupK("semiauto")
   }
 }
 
 object SemigroupKSuite {
+  import TestDefns._
+
+  type BoxMul[A] = Box[Mul[A]]
+
+  object semiInstances {
+    implicit val complexProduct: SemigroupK[ComplexProduct] = semiauto.semigroupK
+    implicit val caseClassWOption: SemigroupK[CaseClassWOption] = semiauto.semigroupK
+    implicit val boxMul: SemigroupK[BoxMul] = semiauto.semigroupK
+  }
 
   final case class Mul[T](value: Int)
   object Mul {

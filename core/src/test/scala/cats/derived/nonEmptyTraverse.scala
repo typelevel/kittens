@@ -95,7 +95,7 @@ class NonEmptyTraverseSuite extends KittensSuite {
 
   {
     import semiInstances._
-    testReducible("semi")
+    testReducible("semiauto")
   }
 }
 
@@ -107,11 +107,11 @@ object NonEmptyTraverseSuite {
   type ListAndNel[A] = (List[A], NonEmptyList[A])
 
   object semiInstances {
-    implicit val iCons: NonEmptyTraverse[ICons] = semi.nonEmptyTraverse
-    implicit val tree: NonEmptyTraverse[Tree] = semi.nonEmptyTraverse
-    implicit val nelSCons: NonEmptyTraverse[NelSCons] = semi.nonEmptyTraverse
-    implicit val nelAndOne: NonEmptyTraverse[NelAndOne] = semi.nonEmptyTraverse
-    implicit val listAndNel: NonEmptyTraverse[ListAndNel] = semi.nonEmptyTraverse
-    implicit val interleaved: NonEmptyTraverse[Interleaved] = semi.nonEmptyTraverse
+    implicit val iCons: NonEmptyTraverse[ICons] = semiauto.nonEmptyTraverse
+    implicit val tree: NonEmptyTraverse[Tree] = semiauto.nonEmptyTraverse
+    implicit val nelSCons: NonEmptyTraverse[NelSCons] = semiauto.nonEmptyTraverse
+    implicit val nelAndOne: NonEmptyTraverse[NelAndOne] = semiauto.nonEmptyTraverse
+    implicit val listAndNel: NonEmptyTraverse[ListAndNel] = semiauto.nonEmptyTraverse
+    implicit val interleaved: NonEmptyTraverse[Interleaved] = semiauto.nonEmptyTraverse
   }
 }

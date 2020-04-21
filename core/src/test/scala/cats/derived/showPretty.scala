@@ -153,8 +153,8 @@ class ShowPrettySuite extends KittensSuite {
 
   {
     import semiInstances._
-    testShowPretty("semi")
     illTyped("semi.showPretty[Tree[Int]]")
+    testShowPretty("semiauto")
   }
 }
 
@@ -171,14 +171,14 @@ object ShowPrettySuite {
   }
 
   object semiInstances {
-    implicit val foo: ShowPretty[Foo] = semi.showPretty
-    implicit val outer: ShowPretty[Outer] = semi.showPretty
-    implicit val intTree: ShowPretty[IntTree] = semi.showPretty
-    implicit val genericAdt: ShowPretty[GenericAdt[Int]] = semi.showPretty
-    implicit val people: ShowPretty[People] = semi.showPretty
-    implicit val listFieldChild: ShowPretty[ListFieldChild] = semi.showPretty
-    implicit val listField: ShowPretty[ListField] = semi.showPretty
-    implicit val interleaved: ShowPretty[Interleaved[Int]] = semi.showPretty
-    implicit val boxBogus: ShowPretty[Box[Bogus]] = semi.showPretty
+    implicit val foo: ShowPretty[Foo] = semiauto.showPretty
+    implicit val outer: ShowPretty[Outer] = semiauto.showPretty
+    implicit val intTree: ShowPretty[IntTree] = semiauto.showPretty
+    implicit val genericAdt: ShowPretty[GenericAdt[Int]] = semiauto.showPretty
+    implicit val people: ShowPretty[People] = semiauto.showPretty
+    implicit val listFieldChild: ShowPretty[ListFieldChild] = semiauto.showPretty
+    implicit val listField: ShowPretty[ListField] = semiauto.showPretty
+    implicit val interleaved: ShowPretty[Interleaved[Int]] = semiauto.showPretty
+    implicit val boxBogus: ShowPretty[Box[Bogus]] = semiauto.showPretty
   }
 }

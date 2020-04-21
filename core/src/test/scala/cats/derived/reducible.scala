@@ -85,7 +85,7 @@ class ReducibleSuite extends KittensSuite {
 
   {
     import semiInstances._
-    testReducible("semi")
+    testReducible("semiauto")
   }
 }
 
@@ -98,13 +98,13 @@ object ReducibleSuite {
   type BoxZipper[A] = Box[Zipper[A]]
 
   object semiInstances {
-    implicit val iCons: Reducible[ICons] = semi.reducible
-    implicit val tree: Reducible[Tree] = semi.reducible
-    implicit val nelSCons: Reducible[NelSCons] = semi.reducible
-    implicit val nelAndOne: Reducible[NelAndOne] = semi.reducible
-    implicit val listAndNel: Reducible[ListAndNel] = semi.reducible
-    implicit val interleaved: Reducible[Interleaved] = semi.reducible
-    implicit val boxZipper: Reducible[BoxZipper] = semi.reducible
+    implicit val iCons: Reducible[ICons] = semiauto.reducible
+    implicit val tree: Reducible[Tree] = semiauto.reducible
+    implicit val nelSCons: Reducible[NelSCons] = semiauto.reducible
+    implicit val nelAndOne: Reducible[NelAndOne] = semiauto.reducible
+    implicit val listAndNel: Reducible[ListAndNel] = semiauto.reducible
+    implicit val interleaved: Reducible[Interleaved] = semiauto.reducible
+    implicit val boxZipper: Reducible[BoxZipper] = semiauto.reducible
   }
 
   final case class Zipper[+A](left: List[A], focus: A, right: List[A])

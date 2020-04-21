@@ -22,12 +22,9 @@ import cats.laws.discipline.{ApplyTests, SerializableTests}
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
 
 class ApplySuite extends KittensSuite {
+  import ApplySuite._
   import TestDefns._
   import TestEqInstances._
-
-  type OptList[A] = Option[List[A]]
-  type AndInt[A] = (A, Int)
-  type ListBox[A] = List[Box[A]]
 
   def testApply(context: String)(
     implicit caseClassWOption: Apply[CaseClassWOption],
@@ -58,12 +55,23 @@ class ApplySuite extends KittensSuite {
   }
 
   {
-    implicit val caseClassWOption: Apply[CaseClassWOption] = semi.apply
-    implicit val optList: Apply[OptList] = semi.apply
-    implicit val andInt: Apply[AndInt] = semi.apply
-    implicit val interleaved: Apply[Interleaved] = semi.apply
-    implicit val listBox: Apply[ListBox] = semi.apply
-    testApply("semi")
+    import semiInstances._
+    testApply("semiauto")
   }
 }
 
+object ApplySuite {
+  import TestDefns._
+
+  type OptList[A] = Option[List[A]]
+  type AndInt[A] = (A, Int)
+  type ListBox[A] = List[Box[A]]
+
+  object semiInstances {
+    implicit val caseClassWOption: Apply[CaseClassWOption] = semiauto.apply
+    implicit val optList: Apply[OptList] = semiauto.apply
+    implicit val andInt: Apply[AndInt] = semiauto.apply
+    implicit val interleaved: Apply[Interleaved] = semiauto.apply
+    implicit val listBox: Apply[ListBox] = semiauto.apply
+  }
+}

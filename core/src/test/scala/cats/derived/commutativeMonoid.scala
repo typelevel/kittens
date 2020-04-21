@@ -54,9 +54,9 @@ class CommutativeMonoidSuite extends KittensSuite {
   }
 
   {
-    implicit val foo: CommutativeMonoid[CommutativeFoo] = semi.commutativeMonoid
-    implicit lazy val recursive: CommutativeMonoid[Recursive] = semi.commutativeMonoid
-    implicit val box: CommutativeMonoid[Box[Mul]] = semi.commutativeMonoid
+    implicit val foo: CommutativeMonoid[CommutativeFoo] = semiauto.commutativeMonoid
+    implicit lazy val recursive: CommutativeMonoid[Recursive] = semiauto.commutativeMonoid
+    implicit val box: CommutativeMonoid[Box[Mul]] = semiauto.commutativeMonoid
     testCommutativeMonoid("semi")
   }
 }

@@ -55,7 +55,7 @@ cat: Cat[Int] = Cat(1,List(2, 3))
 ```scala
 scala> implicit val fc: Functor[Cat] = { 
           import auto.functor._           
-          semi.functor }
+          semiauto.functor }
 FC: cats.Functor[Cat] = cats.derived.MkFunctor2$$anon$4@1c60573f
 
 scala> cat.map(_ + 1)
@@ -82,7 +82,7 @@ scala> implicit val addressShow: Show[Address] = new Show[Address] {
 
 scala> implicit val peopleShow: Show[People] = {
             import auto.show._
-            semi.show
+            semiauto.show
         } //auto derive Show for People
 
 scala> mike.show
@@ -163,7 +163,7 @@ import cats.derived
 
 implicit val showFoo: Show[Foo] = {
    import derived.auto.show._
-   derived.semi.show
+   derived.semiauto.show
 }
 ```
 This will respect all existing instances even if the field is a type constructor. For example `Show[List[A]]` will use the native `Show` instance for `List` and derived instance for `A`. And it manually caches the result to the `val showFoo`. Downside user will need to write one for every type they directly need a `Show` instance
@@ -188,7 +188,7 @@ Use this one with caution. It caches the derived instance globally. So it's only
 
 3. manual semi
 ```scala
-implicit val showFoo: Show[Foo] =  derived.semi.show
+implicit val showFoo: Show[Foo] =  derived.semiauto.show
 ```
 It has the same downside as the recommenced semi-auto practice but also suffers from the type constructor field issue. I.e. if a field type is a type constructor whose native instance relies on the instance of the parameter type, this approach will by default derive an instance for the type constructor one. To overcome this user have to first derive the instance for type parameter. 
 e.g.  given
@@ -198,8 +198,8 @@ case class Bar(a: String)
 ```
 Since the `bars` field of `Foo` is a `List` of `Bar` which breaks the chains of auto derivation, you will need to derive `Bar` first and then `Foo`
 ```scala
-implicit val showBar: Show[Bar] =  semi.show
-implicit val showFoo: Show[Foo] =  semi.show
+implicit val showBar: Show[Bar] =  semiauto.show
+implicit val showFoo: Show[Foo] =  semiauto.show
 ```
 This way the native instance for `Show[List]` would be used.
 

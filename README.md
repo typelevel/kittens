@@ -6,7 +6,7 @@ algebraic data types using [shapeless][shapeless]-based automatic type class der
 ![kittens image](http://plastic-idolatry.com/erik/kittens2x.png)
 
 kittens is part of the [Typelevel][typelevel] family of projects. It is an Open Source project under the Apache
-License v2, hosted on [GitHub][source]. Binary artefacts will be published to the [Sonatype OSS Repository Hosting
+License v2, hosted on [GitHub][source]. Binary artifacts will be published to the [Sonatype OSS Repository Hosting
 service][sonatype] and synced to Maven Central.
 
 It is available for Scala 2.12, 2.13, and Scala.js.

@@ -72,15 +72,15 @@ class SequenceSuite extends KittensSuite {
   test("sequencing record of Option")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
       val expected = for (a <- x; b <- y; c <- z)
-        yield (Symbol("a") ->> a) :: (Symbol("b") ->> b) :: (Symbol("c") ->> c) :: HNil
-      ((Symbol("a") ->> x) :: (Symbol("b") ->> y) :: (Symbol("c") ->> z) :: HNil).sequence == expected
+        yield ("a" ->> a) :: ("b" ->> b) :: ("c" ->> c) :: HNil
+      (("a" ->> x) :: ("b" ->> y) :: ("c" ->> z) :: HNil).sequence == expected
     }
   })
 
   test("sequencing record of Option using RecordArgs")(check {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
       val expected = for (a <- x; b <- y; c <- z)
-        yield (Symbol("a") ->> a) :: (Symbol("b") ->> b) :: (Symbol("c") ->> c) :: HNil
+        yield ("a" ->> a) :: ("b" ->> b) :: ("c" ->> c) :: HNil
       sequenceRecord(a = x, b = y, c = z) == expected
     }
   })
@@ -88,8 +88,8 @@ class SequenceSuite extends KittensSuite {
   test("sequencing record of Either")(check {
     forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
       val expected = for (a <- x; b <- y; c <- z)
-        yield (Symbol("a") ->> a) :: (Symbol("b") ->> b) :: (Symbol("c") ->> c) :: HNil
-      ((Symbol("a") ->> x) :: (Symbol("b") ->> y) :: (Symbol("c") ->> z) :: HNil).sequence == expected
+        yield ("a" ->> a) :: ("b" ->> b) :: ("c" ->> c) :: HNil
+      (("a" ->> x) :: ("b" ->> y) :: ("c" ->> z) :: HNil).sequence == expected
     }
   })
 
@@ -98,7 +98,7 @@ class SequenceSuite extends KittensSuite {
     val f2 = (_: String).reverse
     val f3 = (_: String).toDouble
     val f = sequenceRecord(a = f1, b = f2, c = f3)
-    val expected = (Symbol("a") ->> 4) :: (Symbol("b") ->> "0.24") :: (Symbol("c") ->> 42.0) :: HNil
+    val expected = ("a" ->> 4) :: ("b" ->> "0.24") :: ("c" ->> 42.0) :: HNil
     assert(f("42.0") == expected)
   }
 
@@ -107,7 +107,7 @@ class SequenceSuite extends KittensSuite {
     val f2 = ((_: String).reverse) andThen Option.apply
     val f3 = ((_: String).toDouble) andThen Option.apply
     val f = sequenceRecord(a = Kleisli(f1), b = Kleisli(f2), c = Kleisli(f3))
-    val expected = Some((Symbol("a") ->> 4) :: (Symbol("b") ->> "0.24") :: (Symbol("c") ->> 42.0) :: HNil)
+    val expected = Some(("a" ->> 4) :: ("b" ->> "0.24") :: ("c" ->> 42.0) :: HNil)
     assert(f.run("42.0") == expected)
   }
 
@@ -159,5 +159,5 @@ class SequenceSuite extends KittensSuite {
 }
 
 object SequenceSuite {
-  val recordSequencer = the[RecordSequencer[Record.`'a -> Option[Int], 'b -> Option[String]`.T]]
+  val recordSequencer = the[RecordSequencer[Record.`"a" -> Option[Int], "b" -> Option[String]`.T]]
 }

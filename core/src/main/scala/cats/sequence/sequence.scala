@@ -5,10 +5,10 @@
  */
 package cats.sequence
 
-import cats.{Applicative, Apply, Functor}
+import cats.{Applicative, Apply, Functor, Invariant, InvariantMonoidal}
 import shapeless._
 import shapeless.ops.hlist.{Align, ZipWithKeys}
-import shapeless.ops.record.{Keys, UnzipFields}
+import shapeless.ops.record.{Keys, UnzipFields, Values}
 
 import scala.annotation.implicitNotFound
 
@@ -28,30 +28,30 @@ private[sequence] abstract class MkHConsSequencer {
   }
 
   implicit def mkHConsSequencer[F0[_], H, FT <: HList, T <: HList](
-    implicit tailSequencer: Aux[FT, F0, T], F: Apply[F0]
+    implicit tailSequencer: Aux[FT, F0, T], F: InvariantMonoidal[F0]
   ): Aux[F0[H] :: FT, F0, H :: T] = new Sequencer[F0[H] :: FT] {
     type F[X] = F0[X]
     type LOut = H :: T
-    def apply(hl: F[H] :: FT) = F.map2(hl.head, tailSequencer(hl.tail))(_ :: _)
+    def apply(hl: F[H] :: FT) = F.imap(F.product(hl.head, tailSequencer(hl.tail)))(p => p._1 :: p._2)(hl => (hl.head, hl.tail))
   }
 }
 
 object Sequencer extends MkHConsSequencer {
 
   implicit def mkHNilSequencer[F0[_]](
-    implicit F: Applicative[F0]
+    implicit F: InvariantMonoidal[F0]
   ): Aux[HNil, F0, HNil] = new Sequencer[HNil] {
     type F[X] = F0[X]
     type LOut = HNil
-    def apply(nil: HNil) = F.pure(nil)
+    def apply(nil: HNil) = F.point(nil)
   }
 
   implicit def mkSingletonSequencer[F0[_], H](
-    implicit F: Functor[F0]
+    implicit F: Invariant[F0]
   ): Aux[F0[H] :: HNil, F0, H :: HNil] = new Sequencer[F0[H] :: HNil] {
     type F[X] = F0[X]
     type LOut = H :: HNil
-    def apply(singleton: F[H] :: HNil) = F.map(singleton.head)(_ :: HNil)
+    def apply(singleton: F[H] :: HNil) = F.imap(singleton.head)(_ :: HNil)(_.head)
   }
 }
 
@@ -64,14 +64,15 @@ trait RecordSequencer[L <: HList] extends Serializable {
 object RecordSequencer {
   type Aux[L <: HList, Out0] = RecordSequencer[L] { type Out = Out0 }
 
-  implicit def mkRecordSequencer[R <: HList, K <: HList, V <: HList, F[_], VOut <: HList](
+  implicit def mkRecordSequencer[R <: HList, K <: HList, V <: HList, F[_], VOut <: HList, ZOut <: HList](
     implicit unzip: UnzipFields.Aux[R, K, V],
     valueSequencer: Sequencer.Aux[V, F, VOut],
-    F: Functor[F],
-    zip: ZipWithKeys[K, VOut]
-  ): RecordSequencer.Aux[R, F[zip.Out]] = new RecordSequencer[R] {
+    F: Invariant[F],
+    zip: ZipWithKeys.Aux[K, VOut, ZOut],
+    values: Values.Aux[ZOut, VOut]
+  ): RecordSequencer.Aux[R, F[ZOut]] = new RecordSequencer[R] {
     type Out = F[zip.Out]
-    def apply(record: R) = F.map(valueSequencer(unzip.values(record)))(zip(_))
+    def apply(record: R) = F.imap(valueSequencer(unzip.values(record)))(zip(_))(values(_))
   }
 }
 
@@ -86,12 +87,13 @@ object GenericSequencer {
   implicit def mkGenericSequencer[L <: HList, T, SOut <: HList, FOut, LOut <: HList, F[_]](
     implicit recordSequencer: RecordSequencer.Aux[L, FOut],
     eqv: FOut =:= F[SOut],
-    F: Functor[F],
+    F: Invariant[F],
     gen: LabelledGeneric.Aux[T, LOut],
-    align: Align[SOut, LOut]
+    align: Align[SOut, LOut],
+    align2: Align[LOut, SOut]
   ): GenericSequencer.Aux[L, T, F[T]] = new GenericSequencer[L, T] {
     type Out = F[T]
-    def apply(hl: L) = F.map(recordSequencer(hl))(so => gen.from(so.align))
+    def apply(hl: L) = F.imap(recordSequencer(hl))(so => gen.from(so.align))(lo => gen.to(lo).align)
   }
 }
 

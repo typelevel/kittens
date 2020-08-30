@@ -36,11 +36,6 @@ lazy val commonSettings = Seq(
     "org.typelevel"   %%% "cats-testkit-scalatest" % testKitVersion % Test,
     compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
   ),
-  scmInfo :=
-    Some(ScmInfo(
-      url("https://github.com/typelevel/kittens"),
-      "scm:git:git@github.com:typelevel/kittens.git"
-    )),
   testOptions += Tests.Argument("-oF"),
   mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.0.0")
 ) ++ crossVersionSharedSources
@@ -74,7 +69,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
-addCommandAlias("validate", ";root;clean;test;mima")
+addCommandAlias("validate", ";root;clean;test;mima;doc")
 addCommandAlias("releaseAll", ";root;release")
 addCommandAlias("js", ";project coreJS")
 addCommandAlias("jvm", ";project coreJVM")

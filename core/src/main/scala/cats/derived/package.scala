@@ -366,14 +366,14 @@ private[derived] abstract class SemiAutoInstances {
 
 /**
   * allows semi automatically derive each instance. The derivation might need help when
-  * there are fields with type constructor that comes with instances
-  * e.g.
+  * there are fields with a type constructor that comes with instances, e.g.
   * {{{
-  * scala> case class Foo(bars: List[Bar])
   * scala> case class Bar(a: String)
+  * scala> case class Foo(bars: List[Bar])
+  * scala> import cats.instances.all._
   *
   * scala> cats.derived.semi.show[Foo].show(Foo(List(Bar("a"))))
-  * res1: String = Foo(bars = $colon$colon(head = Bar(a = a), tl$access$1 = Nil.type()))
+  * res1: String = Foo(bars = \$colon\$colon(head = Bar(a = a), tl\$access\$1 = Nil.type()))
   * }}}
   * Note that semi.show didn't respect the native `Show[List]` instance
   *

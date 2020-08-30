@@ -1,6 +1,4 @@
 import sbt._
-import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
-import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
@@ -58,7 +56,7 @@ lazy val commonJvmSettings = Seq(
   parallelExecution in Test := false
 )
 
-lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings
+lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings
 
 lazy val root = project.in(file("."))
   .aggregate(coreJS, coreJVM)
@@ -93,54 +91,16 @@ lazy val crossVersionSharedSources: Seq[Setting[_]] =
   }
 
 lazy val publishSettings = Seq(
+  publishArtifact in Test := false,
+  pomIncludeRepository := (_ => false),
   homepage := Some(url("https://github.com/typelevel/kittens")),
   licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-  publishMavenStyle := true,
-  publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false },
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (version.value.trim.endsWith("SNAPSHOT"))
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-  },
-  pomExtra :=
-    <developers>
-      <developer>
-        <id>milessabin</id>
-        <name>Miles Sabin</name>
-        <url>http://milessabin.com/blog</url>
-      </developer>
-    </developers>
-)
-
-lazy val noPublishSettings = Seq(
-  publish := {},
-  publishLocal := {},
-  publishArtifact := false
-)
-
-lazy val releaseSettings = Seq(
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    setNextVersion,
-    commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
-    pushChanges
+  scmInfo := Some(ScmInfo(url("https://github.com/typelevel/kittens"), "scm:git:git@github.com:typelevel/kittens.git")),
+  developers := List(
+    Developer("milessabin", "Miles Sabin", "", url("http://milessabin.com/blog")),
+    Developer("joroKr21", "Georgi Krastev", "joro.kr.21@gmail.com", url("https://twitter.com/Joro_Kr"))
   )
 )
 
-credentials ++= (for {
-  username <- Option(System.getenv().get("SONATYPE_USERNAME"))
-  password <- Option(System.getenv().get("SONATYPE_PASSWORD"))
-} yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
+lazy val noPublishSettings =
+  skip in publish := true

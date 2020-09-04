@@ -17,7 +17,6 @@
 package cats.derived
 
 import cats.{Eq, Monoid}
-import cats.instances.all._
 import cats.kernel.laws.discipline.{MonoidTests, SerializableTests}
 import org.scalacheck.Arbitrary
 

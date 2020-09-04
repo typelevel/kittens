@@ -18,7 +18,6 @@ package cats
 package derived
 
 import cats.data.{NonEmptyList, OneAnd}
-import cats.instances.all._
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.{ReducibleTests, SerializableTests}
 import org.scalacheck.Arbitrary

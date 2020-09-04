@@ -17,7 +17,6 @@
 package cats.derived
 
 import cats.{Eq, Eval}
-import cats.instances.all._
 import org.scalacheck.rng.Seed
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 

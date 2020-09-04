@@ -18,7 +18,6 @@ package cats
 package derived
 
 import cats.kernel.laws.discipline.{EqTests, SerializableTests}
-import cats.instances.all._
 
 class EqSuite extends KittensSuite {
   import EqSuite._

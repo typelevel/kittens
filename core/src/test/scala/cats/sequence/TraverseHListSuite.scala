@@ -5,7 +5,6 @@ package cats.sequence
 
 import cats.data._
 import cats.derived._
-import cats.instances.all._
 import org.scalacheck.Prop.forAll
 import shapeless._
 

@@ -2,7 +2,6 @@ package cats
 package derived
 
 import cats.kernel.laws.discipline.{HashTests, SerializableTests}
-import cats.instances.all._
 
 class HashSuite extends KittensSuite {
   import HashSuite._

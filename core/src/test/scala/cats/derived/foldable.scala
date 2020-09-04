@@ -16,8 +16,6 @@
 
 package cats
 package derived
-
-import cats.instances.all._
 import cats.laws.discipline.{FoldableTests, SerializableTests}
 import org.scalacheck.Arbitrary
 

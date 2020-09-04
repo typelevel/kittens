@@ -5,7 +5,6 @@
 package cats.lift
 
 import cats.{Applicative, Apply}
-import cats.implicits._
 
 import shapeless._
 import shapeless.ops.function._

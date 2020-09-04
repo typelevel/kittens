@@ -20,7 +20,6 @@ import alleycats.{EmptyK, Pure}
 import alleycats.std.all._
 import cats.data.NonEmptyList
 import cats.laws.discipline.SerializableTests
-import cats.instances.all._
 import shapeless.test.illTyped
 
 class EmptyKSuite extends KittensSuite {

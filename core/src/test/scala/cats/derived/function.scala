@@ -19,7 +19,6 @@ package cats.derived
 import cats.Eq
 import cats.laws.discipline.{DistributiveTests, ExhaustiveCheck, MonadTests}
 import cats.derived.function._
-import cats.instances.all._
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.eq._
 

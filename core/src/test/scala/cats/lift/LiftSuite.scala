@@ -4,7 +4,6 @@
 package cats.lift
 
 import cats._
-import cats.implicits._
 import cats.derived._
 import org.scalacheck.Prop.forAll
 

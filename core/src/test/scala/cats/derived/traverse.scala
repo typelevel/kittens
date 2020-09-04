@@ -1,7 +1,5 @@
 package cats
 package derived
-
-import cats.instances.all._
 import cats.laws.discipline.{SerializableTests, TraverseTests}
 
 class TraverseSuite extends KittensSuite {

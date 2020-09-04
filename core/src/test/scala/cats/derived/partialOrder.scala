@@ -16,8 +16,6 @@
 
 package cats
 package derived
-
-import cats.instances.all._
 import cats.kernel.laws.discipline.{PartialOrderTests, SerializableTests}
 import org.scalacheck.{Arbitrary, Cogen}
 

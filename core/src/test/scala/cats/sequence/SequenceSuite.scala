@@ -5,6 +5,7 @@ package cats.sequence
 
 import cats.data._
 import cats.derived._
+import cats.kernel.Semigroup
 import cats.laws.discipline.SerializableTests
 import cats.laws.discipline.arbitrary._
 import org.scalacheck.Prop.forAll
@@ -49,6 +50,17 @@ class SequenceSuite extends KittensSuite {
     val f3 = (_: String).toDouble
     val f = (f1 :: f2 :: f3 :: HNil).sequence
     assert(f("42.0") == 4 :: "0.24" :: 42.0 :: HNil)
+  }
+
+  test("sequencing Semigroup"){
+    val si = Semigroup[Int]
+    val ss = Semigroup[String]
+    val sis = (si :: ss :: HNil).sequence
+    check {
+      forAll {(i1: Int, s1: String, i2: Int, s2: String) =>
+        sis.combine(i1 :: s1 :: HNil, i2 :: s2 :: HNil) == si.combine(i1, i2) :: ss.combine(s1, s2) :: HNil
+      }
+    }
   }
 
   test("sequencing Function using ProductArgs"){
@@ -110,6 +122,19 @@ class SequenceSuite extends KittensSuite {
     assert(f.run("42.0") == expected)
   }
 
+  test("sequencing record of Semigroup through RecordArgs"){
+    val si = Semigroup[Int]
+    val ss = Semigroup[String]
+    val sis = sequenceRecord(i = si, s = ss)
+    check {
+      forAll {(i1: Int, s1: String, i2: Int, s2: String) =>
+        val rec1 = Record(i = i1, s = s1)
+        val rec2 = Record(i = i2, s = s2)
+        sis.combine(rec1, rec2) == ("i" ->> si.combine(i1, i2)) :: ("s" ->> ss.combine(s1, s2)) :: HNil
+      }
+    }
+  }
+
   case class MyCase(a: Int, b: String, c: Float)
 
   test("sequence gen for Option")(check {
@@ -152,6 +177,19 @@ class SequenceSuite extends KittensSuite {
     val myGen = sequenceGeneric[MyCase]
     val f = myGen(a = Kleisli(f1), b = Kleisli(f2), c = Kleisli(f3))
     assert(f.run("42.0") == Some(MyCase(4, "0.24", 42.0f)))
+  }
+
+  test("sequencing gen for Semigroup"){
+    val si = Semigroup[Int]
+    val ss = Semigroup[String]
+    val sf = Semigroup[Float]
+    val myGen = sequenceGeneric[MyCase]
+    val sm = myGen(a = si, b = ss, c = sf)
+    check {
+      forAll {(i1: Int, s1: String, f1: Float, i2: Int, s2: String, f2: Float) =>
+        sm.combine(MyCase(i1, s1, f1), MyCase(i2, s2, f2)) == MyCase(si.combine(i1, i2), ss.combine(s1, s2), sf.combine(f1, f2))
+      }
+    }
   }
 
   checkAll("RecordSequencer is Serializable", SerializableTests.serializable(SequenceSuite.recordSequencer))

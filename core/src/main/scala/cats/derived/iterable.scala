@@ -49,14 +49,14 @@ trait MkIterable[F[_]] {
           }
       }
 
-      def next: A =
+      def next(): A =
         if (!hasNext) Iterator.empty.next()
         else (first: @unchecked) match {
           case IterState.Return(a) =>
             first = IterState.Done
             a
           case IterState.Iterate(it) =>
-            it.next
+            it.next()
         }
     }
   }

@@ -1,7 +1,6 @@
 package cats.derived
 
 import cats.derived.util.FnGeneric
-import cats.instances.function._
 import cats.{Distributive, Functor, Monad}
 import shapeless._
 

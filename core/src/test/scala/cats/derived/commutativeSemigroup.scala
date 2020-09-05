@@ -18,7 +18,6 @@ package cats
 package derived
 
 import cats.kernel.CommutativeSemigroup
-import cats.implicits._
 import cats.kernel.laws.discipline.{CommutativeSemigroupTests, SerializableTests}
 import org.scalacheck.Arbitrary
 

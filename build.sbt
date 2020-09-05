@@ -4,11 +4,11 @@ import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel",
-  scalaVersion := "2.13.2",
-  crossScalaVersions := Seq("2.12.11", scalaVersion.value)
+  scalaVersion := "2.13.3",
+  crossScalaVersions := Seq("2.12.12", scalaVersion.value)
 )
 
-val catsVersion = "2.1.1"
+val catsVersion = "2.2.0"
 val shapelessVersion = "2.3.3"
 val testKitVersion = "2.0.0"
 
@@ -18,7 +18,8 @@ lazy val commonSettings = Seq(
     "-language:higherKinds",
     "-language:implicitConversions",
     "-unchecked",
-    "-deprecation"
+    "-deprecation",
+    "-Xfatal-warnings"
   ),
   scalacOptions ++= (
     CrossVersion.partialVersion(scalaVersion.value) match {

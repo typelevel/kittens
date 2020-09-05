@@ -18,7 +18,6 @@ package cats.derived
 
 import cats.kernel.{CommutativeMonoid, CommutativeSemigroup}
 import cats.Eq
-import cats.instances.all._
 import cats.kernel.laws.discipline.{CommutativeMonoidTests, SerializableTests}
 import org.scalacheck.Arbitrary
 

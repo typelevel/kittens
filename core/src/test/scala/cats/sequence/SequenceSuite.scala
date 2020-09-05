@@ -5,7 +5,6 @@ package cats.sequence
 
 import cats.data._
 import cats.derived._
-import cats.instances.all._
 import cats.laws.discipline.SerializableTests
 import cats.laws.discipline.arbitrary._
 import org.scalacheck.Prop.forAll

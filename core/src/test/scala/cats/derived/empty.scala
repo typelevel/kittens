@@ -18,7 +18,6 @@ package cats
 package derived
 
 import alleycats.Empty
-import cats.instances.all._
 import cats.laws.discipline.SerializableTests
 import shapeless.test.illTyped
 

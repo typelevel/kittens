@@ -18,7 +18,6 @@ package cats
 package derived
 
 import cats.kernel.laws.discipline.{OrderTests, SerializableTests}
-import cats.instances.all._
 
 class OrderSuite extends KittensSuite {
   import OrderSuite._

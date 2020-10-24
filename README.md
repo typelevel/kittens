@@ -23,18 +23,15 @@ libraryDependencies += "org.typelevel" %% "kittens" % "2.1.0"
 
 Instances derivations are available for the following type classes:
 
-* `Eq`
-* `PartialOrder`
-* `Order`
-* `Hash`
-* `Functor`
-- `Contravariant`
-* `Foldable` 
-* `Traverse` 
-* `Show` 
-* `Monoid`, `CommutativeMonoid`, and `MonoidK`
-* `Semigroup`, `CommutativeSemigroup`, and `SemigroupK`
-* `Empty` (defined in Alleycats)
+* `Eq`, `PartialOrder`, `Order`, `Hash`
+* `Show`, pretty `Show`
+* `Empty`, `EmptyK` (from Alleycats)
+* `Semigroup`, `CommutativeSemigroup`, `SemigroupK`
+* `Monoid`, `CommutativeMonoid`, `MonoidK`
+* `Functor`, `Contravariant`, `Invariant`
+* `Pure` (from Alleycats), `Apply`, `Applicative`
+* `Foldable`, `Reducible`
+* `Traverse`, `NonEmptyTraverse`
 
 ### Auto derived Examples
 

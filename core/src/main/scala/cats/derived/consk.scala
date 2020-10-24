@@ -35,7 +35,7 @@ object MkConsK extends MkConsKDerivation {
     }
 }
 
-private[derived] abstract class MkConsKDerivation extends MkConsKRight {
+abstract private[derived] class MkConsKDerivation extends MkConsKRight {
 
   implicit def mkConsKHConsLeft[G[_]]: MkConsK[λ[t => t :: G[t] :: HNil], G] =
     new MkConsK[λ[t => t :: G[t] :: HNil], G] {
@@ -43,12 +43,12 @@ private[derived] abstract class MkConsKDerivation extends MkConsKRight {
     }
 
   implicit def mkConsKCConsLeft[F[_], G[_]](implicit F: IsCCons1[F, MkConsK[*[_], G], Trivial1]): MkConsK[F, G] =
-      new MkConsK[F, G] {
-        def cons[A](head: A, tail: G[A]) = F.pack(Left(F.fh.cons(head, tail)))
-      }
+    new MkConsK[F, G] {
+      def cons[A](head: A, tail: G[A]) = F.pack(Left(F.fh.cons(head, tail)))
+    }
 }
 
-private[derived] abstract class MkConsKRight extends MkConsKGeneric {
+abstract private[derived] class MkConsKRight extends MkConsKGeneric {
 
   implicit def mkConsKHConsRight[G[_]]: MkConsK[λ[t => G[t] :: t :: HNil], G] =
     new MkConsK[λ[t => G[t] :: t :: HNil], G] {
@@ -61,7 +61,7 @@ private[derived] abstract class MkConsKRight extends MkConsKGeneric {
     }
 }
 
-private[derived] abstract class MkConsKGeneric {
+abstract private[derived] class MkConsKGeneric {
 
   implicit def mkConsKGeneric[F[_], G[_]](implicit F: Generic1[F, MkConsK[*[_], G]]): MkConsK[F, G] =
     new MkConsK[F, G] {

@@ -23,14 +23,14 @@ class EqSuite extends KittensSuite {
   import EqSuite._
   import TestDefns._
 
-  def testEq(context: String)(
-    implicit foo: Eq[Foo],
-    iList: Eq[IList[Int]],
-    inner: Eq[Inner],
-    outer: Eq[Outer],
-    interleaved: Eq[Interleaved[Int]],
-    tree: Eq[Tree[Int]],
-    recursive: Eq[Recursive]
+  def testEq(context: String)(implicit
+      foo: Eq[Foo],
+      iList: Eq[IList[Int]],
+      inner: Eq[Inner],
+      outer: Eq[Outer],
+      interleaved: Eq[Interleaved[Int]],
+      tree: Eq[Tree[Int]],
+      recursive: Eq[Recursive]
   ): Unit = {
     checkAll(s"$context.Eq[Foo]]", EqTests[Foo].eqv)
     checkAll(s"$context.Eq[IList[Int]]", EqTests[IList[Int]].eqv)

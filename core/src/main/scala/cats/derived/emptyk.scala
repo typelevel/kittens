@@ -36,7 +36,7 @@ object MkEmptyK extends MkEmptyKDerivation {
   def apply[F[_]](implicit F: MkEmptyK[F]): MkEmptyK[F] = F
 }
 
-private[derived] abstract class MkEmptyKDerivation extends MkEmptyKNestedOuter {
+abstract private[derived] class MkEmptyKDerivation extends MkEmptyKNestedOuter {
 
   implicit val mkEmptyKHNil: MkEmptyK[Const[HNil]#λ] =
     new MkEmptyK[Const[HNil]#λ] {
@@ -49,7 +49,7 @@ private[derived] abstract class MkEmptyKDerivation extends MkEmptyKNestedOuter {
     }
 }
 
-private[derived] abstract class MkEmptyKNestedOuter extends MkEmptyKNestedInner {
+abstract private[derived] class MkEmptyKNestedOuter extends MkEmptyKNestedInner {
 
   implicit def mkEmptyKNestedOuter[F[_]](implicit F: Split1[F, EmptyKOrMk, Trivial1]): MkEmptyK[F] =
     new MkEmptyK[F] {
@@ -57,7 +57,7 @@ private[derived] abstract class MkEmptyKNestedOuter extends MkEmptyKNestedInner 
     }
 }
 
-private[derived] abstract class MkEmptyKNestedInner extends MkEmptyKCons {
+abstract private[derived] class MkEmptyKNestedInner extends MkEmptyKCons {
 
   implicit def mkEmptyKNestedInner[F[_]](implicit F: Split1[F, Pure, EmptyKOrMk]): MkEmptyK[F] =
     new MkEmptyK[F] {
@@ -65,7 +65,7 @@ private[derived] abstract class MkEmptyKNestedInner extends MkEmptyKCons {
     }
 }
 
-private[derived] abstract class MkEmptyKCons extends MkEmptyKGeneric {
+abstract private[derived] class MkEmptyKCons extends MkEmptyKGeneric {
 
   implicit def mkEmptyKHCons[F[_]](implicit F: IsHCons1[F, EmptyKOrMk, MkEmptyK]): MkEmptyK[F] =
     new MkEmptyK[F] {
@@ -73,7 +73,7 @@ private[derived] abstract class MkEmptyKCons extends MkEmptyKGeneric {
     }
 }
 
-private[derived] abstract class MkEmptyKGeneric {
+abstract private[derived] class MkEmptyKGeneric {
   protected type EmptyKOrMk[F[_]] = EmptyK[F] OrElse MkEmptyK[F]
 
   implicit def mkEmptyKGeneric[F[_]](implicit F: Generic1[F, MkEmptyK]): MkEmptyK[F] =

@@ -25,22 +25,30 @@ class ContravariantSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testContravariant(context: String)(
-    implicit
-    optPred: Contravariant[OptPred],
-    treePred: Contravariant[TreePred],
-    listPred: Contravariant[ListPred],
-    genericAdtPred: Contravariant[GenericAdtPred],
-    liftSnocF: Contravariant[ListSnocF],
-    interleavedPred: Contravariant[InterleavedPred],
-    andCharPred: Contravariant[AndCharPred]
+  def testContravariant(context: String)(implicit
+      optPred: Contravariant[OptPred],
+      treePred: Contravariant[TreePred],
+      listPred: Contravariant[ListPred],
+      genericAdtPred: Contravariant[GenericAdtPred],
+      liftSnocF: Contravariant[ListSnocF],
+      interleavedPred: Contravariant[InterleavedPred],
+      andCharPred: Contravariant[AndCharPred]
   ): Unit = {
     checkAll(s"$context.Contravariant[OptPred]", ContravariantTests[OptPred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$context.Contravariant[TreePred]", ContravariantTests[TreePred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$context.Contravariant[ListPred]", ContravariantTests[ListPred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[GenericAdtPred]", ContravariantTests[GenericAdtPred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[InterleavedPred]", ContravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[AndCharPred]", ContravariantTests[AndCharPred].contravariant[MiniInt, String, Boolean])
+    checkAll(
+      s"$context.Contravariant[GenericAdtPred]",
+      ContravariantTests[GenericAdtPred].contravariant[MiniInt, String, Boolean]
+    )
+    checkAll(
+      s"$context.Contravariant[InterleavedPred]",
+      ContravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean]
+    )
+    checkAll(
+      s"$context.Contravariant[AndCharPred]",
+      ContravariantTests[AndCharPred].contravariant[MiniInt, String, Boolean]
+    )
     checkAll(s"$context.Contravariant is Serializable", SerializableTests.serializable(Contravariant[TreePred]))
 
     test(s"$context.Contravariant.contramap is stack safe") {
@@ -89,4 +97,3 @@ object ContravariantSuite {
     implicit val treePred: Contravariant[TreePred] = semiauto.contravariant
   }
 }
-

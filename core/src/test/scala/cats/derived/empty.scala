@@ -25,15 +25,15 @@ class EmptySuite extends KittensSuite {
   import EmptySuite._
   import TestDefns._
 
-  def testEmpty(context: String)(
-    implicit foo: Empty[Foo],
-    outer: Empty[Outer],
-    interleaved: Empty[Interleaved[String]],
-    recursive: Empty[Recursive],
-    iList: Empty[IList[Dummy]],
-    snoc: Empty[Snoc[Dummy]],
-    box: Empty[Box[Mask]],
-    chain: Empty[Chain]
+  def testEmpty(context: String)(implicit
+      foo: Empty[Foo],
+      outer: Empty[Outer],
+      interleaved: Empty[Interleaved[String]],
+      recursive: Empty[Recursive],
+      iList: Empty[IList[Dummy]],
+      snoc: Empty[Snoc[Dummy]],
+      box: Empty[Box[Mask]],
+      chain: Empty[Chain]
   ): Unit = {
     test(s"$context.Empty[Foo]")(assert(foo.empty == Foo(0, None)))
     test(s"$context.Empty[Outer]")(assert(outer.empty == Outer(Inner(0))))

@@ -26,16 +26,15 @@ class InvariantSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testInvariant(context: String)(
-    implicit
-    tree: Invariant[TreeF],
-    genadt: Invariant[GenericAdtF],
-    ListFToInt: Invariant[ListFToInt],
-    listSnoc: Invariant[ListSnoc],
-    interleaved: Invariant[InterleavedF],
-    andCharF: Invariant[AndCharF],
-    bivariant: Invariant[Bivariant],
-    ilist: Invariant[IList]
+  def testInvariant(context: String)(implicit
+      tree: Invariant[TreeF],
+      genadt: Invariant[GenericAdtF],
+      ListFToInt: Invariant[ListFToInt],
+      listSnoc: Invariant[ListSnoc],
+      interleaved: Invariant[InterleavedF],
+      andCharF: Invariant[AndCharF],
+      bivariant: Invariant[Bivariant],
+      ilist: Invariant[IList]
   ): Unit = {
     checkAll(s"$context.Invariant[TreeF]", InvariantTests[TreeF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[GenAdtF]", InvariantTests[GenericAdtF].invariant[MiniInt, String, Boolean])

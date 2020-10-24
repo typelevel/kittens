@@ -24,11 +24,11 @@ class SemigroupSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testSemigroup(context: String)(
-    implicit foo: Semigroup[Foo],
-    recursive: Semigroup[Recursive],
-    interleaved: Semigroup[Interleaved[Int]],
-    box: Semigroup[Box[Mul]]
+  def testSemigroup(context: String)(implicit
+      foo: Semigroup[Foo],
+      recursive: Semigroup[Recursive],
+      interleaved: Semigroup[Interleaved[Int]],
+      box: Semigroup[Box[Mul]]
   ): Unit = {
     checkAll(s"$context.Semigroup[Foo]", SemigroupTests[Foo].semigroup)
     checkAll(s"$context.Semigroup[Recursive]", SemigroupTests[Recursive].semigroup)

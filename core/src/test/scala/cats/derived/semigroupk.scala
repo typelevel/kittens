@@ -24,10 +24,10 @@ class SemigroupKSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testSemigroupK(context: String)(
-    implicit complexProduct: SemigroupK[ComplexProduct],
-    caseClassWOption: SemigroupK[CaseClassWOption],
-    boxMul: SemigroupK[BoxMul]
+  def testSemigroupK(context: String)(implicit
+      complexProduct: SemigroupK[ComplexProduct],
+      caseClassWOption: SemigroupK[CaseClassWOption],
+      boxMul: SemigroupK[BoxMul]
   ): Unit = {
     checkAll(s"$context.SemigroupK[ComplexProduct]", SemigroupKTests[ComplexProduct].semigroupK[Char])
     checkAll(s"$context.SemigroupK[CaseClassWOption]", SemigroupKTests[CaseClassWOption].semigroupK[Char])

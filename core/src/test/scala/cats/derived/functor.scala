@@ -27,15 +27,15 @@ class FunctorSuite extends KittensSuite {
   implicit val exhaustivePred: ExhaustiveCheck[Predicate[Boolean]] =
     ExhaustiveCheck.instance(List(_ => true, _ => false, identity, !_))
 
-  def testFunctor(context: String)(
-    implicit iList: Functor[IList],
-    tree: Functor[Tree],
-    genericAdt: Functor[GenericAdt],
-    optList: Functor[OptList],
-    listSnoc: Functor[ListSnoc],
-    andChar: Functor[AndChar],
-    interleaved: Functor[Interleaved],
-    nestedPred: Functor[NestedPred]
+  def testFunctor(context: String)(implicit
+      iList: Functor[IList],
+      tree: Functor[Tree],
+      genericAdt: Functor[GenericAdt],
+      optList: Functor[OptList],
+      listSnoc: Functor[ListSnoc],
+      andChar: Functor[AndChar],
+      interleaved: Functor[Interleaved],
+      nestedPred: Functor[NestedPred]
   ): Unit = {
     checkAll(s"$context.Functor[IList]", FunctorTests[IList].functor[Int, String, Long])
     checkAll(s"$context.Functor[Tree]", FunctorTests[Tree].functor[Int, String, Long])

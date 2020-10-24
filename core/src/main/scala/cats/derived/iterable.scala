@@ -51,13 +51,14 @@ trait MkIterable[F[_]] {
 
       def next(): A =
         if (!hasNext) Iterator.empty.next()
-        else (first: @unchecked) match {
-          case IterState.Return(a) =>
-            first = IterState.Done
-            a
-          case IterState.Iterate(it) =>
-            it.next()
-        }
+        else
+          (first: @unchecked) match {
+            case IterState.Return(a) =>
+              first = IterState.Done
+              a
+            case IterState.Iterate(it) =>
+              it.next()
+          }
     }
   }
 }
@@ -74,7 +75,7 @@ object MkIterable extends MkIterableDerivation {
   def apply[F[_]](implicit F: MkIterable[F]): MkIterable[F] = F
 }
 
-private[derived] abstract class MkIterableDerivation extends MkIterableNested {
+abstract private[derived] class MkIterableDerivation extends MkIterableNested {
   implicit val mkIterableHNil: MkIterable[Const[HNil]#λ] = mkIterableConst
   implicit val mkIterableCNil: MkIterable[Const[CNil]#λ] = mkIterableConst
 
@@ -99,7 +100,7 @@ private[derived] abstract class MkIterableDerivation extends MkIterableNested {
     }
 }
 
-private[derived] abstract class MkIterableNested extends MkIterableGeneric {
+abstract private[derived] class MkIterableNested extends MkIterableGeneric {
 
   implicit def mkIterableNested[F[_]](implicit F: Split1[F, MkIterable, MkIterable]): MkIterable[F] =
     new MkIterable[F] {
@@ -109,7 +110,7 @@ private[derived] abstract class MkIterableNested extends MkIterableGeneric {
     }
 }
 
-private[derived] abstract class MkIterableGeneric {
+abstract private[derived] class MkIterableGeneric {
 
   implicit def mkIterableHCons[F[_]](implicit F: IsHCons1[F, MkIterable, MkIterable]): MkIterable[F] =
     new MkIterable[F] {

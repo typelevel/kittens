@@ -26,15 +26,18 @@ class CommutativeMonoidSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testCommutativeMonoid(context: String)(
-    implicit commutativeFoo: CommutativeMonoid[CommutativeFoo],
-    recursive: CommutativeMonoid[Recursive],
-    box: CommutativeMonoid[Box[Mul]]
+  def testCommutativeMonoid(context: String)(implicit
+      commutativeFoo: CommutativeMonoid[CommutativeFoo],
+      recursive: CommutativeMonoid[Recursive],
+      box: CommutativeMonoid[Box[Mul]]
   ): Unit = {
     checkAll(s"$context.CommutativeMonoid[Foo]", CommutativeMonoidTests[CommutativeFoo].commutativeMonoid)
     checkAll(s"$context.CommutativeMonoid[Recursive]", CommutativeMonoidTests[Recursive].commutativeMonoid)
     checkAll(s"$context.CommutativeMonoid[Box[Mul]]", CommutativeMonoidTests[Box[Mul]].commutativeMonoid)
-    checkAll(s"$context.CommutativeMonoid is Serializable", SerializableTests.serializable(CommutativeMonoid[CommutativeFoo]))
+    checkAll(
+      s"$context.CommutativeMonoid is Serializable",
+      SerializableTests.serializable(CommutativeMonoid[CommutativeFoo])
+    )
 
     test(s"$context.CommutativeMonoid respects existing instances") {
       assert(box.empty == Box(Mul(1)))

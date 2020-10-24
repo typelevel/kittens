@@ -7,15 +7,15 @@ class ShowSuite extends KittensSuite {
   import ShowSuite._
   import TestDefns._
 
-  def testShow(context: String)(
-    implicit foo: Show[Foo],
-    outer: Show[Outer],
-    intTree: Show[IntTree],
-    genericAdt: Show[GenericAdt[Int]],
-    people: Show[People],
-    listField: Show[ListField],
-    interleaved: Show[Interleaved[Int]],
-    boxBogus: Show[Box[Bogus]]
+  def testShow(context: String)(implicit
+      foo: Show[Foo],
+      outer: Show[Outer],
+      intTree: Show[IntTree],
+      genericAdt: Show[GenericAdt[Int]],
+      people: Show[People],
+      listField: Show[ListField],
+      interleaved: Show[Interleaved[Int]],
+      boxBogus: Show[Box[Bogus]]
   ): Unit = {
     checkAll(s"$context.Show is Serializable", SerializableTests.serializable(Show[IntTree]))
 
@@ -33,7 +33,8 @@ class ShowSuite extends KittensSuite {
 
     test(s"$context.Show[IntTree]") {
       val value: IntTree = IntNode(IntLeaf(1), IntNode(IntNode(IntLeaf(2), IntLeaf(3)), IntLeaf(4)))
-      val shown = "IntNode(l = IntLeaf(t = 1), r = IntNode(l = IntNode(l = IntLeaf(t = 2), r = IntLeaf(t = 3)), r = IntLeaf(t = 4)))"
+      val shown =
+        "IntNode(l = IntLeaf(t = 1), r = IntNode(l = IntNode(l = IntLeaf(t = 2), r = IntLeaf(t = 3)), r = IntLeaf(t = 4)))"
       assert(value.show == shown)
     }
 
@@ -45,7 +46,8 @@ class ShowSuite extends KittensSuite {
 
     test(s"$context.Show[People]") {
       val value = People("Kai", ContactInfo("303-123-4567", Address("123 1st St", "New York", "NY")))
-      val shown = "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))"
+      val shown =
+        "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))"
       assert(value.show == shown)
     }
 

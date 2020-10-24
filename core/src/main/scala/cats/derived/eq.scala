@@ -32,7 +32,7 @@ object MkEq extends MkEqDerivation {
   def apply[A](implicit ev: MkEq[A]): MkEq[A] = ev
 }
 
-private[derived] abstract class MkEqDerivation {
+abstract private[derived] class MkEqDerivation {
   implicit val mkEqHNil: MkEq[HNil] = instance((_, _) => true)
   implicit val mkEqCNil: MkEq[CNil] = instance((_, _) => true)
 

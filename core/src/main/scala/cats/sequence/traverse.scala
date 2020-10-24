@@ -16,8 +16,9 @@ sealed trait Traverser[L <: HList, P] extends Serializable {
 object Traverser {
   type Aux[L <: HList, P, Out0] = Traverser[L, P] { type Out = Out0 }
 
-  implicit def mkTraverser[L <: HList, P, S <: HList](
-    implicit mapper: Mapper.Aux[P, L, S], sequencer: Sequencer[S]
+  implicit def mkTraverser[L <: HList, P, S <: HList](implicit
+      mapper: Mapper.Aux[P, L, S],
+      sequencer: Sequencer[S]
   ): Aux[L, P, sequencer.Out] = new Traverser[L, P] {
     type Out = sequencer.Out
     def apply(hl: L): Out = sequencer(mapper(hl))

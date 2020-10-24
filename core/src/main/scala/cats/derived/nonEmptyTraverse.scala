@@ -46,10 +46,10 @@ object MkNonEmptyTraverse extends MkNonEmptyTraverseDerivation {
   def apply[F[_]](implicit F: MkNonEmptyTraverse[F]): MkNonEmptyTraverse[F] = F
 }
 
-private[derived] abstract class MkNonEmptyTraverseDerivation extends MkNonEmptyTraverseBase {
+abstract private[derived] class MkNonEmptyTraverseDerivation extends MkNonEmptyTraverseBase {
 
-  implicit def mkNonEmptyTraverseNested[F[_]](
-    implicit F: Split1[F, NonEmptyTraverseOrMk, NonEmptyTraverseOrMk]
+  implicit def mkNonEmptyTraverseNested[F[_]](implicit
+      F: Split1[F, NonEmptyTraverseOrMk, NonEmptyTraverseOrMk]
   ): MkNonEmptyTraverse[F] = new MkNonEmptyTraverseInstance(
     MkTraverse.mkTraverseNested(F.asInstanceOf[Split1[F, TraverseOrMk, TraverseOrMk]]),
     MkReducible.mkReducibleNested(F.asInstanceOf[Split1[F, ReducibleOrMk, ReducibleOrMk]])
@@ -59,10 +59,10 @@ private[derived] abstract class MkNonEmptyTraverseDerivation extends MkNonEmptyT
   }
 }
 
-private[derived] abstract class MkNonEmptyTraverseBase extends MkNonEmptyTraverseCons {
+abstract private[derived] class MkNonEmptyTraverseBase extends MkNonEmptyTraverseCons {
 
-  implicit def mkNonEmptyTraverseHConsBase[F[_]](
-    implicit F: IsHCons1[F, NonEmptyTraverseOrMk, MkTraverse]
+  implicit def mkNonEmptyTraverseHConsBase[F[_]](implicit
+      F: IsHCons1[F, NonEmptyTraverseOrMk, MkTraverse]
   ): MkNonEmptyTraverse[F] = new MkNonEmptyTraverseInstance(
     MkTraverse.mkTraverseHCons(F.asInstanceOf[IsHCons1[F, TraverseOrMk, MkTraverse]]),
     MkReducible.mkReducibleHConsBase(F.asInstanceOf[IsHCons1[F, ReducibleOrMk, MkFoldable]])
@@ -85,15 +85,15 @@ private[derived] abstract class MkNonEmptyTraverseBase extends MkNonEmptyTravers
     }
 }
 
-private[derived] abstract class MkNonEmptyTraverseCons extends MkNonEmptyTraverseGeneric {
+abstract private[derived] class MkNonEmptyTraverseCons extends MkNonEmptyTraverseGeneric {
 
-  implicit def mkNonEmptyTraverseHCons[F[_]](
-    implicit F: IsHCons1[F, TraverseOrMk, MkNonEmptyTraverse]
+  implicit def mkNonEmptyTraverseHCons[F[_]](implicit
+      F: IsHCons1[F, TraverseOrMk, MkNonEmptyTraverse]
   ): MkNonEmptyTraverse[F] = new MkNonEmptyTraverseInstance(
     MkTraverse.mkTraverseHCons(F.asInstanceOf[IsHCons1[F, TraverseOrMk, MkTraverse]]),
     MkReducible.mkReducibleHCons(F.asInstanceOf[IsHCons1[F, FoldableOrMk, MkReducible]])
   ) {
-    def safeNonEmptyTraverse[G[_], A, B](fa: F[A])(f: A => Eval[G[B]])(implicit G: Apply[G]) = {
+    def safeNonEmptyTraverse[G[_], A, B](fa: F[A])(f: A => Eval[G[B]])(implicit G: Apply[G]) =
       Eval.now(F.unpack(fa)).flatMap { case (fha, fta) =>
         for {
           gfhb <- MkTraverse.mkSafeTraverse(F.fh)(fha)(f(_).map[G OrPure B](Left.apply))
@@ -103,11 +103,10 @@ private[derived] abstract class MkNonEmptyTraverseCons extends MkNonEmptyTravers
           case Right(fhb) => G.map(gftb)(ftb => F.pack(fhb -> ftb))
         }
       }
-    }
   }
 
-  implicit def mkNonEmptyTraverseCCons[F[_]](
-    implicit F: IsCCons1[F, NonEmptyTraverseOrMk, MkNonEmptyTraverse]
+  implicit def mkNonEmptyTraverseCCons[F[_]](implicit
+      F: IsCCons1[F, NonEmptyTraverseOrMk, MkNonEmptyTraverse]
   ): MkNonEmptyTraverse[F] = new MkNonEmptyTraverseInstance(
     MkTraverse.mkTraverseCCons(F.asInstanceOf[IsCCons1[F, TraverseOrMk, MkTraverse]]),
     MkReducible.mkReducibleCCons(F.asInstanceOf[IsCCons1[F, ReducibleOrMk, MkReducible]])
@@ -120,19 +119,19 @@ private[derived] abstract class MkNonEmptyTraverseCons extends MkNonEmptyTravers
   }
 }
 
-private[derived] abstract class MkNonEmptyTraverseGeneric {
+abstract private[derived] class MkNonEmptyTraverseGeneric {
   protected type FoldableOrMk[F[_]] = Foldable[F] OrElse MkFoldable[F]
   protected type ReducibleOrMk[F[_]] = Reducible[F] OrElse MkReducible[F]
   protected type TraverseOrMk[F[_]] = Traverse[F] OrElse MkTraverse[F]
   protected type NonEmptyTraverseOrMk[F[_]] = NonEmptyTraverse[F] OrElse MkNonEmptyTraverse[F]
   protected type OrPure[F[_], A] = Either[F[A], A]
 
-  protected abstract class MkNonEmptyTraverseInstance[F[_]](
-    mkTraverse: MkTraverse[F],
-    mkReducible: MkReducible[F]
+  abstract protected class MkNonEmptyTraverseInstance[F[_]](
+      mkTraverse: MkTraverse[F],
+      mkReducible: MkReducible[F]
   ) extends MkNonEmptyTraverse[F] {
 
-    def safeTraverse[G[_] : Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] =
+    def safeTraverse[G[_]: Applicative, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] =
       mkTraverse.safeTraverse(fa)(f)
 
     def safeReduceLeftTo[A, B](fa: F[A])(f: A => B)(g: (B, A) => Eval[B]): Eval[B] =
@@ -149,13 +148,13 @@ private[derived] abstract class MkNonEmptyTraverseGeneric {
   }
 
   protected def mkSafeNonEmptyTraverse[F[_], G[_]: Apply, A, B](
-    F: NonEmptyTraverseOrMk[F]
+      F: NonEmptyTraverseOrMk[F]
   )(fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = F.unify match {
     case mk: MkNonEmptyTraverse[F] => mk.safeNonEmptyTraverse(fa)(f)
     case other => Eval.later(other.nonEmptyTraverse(fa)(f(_).value))
   }
 
-  protected implicit def orPureApplicative[F[_]](implicit F: Apply[F]): Applicative[F OrPure *] =
+  implicit protected def orPureApplicative[F[_]](implicit F: Apply[F]): Applicative[F OrPure *] =
     new Applicative[F OrPure *] {
       def pure[A](x: A) = Right(x)
 

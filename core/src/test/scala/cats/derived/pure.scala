@@ -26,13 +26,13 @@ class PureSuite extends KittensSuite {
   import PureSuite._
   import TestDefns._
 
-  def testPure(context: String)(
-    implicit lOption: Pure[LOption],
-    pList: Pure[PList],
-    caseClassWOption: Pure[CaseClassWOption],
-    nelOption: Pure[NelOption],
-    interleaved: Pure[Interleaved],
-    boxColor: Pure[BoxColor]
+  def testPure(context: String)(implicit
+      lOption: Pure[LOption],
+      pList: Pure[PList],
+      caseClassWOption: Pure[CaseClassWOption],
+      nelOption: Pure[NelOption],
+      interleaved: Pure[Interleaved],
+      boxColor: Pure[BoxColor]
   ): Unit = {
     test(s"$context.Pure[LOption]")(assert(lOption.pure(42) == Some(42) :: Nil))
     test(s"$context.Pure[PList]")(assert(pList.pure("Scala") == ("Scala" :: Nil, "Scala" :: Nil)))

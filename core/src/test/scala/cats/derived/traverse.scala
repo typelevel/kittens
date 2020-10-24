@@ -7,22 +7,31 @@ class TraverseSuite extends KittensSuite {
   import TestEqInstances._
   import TraverseSuite._
 
-  def testTraverse(context: String)(
-    implicit iList: Traverse[IList],
-    tree: Traverse[Tree],
-    genericAdt: Traverse[GenericAdt],
-    optList: Traverse[OptList],
-    listSnoc: Traverse[ListSnoc],
-    andChar: Traverse[AndChar],
-    interleaved: Traverse[Interleaved]
+  def testTraverse(context: String)(implicit
+      iList: Traverse[IList],
+      tree: Traverse[Tree],
+      genericAdt: Traverse[GenericAdt],
+      optList: Traverse[OptList],
+      listSnoc: Traverse[ListSnoc],
+      andChar: Traverse[AndChar],
+      interleaved: Traverse[Interleaved]
   ): Unit = {
     checkAll(s"$context.Traverse[IList]", TraverseTests[IList].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$context.Traverse[Tree]", TraverseTests[Tree].traverse[Int, Double, String, Long, Option, Option])
-    checkAll(s"$context.Traverse[GenericAdt]", TraverseTests[GenericAdt].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(
+      s"$context.Traverse[GenericAdt]",
+      TraverseTests[GenericAdt].traverse[Int, Double, String, Long, Option, Option]
+    )
     checkAll(s"$context.Traverse[OptList]", TraverseTests[OptList].traverse[Int, Double, String, Long, Option, Option])
-    checkAll(s"$context.Traverse[ListSnoc]", TraverseTests[ListSnoc].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(
+      s"$context.Traverse[ListSnoc]",
+      TraverseTests[ListSnoc].traverse[Int, Double, String, Long, Option, Option]
+    )
     checkAll(s"$context.Traverse[AndChar]", TraverseTests[AndChar].traverse[Int, Double, String, Long, Option, Option])
-    checkAll(s"$context.Traverse[Interleaved]", TraverseTests[Interleaved].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(
+      s"$context.Traverse[Interleaved]",
+      TraverseTests[Interleaved].traverse[Int, Double, String, Long, Option, Option]
+    )
     checkAll(s"$context.Traverse is Serializable", SerializableTests.serializable(Traverse[Tree]))
 
     val n = 10000

@@ -24,15 +24,15 @@ class FoldableSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testFoldable(context: String)(
-    implicit iList: Foldable[IList],
-    tree: Foldable[Tree],
-    genericAdt: Foldable[GenericAdt],
-    optList: Foldable[OptList],
-    listSnoc: Foldable[ListSnoc],
-    andChar: Foldable[AndChar],
-    interleaved: Foldable[Interleaved],
-    boxNel: Foldable[BoxNel]
+  def testFoldable(context: String)(implicit
+      iList: Foldable[IList],
+      tree: Foldable[Tree],
+      genericAdt: Foldable[GenericAdt],
+      optList: Foldable[OptList],
+      listSnoc: Foldable[ListSnoc],
+      andChar: Foldable[AndChar],
+      interleaved: Foldable[Interleaved],
+      boxNel: Foldable[BoxNel]
   ): Unit = {
     checkAll(s"$context.Foldable[IList]", FoldableTests[IList].foldable[Int, Long])
     checkAll(s"$context.Foldable[Tree]", FoldableTests[Tree].foldable[Int, Long])

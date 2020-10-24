@@ -23,14 +23,14 @@ class PartialOrderSuite extends KittensSuite {
   import PartialOrderSuite._
   import TestDefns._
 
-  def testPartialOrder(context: String)(
-    implicit iList: PartialOrder[IList[Int]],
-    inner: PartialOrder[Inner],
-    outer: PartialOrder[Outer],
-    interleaved: PartialOrder[Interleaved[Int]],
-    tree: PartialOrder[Tree[Int]],
-    recursive: PartialOrder[Recursive],
-    boxKeyValue: PartialOrder[Box[KeyValue]]
+  def testPartialOrder(context: String)(implicit
+      iList: PartialOrder[IList[Int]],
+      inner: PartialOrder[Inner],
+      outer: PartialOrder[Outer],
+      interleaved: PartialOrder[Interleaved[Int]],
+      tree: PartialOrder[Tree[Int]],
+      recursive: PartialOrder[Recursive],
+      boxKeyValue: PartialOrder[Box[KeyValue]]
   ): Unit = {
     checkAll(s"$context.PartialOrder[IList[Int]]", PartialOrderTests[IList[Int]].partialOrder)
     checkAll(s"$context.PartialOrder[Inner]", PartialOrderTests[Inner].partialOrder)

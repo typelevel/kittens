@@ -23,19 +23,19 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.Checkers
 import org.typelevel.discipline.scalatest.FunSuiteDiscipline
 
-/**
- * An opinionated stack of traits to improve consistency and reduce
- * boilerplate in Kittens tests. Note that unlike the corresponding
- * CatsSuite in the Cat project, this trait does not mix in any
- * instances.
- */
-abstract class KittensSuite extends AnyFunSuite
-  with Matchers
-  with Checkers
-  with FunSuiteDiscipline
-  with TestSettings
-  with AllSyntax
-  with StrictCatsEquality {
+/** An opinionated stack of traits to improve consistency and reduce
+  * boilerplate in Kittens tests. Note that unlike the corresponding
+  * CatsSuite in the Cat project, this trait does not mix in any
+  * instances.
+  */
+abstract class KittensSuite
+    extends AnyFunSuite
+    with Matchers
+    with Checkers
+    with FunSuiteDiscipline
+    with TestSettings
+    with AllSyntax
+    with StrictCatsEquality {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     checkConfiguration

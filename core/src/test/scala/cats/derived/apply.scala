@@ -24,12 +24,12 @@ class ApplySuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testApply(context: String)(
-    implicit caseClassWOption: Apply[CaseClassWOption],
-    optList: Apply[OptList],
-    andInt: Apply[AndInt],
-    interleaved: Apply[Interleaved],
-    listBox: Apply[ListBox]
+  def testApply(context: String)(implicit
+      caseClassWOption: Apply[CaseClassWOption],
+      optList: Apply[OptList],
+      andInt: Apply[AndInt],
+      interleaved: Apply[Interleaved],
+      listBox: Apply[ListBox]
   ): Unit = {
     implicit val isoOptList: Isomorphisms[OptList] = Isomorphisms.invariant(optList)
     implicit val isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)

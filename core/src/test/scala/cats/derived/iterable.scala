@@ -34,7 +34,7 @@ class IterableSuite extends KittensSuite {
     assert(total == llargeTotal)
 
     val i2 = I.iterator
-    assert(i2 sameElements llarge.iterator)
+    assert(i2.sameElements(llarge.iterator))
   }
 
   test("(T, T, T) => Iterable[T]") {

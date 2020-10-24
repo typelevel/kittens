@@ -25,11 +25,11 @@ class MonoidSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testMonoid(context: String)(
-    implicit foo: Monoid[Foo],
-    recursive: Monoid[Recursive],
-    interleaved: Monoid[Interleaved[Int]],
-    box: Monoid[Box[Mul]]
+  def testMonoid(context: String)(implicit
+      foo: Monoid[Foo],
+      recursive: Monoid[Recursive],
+      interleaved: Monoid[Interleaved[Int]],
+      box: Monoid[Box[Mul]]
   ): Unit = {
     checkAll(s"$context.Monoid[Foo]", MonoidTests[Foo].monoid)
     checkAll(s"$context.Monoid[Recursive]", MonoidTests[Recursive].monoid)

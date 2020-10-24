@@ -35,7 +35,7 @@ object MkPure extends MkPureDerivation {
   def apply[F[_]](implicit F: MkPure[F]): MkPure[F] = F
 }
 
-private[derived] abstract class MkPureDerivation extends MkPureNested {
+abstract private[derived] class MkPureDerivation extends MkPureNested {
 
   implicit val mkPureHNil: MkPure[Const[HNil]#λ] =
     new MkPure[Const[HNil]#λ] {
@@ -48,7 +48,7 @@ private[derived] abstract class MkPureDerivation extends MkPureNested {
     }
 }
 
-private[derived] abstract class MkPureNested extends MkPureCons {
+abstract private[derived] class MkPureNested extends MkPureCons {
 
   implicit def mkPureNested[F[_]](implicit F: Split1[F, PureOrMk, PureOrMk]): MkPure[F] =
     new MkPure[F] {
@@ -56,7 +56,7 @@ private[derived] abstract class MkPureNested extends MkPureCons {
     }
 }
 
-private[derived] abstract class MkPureCons extends MkPureGeneric {
+abstract private[derived] class MkPureCons extends MkPureGeneric {
 
   implicit def mkPureHCons[F[_]](implicit F: IsHCons1[F, PureOrMk, MkPure]): MkPure[F] =
     new MkPure[F] {
@@ -64,7 +64,7 @@ private[derived] abstract class MkPureCons extends MkPureGeneric {
     }
 }
 
-private[derived] abstract class MkPureGeneric {
+abstract private[derived] class MkPureGeneric {
   protected type PureOrMk[F[_]] = Pure[F] OrElse MkPure[F]
 
   implicit def mkPureGeneric[F[_]](implicit F: Generic1[F, MkPure]): MkPure[F] =

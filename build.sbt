@@ -32,17 +32,19 @@ lazy val commonSettings = Seq(
     Resolver.sonatypeRepo("snapshots")
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel"   %%% "cats-core"      % catsVersion,
-    "org.typelevel"   %%% "alleycats-core" % catsVersion,
-    "com.chuusai"     %%% "shapeless"      % shapelessVersion,
-    "org.typelevel"   %%% "cats-testkit-scalatest" % testKitVersion % Test,
-    compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+    "org.typelevel" %%% "cats-core" % catsVersion,
+    "org.typelevel" %%% "alleycats-core" % catsVersion,
+    "com.chuusai" %%% "shapeless" % shapelessVersion,
+    "org.typelevel" %%% "cats-testkit-scalatest" % testKitVersion % Test,
+    compilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.0").cross(CrossVersion.full))
   ),
   scmInfo :=
-    Some(ScmInfo(
-      url("https://github.com/typelevel/kittens"),
-      "scm:git:git@github.com:typelevel/kittens.git"
-    )),
+    Some(
+      ScmInfo(
+        url("https://github.com/typelevel/kittens"),
+        "scm:git:git@github.com:typelevel/kittens.git"
+      )
+    ),
   testOptions += Tests.Argument("-oF"),
   mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.0.0")
 ) ++ crossVersionSharedSources
@@ -60,34 +62,38 @@ lazy val commonJvmSettings = Seq(
 
 lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings
 
-lazy val root = project.in(file("."))
+lazy val kittens = project
+  .in(file("."))
   .aggregate(coreJS, coreJVM)
   .dependsOn(coreJS, coreJVM)
-  .settings(coreSettings:_*)
+  .settings(coreSettings: _*)
   .settings(noPublishSettings)
 
-lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
+lazy val core = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
-  .settings(coreSettings:_*)
-  .jsSettings(commonJsSettings:_*)
-  .jvmSettings(commonJvmSettings:_*)
-
+  .settings(coreSettings: _*)
+  .jsSettings(commonJsSettings: _*)
+  .jvmSettings(commonJvmSettings: _*)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
-addCommandAlias("validate", ";root;clean;test;mima;doc")
-addCommandAlias("releaseAll", ";root;release")
-addCommandAlias("js", ";project coreJS")
+addCommandAlias("root", ";project kittens")
 addCommandAlias("jvm", ";project coreJVM")
-addCommandAlias("root", ";project root")
+addCommandAlias("js", ";project coreJS")
+
+addCommandAlias("validate", "all scalafmtCheckAll scalafmtSbtCheck test doc coreJVM/mimaReportBinaryIssues")
+addCommandAlias("fmt", "all scalafmtSbt scalafmtAll")
+addCommandAlias("fmtCheck", "all scalafmtSbtCheck scalafmtCheckAll")
 addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
+addCommandAlias("releaseAll", ";root;release")
 
 lazy val crossVersionSharedSources: Seq[Setting[_]] =
   Seq(Compile, Test).map { sc =>
     (unmanagedSourceDirectories in sc) ++= {
-      (unmanagedSourceDirectories in sc ).value.map {
-        dir:File => new File(dir.getPath + "_" + scalaBinaryVersion.value)
+      (unmanagedSourceDirectories in sc).value.map { dir: File =>
+        new File(dir.getPath + "_" + scalaBinaryVersion.value)
       }
     }
   }
@@ -101,9 +107,9 @@ lazy val publishSettings = Seq(
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
     if (version.value.trim.endsWith("SNAPSHOT"))
-      Some("snapshots" at nexus + "content/repositories/snapshots")
+      Some("snapshots".at(nexus + "content/repositories/snapshots"))
     else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+      Some("releases".at(nexus + "service/local/staging/deploy/maven2"))
   },
   pomExtra :=
     <developers>

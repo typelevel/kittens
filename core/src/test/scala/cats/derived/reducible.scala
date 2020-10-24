@@ -27,14 +27,14 @@ class ReducibleSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testReducible(context: String)(
-    implicit iCons: Reducible[ICons],
-    tree: Reducible[Tree],
-    nelSCons: Reducible[NelSCons],
-    nelAndOne: Reducible[NelAndOne],
-    listAndNel: Reducible[ListAndNel],
-    interleaved: Reducible[Interleaved],
-    boxZipper: Reducible[BoxZipper]
+  def testReducible(context: String)(implicit
+      iCons: Reducible[ICons],
+      tree: Reducible[Tree],
+      nelSCons: Reducible[NelSCons],
+      nelAndOne: Reducible[NelAndOne],
+      listAndNel: Reducible[ListAndNel],
+      interleaved: Reducible[Interleaved],
+      boxZipper: Reducible[BoxZipper]
   ): Unit = {
     checkAll(s"$context.Reducible[ICons]", ReducibleTests[ICons].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[Tree]", ReducibleTests[Tree].reducible[Option, Int, Long])

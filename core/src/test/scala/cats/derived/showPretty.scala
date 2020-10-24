@@ -7,15 +7,15 @@ class ShowPrettySuite extends KittensSuite {
   import ShowPrettySuite._
   import TestDefns._
 
-  def testShowPretty(context: String)(
-    implicit foo: ShowPretty[Foo],
-    outer: ShowPretty[Outer],
-    intTree: ShowPretty[IntTree],
-    genericAdt: ShowPretty[GenericAdt[Int]],
-    people: ShowPretty[People],
-    listField: ShowPretty[ListField],
-    interleaved: ShowPretty[Interleaved[Int]],
-    boxBogus: ShowPretty[Box[Bogus]]
+  def testShowPretty(context: String)(implicit
+      foo: ShowPretty[Foo],
+      outer: ShowPretty[Outer],
+      intTree: ShowPretty[IntTree],
+      genericAdt: ShowPretty[GenericAdt[Int]],
+      people: ShowPretty[People],
+      listField: ShowPretty[ListField],
+      interleaved: ShowPretty[Interleaved[Int]],
+      boxBogus: ShowPretty[Box[Bogus]]
   ): Unit = {
     checkAll(s"$context.ShowPretty is Serializable", SerializableTests.serializable(ShowPretty[IntTree]))
 

@@ -38,7 +38,7 @@ trait MkInvariant[F[_]] extends Invariant[F] {
 object MkInvariant extends MkInvariantDerivation {
   def apply[F[_]](implicit F: MkInvariant[F]): MkInvariant[F] = F
 }
-private[derived] abstract class MkInvariantDerivation extends MkInvariantNested {
+abstract private[derived] class MkInvariantDerivation extends MkInvariantNested {
   implicit val mkInvariantHNil: MkInvariant[Const[HNil]#λ] = mkInvariantConst
   implicit val mkInvariantCNil: MkInvariant[Const[CNil]#λ] = mkInvariantConst
 
@@ -48,18 +48,17 @@ private[derived] abstract class MkInvariantDerivation extends MkInvariantNested 
     }
 }
 
-private[derived] abstract class MkInvariantNested extends MkInvariantCons {
+abstract private[derived] class MkInvariantNested extends MkInvariantCons {
   implicit def mkFunctorInvariantNested[F[_]](implicit F: Split1[F, InvariantOrMk, InvariantOrMk]): MkInvariant[F] =
     new MkInvariant[F] {
       def safeImap[A, B](fa: F[A])(g: A => Eval[B])(f: B => Eval[A]): Eval[F[B]] =
-        mkImapSafe[F.O, F.I[B], F.I[A]](F.fo)(F.unpack(fa))(
-          mkImapSafe(F.fi)(_)(g)(f))(
+        mkImapSafe[F.O, F.I[B], F.I[A]](F.fo)(F.unpack(fa))(mkImapSafe(F.fi)(_)(g)(f))(
           mkImapSafe(F.fi)(_)(f)(g)
         ).map(F.pack)
     }
 }
 
-private[derived] abstract class MkInvariantCons extends MkInvariantGeneric {
+abstract private[derived] class MkInvariantCons extends MkInvariantGeneric {
   implicit def mkInvariantHCons[F[_]](implicit F: IsHCons1[F, InvariantOrMk, MkInvariant]): MkInvariant[F] =
     new MkInvariant[F] {
       def safeImap[A, B](fa: F[A])(g: A => Eval[B])(f: B => Eval[A]): Eval[F[B]] =
@@ -79,7 +78,7 @@ private[derived] abstract class MkInvariantCons extends MkInvariantGeneric {
       }
     }
 }
-private[derived] abstract class MkInvariantGeneric {
+abstract private[derived] class MkInvariantGeneric {
   protected type InvariantOrMk[F[_]] = Invariant[F] OrElse MkInvariant[F]
 
   protected def mkImapSafe[F[_], A, B](F: InvariantOrMk[F])(fa: F[B])(g: B => Eval[A])(f: A => Eval[B]): Eval[F[A]] =
@@ -94,4 +93,3 @@ private[derived] abstract class MkInvariantGeneric {
         F.fr.safeImap(F.to(fa))(g)(f).map(F.from[B])
     }
 }
-

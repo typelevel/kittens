@@ -7,13 +7,13 @@ class HashSuite extends KittensSuite {
   import HashSuite._
   import TestDefns._
 
-  def testHash(context: String)(
-    implicit iList: Hash[IList[Int]],
-    inner: Hash[Inner],
-    outer: Hash[Outer],
-    interleaved: Hash[Interleaved[Int]],
-    tree: Hash[Tree[Int]],
-    recursive: Hash[Recursive]
+  def testHash(context: String)(implicit
+      iList: Hash[IList[Int]],
+      inner: Hash[Inner],
+      outer: Hash[Outer],
+      interleaved: Hash[Interleaved[Int]],
+      tree: Hash[Tree[Int]],
+      recursive: Hash[Recursive]
   ): Unit = {
     checkAll(s"$context.Hash[IList[Int]]", HashTests[IList[Int]].hash)
     checkAll(s"$context.Hash[Inner]", HashTests[Inner].hash)

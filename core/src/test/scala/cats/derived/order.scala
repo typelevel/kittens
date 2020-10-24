@@ -23,12 +23,12 @@ class OrderSuite extends KittensSuite {
   import OrderSuite._
   import TestDefns._
 
-  def testOrder(context: String)(
-    implicit inner: Order[Inner],
-    outer: Order[Outer],
-    interleaved: Order[Interleaved[Int]],
-    recursive: Order[Recursive],
-    genericAdt: Order[GenericAdt[Int]]
+  def testOrder(context: String)(implicit
+      inner: Order[Inner],
+      outer: Order[Outer],
+      interleaved: Order[Interleaved[Int]],
+      recursive: Order[Recursive],
+      genericAdt: Order[GenericAdt[Int]]
   ): Unit = {
     checkAll(s"$context.Order[Inner]", OrderTests[Inner].order)
     checkAll(s"$context.Order[Outer]", OrderTests[Outer].order)

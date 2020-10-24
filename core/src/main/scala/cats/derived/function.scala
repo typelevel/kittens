@@ -6,8 +6,8 @@ import shapeless._
 
 object function extends FunctionInstances {
 
-  implicit def kittensMkMonadForFunctionN[F[_], L <: _ :: _ :: _](
-    implicit gen: FnGeneric.Aux[F, L]
+  implicit def kittensMkMonadForFunctionN[F[_], L <: _ :: _ :: _](implicit
+      gen: FnGeneric.Aux[F, L]
   ): Monad[F] = new Monad[F] {
     private[this] val F = Monad[L => *]
 
@@ -25,10 +25,10 @@ object function extends FunctionInstances {
   }
 }
 
-private[derived] abstract class FunctionInstances {
+abstract private[derived] class FunctionInstances {
 
-  implicit def kittensMkDistributiveForFunctionN[F[_], L <: _ :: _ :: _](
-    implicit gen: FnGeneric.Aux[F, L]
+  implicit def kittensMkDistributiveForFunctionN[F[_], L <: _ :: _ :: _](implicit
+      gen: FnGeneric.Aux[F, L]
   ): Distributive[F] = new Distributive[F] {
     private[this] val F = Distributive[L => *]
 

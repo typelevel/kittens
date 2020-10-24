@@ -24,17 +24,20 @@ class ApplicativeSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testApplicative(context: String)(
-    implicit caseClassWOption: Applicative[CaseClassWOption],
-    optList: Applicative[OptList],
-    andInt: Applicative[AndInt],
-    interleaved: Applicative[Interleaved],
-    listBox: Applicative[ListBox]
+  def testApplicative(context: String)(implicit
+      caseClassWOption: Applicative[CaseClassWOption],
+      optList: Applicative[OptList],
+      andInt: Applicative[AndInt],
+      interleaved: Applicative[Interleaved],
+      listBox: Applicative[ListBox]
   ): Unit = {
     implicit val isoOptList: Isomorphisms[OptList] = Isomorphisms.invariant(optList)
     implicit val isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)
     implicit val isoListBox: Isomorphisms[ListBox] = Isomorphisms.invariant(listBox)
-    checkAll(s"$context.Applicative[CaseClassWOption]", ApplicativeTests[CaseClassWOption].applicative[Int, String, Long])
+    checkAll(
+      s"$context.Applicative[CaseClassWOption]",
+      ApplicativeTests[CaseClassWOption].applicative[Int, String, Long]
+    )
     checkAll(s"$context.Applicative[OptList]", ApplicativeTests[OptList].applicative[Int, String, Long])
     checkAll(s"$context.Applicative[AndInt]", ApplicativeTests[AndInt].applicative[Int, String, Long])
     checkAll(s"$context.Applicative[Interleaved]", ApplicativeTests[Interleaved].applicative[Int, String, Long])

@@ -32,12 +32,13 @@ object MkOrder extends MkOrderDerivation {
   def apply[A](implicit ev: MkOrder[A]): MkOrder[A] = ev
 }
 
-private[derived] abstract class MkOrderDerivation {
+abstract private[derived] class MkOrderDerivation {
   implicit val mkOrderHNil: MkOrder[HNil] = instance((_, _) => 0)
   implicit val mkOrderCNil: MkOrder[CNil] = instance((_, _) => 0)
 
-  implicit def mkOrderHCons[H, T <: HList](
-    implicit H: Order[H] OrElse MkOrder[H], T: MkOrder[T]
+  implicit def mkOrderHCons[H, T <: HList](implicit
+      H: Order[H] OrElse MkOrder[H],
+      T: MkOrder[T]
   ): MkOrder[H :: T] = instance { case (hx :: tx, hy :: ty) =>
     val cmpH = H.unify.compare(hx, hy)
     if (cmpH != 0) cmpH else T.compare(tx, ty)

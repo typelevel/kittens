@@ -30,19 +30,22 @@ object MkCommutativeMonoid extends MkCommutativeMonoidDerivation {
   def apply[A](implicit ev: MkCommutativeMonoid[A]): MkCommutativeMonoid[A] = ev
 }
 
-private[derived] abstract class MkCommutativeMonoidDerivation {
+abstract private[derived] class MkCommutativeMonoidDerivation {
 
   implicit val mkCommutativeMonoidHNil: MkCommutativeMonoid[HNil] =
     instance[HNil](HNil)((_, _) => HNil)
 
-  implicit def mkCommutativeMonoidHCons[H, T <: HList](
-    implicit H: CommutativeMonoid[H] OrElse MkCommutativeMonoid[H], T: MkCommutativeMonoid[T]
-  ): MkCommutativeMonoid[H :: T] = instance(H.unify.empty :: T.empty) {
-    case (hx :: tx, hy :: ty) => H.unify.combine(hx, hy) :: T.combine(tx, ty)
+  implicit def mkCommutativeMonoidHCons[H, T <: HList](implicit
+      H: CommutativeMonoid[H] OrElse MkCommutativeMonoid[H],
+      T: MkCommutativeMonoid[T]
+  ): MkCommutativeMonoid[H :: T] = instance(H.unify.empty :: T.empty) { case (hx :: tx, hy :: ty) =>
+    H.unify.combine(hx, hy) :: T.combine(tx, ty)
   }
 
-
-  implicit def mkCommutativeMonoidGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkCommutativeMonoid[R]]): MkCommutativeMonoid[A] =
+  implicit def mkCommutativeMonoidGeneric[A, R](implicit
+      A: Generic.Aux[A, R],
+      R: Lazy[MkCommutativeMonoid[R]]
+  ): MkCommutativeMonoid[A] =
     new MkCommutativeMonoid[A] {
       // Cache empty case classes.
       lazy val empty = A.from(R.value.empty)

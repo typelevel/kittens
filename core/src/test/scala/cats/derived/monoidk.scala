@@ -24,10 +24,10 @@ class MonoidKSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testMonoidK(context: String)(
-    implicit complexProduct: MonoidK[ComplexProduct],
-    caseClassWOption: MonoidK[CaseClassWOption],
-    boxMul: MonoidK[BoxMul]
+  def testMonoidK(context: String)(implicit
+      complexProduct: MonoidK[ComplexProduct],
+      caseClassWOption: MonoidK[CaseClassWOption],
+      boxMul: MonoidK[BoxMul]
   ): Unit = {
     checkAll(s"$context.MonoidK[ComplexProduct]", MonoidKTests[ComplexProduct].monoidK[Char])
     checkAll(s"$context.MonoidK[CaseClassWOption]", MonoidKTests[CaseClassWOption].monoidK[Char])

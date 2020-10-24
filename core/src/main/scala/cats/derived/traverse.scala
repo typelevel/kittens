@@ -29,7 +29,7 @@ object MkTraverse extends MkTraverseDerivation {
   def apply[F[_]](implicit F: MkTraverse[F]): MkTraverse[F] = F
 }
 
-private[derived] abstract class MkTraverseDerivation extends MkTraverseNested {
+abstract private[derived] class MkTraverseDerivation extends MkTraverseNested {
   implicit val mkTraverseHNil: MkTraverse[Const[HNil]#λ] = mkTraverseConst
   implicit val mkTraverseCNil: MkTraverse[Const[CNil]#λ] = mkTraverseConst
 
@@ -40,7 +40,7 @@ private[derived] abstract class MkTraverseDerivation extends MkTraverseNested {
   }
 }
 
-private[derived] abstract class MkTraverseNested extends MkTraverseCons {
+abstract private[derived] class MkTraverseNested extends MkTraverseCons {
 
   implicit def mkTraverseNested[F[_]](implicit F: Split1[F, TraverseOrMk, TraverseOrMk]): MkTraverse[F] =
     new MkTraverse[F] {
@@ -56,7 +56,7 @@ private[derived] abstract class MkTraverseNested extends MkTraverseCons {
     }
 }
 
-private[derived] abstract class MkTraverseCons extends MkTraverseGeneric {
+abstract private[derived] class MkTraverseCons extends MkTraverseGeneric {
 
   implicit def mkTraverseHCons[F[_]](implicit F: IsHCons1[F, TraverseOrMk, MkTraverse]): MkTraverse[F] =
     new MkTraverse[F] {
@@ -103,11 +103,11 @@ private[derived] abstract class MkTraverseCons extends MkTraverseGeneric {
     }
 }
 
-private[derived] abstract class MkTraverseGeneric {
+abstract private[derived] class MkTraverseGeneric {
   protected type TraverseOrMk[F[_]] = Traverse[F] OrElse MkTraverse[F]
 
   private[derived] def mkSafeTraverse[F[_], G[_]: Applicative, A, B](
-    F: TraverseOrMk[F]
+      F: TraverseOrMk[F]
   )(fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]] = F.unify match {
     case mk: MkTraverse[F] => mk.safeTraverse(fa)(f)
     case other => other.traverse[λ[t => Eval[G[t]]], A, B](fa)(f)(Applicative[Eval].compose[G])

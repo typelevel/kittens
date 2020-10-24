@@ -26,13 +26,13 @@ class NonEmptyTraverseSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testReducible(context: String)(
-    implicit iCons: NonEmptyTraverse[ICons],
-    tree: NonEmptyTraverse[Tree],
-    nelSCons: NonEmptyTraverse[NelSCons],
-    nelAndOne: NonEmptyTraverse[NelAndOne],
-    listAndNel: NonEmptyTraverse[ListAndNel],
-    interleaved: NonEmptyTraverse[Interleaved]
+  def testReducible(context: String)(implicit
+      iCons: NonEmptyTraverse[ICons],
+      tree: NonEmptyTraverse[Tree],
+      nelSCons: NonEmptyTraverse[NelSCons],
+      nelAndOne: NonEmptyTraverse[NelAndOne],
+      listAndNel: NonEmptyTraverse[ListAndNel],
+      interleaved: NonEmptyTraverse[Interleaved]
   ): Unit = {
 
     checkAll(

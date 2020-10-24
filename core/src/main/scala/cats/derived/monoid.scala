@@ -30,17 +30,17 @@ object MkMonoid extends MkMonoidDerivation {
   def apply[A](implicit ev: MkMonoid[A]): MkMonoid[A] = ev
 }
 
-private[derived] abstract class MkMonoidDerivation {
+abstract private[derived] class MkMonoidDerivation {
 
   implicit val mkMonoidHNil: MkMonoid[HNil] =
     instance[HNil](HNil)((_, _) => HNil)
 
-  implicit def mkMonoidHCons[H, T <: HList](
-    implicit H: Monoid[H] OrElse MkMonoid[H], T: MkMonoid[T]
-  ): MkMonoid[H :: T] = instance(H.unify.empty :: T.empty) {
-    case (hx :: tx, hy :: ty) => H.unify.combine(hx, hy) :: T.combine(tx, ty)
+  implicit def mkMonoidHCons[H, T <: HList](implicit
+      H: Monoid[H] OrElse MkMonoid[H],
+      T: MkMonoid[T]
+  ): MkMonoid[H :: T] = instance(H.unify.empty :: T.empty) { case (hx :: tx, hy :: ty) =>
+    H.unify.combine(hx, hy) :: T.combine(tx, ty)
   }
-
 
   implicit def mkMonoidGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkMonoid[R]]): MkMonoid[A] =
     new MkMonoid[A] {

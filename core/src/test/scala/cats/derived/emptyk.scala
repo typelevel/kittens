@@ -26,12 +26,12 @@ class EmptyKSuite extends KittensSuite {
   import EmptyKSuite._
   import TestDefns._
 
-  def testEmptyK(context: String)(
-    implicit lOption: EmptyK[LOption],
-    pList: EmptyK[PList],
-    caseClassWOption: EmptyK[CaseClassWOption],
-    nelOption: EmptyK[NelOption],
-    boxColor: EmptyK[BoxColor]
+  def testEmptyK(context: String)(implicit
+      lOption: EmptyK[LOption],
+      pList: EmptyK[PList],
+      caseClassWOption: EmptyK[CaseClassWOption],
+      nelOption: EmptyK[NelOption],
+      boxColor: EmptyK[BoxColor]
   ): Unit = {
     test(s"$context.EmptyK[LOption]")(assert(lOption.empty == Nil))
     test(s"$context.EmptyK[PList]")(assert(pList.empty == (Nil, Nil)))

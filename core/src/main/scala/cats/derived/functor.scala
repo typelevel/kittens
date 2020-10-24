@@ -42,7 +42,7 @@ object MkFunctor extends MkFunctorDerivation {
   def apply[F[_]](implicit F: MkFunctor[F]): MkFunctor[F] = F
 }
 
-private[derived] abstract class MkFunctorDerivation extends MkFunctorNested {
+abstract private[derived] class MkFunctorDerivation extends MkFunctorNested {
   implicit val mkFunctorHNil: MkFunctor[Const[HNil]#λ] = mkFunctorConst
   implicit val mkFunctorCNil: MkFunctor[Const[CNil]#λ] = mkFunctorConst
 
@@ -52,7 +52,7 @@ private[derived] abstract class MkFunctorDerivation extends MkFunctorNested {
     }
 }
 
-private[derived] abstract class MkFunctorNested extends MkFunctorNestedContra {
+abstract private[derived] class MkFunctorNested extends MkFunctorNestedContra {
 
   implicit def mkFunctorNested[F[_]](implicit F: Split1[F, FunctorOrMk, FunctorOrMk]): MkFunctor[F] =
     new MkFunctor[F] {
@@ -62,7 +62,7 @@ private[derived] abstract class MkFunctorNested extends MkFunctorNestedContra {
     }
 }
 
-private[derived] abstract class MkFunctorNestedContra extends MkFunctorCons {
+abstract private[derived] class MkFunctorNestedContra extends MkFunctorCons {
 
   implicit def mkFunctorNestedContra[F[_]](implicit F: Split1[F, Contravariant, Contravariant]): MkFunctor[F] =
     new MkFunctor[F] {
@@ -72,7 +72,7 @@ private[derived] abstract class MkFunctorNestedContra extends MkFunctorCons {
     }
 }
 
-private[derived] abstract class MkFunctorCons extends MkFunctorGeneric {
+abstract private[derived] class MkFunctorCons extends MkFunctorGeneric {
 
   implicit def mkFunctorHCons[F[_]](implicit F: IsHCons1[F, FunctorOrMk, MkFunctor]): MkFunctor[F] =
     new MkFunctor[F] {
@@ -96,7 +96,7 @@ private[derived] abstract class MkFunctorCons extends MkFunctorGeneric {
     }
 }
 
-private[derived] abstract class MkFunctorGeneric {
+abstract private[derived] class MkFunctorGeneric {
   protected type FunctorOrMk[F[_]] = Functor[F] OrElse MkFunctor[F]
 
   protected def mkSafeMap[F[_], A, B](F: FunctorOrMk[F])(fa: F[A])(f: A => Eval[B]): Eval[F[B]] =

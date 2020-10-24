@@ -26,15 +26,21 @@ class CommutativeSemigroupSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testCommutativeSemigroup(context: String)(
-    implicit foo: CommutativeSemigroup[CommutativeFoo],
-    recursive: CommutativeSemigroup[Recursive],
-    box: CommutativeSemigroup[Box[Mul]]
+  def testCommutativeSemigroup(context: String)(implicit
+      foo: CommutativeSemigroup[CommutativeFoo],
+      recursive: CommutativeSemigroup[Recursive],
+      box: CommutativeSemigroup[Box[Mul]]
   ): Unit = {
-    checkAll(s"$context.CommutativeSemigroup[CommutativeFoo]", CommutativeSemigroupTests[CommutativeFoo].commutativeSemigroup)
+    checkAll(
+      s"$context.CommutativeSemigroup[CommutativeFoo]",
+      CommutativeSemigroupTests[CommutativeFoo].commutativeSemigroup
+    )
     checkAll(s"$context.CommutativeSemigroup[Recursive]", CommutativeSemigroupTests[Recursive].commutativeSemigroup)
     checkAll(s"$context.CommutativeSemigroup[Box[Mul]]", CommutativeSemigroupTests[Box[Mul]].commutativeSemigroup)
-    checkAll(s"$context.CommutativeSemigroup is Serializable", SerializableTests.serializable(CommutativeSemigroup[CommutativeFoo]))
+    checkAll(
+      s"$context.CommutativeSemigroup is Serializable",
+      SerializableTests.serializable(CommutativeSemigroup[CommutativeFoo])
+    )
 
     test(s"$context.CommutativeSemigroup respects existing instances") {
       assert(box.combine(Box(Mul(5)), Box(Mul(5))).content.value == 25)
@@ -62,9 +68,11 @@ class CommutativeSemigroupSuite extends KittensSuite {
 object CommutativeSemigroupSuite {
 
   // can be removed once kittens depends on a version of cats that includes https://github.com/typelevel/cats/pull/2834
-  implicit def commutativeSemigroupOption[A](implicit sa: CommutativeSemigroup[A]): CommutativeSemigroup[Option[A]] = new CommutativeSemigroup[Option[A]] {
-    def combine(x: Option[A], y: Option[A]): Option[A] = cats.instances.option.catsKernelStdMonoidForOption(sa).combine(x, y)
-  }
+  implicit def commutativeSemigroupOption[A](implicit sa: CommutativeSemigroup[A]): CommutativeSemigroup[Option[A]] =
+    new CommutativeSemigroup[Option[A]] {
+      def combine(x: Option[A], y: Option[A]): Option[A] =
+        cats.instances.option.catsKernelStdMonoidForOption(sa).combine(x, y)
+    }
 
   final case class Mul(value: Int)
   object Mul {

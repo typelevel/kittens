@@ -36,7 +36,7 @@ object MkMonoidK extends MkMonoidKDerivation {
   def apply[F[_]](implicit F: MkMonoidK[F]): MkMonoidK[F] = F
 }
 
-private[derived] abstract class MkMonoidKDerivation extends MkMonoidKNestedOuter {
+abstract private[derived] class MkMonoidKDerivation extends MkMonoidKNestedOuter {
 
   implicit val mkMonoidKHNil: MkMonoidK[Const[HNil]#λ] =
     new MkMonoidK[Const[HNil]#λ] {
@@ -51,7 +51,7 @@ private[derived] abstract class MkMonoidKDerivation extends MkMonoidKNestedOuter
     }
 }
 
-private[derived] abstract class MkMonoidKNestedOuter extends MkMonoidKNestedInner {
+abstract private[derived] class MkMonoidKNestedOuter extends MkMonoidKNestedInner {
 
   implicit def mkMonoidKNestedOuter[F[_]](implicit F: Split1[F, MonoidKOrMk, Trivial1]): MkMonoidK[F] =
     new MkMonoidK[F] {
@@ -60,7 +60,7 @@ private[derived] abstract class MkMonoidKNestedOuter extends MkMonoidKNestedInne
     }
 }
 
-private[derived] abstract class MkMonoidKNestedInner extends MkMonoidKGeneric {
+abstract private[derived] class MkMonoidKNestedInner extends MkMonoidKGeneric {
 
   implicit def mkMonoidKNestedInner[F[_]](implicit F: Split1[F, Applicative, MonoidKOrMk]): MkMonoidK[F] =
     new MkMonoidK[F] {
@@ -69,7 +69,7 @@ private[derived] abstract class MkMonoidKNestedInner extends MkMonoidKGeneric {
     }
 }
 
-private[derived] abstract class MkMonoidKGeneric {
+abstract private[derived] class MkMonoidKGeneric {
   protected type MonoidKOrMk[F[_]] = MonoidK[F] OrElse MkMonoidK[F]
 
   implicit def mkMonoidKHcons[F[_]](implicit F: IsHCons1[F, MonoidKOrMk, MkMonoidK]): MkMonoidK[F] =
@@ -81,7 +81,7 @@ private[derived] abstract class MkMonoidKGeneric {
         val (fhy, fty) = F.unpack(y)
         F.pack(F.fh.unify.combineK(fhx, fhy), F.ft.combineK(ftx, fty))
       }
-  }
+    }
 
   implicit def mkMonoidKGeneric[F[_]](implicit F: Generic1[F, MkMonoidK]): MkMonoidK[F] =
     new MkMonoidK[F] {

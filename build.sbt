@@ -146,6 +146,11 @@ lazy val releaseSettings = Seq(
   )
 )
 
+ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8")
+// No auto-publish atm. Remove this line to generate publish stage
+ThisBuild / githubWorkflowPublishTargetBranches := Seq.empty
+ThisBuild / githubWorkflowBuild := Seq(WorkflowStep.Sbt(List("validate"), id = None, name = Some("Build and Validate")))
+
 credentials ++= (for {
   username <- Option(System.getenv().get("SONATYPE_USERNAME"))
   password <- Option(System.getenv().get("SONATYPE_PASSWORD"))

@@ -33,24 +33,19 @@ object MkEq extends MkEqDerivation {
 }
 
 abstract private[derived] class MkEqDerivation {
-  implicit val mkEqHNil: MkEq[HNil] = instance((_, _) => true)
-  implicit val mkEqCNil: MkEq[CNil] = instance((_, _) => true)
+  implicit val mkEqHNil: MkEq[HNil] = (_, _) => true
+  implicit val mkEqCNil: MkEq[CNil] = (_, _) => true
 
-  implicit def mkEqHCons[H, T <: HList](implicit H: Eq[H] OrElse MkEq[H], T: MkEq[T]): MkEq[H :: T] =
-    instance { case (hx :: tx, hy :: ty) => H.unify.eqv(hx, hy) && T.eqv(tx, ty) }
+  implicit def mkEqHCons[H, T <: HList](implicit H: Eq[H] OrElse MkEq[H], T: MkEq[T]): MkEq[H :: T] = {
+    case (hx :: tx, hy :: ty) => H.unify.eqv(hx, hy) && T.eqv(tx, ty)
+  }
 
-  implicit def mkEqCCons[L, R <: Coproduct](implicit L: Eq[L] OrElse MkEq[L], R: MkEq[R]): MkEq[L :+: R] =
-    instance {
-      case (Inl(lx), Inl(ly)) => L.unify.eqv(lx, ly)
-      case (Inr(rx), Inr(ry)) => R.eqv(rx, ry)
-      case _ => false
-    }
+  implicit def mkEqCCons[L, R <: Coproduct](implicit L: Eq[L] OrElse MkEq[L], R: MkEq[R]): MkEq[L :+: R] = {
+    case (Inl(lx), Inl(ly)) => L.unify.eqv(lx, ly)
+    case (Inr(rx), Inr(ry)) => R.eqv(rx, ry)
+    case _ => false
+  }
 
   implicit def mkEqGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkEq[R]]): MkEq[A] =
-    instance((x, y) => R.value.eqv(A.to(x), A.to(y)))
-
-  private def instance[A](f: (A, A) => Boolean): MkEq[A] =
-    new MkEq[A] {
-      def eqv(x: A, y: A) = f(x, y)
-    }
+    (x, y) => R.value.eqv(A.to(x), A.to(y))
 }

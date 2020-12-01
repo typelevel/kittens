@@ -28,15 +28,15 @@ object MkShow extends MkShowDerivation {
   def apply[A](implicit ev: MkShow[A]): MkShow[A] = ev
 }
 
-abstract private[derived] class MkShowDerivation extends MkShowGenericCoproduct {
-  implicit val mkShowHNil: MkShow[HNil] = instance(_ => "")
-  implicit val mkShowCNil: MkShow[CNil] = instance(_ => "")
+sealed abstract private[derived] class MkShowDerivation extends MkShowGenericCoproduct {
+  implicit val mkShowHNil: MkShow[HNil] = _ => ""
+  implicit val mkShowCNil: MkShow[CNil] = _ => ""
 
   implicit def mkShowLabelledHCons[K <: Symbol, V, T <: HList](implicit
       K: Witness.Aux[K],
       V: Show[V] OrElse MkShow[V],
       T: MkShow[T]
-  ): MkShow[FieldType[K, V] :: T] = instance { case v :: t =>
+  ): MkShow[FieldType[K, V] :: T] = { case v :: t =>
     val name = K.value.name
     val value = V.unify.show(v)
     val tail = T.show(t)
@@ -47,7 +47,7 @@ abstract private[derived] class MkShowDerivation extends MkShowGenericCoproduct 
   implicit def mkShowCCons[L, R <: Coproduct](implicit
       L: Show[L] OrElse MkShow[L],
       R: MkShow[R]
-  ): MkShow[L :+: R] = instance {
+  ): MkShow[L :+: R] = {
     case Inl(l) => L.unify.show(l)
     case Inr(r) => R.show(r)
   }
@@ -56,22 +56,23 @@ abstract private[derived] class MkShowDerivation extends MkShowGenericCoproduct 
       A: LabelledGeneric.Aux[A, R],
       T: Typeable[A],
       R: Lazy[MkShow[R]]
-  ): MkShow[A] = instance { a =>
+  ): MkShow[A] = { a =>
     val name = T.describe.takeWhile(_ != '[')
     val fields = R.value.show(A.to(a))
     s"$name($fields)"
   }
 }
 
-abstract private[derived] class MkShowGenericCoproduct {
+sealed abstract private[derived] class MkShowGenericCoproduct {
 
   implicit def mkShowGenericCoproduct[A, R <: Coproduct](implicit
       A: Generic.Aux[A, R],
       R: Lazy[MkShow[R]]
-  ): MkShow[A] = instance(a => R.value.show(A.to(a)))
+  ): MkShow[A] = new MkShow[A] { // Using SAM here makes it not Serializable.
+    override def show(t: A) = R.value.show(A.to(t))
+  }
 
+  @deprecated("Use SAM instead", "2.2.1")
   protected def instance[A](f: A => String): MkShow[A] =
-    new MkShow[A] {
-      def show(value: A): String = f(value)
-    }
+    f(_)
 }

@@ -33,12 +33,12 @@ object MkCommutativeSemigroup extends MkCommutativeSemigroupDerivation {
 abstract private[derived] class MkCommutativeSemigroupDerivation {
 
   implicit val mkCommutativeSemigroupHNil: MkCommutativeSemigroup[HNil] =
-    instance((_, _) => HNil)
+    (_, _) => HNil
 
   implicit def mkCommutativeSemigroupHCons[H, T <: HList](implicit
       H: CommutativeSemigroup[H] OrElse MkCommutativeSemigroup[H],
       T: MkCommutativeSemigroup[T]
-  ): MkCommutativeSemigroup[H :: T] = instance { case (hx :: tx, hy :: ty) =>
+  ): MkCommutativeSemigroup[H :: T] = { case (hx :: tx, hy :: ty) =>
     H.unify.combine(hx, hy) :: T.combine(tx, ty)
   }
 
@@ -46,10 +46,5 @@ abstract private[derived] class MkCommutativeSemigroupDerivation {
       A: Generic.Aux[A, R],
       R: Lazy[MkCommutativeSemigroup[R]]
   ): MkCommutativeSemigroup[A] =
-    instance((x, y) => A.from(R.value.combine(A.to(x), A.to(y))))
-
-  private def instance[A](f: (A, A) => A): MkCommutativeSemigroup[A] =
-    new MkCommutativeSemigroup[A] {
-      def combine(x: A, y: A) = f(x, y)
-    }
+    (x, y) => A.from(R.value.combine(A.to(x), A.to(y)))
 }

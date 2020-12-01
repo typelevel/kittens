@@ -37,7 +37,7 @@ lazy val commonSettings = Seq(
     "org.typelevel" %%% "alleycats-core" % catsVersion,
     "com.chuusai" %%% "shapeless" % shapelessVersion,
     "org.typelevel" %%% "cats-testkit-scalatest" % testKitVersion % Test,
-    compilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.1").cross(CrossVersion.full))
+    compilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.2").cross(CrossVersion.full))
   ),
   scmInfo :=
     Some(

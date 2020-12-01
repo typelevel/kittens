@@ -26,15 +26,15 @@ object MkShowPretty extends MkShowPrettyDerivation {
   def apply[A](implicit ev: MkShowPretty[A]): MkShowPretty[A] = ev
 }
 
-abstract private[derived] class MkShowPrettyDerivation extends MkShowPrettyGenericCoproduct {
-  implicit val mkShowPrettyHNil: MkShowPretty[HNil] = instance(_ => Nil)
-  implicit val mkShowPrettyCNil: MkShowPretty[CNil] = instance(_ => Nil)
+sealed abstract private[derived] class MkShowPrettyDerivation extends MkShowPrettyGenericCoproduct {
+  implicit val mkShowPrettyHNil: MkShowPretty[HNil] = _ => Nil
+  implicit val mkShowPrettyCNil: MkShowPretty[CNil] = _ => Nil
 
   implicit def mkShowPrettyLabelledHCons[K <: Symbol, V, T <: HList](implicit
       K: Witness.Aux[K],
       V: Show[V] OrElse MkShowPretty[V],
       T: MkShowPretty[T]
-  ): MkShowPretty[FieldType[K, V] :: T] = instance { case v :: t =>
+  ): MkShowPretty[FieldType[K, V] :: T] = { case v :: t =>
     val name = K.value.name
     val valueLines = mkShowLines(V)(v)
     val middleLines = valueLines.drop(1)
@@ -52,7 +52,7 @@ abstract private[derived] class MkShowPrettyDerivation extends MkShowPrettyGener
   implicit def mkShowPrettyCCons[L, R <: Coproduct](implicit
       L: Show[L] OrElse MkShowPretty[L],
       R: MkShowPretty[R]
-  ): MkShowPretty[L :+: R] = instance {
+  ): MkShowPretty[L :+: R] = {
     case Inl(l) => mkShowLines(L)(l)
     case Inr(r) => R.showLines(r)
   }
@@ -61,19 +61,18 @@ abstract private[derived] class MkShowPrettyDerivation extends MkShowPrettyGener
       A: LabelledGeneric.Aux[A, R],
       T: Typeable[A],
       R: Lazy[MkShowPretty[R]]
-  ): MkShowPretty[A] = instance { a =>
+  ): MkShowPretty[A] = { a =>
     val name = T.describe.takeWhile(_ != '[')
     val lines = R.value.showLines(A.to(a)).map("  " + _)
     s"$name(" :: lines ::: ")" :: Nil
   }
 }
 
-abstract private[derived] class MkShowPrettyGenericCoproduct {
+sealed abstract private[derived] class MkShowPrettyGenericCoproduct {
 
+  @deprecated("Use SAM instead", "2.2.1")
   protected def instance[A](f: A => List[String]): MkShowPretty[A] =
-    new MkShowPretty[A] {
-      def showLines(a: A) = f(a)
-    }
+    f(_)
 
   protected def mkShowLines[A](show: Show[A] OrElse MkShowPretty[A])(a: A): List[String] =
     show.fold(
@@ -87,5 +86,7 @@ abstract private[derived] class MkShowPrettyGenericCoproduct {
   implicit def mkShowPrettyGenericCoproduct[A, R <: Coproduct](implicit
       A: Generic.Aux[A, R],
       R: Lazy[MkShowPretty[R]]
-  ): MkShowPretty[A] = instance(a => R.value.showLines(A.to(a)))
+  ): MkShowPretty[A] = new MkShowPretty[A] { // Using SAM here makes it not Serializable.
+    override def showLines(a: A) = R.value.showLines(A.to(a))
+  }
 }

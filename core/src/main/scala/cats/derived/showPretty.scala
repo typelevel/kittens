@@ -3,9 +3,10 @@ package cats.derived
 import cats.Show
 import shapeless._
 import shapeless.labelled._
-import util.VersionSpecific.{OrElse, Lazy}
+import util.VersionSpecific.{Lazy, OrElse}
 
 import scala.annotation.implicitNotFound
+import scala.reflect.ClassTag
 
 trait ShowPretty[A] extends Show[A] {
   def showLines(a: A): List[String]
@@ -57,12 +58,23 @@ sealed abstract private[derived] class MkShowPrettyDerivation extends MkShowPret
     case Inr(r) => R.showLines(r)
   }
 
-  implicit def mkShowPrettyGenericProduct[A, R <: HList](implicit
+  @deprecated("Use mkShowPrettyProduct instead", "2.2.1")
+  def mkShowPrettyGenericProduct[A, R <: HList](implicit
       A: LabelledGeneric.Aux[A, R],
       T: Typeable[A],
       R: Lazy[MkShowPretty[R]]
   ): MkShowPretty[A] = { a =>
     val name = T.describe.takeWhile(_ != '[')
+    val lines = R.value.showLines(A.to(a)).map("  " + _)
+    s"$name(" :: lines ::: ")" :: Nil
+  }
+
+  implicit def mkShowPrettyProduct[A, R <: HList](implicit
+      A: LabelledGeneric.Aux[A, R],
+      T: ClassTag[A],
+      R: Lazy[MkShowPretty[R]]
+  ): MkShowPretty[A] = { a =>
+    val name = T.runtimeClass.getSimpleName
     val lines = R.value.showLines(A.to(a)).map("  " + _)
     s"$name(" :: lines ::: ")" :: Nil
   }

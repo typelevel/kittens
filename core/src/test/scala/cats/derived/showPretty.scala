@@ -1,7 +1,7 @@
 package cats
 package derived
+
 import cats.laws.discipline.SerializableTests
-import shapeless.test.illTyped
 
 class ShowPrettySuite extends KittensSuite {
   import ShowPrettySuite._
@@ -15,6 +15,7 @@ class ShowPrettySuite extends KittensSuite {
       people: ShowPretty[People],
       listField: ShowPretty[ListField],
       interleaved: ShowPretty[Interleaved[Int]],
+      tree: ShowPretty[Tree[Int]],
       boxBogus: ShowPretty[Box[Bogus]]
   ): Unit = {
     checkAll(s"$context.ShowPretty is Serializable", SerializableTests.serializable(ShowPretty[IntTree]))
@@ -125,6 +126,32 @@ class ShowPrettySuite extends KittensSuite {
       assert(value.show == pretty)
     }
 
+    test(s"$context.ShowPretty[Tree[Int]]") {
+      val value: Tree[Int] = Node(Leaf(1), Node(Node(Leaf(2), Leaf(3)), Leaf(4)))
+      val pretty = """
+        |Node(
+        |  left = Leaf(
+        |    value = 1
+        |  ),
+        |  right = Node(
+        |    left = Node(
+        |      left = Leaf(
+        |        value = 2
+        |      ),
+        |      right = Leaf(
+        |        value = 3
+        |      )
+        |    ),
+        |    right = Leaf(
+        |      value = 4
+        |    )
+        |  )
+        |)
+      """.stripMargin.trim
+
+      assert(value.show == pretty)
+    }
+
     test(s"$context.ShowPretty respects existing instances") {
       val value = Box(Bogus(42))
       val pretty = """
@@ -140,18 +167,15 @@ class ShowPrettySuite extends KittensSuite {
   {
     import auto.showPretty._
     testShowPretty("auto")
-    illTyped("ShowPretty[Tree[Int]]")
   }
 
   {
     import cached.showPretty._
     testShowPretty("cached")
-    illTyped("ShowPretty[Tree[Int]]")
   }
 
   {
     import semiInstances._
-    illTyped("semi.showPretty[Tree[Int]]")
     testShowPretty("semiauto")
   }
 }
@@ -177,6 +201,7 @@ object ShowPrettySuite {
     implicit val listFieldChild: ShowPretty[ListFieldChild] = semiauto.showPretty
     implicit val listField: ShowPretty[ListField] = semiauto.showPretty
     implicit val interleaved: ShowPretty[Interleaved[Int]] = semiauto.showPretty
+    implicit val tree: ShowPretty[Tree[Int]] = semiauto.showPretty
     implicit val boxBogus: ShowPretty[Box[Bogus]] = semiauto.showPretty
   }
 }

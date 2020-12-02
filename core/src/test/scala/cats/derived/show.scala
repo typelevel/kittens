@@ -1,7 +1,7 @@
 package cats
 package derived
+
 import cats.laws.discipline.SerializableTests
-import shapeless.test.illTyped
 
 class ShowSuite extends KittensSuite {
   import ShowSuite._
@@ -15,6 +15,7 @@ class ShowSuite extends KittensSuite {
       people: Show[People],
       listField: Show[ListField],
       interleaved: Show[Interleaved[Int]],
+      tree: Show[Tree[Int]],
       boxBogus: Show[Box[Bogus]]
   ): Unit = {
     checkAll(s"$context.Show is Serializable", SerializableTests.serializable(Show[IntTree]))
@@ -63,6 +64,13 @@ class ShowSuite extends KittensSuite {
       assert(value.show == shown)
     }
 
+    test(s"$context.Show[Tree[Int]]") {
+      val value: Tree[Int] = Node(Leaf(1), Node(Node(Leaf(2), Leaf(3)), Leaf(4)))
+      val shown =
+        "Node(left = Leaf(value = 1), right = Node(left = Node(left = Leaf(value = 2), right = Leaf(value = 3)), right = Leaf(value = 4)))"
+      assert(value.show == shown)
+    }
+
     test(s"$context.Show respects existing instances") {
       val value = Box(Bogus(42))
       val shown = "Box(content = Blah)"
@@ -73,18 +81,15 @@ class ShowSuite extends KittensSuite {
   {
     import auto.show._
     testShow("auto")
-    illTyped("Show[Tree[Int]]")
   }
 
   {
     import cached.show._
     testShow("cached")
-    illTyped("Show[Tree[Int]]")
   }
 
   {
     import semiInstances._
-    illTyped("semi.show[Tree[Int]]")
     testShow("semiauto")
   }
 }
@@ -110,6 +115,7 @@ object ShowSuite {
     implicit val listFieldChild: Show[ListFieldChild] = semiauto.show
     implicit val listField: Show[ListField] = semiauto.show
     implicit val interleaved: Show[Interleaved[Int]] = semiauto.show
+    implicit val tree: Show[Tree[Int]] = semiauto.show
     implicit val boxBogus: Show[Box[Bogus]] = semiauto.show
   }
 }

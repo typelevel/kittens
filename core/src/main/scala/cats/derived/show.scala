@@ -3,9 +3,10 @@ package derived
 
 import shapeless._
 import shapeless.labelled._
-import util.VersionSpecific.{OrElse, Lazy}
+import util.VersionSpecific.{Lazy, OrElse}
 
 import scala.annotation.implicitNotFound
+import scala.reflect.ClassTag
 
 /** Due to a limitation in the way Shapeless' `describe` is currently
   * implemented, `Show` can't be derived for ADTs which are _both_
@@ -19,7 +20,7 @@ import scala.annotation.implicitNotFound
   * be derived.
   */
 @implicitNotFound("""Could not derive an instance of Show[A] where A = ${A}.
-Make sure that A has a Typeable instance and satisfies one of the following conditions:
+Make sure that A satisfies one of the following conditions:
   * it is a case class where all fields have a Show instance
   * it is a sealed trait where all subclasses have a Show instance""")
 trait MkShow[A] extends Show[A]
@@ -52,12 +53,23 @@ sealed abstract private[derived] class MkShowDerivation extends MkShowGenericCop
     case Inr(r) => R.show(r)
   }
 
-  implicit def mkShowGenericProduct[A, R <: HList](implicit
+  @deprecated("Use mkShowProduct instead", "2.2.1")
+  def mkShowGenericProduct[A, R <: HList](implicit
       A: LabelledGeneric.Aux[A, R],
       T: Typeable[A],
       R: Lazy[MkShow[R]]
   ): MkShow[A] = { a =>
     val name = T.describe.takeWhile(_ != '[')
+    val fields = R.value.show(A.to(a))
+    s"$name($fields)"
+  }
+
+  implicit def mkShowProduct[A, R <: HList](implicit
+      A: LabelledGeneric.Aux[A, R],
+      T: ClassTag[A],
+      R: Lazy[MkShow[R]]
+  ): MkShow[A] = { a =>
+    val name = T.runtimeClass.getSimpleName
     val fields = R.value.show(A.to(a))
     s"$name($fields)"
   }

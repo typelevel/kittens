@@ -1,17 +1,18 @@
-# kittens: automatic type class derivation for Cats and generic utility functions
+# Kittens: automatic type class derivation for Cats
 
-**kittens** is a Scala library which provides instances of type classes from the [Cats][cats] library for arbitrary
-algebraic data types using [shapeless][shapeless]-based automatic type class derivation. It also provides some utility functions related to cats.Applicative such as lift, traverse and sequence to HList, Record and arbitrary parameter list.
+**Kittens** is a Scala library which provides instances of type classes from the [Cats][cats] library for arbitrary
+algebraic data types (ADTs) using [shapeless][shapeless]-based automatic type class derivation. It also provides utility
+functions related to `Applicative` such as `lift`, `traverse` and `sequence` to `HList`, `Record` and case classes.
 
 ![kittens image](http://plastic-idolatry.com/erik/kittens2x.png)
 
-kittens is part of the [Typelevel][typelevel] family of projects. It is an Open Source project under the Apache
+Kittens is part of the [Typelevel][typelevel] family of projects. It is an Open Source project under the Apache
 License v2, hosted on [GitHub][source]. Binary artifacts will be published to the [Sonatype OSS Repository Hosting
 service][sonatype] and synced to Maven Central.
 
-It is available for Scala 2.12, 2.13, and Scala.js.
+It is available for Scala 2.12, 2.13 and Scala.js.
 
-To get started with SBT, simply add the following to your build.sbt file:
+To get started with sbt, simply add the following to your `build.sbt` file:
 
 ```Scala
 libraryDependencies += "org.typelevel" %% "kittens" % "2.2.0"
@@ -21,7 +22,7 @@ libraryDependencies += "org.typelevel" %% "kittens" % "2.2.0"
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/typelevel/kittens)
 [![Maven Central](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.12.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/kittens_2.12)
 
-Instances derivations are available for the following type classes:
+Instance derivations are available for the following type classes:
 
 * `Eq`, `PartialOrder`, `Order`, `Hash`
 * `Show`, pretty `Show`
@@ -32,11 +33,13 @@ Instances derivations are available for the following type classes:
 * `Pure` (from Alleycats), `Apply`, `Applicative`
 * `Foldable`, `Reducible`
 * `Traverse`, `NonEmptyTraverse`
+* `ConsK` (from Alleycats)
 
-### Auto derived Examples
+See the [Type class support matrix](#type-class-support-matrix) for more details.
+
+### Derivation examples
 
 ```scala
-
 scala> import cats.implicits._, cats._, cats.derived._
 
 scala> case class Cat[Food](food: Food, foods: List[Food])
@@ -44,15 +47,12 @@ defined class Cat
 
 scala> val cat = Cat(1, List(2, 3))
 cat: Cat[Int] = Cat(1,List(2, 3))
-
 ```
 
 #### Derive `Functor`
 
 ```scala
-scala> implicit val fc: Functor[Cat] = { 
-          import auto.functor._           
-          semiauto.functor }
+scala> implicit val fc: Functor[Cat] = semiauto.functor
 FC: cats.Functor[Cat] = cats.derived.MkFunctor2$$anon$4@1c60573f
 
 scala> cat.map(_ + 1)
@@ -61,41 +61,37 @@ res0: Cat[Int] = Cat(2,List(3, 4))
 
 #### Derive `Show`
 
-Note that this `Show` also print out field names, so its results might be more preferable than the default `toString`. 
+Note that the derived `Show` also prints out field names, so it might be preferable to the default `toString`: 
 
 ```scala
-
 scala> case class Address(street: String, city: String, state: String)
 scala> case class ContactInfo(phoneNumber: String, address: Address)
 scala> case class People(name: String, contactInfo: ContactInfo)
 
 scala> val mike = People("Mike", ContactInfo("202-295-3928", Address("1 Main ST", "Chicago", "IL")))
 
+scala> // existing Show instance for Address
+scala> implicit val addressShow: Show[Address] =
+         a => s"${a.street}, ${a.city}, ${a.state}"
 
-scala> //existing Show instance for Address
-scala> implicit val addressShow: Show[Address] = new Show[Address] {
-          def show(a: Address) = s"${a.street}, ${a.city}, ${a.state}" 
-       }
-
-scala> implicit val peopleShow: Show[People] = {
-            import auto.show._
-            semiauto.show
-        } //auto derive Show for People
+scala> implicit val peopleShow: Show[People] = semiauto.show // auto derive Show for People
 
 scala> mike.show
 res0: String = People(name = Mike, contactInfo = ContactInfo(phoneNumber = 202-295-3928, address = 1 Main ST, Chicago, IL))
-
 ```
-Note that in this example, the derivation auto derived all referenced class but still respect the existing instance in scope. For fully auto derivation please see the [three modes of derivation below](#three-modes-of-derivation). 
+
+Note that in this example, the derivation generated instances for all referenced classes but still respected the
+existing instance in scope. For different ways to derive instances please see the
+[three modes of derivation below](#three-modes-of-derivation). 
 
 ### Sequence examples
-Note that to run these examples you need partial unification enabled on scalac. For **Scala 2.11.9 or later** you should add the following to your `build.sbt`:
+
+Note that to run these examples you need partial unification enabled.
+For **Scala 2.12** you should add the following to your `build.sbt`:
 
 ```scala
 scalacOptions += "-Ypartial-unification"
 ```
-
-
 
 ```scala
 scala> import cats.implicits._, cats.sequence._
@@ -129,10 +125,9 @@ f: String => MyCase = <function1>
 
 scala> f("42.0")
 res1: MyCase = MyCase(4,0.24,42.0)
-
 ```
 
-Traverse works similarly but you need a Poly.
+Traverse works similarly except you need a `shapeless.Poly`.
 
 ### Lift examples
 
@@ -149,12 +144,13 @@ lifted: (Option[Int], Option[String], Option[Float]) => Option[String] = <functi
 
 scala> lifted(Some(1), Some("a"), Some(3.2f))
 res0: Option[String] = Some(1 - a - 3.2)
-
 ```
-### Three Modes of Derivation
+
+### Three modes of derivation
 
 Kittens provides three objects for derivation `cats.derived.auto`, `cats.derived.cached` and `cats.derived.semi`
 The recommended best practice is going to be a semi auto one:
+
 ```scala
 import cats.derived
 
@@ -163,7 +159,9 @@ implicit val showFoo: Show[Foo] = {
    derived.semiauto.show
 }
 ```
-This will respect all existing instances even if the field is a type constructor. For example `Show[List[A]]` will use the native `Show` instance for `List` and derived instance for `A`. And it manually caches the result to the `val showFoo`. Downside user will need to write one for every type they directly need a `Show` instance
+This will respect all existing instances even if the field is a type constructor. For example `Show[List[A]]` will use
+the native `Show` instance for `List` and derived instance for `A`. And it manually caches the result to the
+`val showFoo`. Downside user will need to write one for every type they directly need a `Show` instance.
 
 There are 3 alternatives:
 1. full auto: 
@@ -181,57 +179,83 @@ The downside is that it will re-derive for every use site, which multiples the c
 import derived.cached.show._
 ```
 
-Use this one with caution. It caches the derived instance globally. So it's only applicable if the instance is global in the application. This could be problematic for libraries, which has no control over the uniqueness of an instance on use site. It relies on `shapeless.Cached` which is buggy. Mile Sabin is working on a language level mechanism for instance sharing. 
+Use this one with caution. It caches the derived instance globally. So it's only applicable if the instance is global
+in the application. This could be problematic for libraries, which has no control over the uniqueness of an instance on
+use site. It relies on `shapeless.Cached` which is buggy.
 
 3. manual semi
 ```scala
 implicit val showFoo: Show[Foo] =  derived.semiauto.show
 ```
-It has the same downside as the recommenced semi-auto practice but also suffers from the type constructor field issue. I.e. if a field type is a type constructor whose native instance relies on the instance of the parameter type, this approach will by default derive an instance for the type constructor one. To overcome this user have to first derive the instance for type parameter. 
-e.g.  given
+
+It has the same downside as the recommenced semi-auto practice but also suffers from the type constructor field issue.
+I.e. if a field type is a type constructor whose native instance relies on the instance of the parameter type, this
+approach will by default derive an instance for the type constructor one. To overcome this user have to first derive
+the instance for type parameter. e.g. given:
+
 ```scala
 case class Foo(bars: List[Bar])
 case class Bar(a: String)
 ```
-Since the `bars` field of `Foo` is a `List` of `Bar` which breaks the chains of auto derivation, you will need to derive `Bar` first and then `Foo`
+
+Since the `bars` field of `Foo` is a `List` of `Bar` which breaks the chains of auto derivation, you will need to
+derive `Bar` first and then `Foo`.
+
 ```scala
 implicit val showBar: Show[Bar] =  semiauto.show
 implicit val showFoo: Show[Foo] =  semiauto.show
 ```
+
 This way the native instance for `Show[List]` would be used.
+
+### Type class support matrix
+
+Legend:
+- `∀` - all must satisfy a constraint
+- `∃` - at lest one must satisfy a constraint
+- `∃!` - exactly one must satisfy a constraint
+- `∧` - both constraints must be satisfied  
+- `∨` - either constraint must be satisfied
+
+#### For monomorphic types
+
+| Type Class | Case Classes | Sealed Traits |
+|------------|--------------|---------------|
+| CommutativeMonoid | ∀ fields: CommutativeMonoid |
+| CommutativeSemigroup | ∀ fields: CommutativeSemigroup |
+| Empty | ∀ fields: Empty | ∃ variant: Empty |
+| Eq | ∀ fields: Eq | ∀ variants: Eq |
+| Hash | ∀ fields: Hash | ∀ variants: Hash |
+| Monoid | ∀ fields: Monoid | |
+| Order | ∀ fields: Order | ∃! variant: Order |
+| PartialOrder | ∀ fields: PartialOrder | ∀ variants: PartialOrder |
+| Semigroup | ∀ fields: Semigroup | |
+| Show | ∀ fields: Show | ∀ variants: Show |
+| ShowPretty | ∀ fields: ShowPretty | ∀ variants: ShowPretty |
+
+#### For polymorphic types
+
+| Type Class | Case Classes | Sealed Traits | Constant Types `λ[x => T]` | Nested Types `λ[x => F[G[x]]]` |
+|------------|--------------|---------------|----------------------------|--------------------------------|
+| Applicative | ∀ fields: Applicative | | for T: Monoid | for F: Applicative and G: Applicative |
+| Apply | ∀ fields: Apply | | for T: Semigroup | for F: Apply and G: Apply |
+| Contravariant | ∀ fields: Contravariant | ∀ variants: Contravariant | for any T | for F: Functor and G: Contravariant |
+| EmptyK | ∀ fields: EmptyK | | for T: Empty | for F: EmptyK and any G ∨ for F: Pure and G: EmptyK |
+| Foldable | ∀ fields: Foldable | ∀ variants: Foldable | for any T | for F: Foldable and G: Foldable |
+| Functor | ∀ fields: Functor | ∀ variants: Functor | for any T | for F: Functor and G: Functor ∨ for F: Contravariant and G: Contravariant |
+| Invariant | ∀ fields: Invariant | ∀ variants: Invariant | for any T | for F: Invariant and G: Invariant |
+| MonoidK | ∀ fields: MonoidK | | for T: Monoid | for F: MonoidK and any G ∨ for F: Applicative and G: MonoidK |
+| NonEmptyTraverse | ∃ field: NonEmptyTraverse ∧ ∀ fields: Traverse | ∀ variants: NonEmptyTraverse | | for F: NonEmptyTraverse and G: NonEmptyTraverse |
+| Pure | ∀ fields: Pure | | for T: Empty | for F: Pure and G: Pure |
+| Reducible | ∃ field: Reducible ∧ ∀ fields: Foldable | ∀ variants: Reducible | | for F: Reducible and G: Reducible |
+| SemigroupK | ∀ fields: SemigroupK | | for T: Semigroup | for F: SemigroupK and any G ∨ for F: Apply and G: SemigroupK |
+| Traverse | ∀ fields: Traverse | ∀ variants: Traverse | for any T | for F: Traverse and G: Traverse |
 
 [cats]: https://github.com/typelevel/cats
 [shapeless]: https://github.com/milessabin/shapeless
 [typelevel]: http://typelevel.org/
 [source]: https://github.com/typelevel/kittens
 [sonatype]: https://oss.sonatype.org/
-
-### kittens and Typelevel Scala
-
-[Typelevel Scala][tls] provides a [partial fix for SI-7046][si-7046-pr] which can present obstacles to the uses of
-shapeless's `Generic` and `LabelledGeneric` for the sealed trait at the root of an ADT such as you find in Kittens. If
-it appears that these two type classes are unable to find (all of) the subclasses of an ADT root trait then please try
-using Typelevel Scala and see if it resolves the issue.
-
-To use Typelevel Scala you should,
-
-+ Update your `project/build.properties` to require SBT 0.13.13 or later,
-
-  ```
-  sbt.version=0.13.13
-  ```
-
-+ Add the following to your `build.sbt` immediately next to where you set `scalaVersion`,
-
-  ```
-  scalaOrganization := "org.typelevel"
-  ```
-
-If this does resolve the problem, please lend your support to the [pull request][si-7046-pr] being merged in Lightbend
-Scala.
-
-[tls]: https://github.com/typelevel/scala
-[si-7046-pr]: https://github.com/scala/scala/pull/5284
 
 ## Participation
 
@@ -242,7 +266,7 @@ channels (mailing list, Gitter, GitHub, etc.) to be welcoming environments for e
 
 ## Building kittens
 
-kittens is built with SBT 0.13.9 or later, and its master branch is built with Scala 2.11.7 by default.
+Kittens is built with SBT 1.x, and its master branch is built with Scala 2.13 by default.
 
 ## Contributors
 + Cody Allen <ceedubs@gmail.com> [@fourierstrick](https://twitter.com/fourierstrick)

@@ -15,7 +15,7 @@ It is available for Scala 2.12, 2.13 and Scala.js.
 To get started with sbt, simply add the following to your `build.sbt` file:
 
 ```Scala
-libraryDependencies += "org.typelevel" %% "kittens" % "2.2.0"
+libraryDependencies += "org.typelevel" %% "kittens" % "2.2.1"
 ```
 
 [![Build Status](https://api.travis-ci.org/typelevel/kittens.png?branch=master)](https://travis-ci.org/typelevel/kittens)

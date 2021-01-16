@@ -35,7 +35,7 @@ lazy val commonSettings = Seq(
     "org.typelevel" %%% "alleycats-core" % catsVersion,
     "com.chuusai" %%% "shapeless" % shapelessVersion,
     "org.typelevel" %%% "cats-testkit-scalatest" % testKitVersion % Test,
-    compilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.2").cross(CrossVersion.full))
+    compilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.3").cross(CrossVersion.full))
   ),
   testOptions += Tests.Argument("-oF"),
   mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.0.0")

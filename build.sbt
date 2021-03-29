@@ -7,7 +7,7 @@ lazy val buildSettings = Seq(
   organization := "org.typelevel"
 )
 
-val catsVersion = "2.4.2"
+val catsVersion = "2.5.0"
 val shapelessVersion = "2.3.3"
 val testKitVersion = "2.1.2"
 

@@ -15,12 +15,15 @@ It is available for Scala 2.12, 2.13 and Scala.js.
 To get started with sbt, simply add the following to your `build.sbt` file:
 
 ```Scala
-libraryDependencies += "org.typelevel" %% "kittens" % "2.2.1"
+libraryDependencies += "org.typelevel" %% "kittens" % "latestVersion" // indicated in the badge below
 ```
 
-[![Build Status](https://api.travis-ci.org/typelevel/kittens.png?branch=master)](https://travis-ci.org/typelevel/kittens)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/typelevel/kittens)
-[![Maven Central](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.12.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/kittens_2.12)
+[![Typelevel library](https://img.shields.io/badge/typelevel-library-green.svg)](https://typelevel.org/projects#cats)
+[![Build status](https://github.com/typelevel/kittens/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/typelevel/kittens/actions)
+[![Gitter channel](https://badges.gitter.im/typelevel/kittens.svg)](https://gitter.im/typelevel/kittens)
+[![Scala.js](http://scala-js.org/assets/badges/scalajs-1.5.0.svg)](http://scala-js.org)
+[![Latest version](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.12.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/kittens_2.12)
+[![Cats friendly](https://typelevel.org/cats/img/cats-badge-tiny.png)](https://typelevel.org/cats)
 
 Instance derivations are available for the following type classes:
 

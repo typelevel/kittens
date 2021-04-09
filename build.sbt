@@ -8,6 +8,7 @@ lazy val buildSettings = Seq(
 )
 
 val catsVersion = "2.5.0"
+val kindProjectorVersion = "0.11.3"
 val shapelessVersion = "2.3.4"
 val testKitVersion = "2.1.3"
 
@@ -35,21 +36,21 @@ lazy val commonSettings = Seq(
     "org.typelevel" %%% "alleycats-core" % catsVersion,
     "com.chuusai" %%% "shapeless" % shapelessVersion,
     "org.typelevel" %%% "cats-testkit-scalatest" % testKitVersion % Test,
-    compilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.3").cross(CrossVersion.full))
+    compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
   ),
   testOptions += Tests.Argument("-oF"),
   mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.0.0")
 ) ++ crossVersionSharedSources
 
-initialCommands in console := """import shapeless._, cats._, cats.derived._"""
+console / initialCommands := """import shapeless._, cats._, cats.derived._"""
 
 lazy val commonJsSettings = Seq(
-  scalaJSStage in Global := FastOptStage,
-  parallelExecution in Test := false
+  Global / scalaJSStage := FastOptStage,
+  Test / parallelExecution := false
 )
 
 lazy val commonJvmSettings = Seq(
-  parallelExecution in Test := false
+  Test / parallelExecution := false
 )
 
 lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings
@@ -80,17 +81,14 @@ addCommandAlias("fmt", "all scalafmtSbt scalafmtAll")
 addCommandAlias("fmtCheck", "all scalafmtSbtCheck scalafmtCheckAll")
 addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
 
-lazy val crossVersionSharedSources: Seq[Setting[_]] =
-  Seq(Compile, Test).map { sc =>
-    (unmanagedSourceDirectories in sc) ++= {
-      (unmanagedSourceDirectories in sc).value.map { dir: File =>
-        new File(dir.getPath + "_" + scalaBinaryVersion.value)
-      }
-    }
+lazy val crossVersionSharedSources: Seq[Setting[_]] = Seq(Compile, Test).map { sc =>
+  (sc / unmanagedSourceDirectories) ++= (sc / unmanagedSourceDirectories).value.map { dir: File =>
+    new File(dir.getPath + "_" + scalaBinaryVersion.value)
   }
+}
 
 lazy val publishSettings = Seq(
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   pomIncludeRepository := (_ => false),
   homepage := Some(url("https://github.com/typelevel/kittens")),
   licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
@@ -103,7 +101,7 @@ lazy val publishSettings = Seq(
 )
 
 lazy val noPublishSettings =
-  skip in publish := true
+  publish / skip := true
 
 ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8")
 ThisBuild / githubWorkflowBuild := Seq(WorkflowStep.Sbt(List("validate"), id = None, name = Some("Build and Validate")))

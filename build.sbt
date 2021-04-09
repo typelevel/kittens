@@ -8,7 +8,7 @@ lazy val buildSettings = Seq(
 )
 
 val catsVersion = "2.5.0"
-val shapelessVersion = "2.3.3"
+val shapelessVersion = "2.3.4"
 val testKitVersion = "2.1.3"
 
 lazy val commonSettings = Seq(

@@ -5,7 +5,7 @@ package cats.sequence
 
 import cats.data._
 import cats.derived._
-import org.scalacheck.Prop.forAll
+import org.scalacheck.Prop._
 import shapeless._
 
 class TraverseHListSuite extends KittensSuite {
@@ -21,17 +21,17 @@ class TraverseHListSuite extends KittensSuite {
     implicit def caseOption[T] = at[Option[T]](optToValidation)
   }
 
-  test("traversing Set with Set => Option")(check {
+  property("traversing Set with Set => Option") {
     forAll { (x: Set[Int], y: Set[String], z: Set[Float]) =>
       val expected = (x.headOption, y.headOption, z.headOption).mapN(_ :: _ :: _ :: HNil)
       (x :: y :: z :: HNil).traverse(headOption) == expected
     }
-  })
+  }
 
-  test("traversing Option with Option => Validation")(check {
+  property("traversing Option with Option => Validation") {
     forAll { (x: Option[Int], y: Option[String], z: Option[Float]) =>
       val expected = (optToValidation(x), optToValidation(y), optToValidation(z)).mapN(_ :: _ :: _ :: HNil)
       (x :: y :: z :: HNil).traverse(optionToValidation) == expected
     }
-  })
+  }
 }

@@ -56,12 +56,12 @@ lazy val coreSettings =
 
 lazy val kittens = project
   .in(file("."))
-  .aggregate(coreJS, coreJVM)
-  .dependsOn(coreJS, coreJVM)
+  .aggregate(coreJS, coreJVM, coreNative)
+  .dependsOn(coreJS, coreJVM, coreNative)
   .settings(coreSettings: _*)
   .settings(noPublishSettings)
 
-lazy val core = crossProject(JSPlatform, JVMPlatform)
+lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
   .settings(coreSettings: _*)
@@ -69,15 +69,22 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
+lazy val coreNative = core.native
 
 addCommandAlias("root", ";project kittens")
 addCommandAlias("jvm", ";project coreJVM")
 addCommandAlias("js", ";project coreJS")
+addCommandAlias("native", ";project coreNative")
 
-addCommandAlias("validate", "all scalafmtCheckAll scalafmtSbtCheck test doc coreJVM/mimaReportBinaryIssues")
+addCommandAlias(
+  "validateJVM",
+  "all scalafmtCheckAll scalafmtSbtCheck coreJVM/test coreJVM/doc coreJVM/mimaReportBinaryIssues"
+)
+addCommandAlias("validateJS", "all coreJS/test")
+addCommandAlias("validateNative", "all coreNative/test")
+addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
 addCommandAlias("fmt", "all scalafmtSbt scalafmtAll")
 addCommandAlias("fmtCheck", "all scalafmtSbtCheck scalafmtCheckAll")
-addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
 
 lazy val crossVersionSharedSources: Seq[Setting[_]] = Seq(Compile, Test).map { sc =>
   (sc / unmanagedSourceDirectories) ++= (sc / unmanagedSourceDirectories).value.map { dir: File =>
@@ -102,7 +109,9 @@ lazy val noPublishSettings =
   publish / skip := true
 
 ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8")
-ThisBuild / githubWorkflowBuild := Seq(WorkflowStep.Sbt(List("validate"), id = None, name = Some("Build and Validate")))
+ThisBuild / githubWorkflowArtifactUpload := false
+ThisBuild / githubWorkflowBuildMatrixAdditions += "ci" -> List("validateJVM", "validateJS", "validateNative")
+ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("${{ matrix.ci }}"), name = Some("Validation")))
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))
 ThisBuild / githubWorkflowPublishPreamble += WorkflowStep.Use(UseRef.Public("olafurpg", "setup-gpg", "v3"))

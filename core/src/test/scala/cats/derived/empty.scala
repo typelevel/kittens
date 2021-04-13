@@ -42,18 +42,6 @@ class EmptySuite extends KittensSuite {
     test(s"$context.Empty[IList[Dummy]]")(assert(iList.empty == INil()))
     test(s"$context.Empty[Snoc[Dummy]]")(assert(snoc.empty == SNil()))
     test(s"$context.Empty respects existing instances")(assert(box.empty == Box(Mask(0xffffffff))))
-    // Known limitation of recursive typeclass derivation.
-    test(s"$context.Empty[Chain] throws a StackOverflowError") {
-      try { // MUnit doesn't catch fatal errors
-        chain.empty
-        fail("Expected a StackOverflowError")
-      } catch {
-        case error: Throwable =>
-          val jvm = error.isInstanceOf[StackOverflowError]
-          val js = Option(error.getMessage).exists(_.contains("stack size exceeded"))
-          assert(jvm || js)
-      }
-    }
     checkAll(s"$context.Empty is Serializable", SerializableTests.serializable(Empty[Interleaved[String]]))
   }
 

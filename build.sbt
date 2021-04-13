@@ -41,7 +41,8 @@ lazy val commonSettings = Seq(
     compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
   ),
   Test / parallelExecution := false,
-  mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.0.0")
+  versionScheme := Some("semver-spec"),
+  mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.2.1")
 )
 
 console / initialCommands := """import shapeless._, cats._, cats.derived._"""

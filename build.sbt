@@ -8,9 +8,9 @@ lazy val buildSettings = Seq(
 )
 
 val catsVersion = "2.5.0"
+val disciplineMunitVersion = "1.0.7"
 val kindProjectorVersion = "0.11.3"
 val shapelessVersion = "2.3.4"
-val testKitVersion = "2.1.3"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(
@@ -35,25 +35,24 @@ lazy val commonSettings = Seq(
     "org.typelevel" %%% "cats-core" % catsVersion,
     "org.typelevel" %%% "alleycats-core" % catsVersion,
     "com.chuusai" %%% "shapeless" % shapelessVersion,
-    "org.typelevel" %%% "cats-testkit-scalatest" % testKitVersion % Test,
+    "org.typelevel" %%% "cats-testkit" % catsVersion % Test,
+    "org.typelevel" %%% "discipline-munit" % disciplineMunitVersion % Test,
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value % Test,
     compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
   ),
-  testOptions += Tests.Argument("-oF"),
+  Test / parallelExecution := false,
   mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.0.0")
-) ++ crossVersionSharedSources
+)
 
 console / initialCommands := """import shapeless._, cats._, cats.derived._"""
 
 lazy val commonJsSettings = Seq(
   Global / scalaJSStage := FastOptStage,
-  Test / parallelExecution := false
+  Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule))
 )
 
-lazy val commonJvmSettings = Seq(
-  Test / parallelExecution := false
-)
-
-lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings
+lazy val coreSettings =
+  Seq.concat(buildSettings, commonSettings, crossVersionSharedSources, publishSettings)
 
 lazy val kittens = project
   .in(file("."))
@@ -67,7 +66,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .settings(moduleName := "kittens")
   .settings(coreSettings: _*)
   .jsSettings(commonJsSettings: _*)
-  .jvmSettings(commonJvmSettings: _*)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js

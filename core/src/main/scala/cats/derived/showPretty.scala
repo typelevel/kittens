@@ -1,9 +1,9 @@
 package cats.derived
 
 import cats.Show
+import cats.derived.util.VersionSpecific.{Lazy, OrElse}
 import shapeless._
 import shapeless.labelled._
-import util.VersionSpecific.{Lazy, OrElse}
 
 import scala.annotation.implicitNotFound
 import scala.reflect.ClassTag
@@ -98,7 +98,5 @@ sealed abstract private[derived] class MkShowPrettyGenericCoproduct {
   implicit def mkShowPrettyGenericCoproduct[A, R <: Coproduct](implicit
       A: Generic.Aux[A, R],
       R: Lazy[MkShowPretty[R]]
-  ): MkShowPretty[A] = new MkShowPretty[A] { // Using SAM here makes it not Serializable.
-    override def showLines(a: A) = R.value.showLines(A.to(a))
-  }
+  ): MkShowPretty[A] = a => R.value.showLines(A.to(a))
 }

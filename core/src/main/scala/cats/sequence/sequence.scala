@@ -5,7 +5,7 @@
  */
 package cats.sequence
 
-import cats.{Applicative, Apply, Functor, Invariant, InvariantMonoidal, InvariantSemigroupal}
+import cats.{Applicative, Apply, Functor, Invariant, InvariantMonoidal, InvariantSemigroupal, Parallel}
 import shapeless._
 import shapeless.ops.hlist.{Align, ZipWithKeys}
 import shapeless.ops.record.{Keys, UnzipFields, Values}
@@ -19,6 +19,13 @@ trait Sequencer[L <: HList] extends Serializable {
   type Out = F[LOut]
 
   def apply(hl: L): Out
+
+  // Defined sequentially for binary compatibility, overridden by implementations.
+  protected[sequence] def par(hl: L)(implicit P: Parallel[F]): P.F[LOut] =
+    P.parallel(apply(hl))
+
+  final def parApply(hl: L)(implicit P: Parallel[F]): Out =
+    P.sequential(par(hl)(P))
 }
 
 abstract private[sequence] class MkHConsSequencerLowPrio {
@@ -34,8 +41,13 @@ abstract private[sequence] class MkHConsSequencerLowPrio {
     type F[X] = F0[X]
     type LOut = H :: T
 
+    private def fromTuple(p: (H, T)) = p._1 :: p._2
+    private def toTuple(hl: H :: T) = (hl.head, hl.tail)
+
     def apply(hl: F[H] :: FT) =
-      F.imap(F.product(hl.head, tailSequencer(hl.tail)))(p => p._1 :: p._2)(hl => (hl.head, hl.tail))
+      F.imap(F.product(hl.head, tailSequencer(hl.tail)))(fromTuple)(toTuple)
+    override def par(hl: F[H] :: FT)(implicit P: Parallel[F0]) =
+      P.apply.imap(P.apply.product(P.parallel(hl.head), tailSequencer.par(hl.tail)))(fromTuple)(toTuple)
   }
 }
 
@@ -46,7 +58,10 @@ abstract private[sequence] class MkHNilSequencerLowPrio extends MkHConsSequencer
     type F[X] = F0[X]
     type LOut = HNil
 
-    def apply(nil: HNil) = F.point(nil)
+    def apply(nil: HNil) =
+      F.point(nil)
+    override def par(nil: HNil)(implicit P: Parallel[F0]) =
+      P.applicative.point(nil)
   }
 
   implicit def mkSingletonSequencerForInvariant[F0[_], H](implicit
@@ -55,7 +70,10 @@ abstract private[sequence] class MkHNilSequencerLowPrio extends MkHConsSequencer
     type F[X] = F0[X]
     type LOut = H :: HNil
 
-    def apply(singleton: F[H] :: HNil) = F.imap(singleton.head)(_ :: HNil)(_.head)
+    def apply(singleton: F[H] :: HNil) =
+      F.imap(singleton.head)(_ :: HNil)(_.head)
+    override def par(singleton: F[H] :: HNil)(implicit P: Parallel[F0]) =
+      P.parallel(apply(singleton))
   }
 }
 
@@ -68,7 +86,10 @@ abstract private[sequence] class MkHConsSequencer extends MkHNilSequencerLowPrio
     type F[X] = F0[X]
     type LOut = H :: T
 
-    def apply(hl: F[H] :: FT) = F.map2(hl.head, tailSequencer(hl.tail))(_ :: _)
+    def apply(hl: F[H] :: FT) =
+      F.map2(hl.head, tailSequencer(hl.tail))(_ :: _)
+    override def par(hl: F[H] :: FT)(implicit P: Parallel[F]): P.F[LOut] =
+      P.apply.map2(P.parallel(hl.head), tailSequencer.par(hl.tail))(_ :: _)
   }
 }
 
@@ -79,7 +100,10 @@ object Sequencer extends MkHConsSequencer {
     type F[X] = F0[X]
     type LOut = HNil
 
-    def apply(nil: HNil) = F.pure(nil)
+    def apply(nil: HNil) =
+      F.pure(nil)
+    override def par(nil: HNil)(implicit P: Parallel[F]): P.F[HNil] =
+      P.applicative.pure(nil)
   }
 
   implicit def mkSingletonSequencer[F0[_], H](implicit
@@ -88,14 +112,16 @@ object Sequencer extends MkHConsSequencer {
     type F[X] = F0[X]
     type LOut = H :: HNil
 
-    def apply(singleton: F[H] :: HNil) = F.map(singleton.head)(_ :: HNil)
+    def apply(singleton: F[H] :: HNil) =
+      F.map(singleton.head)(_ :: HNil)
+    override def par(singleton: F[H] :: HNil)(implicit P: Parallel[F]): P.F[H :: HNil] =
+      P.parallel(apply(singleton))
   }
 }
 
 @implicitNotFound("cannot construct sequencer, make sure that every field value of you record ${L} is an Apply")
 trait RecordSequencer[L <: HList] extends Serializable {
   type Out
-
   def apply(record: L): Out
 }
 
@@ -111,7 +137,6 @@ abstract private[sequence] class RecordSequencerInstanceLowPrio {
       values: Values.Aux[ZOut, VOut]
   ): RecordSequencer.Aux[R, F[ZOut]] = new RecordSequencer[R] {
     type Out = F[zip.Out]
-
     def apply(record: R) = F.imap(valueSequencer(unzip.values(record)))(zip(_))(values(_))
   }
 
@@ -125,14 +150,12 @@ object RecordSequencer extends RecordSequencerInstanceLowPrio {
       zip: ZipWithKeys[K, VOut]
   ): RecordSequencer.Aux[R, F[zip.Out]] = new RecordSequencer[R] {
     type Out = F[zip.Out]
-
     def apply(record: R) = F.map(valueSequencer(unzip.values(record)))(zip(_))
   }
 }
 
 trait GenericSequencer[L <: HList, T] extends Serializable {
   type Out
-
   def apply(hl: L): Out
 }
 
@@ -148,7 +171,6 @@ abstract private[sequence] class GenericSequencerInstanceLowPrio {
       unalign: Align[LOut, SOut]
   ): GenericSequencer.Aux[L, T, F[T]] = new GenericSequencer[L, T] {
     type Out = F[T]
-
     def apply(hl: L) = F.imap(recordSequencer(hl))(so => gen.from(so.align))(lo => gen.to(lo).align)
   }
 
@@ -163,14 +185,12 @@ object GenericSequencer extends GenericSequencerInstanceLowPrio {
       align: Align[SOut, LOut]
   ): GenericSequencer.Aux[L, T, F[T]] = new GenericSequencer[L, T] {
     type Out = F[T]
-
     def apply(hl: L) = F.map(recordSequencer(hl))(so => gen.from(so.align))
   }
 
 }
 
 private[sequence] trait MkNonRecordOps {
-
   import SequenceOps._
 
   // fallback for non-records
@@ -179,7 +199,6 @@ private[sequence] trait MkNonRecordOps {
 }
 
 trait SequenceOps extends MkNonRecordOps {
-
   import SequenceOps._
 
   implicit def mkRecordOps[L <: HList: Keys](hl: L): RecordOps[L] =
@@ -205,11 +224,15 @@ object SequenceOps {
   // Syntax for non-records
   class NonRecordOps[L <: HList](self: L) {
     def sequence(implicit seq: Sequencer[L]): seq.Out = seq(self)
+
+    def parSequence[F[_], LOut](implicit
+        seq: Sequencer.Aux[L, F, LOut],
+        par: Parallel[F]
+    ): F[LOut] = seq.parApply(self)
   }
 
   // Syntax for records
   class RecordOps[L <: HList](self: L) {
     def sequence(implicit seq: RecordSequencer[L]): seq.Out = seq(self)
   }
-
 }

@@ -35,6 +35,17 @@ class SequenceSuite extends KittensSuite {
     }
   }
 
+  property("parallel sequencing Either") {
+    forAll { (x: Either[String, Int], y: Either[String, String], z: Either[String, Float]) =>
+      val expected = (
+        Validated.fromEither(x),
+        Validated.fromEither(y),
+        Validated.fromEither(z)
+      ).mapN(_ :: _ :: _ :: HNil).toEither
+      (x :: y :: z :: HNil).parSequence == expected
+    }
+  }
+
   // note: using the ValidationNel type alias here breaks the implicit search
   property("sequencing ValidatedNel") {
     forAll {

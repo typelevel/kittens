@@ -16,8 +16,6 @@
 
 package cats
 package derived
-
-import cats.instances.all._
 import cats.laws.discipline.{FoldableTests, SerializableTests}
 import org.scalacheck.Arbitrary
 
@@ -26,20 +24,15 @@ class FoldableSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  type OptList[A] = Option[List[A]]
-  type ListSnoc[A] = List[Snoc[A]]
-  type AndChar[A] = (A, Char)
-  type BoxNel[A] = Box[Nel[A]]
-
-  def testFoldable(context: String)(
-    implicit iList: Foldable[IList],
-    tree: Foldable[Tree],
-    genericAdt: Foldable[GenericAdt],
-    optList: Foldable[OptList],
-    listSnoc: Foldable[ListSnoc],
-    andChar: Foldable[AndChar],
-    interleaved: Foldable[Interleaved],
-    boxNel: Foldable[BoxNel]
+  def testFoldable(context: String)(implicit
+      iList: Foldable[IList],
+      tree: Foldable[Tree],
+      genericAdt: Foldable[GenericAdt],
+      optList: Foldable[OptList],
+      listSnoc: Foldable[ListSnoc],
+      andChar: Foldable[AndChar],
+      interleaved: Foldable[Interleaved],
+      boxNel: Foldable[BoxNel]
   ): Unit = {
     checkAll(s"$context.Foldable[IList]", FoldableTests[IList].foldable[Int, Long])
     checkAll(s"$context.Foldable[Tree]", FoldableTests[Tree].foldable[Int, Long])
@@ -88,22 +81,30 @@ class FoldableSuite extends KittensSuite {
     testFoldable("cached")
   }
 
-  semiTests.run()
-
-  object semiTests {
-    implicit val iList: Foldable[IList] = semi.foldable
-    implicit val tree: Foldable[Tree] = semi.foldable
-    implicit val genericAdt: Foldable[GenericAdt] = semi.foldable
-    implicit val optList: Foldable[OptList] = semi.foldable
-    implicit val listSnoc: Foldable[ListSnoc] = semi.foldable
-    implicit val andChar: Foldable[AndChar] = semi.foldable
-    implicit val interleaved: Foldable[Interleaved] = semi.foldable
-    implicit val boxNel: Foldable[BoxNel] = semi.foldable
-    def run(): Unit = testFoldable("semi")
+  {
+    import semiInstances._
+    testFoldable("semiauto")
   }
 }
 
 object FoldableSuite {
+  import TestDefns._
+
+  type OptList[A] = Option[List[A]]
+  type ListSnoc[A] = List[Snoc[A]]
+  type AndChar[A] = (A, Char)
+  type BoxNel[A] = Box[Nel[A]]
+
+  object semiInstances {
+    implicit val iList: Foldable[IList] = semiauto.foldable
+    implicit val tree: Foldable[Tree] = semiauto.foldable
+    implicit val genericAdt: Foldable[GenericAdt] = semiauto.foldable
+    implicit val optList: Foldable[OptList] = semiauto.foldable
+    implicit val listSnoc: Foldable[ListSnoc] = semiauto.foldable
+    implicit val andChar: Foldable[AndChar] = semiauto.foldable
+    implicit val interleaved: Foldable[Interleaved] = semiauto.foldable
+    implicit val boxNel: Foldable[BoxNel] = semiauto.foldable
+  }
 
   final case class Nel[+A](head: A, tail: List[A])
   object Nel {

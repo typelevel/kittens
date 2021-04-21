@@ -33,7 +33,7 @@ object MkEmpty extends MkEmptyDerivation {
   def apply[A](implicit ev: MkEmpty[A]): MkEmpty[A] = ev
 }
 
-private[derived] abstract class MkEmptyDerivation {
+abstract private[derived] class MkEmptyDerivation {
   protected type EmptyOrMk[A] = Empty[A] OrElse MkEmpty[A]
 
   implicit val mkEmptyHNil: MkEmpty[HNil] =
@@ -42,10 +42,10 @@ private[derived] abstract class MkEmptyDerivation {
   implicit def mkEmptyHCons[H, T <: HList](implicit H: EmptyOrMk[H], T: MkEmpty[T]): MkEmpty[H :: T] =
     instance(H.unify.empty :: T.empty)
 
-  implicit def mkEmptyCoproduct[C <: Coproduct, E <: HList, A](
-    implicit lift: util.LiftSome.Aux[EmptyOrMk, C, E],
-    unique: E <:< (EmptyOrMk[A] :: HNil),
-    inject: ops.coproduct.Inject[C, A]
+  implicit def mkEmptyCoproduct[C <: Coproduct, E <: HList, A](implicit
+      lift: util.LiftSome.Aux[EmptyOrMk, C, E],
+      unique: E <:< (EmptyOrMk[A] :: HNil),
+      inject: ops.coproduct.Inject[C, A]
   ): MkEmpty[C] = instance(inject(lift.instances.head.unify.empty))
 
   implicit def mkEmptyGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkEmpty[R]]): MkEmpty[A] =

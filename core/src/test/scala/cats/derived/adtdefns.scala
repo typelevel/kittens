@@ -17,7 +17,6 @@
 package cats.derived
 
 import cats.{Eq, Eval}
-import cats.instances.all._
 import org.scalacheck.rng.Seed
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 
@@ -89,12 +88,12 @@ object TestDefns {
 
   case class Bivariant[A](run: A => Boolean, store: A)
   object Bivariant {
-      implicit def arbitrary[A: Arbitrary]: Arbitrary[Bivariant[A]] = Arbitrary(
-        for {
-          a <- Arbitrary.arbitrary[A]
-          f <- Arbitrary.arbitrary[Boolean].map(Function.const[Boolean, A])
-        } yield Bivariant[A](f, a)
-      )
+    implicit def arbitrary[A: Arbitrary]: Arbitrary[Bivariant[A]] = Arbitrary(
+      for {
+        a <- Arbitrary.arbitrary[A]
+        f <- Arbitrary.arbitrary[Boolean].map(Function.const[Boolean, A])
+      } yield Bivariant[A](f, a)
+    )
   }
 
   case class Pred[A](run: A => Boolean)
@@ -212,6 +211,19 @@ object TestDefns {
       } yield Foo(i, b))
   }
 
+  final case class CommutativeFoo(i: Int, b: Option[Long])
+  object CommutativeFoo {
+
+    implicit val cogen: Cogen[CommutativeFoo] =
+      Cogen[(Int, Option[Long])].contramap(x => (x.i, x.b))
+
+    implicit val arbitrary: Arbitrary[CommutativeFoo] =
+      Arbitrary(for {
+        i <- Arbitrary.arbitrary[Int]
+        b <- Arbitrary.arbitrary[Option[Long]]
+      } yield CommutativeFoo(i, b))
+  }
+
   case class Inner(i: Int)
   case class Outer(in: Inner)
 
@@ -268,121 +280,121 @@ object TestDefns {
   final case class ListFieldChild(c: Int)
 
   final case class Large(
-    bar1: String,
-    bar2: Int,
-    bar3: Boolean,
-    bar4: Large2,
-    bar5: List[String],
-    bar6: Set[Boolean],
-    bar7: Double,
-    bar8: Long,
-    bar9: Char,
-    bar10: Float,
-    bar11: String,
-    bar12: Map[String, Int],
-    bar13: Boolean,
-    bar14: Option[String],
-    bar15: List[String],
-    bar16: Set[Boolean],
-    bar17: Double,
-    bar18: Long,
-    bar19: Char,
-    bar20: Float
+      bar1: String,
+      bar2: Int,
+      bar3: Boolean,
+      bar4: Large2,
+      bar5: List[String],
+      bar6: Set[Boolean],
+      bar7: Double,
+      bar8: Long,
+      bar9: Char,
+      bar10: Float,
+      bar11: String,
+      bar12: Map[String, Int],
+      bar13: Boolean,
+      bar14: Option[String],
+      bar15: List[String],
+      bar16: Set[Boolean],
+      bar17: Double,
+      bar18: Long,
+      bar19: Char,
+      bar20: Float
   )
 
   final case class Large2(
-    bar1: String,
-    bar2: Int,
-    bar3: Boolean,
-    bar4: Option[String],
-    bar5: List[String],
-    bar6: Set[Boolean],
-    bar7: Double,
-    bar8: Long,
-    bar9: Char,
-    bar10: Float,
-    bar11: String,
-    bar12: Map[String, Int],
-    bar13: Boolean,
-    bar14: Option[String],
-    bar15: List[String],
-    bar16: Set[Boolean],
-    bar17: Double,
-    bar18: Long,
-    bar19: Char,
-    bar20: Float,
-    bar21: String
+      bar1: String,
+      bar2: Int,
+      bar3: Boolean,
+      bar4: Option[String],
+      bar5: List[String],
+      bar6: Set[Boolean],
+      bar7: Double,
+      bar8: Long,
+      bar9: Char,
+      bar10: Float,
+      bar11: String,
+      bar12: Map[String, Int],
+      bar13: Boolean,
+      bar14: Option[String],
+      bar15: List[String],
+      bar16: Set[Boolean],
+      bar17: Double,
+      bar18: Long,
+      bar19: Char,
+      bar20: Float,
+      bar21: String
   )
 
   final case class Large3(
-    bar1: String,
-    bar2: Int,
-    bar3: Boolean,
-    bar4: Option[String],
-    bar5: List[String],
-    bar6: Set[Boolean],
-    bar7: Double,
-    bar8: Long,
-    bar9: Char,
-    bar10: Float,
-    bar11: String,
-    bar12: Map[String, Int],
-    bar13: Boolean,
-    bar14: Option[String],
-    bar15: List[String],
-    bar16: Set[Boolean],
-    bar17: Double,
-    bar18: Long,
-    bar19: Char,
-    bar20: Float,
-    bar21: String
+      bar1: String,
+      bar2: Int,
+      bar3: Boolean,
+      bar4: Option[String],
+      bar5: List[String],
+      bar6: Set[Boolean],
+      bar7: Double,
+      bar8: Long,
+      bar9: Char,
+      bar10: Float,
+      bar11: String,
+      bar12: Map[String, Int],
+      bar13: Boolean,
+      bar14: Option[String],
+      bar15: List[String],
+      bar16: Set[Boolean],
+      bar17: Double,
+      bar18: Long,
+      bar19: Char,
+      bar20: Float,
+      bar21: String
   )
 
   final case class Large4(
-    bar1: String,
-    bar2: Int,
-    bar3: Boolean,
-    bar4: Large5,
-    bar5: List[String],
-    bar6: List[Boolean],
-    bar7: Double,
-    bar8: Long,
-    bar9: Char,
-    bar10: Float,
-    bar11: String,
-    bar12: String,
-    bar13: Boolean,
-    bar14: Option[String],
-    bar15: List[String],
-    bar16: List[Boolean],
-    bar17: Double,
-    bar18: Long,
-    bar19: Char,
-    bar20: Float
+      bar1: String,
+      bar2: Int,
+      bar3: Boolean,
+      bar4: Large5,
+      bar5: List[String],
+      bar6: List[Boolean],
+      bar7: Double,
+      bar8: Long,
+      bar9: Char,
+      bar10: Float,
+      bar11: String,
+      bar12: String,
+      bar13: Boolean,
+      bar14: Option[String],
+      bar15: List[String],
+      bar16: List[Boolean],
+      bar17: Double,
+      bar18: Long,
+      bar19: Char,
+      bar20: Float
   )
 
   final case class Large5(
-    bar1: String,
-    bar2: Int,
-    bar3: Boolean,
-    bar4: Option[String],
-    bar5: List[String],
-    bar6: List[Boolean],
-    bar7: Double,
-    bar8: Long,
-    bar9: Char,
-    bar10: Float,
-    bar11: String,
-    bar12: Int,
-    bar13: Boolean,
-    bar14: Option[String],
-    bar15: List[String],
-    bar16: List[Boolean],
-    bar17: Double,
-    bar18: Long,
-    bar19: Char,
-    bar20: Float,
-    bar21: String
+      bar1: String,
+      bar2: Int,
+      bar3: Boolean,
+      bar4: Option[String],
+      bar5: List[String],
+      bar6: List[Boolean],
+      bar7: Double,
+      bar8: Long,
+      bar9: Char,
+      bar10: Float,
+      bar11: String,
+      bar12: Int,
+      bar13: Boolean,
+      bar14: Option[String],
+      bar15: List[String],
+      bar16: List[Boolean],
+      bar17: Double,
+      bar18: Long,
+      bar19: Char,
+      bar20: Float,
+      bar21: String
   )
 }
 
@@ -446,6 +458,9 @@ object TestEqInstances {
   }
 
   implicit val eqFoo: Eq[Foo] =
+    Eq.fromUniversalEquals
+
+  implicit val eqCommutativeFoo: Eq[CommutativeFoo] =
     Eq.fromUniversalEquals
 
   implicit def eqGenericAdt[A: Eq]: Eq[GenericAdt[A]] = {

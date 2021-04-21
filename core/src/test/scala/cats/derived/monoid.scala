@@ -17,7 +17,6 @@
 package cats.derived
 
 import cats.{Eq, Monoid}
-import cats.instances.all._
 import cats.kernel.laws.discipline.{MonoidTests, SerializableTests}
 import org.scalacheck.Arbitrary
 
@@ -26,11 +25,11 @@ class MonoidSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testMonoid(context: String)(
-    implicit foo: Monoid[Foo],
-    recursive: Monoid[Recursive],
-    interleaved: Monoid[Interleaved[Int]],
-    box: Monoid[Box[Mul]]
+  def testMonoid(context: String)(implicit
+      foo: Monoid[Foo],
+      recursive: Monoid[Recursive],
+      interleaved: Monoid[Interleaved[Int]],
+      box: Monoid[Box[Mul]]
   ): Unit = {
     checkAll(s"$context.Monoid[Foo]", MonoidTests[Foo].monoid)
     checkAll(s"$context.Monoid[Recursive]", MonoidTests[Recursive].monoid)
@@ -55,15 +54,20 @@ class MonoidSuite extends KittensSuite {
   }
 
   {
-    implicit val foo: Monoid[Foo] = semi.monoid
-    implicit lazy val recursive: Monoid[Recursive] = semi.monoid
-    implicit val interleaved: Monoid[Interleaved[Int]] = semi.monoid
-    implicit val box: Monoid[Box[Mul]] = semi.monoid
-    testMonoid("semi")
+    import semiInstances._
+    testMonoid("semiauto")
   }
 }
 
 object MonoidSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val foo: Monoid[Foo] = semiauto.monoid
+    implicit lazy val recursive: Monoid[Recursive] = semiauto.monoid
+    implicit val interleaved: Monoid[Interleaved[Int]] = semiauto.monoid
+    implicit val box: Monoid[Box[Mul]] = semiauto.monoid
+  }
 
   final case class Mul(value: Int)
   object Mul {

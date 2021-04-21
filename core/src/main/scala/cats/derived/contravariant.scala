@@ -39,7 +39,7 @@ object MkContravariant extends MkContravariantDerivation {
   def apply[F[_]](implicit F: MkContravariant[F]): MkContravariant[F] = F
 }
 
-private[derived] abstract class MkContravariantDerivation extends MkFunctorContraNested {
+abstract private[derived] class MkContravariantDerivation extends MkFunctorContraNested {
   implicit val mkContraHNil: MkContravariant[Const[HNil]#λ] = mkContraConst
   implicit val mkContraCNil: MkContravariant[Const[CNil]#λ] = mkContraConst
 
@@ -49,7 +49,7 @@ private[derived] abstract class MkContravariantDerivation extends MkFunctorContr
     }
 }
 
-private[derived] abstract class MkFunctorContraNested extends MkContravariantCons {
+abstract private[derived] class MkFunctorContraNested extends MkContravariantCons {
 
   implicit def mkFunctorContraNested[F[_]](implicit F: Split1[F, Functor, ContraOrMk]): MkContravariant[F] =
     new MkContravariant[F] {
@@ -59,7 +59,7 @@ private[derived] abstract class MkFunctorContraNested extends MkContravariantCon
     }
 }
 
-private[derived] abstract class MkContravariantCons extends MkContravariantGeneric {
+abstract private[derived] class MkContravariantCons extends MkContravariantGeneric {
 
   implicit def mkContraHCons[F[_]](implicit F: IsHCons1[F, ContraOrMk, MkContravariant]): MkContravariant[F] =
     new MkContravariant[F] {
@@ -83,7 +83,7 @@ private[derived] abstract class MkContravariantCons extends MkContravariantGener
     }
 }
 
-private[derived] abstract class MkContravariantGeneric {
+abstract private[derived] class MkContravariantGeneric {
   protected type ContraOrMk[F[_]] = Contravariant[F] OrElse MkContravariant[F]
 
   protected def mkContraSafe[F[_], A, B](F: ContraOrMk[F])(fa: F[B])(f: A => Eval[B]): Eval[F[A]] =
@@ -99,4 +99,3 @@ private[derived] abstract class MkContravariantGeneric {
         F.fr.safeContramap(F.to(fa))(f).map(F.from)
     }
 }
-

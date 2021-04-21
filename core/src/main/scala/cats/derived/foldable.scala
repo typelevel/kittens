@@ -42,7 +42,7 @@ object MkFoldable extends MkFoldableDerivation {
   def apply[F[_]](implicit F: MkFoldable[F]): MkFoldable[F] = F
 }
 
-private[derived] abstract class MkFoldableDerivation extends MkFoldableNested {
+abstract private[derived] class MkFoldableDerivation extends MkFoldableNested {
   implicit val mkFoldableHNil: MkFoldable[Const[HNil]#λ] = mkFoldableConst
   implicit val mkFoldableCNil: MkFoldable[Const[CNil]#λ] = mkFoldableConst
 
@@ -53,7 +53,7 @@ private[derived] abstract class MkFoldableDerivation extends MkFoldableNested {
     }
 }
 
-private[derived] abstract class MkFoldableNested extends MkFoldableCons {
+abstract private[derived] class MkFoldableNested extends MkFoldableCons {
 
   implicit def mkFoldableNested[F[_]](implicit F: Split1[F, FoldableOrMk, FoldableOrMk]): MkFoldable[F] =
     new MkFoldable[F] {
@@ -66,7 +66,7 @@ private[derived] abstract class MkFoldableNested extends MkFoldableCons {
     }
 }
 
-private[derived] abstract class MkFoldableCons extends MkFoldableGeneric {
+abstract private[derived] class MkFoldableCons extends MkFoldableGeneric {
 
   implicit def mkFoldableHCons[F[_]](implicit F: IsHCons1[F, FoldableOrMk, MkFoldable]): MkFoldable[F] =
     new MkFoldable[F] {
@@ -99,7 +99,7 @@ private[derived] abstract class MkFoldableCons extends MkFoldableGeneric {
     }
 }
 
-private[derived] abstract class MkFoldableGeneric {
+abstract private[derived] class MkFoldableGeneric {
   protected type FoldableOrMk[F[_]] = Foldable[F] OrElse MkFoldable[F]
 
   private[derived] def mkSafeFoldLeft[F[_], A, B](F: FoldableOrMk[F])(fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B] =

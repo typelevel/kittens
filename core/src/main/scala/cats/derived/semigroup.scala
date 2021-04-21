@@ -30,23 +30,18 @@ object MkSemigroup extends MkSemigroupDerivation {
   def apply[A](implicit ev: MkSemigroup[A]): MkSemigroup[A] = ev
 }
 
-private[derived] abstract class MkSemigroupDerivation {
+abstract private[derived] class MkSemigroupDerivation {
 
   implicit val mkSemigroupHNil: MkSemigroup[HNil] =
-    instance((_, _) => HNil)
+    (_, _) => HNil
 
-  implicit def mkSemigroupHCons[H, T <: HList](
-    implicit H: Semigroup[H] OrElse MkSemigroup[H], T: MkSemigroup[T]
-  ): MkSemigroup[H :: T] = instance { case (hx :: tx, hy :: ty) =>
+  implicit def mkSemigroupHCons[H, T <: HList](implicit
+      H: Semigroup[H] OrElse MkSemigroup[H],
+      T: MkSemigroup[T]
+  ): MkSemigroup[H :: T] = { case (hx :: tx, hy :: ty) =>
     H.unify.combine(hx, hy) :: T.combine(tx, ty)
   }
 
   implicit def mkSemigroupGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkSemigroup[R]]): MkSemigroup[A] =
-    instance((x, y) => A.from(R.value.combine(A.to(x), A.to(y))))
-
-  private def instance[A](f: (A, A) => A): MkSemigroup[A] =
-    new MkSemigroup[A] {
-      def combine(x: A, y: A) = f(x, y)
-    }
+    (x, y) => A.from(R.value.combine(A.to(x), A.to(y)))
 }
-

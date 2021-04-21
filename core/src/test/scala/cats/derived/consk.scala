@@ -18,18 +18,18 @@ package cats.derived
 
 import alleycats.ConsK
 import cats.laws.discipline.SerializableTests
-import org.scalacheck.Arbitrary
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import org.scalacheck.{Arbitrary, Prop}
 
-class ConsKSuite extends KittensSuite with ScalaCheckDrivenPropertyChecks {
+class ConsKSuite extends KittensSuite {
+  import ConsKSuite._
   import TestDefns._
 
-  def checkConsK[F[_], A : Arbitrary](nil: F[A])(fromSeq: Seq[A] => F[A])(implicit F: ConsK[F]): Unit =
-    forAll((xs: List[A]) => assert(xs.foldRight(nil)(F.cons) == fromSeq(xs)))
+  def checkConsK[F[_], A: Arbitrary](nil: F[A])(fromSeq: Seq[A] => F[A])(implicit F: ConsK[F]): Prop =
+    Prop.forAll((xs: List[A]) => assert(xs.foldRight(nil)(F.cons) == fromSeq(xs)))
 
   def testConsK(context: String)(implicit iList: ConsK[IList], snoc: ConsK[Snoc]): Unit = {
-    test(s"$context.ConsK[IList]")(checkConsK[IList, Int](INil())(IList.fromSeq))
-    test(s"$context.ConsK[Snoc]")(checkConsK[Snoc, Int](SNil())(xs => Snoc.fromSeq(xs.reverse)))
+    property(s"$context.ConsK[IList]")(checkConsK[IList, Int](INil())(IList.fromSeq))
+    property(s"$context.ConsK[Snoc]")(checkConsK[Snoc, Int](SNil())(xs => Snoc.fromSeq(xs.reverse)))
     checkAll(s"$context.ConsK is Serializable", SerializableTests.serializable(ConsK[IList]))
   }
 
@@ -44,8 +44,16 @@ class ConsKSuite extends KittensSuite with ScalaCheckDrivenPropertyChecks {
   }
 
   {
-    implicit val iList: ConsK[IList] = semi.consK[IList]
-    implicit val snoc: ConsK[Snoc] = semi.consK[Snoc]
+    import semiInstances._
     testConsK("semi")
+  }
+}
+
+object ConsKSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val iList: ConsK[IList] = semiauto.consK[IList]
+    implicit val snoc: ConsK[Snoc] = semiauto.consK[Snoc]
   }
 }

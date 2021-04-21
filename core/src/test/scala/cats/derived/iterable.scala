@@ -16,8 +16,6 @@
 
 package cats.derived
 
-import cats.instances.all._
-
 class IterableSuite extends KittensSuite {
   import TestDefns._
   import auto.iterable._
@@ -36,7 +34,7 @@ class IterableSuite extends KittensSuite {
     assert(total == llargeTotal)
 
     val i2 = I.iterator
-    assert(i2 sameElements llarge.iterator)
+    assert(i2.sameElements(llarge.iterator))
   }
 
   test("(T, T, T) => Iterable[T]") {
@@ -91,7 +89,7 @@ class IterableSuite extends KittensSuite {
 
   test("Interleaved[T] => Iterable[T]") {
     val interleaved = Interleaved(42, 313, 3, List(1, 2, 3, 5, 7), "kittens")
-    val i = semi.iterable[TestDefns.Interleaved, Int](interleaved)
+    val i = semiauto.iterable[TestDefns.Interleaved, Int](interleaved)
     assert(i.toList == List(313, 1, 2, 3, 5, 7))
   }
 }

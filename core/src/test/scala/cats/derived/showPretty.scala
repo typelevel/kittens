@@ -1,22 +1,22 @@
 package cats
 package derived
 
-import cats.instances.all._
 import cats.laws.discipline.SerializableTests
 
 class ShowPrettySuite extends KittensSuite {
   import ShowPrettySuite._
   import TestDefns._
 
-  def testShowPretty(context: String)(
-    implicit foo: ShowPretty[Foo],
-    outer: ShowPretty[Outer],
-    intTree: ShowPretty[IntTree],
-    genericAdt: ShowPretty[GenericAdt[Int]],
-    people: ShowPretty[People],
-    listField: ShowPretty[ListField],
-    interleaved: ShowPretty[Interleaved[Int]],
-    boxBogus: ShowPretty[Box[Bogus]]
+  def testShowPretty(context: String)(implicit
+      foo: ShowPretty[Foo],
+      outer: ShowPretty[Outer],
+      intTree: ShowPretty[IntTree],
+      genericAdt: ShowPretty[GenericAdt[Int]],
+      people: ShowPretty[People],
+      listField: ShowPretty[ListField],
+      interleaved: ShowPretty[Interleaved[Int]],
+      tree: ShowPretty[Tree[Int]],
+      boxBogus: ShowPretty[Box[Bogus]]
   ): Unit = {
     checkAll(s"$context.ShowPretty is Serializable", SerializableTests.serializable(ShowPretty[IntTree]))
 
@@ -126,6 +126,32 @@ class ShowPrettySuite extends KittensSuite {
       assert(value.show == pretty)
     }
 
+    test(s"$context.ShowPretty[Tree[Int]]") {
+      val value: Tree[Int] = Node(Leaf(1), Node(Node(Leaf(2), Leaf(3)), Leaf(4)))
+      val pretty = """
+        |Node(
+        |  left = Leaf(
+        |    value = 1
+        |  ),
+        |  right = Node(
+        |    left = Node(
+        |      left = Leaf(
+        |        value = 2
+        |      ),
+        |      right = Leaf(
+        |        value = 3
+        |      )
+        |    ),
+        |    right = Leaf(
+        |      value = 4
+        |    )
+        |  )
+        |)
+      """.stripMargin.trim
+
+      assert(value.show == pretty)
+    }
+
     test(s"$context.ShowPretty respects existing instances") {
       val value = Box(Bogus(42))
       val pretty = """
@@ -141,20 +167,16 @@ class ShowPrettySuite extends KittensSuite {
   {
     import auto.showPretty._
     testShowPretty("auto")
-    // NOTE: This typechecks but crashes the compiler on Scala 2.13
-//    println(ShowPretty[Tree[Int]])
   }
 
   {
     import cached.showPretty._
     testShowPretty("cached")
-    // NOTE: This typechecks but crashes the compiler on Scala 2.13
-//    println(ShowPretty[Tree[Int]])
   }
 
   {
     import semiInstances._
-    testShowPretty("semi")
+    testShowPretty("semiauto")
   }
 }
 
@@ -171,16 +193,15 @@ object ShowPrettySuite {
   }
 
   object semiInstances {
-    implicit val foo: ShowPretty[Foo] = semi.showPretty
-    implicit val outer: ShowPretty[Outer] = semi.showPretty
-    implicit val intTree: ShowPretty[IntTree] = semi.showPretty
-    implicit val genericAdt: ShowPretty[GenericAdt[Int]] = semi.showPretty
-    implicit val people: ShowPretty[People] = semi.showPretty
-    implicit val listFieldChild: ShowPretty[ListFieldChild] = semi.showPretty
-    implicit val listField: ShowPretty[ListField] = semi.showPretty
-    implicit val interleaved: ShowPretty[Interleaved[Int]] = semi.showPretty
-    implicit val boxBogus: ShowPretty[Box[Bogus]] = semi.showPretty
-    // NOTE: This typechecks but crashes the compiler on Scala 2.13
-    //    println(semi.showPretty[Tree[Int]])
+    implicit val foo: ShowPretty[Foo] = semiauto.showPretty
+    implicit val outer: ShowPretty[Outer] = semiauto.showPretty
+    implicit val intTree: ShowPretty[IntTree] = semiauto.showPretty
+    implicit val genericAdt: ShowPretty[GenericAdt[Int]] = semiauto.showPretty
+    implicit val people: ShowPretty[People] = semiauto.showPretty
+    implicit val listFieldChild: ShowPretty[ListFieldChild] = semiauto.showPretty
+    implicit val listField: ShowPretty[ListField] = semiauto.showPretty
+    implicit val interleaved: ShowPretty[Interleaved[Int]] = semiauto.showPretty
+    implicit val tree: ShowPretty[Tree[Int]] = semiauto.showPretty
+    implicit val boxBogus: ShowPretty[Box[Bogus]] = semiauto.showPretty
   }
 }

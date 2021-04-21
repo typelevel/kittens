@@ -1,22 +1,22 @@
 package cats
 package derived
 
-import cats.instances.all._
 import cats.laws.discipline.SerializableTests
 
 class ShowSuite extends KittensSuite {
   import ShowSuite._
   import TestDefns._
 
-  def testShow(context: String)(
-    implicit foo: Show[Foo],
-    outer: Show[Outer],
-    intTree: Show[IntTree],
-    genericAdt: Show[GenericAdt[Int]],
-    people: Show[People],
-    listField: Show[ListField],
-    interleaved: Show[Interleaved[Int]],
-    boxBogus: Show[Box[Bogus]]
+  def testShow(context: String)(implicit
+      foo: Show[Foo],
+      outer: Show[Outer],
+      intTree: Show[IntTree],
+      genericAdt: Show[GenericAdt[Int]],
+      people: Show[People],
+      listField: Show[ListField],
+      interleaved: Show[Interleaved[Int]],
+      tree: Show[Tree[Int]],
+      boxBogus: Show[Box[Bogus]]
   ): Unit = {
     checkAll(s"$context.Show is Serializable", SerializableTests.serializable(Show[IntTree]))
 
@@ -34,7 +34,8 @@ class ShowSuite extends KittensSuite {
 
     test(s"$context.Show[IntTree]") {
       val value: IntTree = IntNode(IntLeaf(1), IntNode(IntNode(IntLeaf(2), IntLeaf(3)), IntLeaf(4)))
-      val shown = "IntNode(l = IntLeaf(t = 1), r = IntNode(l = IntNode(l = IntLeaf(t = 2), r = IntLeaf(t = 3)), r = IntLeaf(t = 4)))"
+      val shown =
+        "IntNode(l = IntLeaf(t = 1), r = IntNode(l = IntNode(l = IntLeaf(t = 2), r = IntLeaf(t = 3)), r = IntLeaf(t = 4)))"
       assert(value.show == shown)
     }
 
@@ -46,7 +47,8 @@ class ShowSuite extends KittensSuite {
 
     test(s"$context.Show[People]") {
       val value = People("Kai", ContactInfo("303-123-4567", Address("123 1st St", "New York", "NY")))
-      val shown = "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))"
+      val shown =
+        "People(name = Kai, contactInfo = ContactInfo(phoneNumber = 303-123-4567, address = 123 1st St New York NY))"
       assert(value.show == shown)
     }
 
@@ -62,6 +64,13 @@ class ShowSuite extends KittensSuite {
       assert(value.show == shown)
     }
 
+    test(s"$context.Show[Tree[Int]]") {
+      val value: Tree[Int] = Node(Leaf(1), Node(Node(Leaf(2), Leaf(3)), Leaf(4)))
+      val shown =
+        "Node(left = Leaf(value = 1), right = Node(left = Node(left = Leaf(value = 2), right = Leaf(value = 3)), right = Leaf(value = 4)))"
+      assert(value.show == shown)
+    }
+
     test(s"$context.Show respects existing instances") {
       val value = Box(Bogus(42))
       val shown = "Box(content = Blah)"
@@ -72,20 +81,16 @@ class ShowSuite extends KittensSuite {
   {
     import auto.show._
     testShow("auto")
-    // NOTE: This typechecks but crashes the compiler on Scala 2.13
-//    println(Show[Tree[Int]])
   }
 
   {
     import cached.show._
     testShow("cached")
-    // NOTE: This typechecks but crashes the compiler on Scala 2.13
-//    println(Show[Tree[Int]])
   }
 
   {
     import semiInstances._
-    testShow("semi")
+    testShow("semiauto")
   }
 }
 
@@ -102,16 +107,15 @@ object ShowSuite {
   }
 
   object semiInstances {
-    implicit val foo: Show[Foo] = semi.show
-    implicit val outer: Show[Outer] = semi.show
-    implicit val intTree: Show[IntTree] = semi.show
-    implicit val genericAdt: Show[GenericAdt[Int]] = semi.show
-    implicit val people: Show[People] = semi.show
-    implicit val listFieldChild: Show[ListFieldChild] = semi.show
-    implicit val listField: Show[ListField] = semi.show
-    implicit val interleaved: Show[Interleaved[Int]] = semi.show
-    implicit val boxBogus: Show[Box[Bogus]] = semi.show
-    // NOTE: This typechecks but crashes the compiler on Scala 2.13
-    //    println(semi.show[Tree[Int]])
+    implicit val foo: Show[Foo] = semiauto.show
+    implicit val outer: Show[Outer] = semiauto.show
+    implicit val intTree: Show[IntTree] = semiauto.show
+    implicit val genericAdt: Show[GenericAdt[Int]] = semiauto.show
+    implicit val people: Show[People] = semiauto.show
+    implicit val listFieldChild: Show[ListFieldChild] = semiauto.show
+    implicit val listField: Show[ListField] = semiauto.show
+    implicit val interleaved: Show[Interleaved[Int]] = semiauto.show
+    implicit val tree: Show[Tree[Int]] = semiauto.show
+    implicit val boxBogus: Show[Box[Bogus]] = semiauto.show
   }
 }

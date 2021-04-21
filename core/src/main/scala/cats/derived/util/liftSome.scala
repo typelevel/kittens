@@ -34,20 +34,21 @@ object LiftSome extends LiftSomeAbsent {
       def instances = HNil
     }
 
-  implicit def liftPresent[F[_], L, R <: Coproduct](
-    implicit F: F[L], R: LiftSome[F, R]
+  implicit def liftPresent[F[_], L, R <: Coproduct](implicit
+      F: F[L],
+      R: LiftSome[F, R]
   ): Aux[F, L :+: R, F[L] :: R.Out] = new LiftSome[F, L :+: R] {
     type Out = F[L] :: R.Out
     val instances = F :: R.instances
   }
 }
 
-private[util] abstract class LiftSomeAbsent {
+abstract private[util] class LiftSomeAbsent {
   type Aux[F[_], C <: Coproduct, O <: HList] = LiftSome[F, C] { type Out = O }
   def apply[F[_], C <: Coproduct](lift: LiftSome[F, C]): Aux[F, C, lift.Out] = lift
 
-  implicit def liftAbsent[F[_], L, R <: Coproduct](
-    implicit R: LiftSome[F, R]
+  implicit def liftAbsent[F[_], L, R <: Coproduct](implicit
+      R: LiftSome[F, R]
   ): Aux[F, L :+: R, R.Out] = new LiftSome[F, L :+: R] {
     type Out = R.Out
     def instances = R.instances

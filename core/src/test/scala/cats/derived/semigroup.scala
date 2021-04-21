@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless rsemigroupuired by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -16,8 +16,6 @@
 
 package cats
 package derived
-
-import cats.instances.all._
 import cats.kernel.laws.discipline.{SemigroupTests, SerializableTests}
 import org.scalacheck.Arbitrary
 
@@ -26,11 +24,11 @@ class SemigroupSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testSemigroup(context: String)(
-    implicit foo: Semigroup[Foo],
-    recursive: Semigroup[Recursive],
-    interleaved: Semigroup[Interleaved[Int]],
-    box: Semigroup[Box[Mul]]
+  def testSemigroup(context: String)(implicit
+      foo: Semigroup[Foo],
+      recursive: Semigroup[Recursive],
+      interleaved: Semigroup[Interleaved[Int]],
+      box: Semigroup[Box[Mul]]
   ): Unit = {
     checkAll(s"$context.Semigroup[Foo]", SemigroupTests[Foo].semigroup)
     checkAll(s"$context.Semigroup[Recursive]", SemigroupTests[Recursive].semigroup)
@@ -54,15 +52,20 @@ class SemigroupSuite extends KittensSuite {
   }
 
   {
-    implicit val foo: Semigroup[Foo] = semi.semigroup
-    implicit lazy val recursive: Semigroup[Recursive] = semi.semigroup
-    implicit val interleaved: Semigroup[Interleaved[Int]] = semi.semigroup
-    implicit val box: Semigroup[Box[Mul]] = semi.semigroup
-    testSemigroup("semi")
+    import semiInstances._
+    testSemigroup("semiauto")
   }
 }
 
 object SemigroupSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val foo: Semigroup[Foo] = semiauto.semigroup
+    implicit lazy val recursive: Semigroup[Recursive] = semiauto.semigroup
+    implicit val interleaved: Semigroup[Interleaved[Int]] = semiauto.semigroup
+    implicit val box: Semigroup[Box[Mul]] = semiauto.semigroup
+  }
 
   final case class Mul(value: Int)
   object Mul {

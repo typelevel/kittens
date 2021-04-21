@@ -1,17 +1,16 @@
 import sbt._
-import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
-import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
+
+ThisBuild / crossScalaVersions := Seq("2.12.13", "2.13.5")
+ThisBuild / scalaVersion := "2.13.5"
 
 lazy val buildSettings = Seq(
-  organization := "org.typelevel",
-  scalaVersion := "2.13.1",
-  crossScalaVersions := Seq("2.11.12", "2.12.10", scalaVersion.value)
+  organization := "org.typelevel"
 )
 
-val catsVersion = "2.0.0"
-val shapelessVersion = "2.3.3"
-val disciplineVersion = "1.0.0-RC1"
-val testKitVersion = "1.0.0-RC1"
+val catsVersion = "2.6.0"
+val disciplineMunitVersion = "1.0.8"
+val kindProjectorVersion = "0.11.3"
+val shapelessVersion = "2.3.4"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(
@@ -19,7 +18,8 @@ lazy val commonSettings = Seq(
     "-language:higherKinds",
     "-language:implicitConversions",
     "-unchecked",
-    "-deprecation"
+    "-deprecation",
+    "-Xfatal-warnings"
   ),
   scalacOptions ++= (
     CrossVersion.partialVersion(scalaVersion.value) match {
@@ -32,116 +32,98 @@ lazy val commonSettings = Seq(
     Resolver.sonatypeRepo("snapshots")
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel"   %%% "cats-core"      % catsVersion,
-    "org.typelevel"   %%% "alleycats-core" % catsVersion,
-    "com.chuusai"     %%% "shapeless"      % shapelessVersion,
-    "org.typelevel"   %%% "discipline-scalatest" % disciplineVersion % Test,
-    "org.typelevel"   %%% "cats-testkit-scalatest" % testKitVersion % Test,
-    compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+    "org.typelevel" %%% "cats-core" % catsVersion,
+    "org.typelevel" %%% "alleycats-core" % catsVersion,
+    "com.chuusai" %%% "shapeless" % shapelessVersion,
+    "org.typelevel" %%% "cats-testkit" % catsVersion % Test,
+    "org.typelevel" %%% "discipline-munit" % disciplineMunitVersion % Test,
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value % Test,
+    compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
   ),
-  scmInfo :=
-    Some(ScmInfo(
-      url("https://github.com/typelevel/kittens"),
-      "scm:git:git@github.com:typelevel/kittens.git"
-    )),
-  testOptions += Tests.Argument("-oF"),
-  mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.0.0")
-) ++ crossVersionSharedSources
+  Test / parallelExecution := false,
+  versionScheme := Some("semver-spec"),
+  mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.2.1")
+)
 
-initialCommands in console := """import shapeless._, cats._, cats.derived._"""
+console / initialCommands := """import shapeless._, cats._, cats.derived._"""
 
 lazy val commonJsSettings = Seq(
-  scalaJSStage in Global := FastOptStage,
-  parallelExecution in Test := false
+  Global / scalaJSStage := FastOptStage,
+  Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule))
 )
 
-lazy val commonJvmSettings = Seq(
-  parallelExecution in Test := false
-)
+lazy val coreSettings =
+  Seq.concat(buildSettings, commonSettings, crossVersionSharedSources, publishSettings)
 
-lazy val coreSettings = buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings
-
-lazy val root = project.in(file("."))
-  .aggregate(coreJS, coreJVM)
-  .dependsOn(coreJS, coreJVM)
-  .settings(coreSettings:_*)
+lazy val kittens = project
+  .in(file("."))
+  .aggregate(coreJS, coreJVM, coreNative)
+  .dependsOn(coreJS, coreJVM, coreNative)
+  .settings(coreSettings: _*)
   .settings(noPublishSettings)
 
-lazy val core = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
+lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
-  .settings(coreSettings:_*)
-  .jsSettings(commonJsSettings:_*)
-  .jvmSettings(commonJvmSettings:_*)
-
+  .settings(coreSettings: _*)
+  .jsSettings(commonJsSettings: _*)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
+lazy val coreNative = core.native
 
-addCommandAlias("validate", ";root;clean;test;mima")
-addCommandAlias("releaseAll", ";root;release")
-addCommandAlias("js", ";project coreJS")
+addCommandAlias("root", ";project kittens")
 addCommandAlias("jvm", ";project coreJVM")
-addCommandAlias("root", ";project root")
-addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
+addCommandAlias("js", ";project coreJS")
+addCommandAlias("native", ";project coreNative")
 
-lazy val crossVersionSharedSources: Seq[Setting[_]] =
-  Seq(Compile, Test).map { sc =>
-    (unmanagedSourceDirectories in sc) ++= {
-      (unmanagedSourceDirectories in sc ).value.map {
-        dir:File => new File(dir.getPath + "_" + scalaBinaryVersion.value)
-      }
-    }
+addCommandAlias(
+  "validateJVM",
+  "all scalafmtCheckAll scalafmtSbtCheck coreJVM/test coreJVM/doc coreJVM/mimaReportBinaryIssues"
+)
+addCommandAlias("validateJS", "all coreJS/test")
+addCommandAlias("validateNative", "all coreNative/test")
+addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
+addCommandAlias("fmt", "all scalafmtSbt scalafmtAll")
+addCommandAlias("fmtCheck", "all scalafmtSbtCheck scalafmtCheckAll")
+
+lazy val crossVersionSharedSources: Seq[Setting[_]] = Seq(Compile, Test).map { sc =>
+  (sc / unmanagedSourceDirectories) ++= (sc / unmanagedSourceDirectories).value.map { dir: File =>
+    new File(dir.getPath + "_" + scalaBinaryVersion.value)
   }
+}
 
 lazy val publishSettings = Seq(
+  Test / publishArtifact := false,
+  pomIncludeRepository := (_ => false),
   homepage := Some(url("https://github.com/typelevel/kittens")),
   licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-  publishMavenStyle := true,
-  publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false },
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (version.value.trim.endsWith("SNAPSHOT"))
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-  },
-  pomExtra :=
-    <developers>
-      <developer>
-        <id>milessabin</id>
-        <name>Miles Sabin</name>
-        <url>http://milessabin.com/blog</url>
-      </developer>
-    </developers>
-)
-
-lazy val noPublishSettings = Seq(
-  publish := {},
-  publishLocal := {},
-  publishArtifact := false
-)
-
-lazy val releaseSettings = Seq(
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    setNextVersion,
-    commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
-    pushChanges
+  scmInfo := Some(ScmInfo(url("https://github.com/typelevel/kittens"), "scm:git:git@github.com:typelevel/kittens.git")),
+  developers := List(
+    Developer("milessabin", "Miles Sabin", "", url("http://milessabin.com/blog")),
+    Developer("kailuowang", "Kai(luo) Wang", "kailuo.wang@gmail.com", url("http://kailuowang.com/")),
+    Developer("joroKr21", "Georgi Krastev", "joro.kr.21@gmail.com", url("https://twitter.com/Joro_Kr"))
   )
 )
 
-credentials ++= (for {
-  username <- Option(System.getenv().get("SONATYPE_USERNAME"))
-  password <- Option(System.getenv().get("SONATYPE_PASSWORD"))
-} yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
+lazy val noPublishSettings =
+  publish / skip := true
+
+ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8")
+ThisBuild / githubWorkflowArtifactUpload := false
+ThisBuild / githubWorkflowBuildMatrixAdditions += "ci" -> List("validateJVM", "validateJS", "validateNative")
+ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("${{ matrix.ci }}"), name = Some("Validation")))
+ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
+ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))
+ThisBuild / githubWorkflowPublishPreamble += WorkflowStep.Use(UseRef.Public("olafurpg", "setup-gpg", "v3"))
+ThisBuild / githubWorkflowPublish := Seq(
+  WorkflowStep.Sbt(
+    List("ci-release"),
+    env = Map(
+      "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
+      "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
+      "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
+      "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}"
+    )
+  )
+)

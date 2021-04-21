@@ -16,8 +16,6 @@
 
 package cats
 package derived
-
-import cats.instances.all._
 import cats.kernel.laws.discipline.{PartialOrderTests, SerializableTests}
 import org.scalacheck.{Arbitrary, Cogen}
 
@@ -25,14 +23,14 @@ class PartialOrderSuite extends KittensSuite {
   import PartialOrderSuite._
   import TestDefns._
 
-  def testPartialOrder(context: String)(
-    implicit iList: PartialOrder[IList[Int]],
-    inner: PartialOrder[Inner],
-    outer: PartialOrder[Outer],
-    interleaved: PartialOrder[Interleaved[Int]],
-    tree: PartialOrder[Tree[Int]],
-    recursive: PartialOrder[Recursive],
-    boxKeyValue: PartialOrder[Box[KeyValue]]
+  def testPartialOrder(context: String)(implicit
+      iList: PartialOrder[IList[Int]],
+      inner: PartialOrder[Inner],
+      outer: PartialOrder[Outer],
+      interleaved: PartialOrder[Interleaved[Int]],
+      tree: PartialOrder[Tree[Int]],
+      recursive: PartialOrder[Recursive],
+      boxKeyValue: PartialOrder[Box[KeyValue]]
   ): Unit = {
     checkAll(s"$context.PartialOrder[IList[Int]]", PartialOrderTests[IList[Int]].partialOrder)
     checkAll(s"$context.PartialOrder[Inner]", PartialOrderTests[Inner].partialOrder)
@@ -62,21 +60,24 @@ class PartialOrderSuite extends KittensSuite {
     testPartialOrder("cached")
   }
 
-  semiTests.run()
-
-  object semiTests {
-    implicit val iList: PartialOrder[IList[Int]] = semi.partialOrder
-    implicit val inner: PartialOrder[Inner] = semi.partialOrder
-    implicit val outer: PartialOrder[Outer] = semi.partialOrder
-    implicit val interleaved: PartialOrder[Interleaved[Int]] = semi.partialOrder
-    implicit val tree: PartialOrder[Tree[Int]] = semi.partialOrder
-    implicit val recursive: PartialOrder[Recursive] = semi.partialOrder
-    implicit val boxKeyValue: PartialOrder[Box[KeyValue]] = semi.partialOrder
-    def run(): Unit = testPartialOrder("semi")
+  {
+    import semiInstances._
+    testPartialOrder("semiauto")
   }
 }
 
 object PartialOrderSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val iList: PartialOrder[IList[Int]] = semiauto.partialOrder
+    implicit val inner: PartialOrder[Inner] = semiauto.partialOrder
+    implicit val outer: PartialOrder[Outer] = semiauto.partialOrder
+    implicit val interleaved: PartialOrder[Interleaved[Int]] = semiauto.partialOrder
+    implicit val tree: PartialOrder[Tree[Int]] = semiauto.partialOrder
+    implicit val recursive: PartialOrder[Recursive] = semiauto.partialOrder
+    implicit val boxKeyValue: PartialOrder[Box[KeyValue]] = semiauto.partialOrder
+  }
 
   final case class KeyValue(key: String, value: Int)
   object KeyValue extends ((String, Int) => KeyValue) {

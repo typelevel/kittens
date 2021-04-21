@@ -36,7 +36,7 @@ object MkSemigroupK extends MkSemigroupKDerivation {
   def apply[F[_]](implicit F: MkSemigroupK[F]): MkSemigroupK[F] = F
 }
 
-private[derived] abstract class MkSemigroupKDerivation extends MkSemigroupKNestedOuter {
+abstract private[derived] class MkSemigroupKDerivation extends MkSemigroupKNestedOuter {
 
   implicit val mkSemigroupKHNil: MkSemigroupK[Const[HNil]#λ] =
     new MkSemigroupK[Const[HNil]#λ] {
@@ -49,7 +49,7 @@ private[derived] abstract class MkSemigroupKDerivation extends MkSemigroupKNeste
     }
 }
 
-private[derived] abstract class MkSemigroupKNestedOuter extends MkSemigroupKNestedInner {
+abstract private[derived] class MkSemigroupKNestedOuter extends MkSemigroupKNestedInner {
 
   implicit def mkSemigroupKNestedOuter[F[_]](implicit F: Split1[F, SemigroupKOrMk, Trivial1]): MkSemigroupK[F] =
     new MkSemigroupK[F] {
@@ -59,7 +59,7 @@ private[derived] abstract class MkSemigroupKNestedOuter extends MkSemigroupKNest
     }
 }
 
-private[derived] abstract class  MkSemigroupKNestedInner extends MkSemigroupKGeneric {
+abstract private[derived] class MkSemigroupKNestedInner extends MkSemigroupKGeneric {
 
   implicit def mkSemigroupKNestedInner[F[_]](implicit F: Split1[F, Apply, SemigroupKOrMk]): MkSemigroupK[F] =
     new MkSemigroupK[F] {
@@ -69,7 +69,7 @@ private[derived] abstract class  MkSemigroupKNestedInner extends MkSemigroupKGen
     }
 }
 
-private[derived] abstract class MkSemigroupKGeneric {
+abstract private[derived] class MkSemigroupKGeneric {
   protected type SemigroupKOrMk[F[_]] = SemigroupK[F] OrElse MkSemigroupK[F]
 
   implicit def mkSemigroupKHCons[F[_]](implicit F: IsHCons1[F, SemigroupKOrMk, MkSemigroupK]): MkSemigroupK[F] =

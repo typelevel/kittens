@@ -2,18 +2,18 @@ package cats
 package derived
 
 import cats.kernel.laws.discipline.{HashTests, SerializableTests}
-import cats.instances.all._
 
 class HashSuite extends KittensSuite {
+  import HashSuite._
   import TestDefns._
 
-  def testHash(context: String)(
-    implicit iList: Hash[IList[Int]],
-    inner: Hash[Inner],
-    outer: Hash[Outer],
-    interleaved: Hash[Interleaved[Int]],
-    tree: Hash[Tree[Int]],
-    recursive: Hash[Recursive]
+  def testHash(context: String)(implicit
+      iList: Hash[IList[Int]],
+      inner: Hash[Inner],
+      outer: Hash[Outer],
+      interleaved: Hash[Interleaved[Int]],
+      tree: Hash[Tree[Int]],
+      recursive: Hash[Recursive]
   ): Unit = {
     checkAll(s"$context.Hash[IList[Int]]", HashTests[IList[Int]].hash)
     checkAll(s"$context.Hash[Inner]", HashTests[Inner].hash)
@@ -35,15 +35,21 @@ class HashSuite extends KittensSuite {
     testHash("cached")
   }
 
-  semiTests.run()
+  {
+    import semiInstances._
+    testHash("semiauto")
+  }
+}
 
-  object semiTests {
-    implicit val iList: Hash[IList[Int]] = semi.hash
-    implicit val inner: Hash[Inner] = semi.hash
-    implicit val outer: Hash[Outer] = semi.hash
-    implicit val interleaved: Hash[Interleaved[Int]] = semi.hash
-    implicit val tree: Hash[Tree[Int]] = semi.hash
-    implicit val recursive: Hash[Recursive] = semi.hash
-    def run(): Unit = testHash("semi")
+object HashSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val iList: Hash[IList[Int]] = semiauto.hash
+    implicit val inner: Hash[Inner] = semiauto.hash
+    implicit val outer: Hash[Outer] = semiauto.hash
+    implicit val interleaved: Hash[Interleaved[Int]] = semiauto.hash
+    implicit val tree: Hash[Tree[Int]] = semiauto.hash
+    implicit val recursive: Hash[Recursive] = semiauto.hash
   }
 }

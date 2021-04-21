@@ -32,31 +32,29 @@ object MkPartialOrder extends MkPartialOrderDerivation {
   def apply[A](implicit ev: MkPartialOrder[A]): MkPartialOrder[A] = ev
 }
 
-private[derived] abstract class MkPartialOrderDerivation {
-  implicit val mkPartialOrderHNil: MkPartialOrder[HNil] = instance((_, _) => 0)
-  implicit val mkPartialOrderCNil: MkPartialOrder[CNil] = instance((_, _) => 0)
+abstract private[derived] class MkPartialOrderDerivation {
+  implicit val mkPartialOrderHNil: MkPartialOrder[HNil] = (_, _) => 0
+  implicit val mkPartialOrderCNil: MkPartialOrder[CNil] = (_, _) => 0
 
-  implicit def mkPartialOrderHcons[H, T <: HList](
-    implicit H: PartialOrder[H] OrElse MkPartialOrder[H], T: MkPartialOrder[T]
-  ): MkPartialOrder[H :: T] = instance { case (hx :: tx, hy :: ty) =>
+  implicit def mkPartialOrderHcons[H, T <: HList](implicit
+      H: PartialOrder[H] OrElse MkPartialOrder[H],
+      T: MkPartialOrder[T]
+  ): MkPartialOrder[H :: T] = { case (hx :: tx, hy :: ty) =>
     val cmpH = H.unify.partialCompare(hx, hy)
     if (cmpH != 0) cmpH else T.partialCompare(tx, ty)
   }
 
-  implicit def mkPartialOrderCCons[L, R <: Coproduct](
-    implicit L: PartialOrder[L] OrElse MkPartialOrder[L], R: MkPartialOrder[R]
-  ): MkPartialOrder[L :+: R] = instance {
+  implicit def mkPartialOrderCCons[L, R <: Coproduct](implicit
+      L: PartialOrder[L] OrElse MkPartialOrder[L],
+      R: MkPartialOrder[R]
+  ): MkPartialOrder[L :+: R] = {
     case (Inl(lx), Inl(ly)) => L.unify.partialCompare(lx, ly)
     case (Inr(rx), Inr(ry)) => R.partialCompare(rx, ry)
     case _ => Double.NaN
   }
 
-  implicit def mkPartialOrderGeneric[A, R](
-    implicit A: Generic.Aux[A, R], R: Lazy[MkPartialOrder[R]]
-  ): MkPartialOrder[A] = instance((x, y) => R.value.partialCompare(A.to(x), A.to(y)))
-
-  private def instance[A](f: (A, A) => Double): MkPartialOrder[A] =
-    new MkPartialOrder[A] {
-      def partialCompare(x: A, y: A) = f(x, y)
-    }
+  implicit def mkPartialOrderGeneric[A, R](implicit
+      A: Generic.Aux[A, R],
+      R: Lazy[MkPartialOrder[R]]
+  ): MkPartialOrder[A] = (x, y) => R.value.partialCompare(A.to(x), A.to(y))
 }

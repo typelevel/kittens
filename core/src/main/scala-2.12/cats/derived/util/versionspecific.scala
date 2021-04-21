@@ -23,7 +23,7 @@ object VersionSpecific {
     implicit def primary[A, B](implicit a: A): A OrElse B = new Primary(a)
   }
 
-  private[util] abstract class OrElse0 {
+  abstract private[util] class OrElse0 {
     implicit def secondary[A, B](implicit b: Lazy[B]): A OrElse B = new Secondary(b.value)
   }
 }

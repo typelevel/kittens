@@ -16,25 +16,21 @@
 
 package cats.derived
 
+import cats.platform.Platform
 import cats.syntax.AllSyntax
-import cats.tests.{StrictCatsEquality, TestSettings}
-import org.scalatest.funsuite.AnyFunSuite
-import org.scalatest.matchers.should.Matchers
-import org.typelevel.discipline.scalatest.Discipline
+import munit.DisciplineSuite
+import org.scalacheck.Test.Parameters
 
-/**
- * An opinionated stack of traits to improve consistency and reduce
- * boilerplate in Kittens tests. Note that unlike the corresponding
- * CatsSuite in the Cat project, this trait does not mix in any
- * instances.
- */
-abstract class KittensSuite extends AnyFunSuite
-  with Matchers
-  with Discipline
-  with TestSettings
-  with AllSyntax
-  with StrictCatsEquality {
-
-  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    checkConfiguration
+/** An opinionated stack of traits to improve consistency and reduce
+  * boilerplate in Kittens tests. Note that unlike the corresponding
+  * CatsSuite in the Cat project, this trait does not mix in any
+  * instances.
+  */
+abstract class KittensSuite extends DisciplineSuite with AllSyntax {
+  override val scalaCheckTestParameters: Parameters = super.scalaCheckTestParameters
+    .withMinSuccessfulTests(if (Platform.isJvm) 50 else 5)
+    .withMaxDiscardRatio(if (Platform.isJvm) 5 else 50)
+    .withWorkers(if (Platform.isJvm) 2 else 1)
+    .withMaxSize(if (Platform.isJvm) 10 else 5)
+    .withMinSize(0)
 }

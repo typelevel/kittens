@@ -35,7 +35,7 @@ object MkApplicative extends MkApplicativeDerivation {
   def apply[F[_]](implicit F: MkApplicative[F]): MkApplicative[F] = F
 }
 
-private[derived] abstract class MkApplicativeDerivation extends MkApplicativeNested {
+abstract private[derived] class MkApplicativeDerivation extends MkApplicativeNested {
 
   implicit val mkApplicativeHNil: MkApplicative[Const[HNil]#λ] = new MkApplicative[Const[HNil]#λ] {
     def pure[A](x: A) = HNil
@@ -51,7 +51,7 @@ private[derived] abstract class MkApplicativeDerivation extends MkApplicativeNes
     }
 }
 
-private[derived] abstract class MkApplicativeNested extends MkApplicativeGeneric {
+abstract private[derived] class MkApplicativeNested extends MkApplicativeGeneric {
 
   implicit def mkApplicativeNested[F[_]](implicit F: Split1[F, ApplicativeOrMk, ApplicativeOrMk]): MkApplicative[F] =
     new MkApplicative[F] {
@@ -69,7 +69,7 @@ private[derived] abstract class MkApplicativeNested extends MkApplicativeGeneric
     }
 }
 
-private[derived] abstract class MkApplicativeGeneric {
+abstract private[derived] class MkApplicativeGeneric {
   protected type ApplicativeOrMk[F[_]] = Applicative[F] OrElse MkApplicative[F]
 
   implicit def mkApplicativeHCons[F[_]](implicit F: IsHCons1[F, ApplicativeOrMk, MkApplicative]): MkApplicative[F] =

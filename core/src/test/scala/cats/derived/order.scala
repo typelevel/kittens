@@ -18,17 +18,17 @@ package cats
 package derived
 
 import cats.kernel.laws.discipline.{OrderTests, SerializableTests}
-import cats.instances.all._
 
 class OrderSuite extends KittensSuite {
+  import OrderSuite._
   import TestDefns._
 
-  def testOrder(context: String)(
-    implicit inner: Order[Inner],
-    outer: Order[Outer],
-    interleaved: Order[Interleaved[Int]],
-    recursive: Order[Recursive],
-    genericAdt: Order[GenericAdt[Int]]
+  def testOrder(context: String)(implicit
+      inner: Order[Inner],
+      outer: Order[Outer],
+      interleaved: Order[Interleaved[Int]],
+      recursive: Order[Recursive],
+      genericAdt: Order[GenericAdt[Int]]
   ): Unit = {
     checkAll(s"$context.Order[Inner]", OrderTests[Inner].order)
     checkAll(s"$context.Order[Outer]", OrderTests[Outer].order)
@@ -48,14 +48,20 @@ class OrderSuite extends KittensSuite {
     testOrder("cached")
   }
 
-  semiTests.run()
+  {
+    import semiInstances._
+    testOrder("semiauto")
+  }
+}
 
-  object semiTests {
-    implicit val inner: Order[Inner] = semi.order
-    implicit val outer: Order[Outer] = semi.order
-    implicit val interleaved: Order[Interleaved[Int]] = semi.order
-    implicit val recursive: Order[Recursive] = semi.order
-    implicit val genericAdt: Order[GenericAdt[Int]] = semi.order
-    def run(): Unit = testOrder("semi")
+object OrderSuite {
+  import TestDefns._
+
+  object semiInstances {
+    implicit val inner: Order[Inner] = semiauto.order
+    implicit val outer: Order[Outer] = semiauto.order
+    implicit val interleaved: Order[Interleaved[Int]] = semiauto.order
+    implicit val recursive: Order[Recursive] = semiauto.order
+    implicit val genericAdt: Order[GenericAdt[Int]] = semiauto.order
   }
 }

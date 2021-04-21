@@ -16,33 +16,26 @@
 
 package cats
 package derived
-
-import cats.instances.all._
 import cats.laws.discipline._
 import cats.laws.discipline.eq._
 
 class FunctorSuite extends KittensSuite {
+  import FunctorSuite._
   import TestDefns._
   import TestEqInstances._
 
-  type OptList[A] = Option[List[A]]
-  type ListSnoc[A] = List[Snoc[A]]
-  type AndChar[A] = (A, Char)
-  type Pred[A] = A => Boolean
-  type NestedPred[A] = Pred[Pred[A]]
-
-  implicit val exhaustivePred: ExhaustiveCheck[Pred[Boolean]] =
+  implicit val exhaustivePred: ExhaustiveCheck[Predicate[Boolean]] =
     ExhaustiveCheck.instance(List(_ => true, _ => false, identity, !_))
 
-  def testFunctor(context: String)(
-    implicit iList: Functor[IList],
-    tree: Functor[Tree],
-    genericAdt: Functor[GenericAdt],
-    optList: Functor[OptList],
-    listSnoc: Functor[ListSnoc],
-    andChar: Functor[AndChar],
-    interleaved: Functor[Interleaved],
-    nestedPred: Functor[NestedPred]
+  def testFunctor(context: String)(implicit
+      iList: Functor[IList],
+      tree: Functor[Tree],
+      genericAdt: Functor[GenericAdt],
+      optList: Functor[OptList],
+      listSnoc: Functor[ListSnoc],
+      andChar: Functor[AndChar],
+      interleaved: Functor[Interleaved],
+      nestedPred: Functor[NestedPred]
   ): Unit = {
     checkAll(s"$context.Functor[IList]", FunctorTests[IList].functor[Int, String, Long])
     checkAll(s"$context.Functor[Tree]", FunctorTests[Tree].functor[Int, String, Long])
@@ -76,18 +69,29 @@ class FunctorSuite extends KittensSuite {
     testFunctor("cached")
   }
 
-  semiTests.run()
-
-  object semiTests {
-    implicit val iList: Functor[IList] = semi.functor
-    implicit val tree: Functor[Tree] = semi.functor
-    implicit val genericAdt: Functor[GenericAdt] = semi.functor
-    implicit val optList: Functor[OptList] = semi.functor
-    implicit val listSnoc: Functor[ListSnoc] = semi.functor
-    implicit val andChar: Functor[AndChar] = semi.functor
-    implicit val interleaved: Functor[Interleaved] = semi.functor
-    implicit val nestedPred: Functor[NestedPred] = semi.functor
-    def run(): Unit = testFunctor("semi")
+  {
+    import semiInstances._
+    testFunctor("semiauto")
   }
 }
 
+object FunctorSuite {
+  import TestDefns._
+
+  type OptList[A] = Option[List[A]]
+  type ListSnoc[A] = List[Snoc[A]]
+  type AndChar[A] = (A, Char)
+  type Predicate[A] = A => Boolean
+  type NestedPred[A] = Predicate[Predicate[A]]
+
+  object semiInstances {
+    implicit val iList: Functor[IList] = semiauto.functor
+    implicit val tree: Functor[Tree] = semiauto.functor
+    implicit val genericAdt: Functor[GenericAdt] = semiauto.functor
+    implicit val optList: Functor[OptList] = semiauto.functor
+    implicit val listSnoc: Functor[ListSnoc] = semiauto.functor
+    implicit val andChar: Functor[AndChar] = semiauto.functor
+    implicit val interleaved: Functor[Interleaved] = semiauto.functor
+    implicit val nestedPred: Functor[NestedPred] = semiauto.functor
+  }
+}

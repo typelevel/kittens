@@ -18,7 +18,6 @@ package cats
 package derived
 
 import cats.data.{NonEmptyList, OneAnd}
-import cats.instances.all._
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.{ReducibleTests, SerializableTests}
 import org.scalacheck.Arbitrary
@@ -28,14 +27,14 @@ class ReducibleSuite extends KittensSuite {
   import TestDefns._
   import TestEqInstances._
 
-  def testReducible(context: String)(
-    implicit iCons: Reducible[ICons],
-    tree: Reducible[Tree],
-    nelSCons: Reducible[NelSCons],
-    nelAndOne: Reducible[NelAndOne],
-    listAndNel: Reducible[ListAndNel],
-    interleaved: Reducible[Interleaved],
-    boxZipper: Reducible[BoxZipper]
+  def testReducible(context: String)(implicit
+      iCons: Reducible[ICons],
+      tree: Reducible[Tree],
+      nelSCons: Reducible[NelSCons],
+      nelAndOne: Reducible[NelAndOne],
+      listAndNel: Reducible[ListAndNel],
+      interleaved: Reducible[Interleaved],
+      boxZipper: Reducible[BoxZipper]
   ): Unit = {
     checkAll(s"$context.Reducible[ICons]", ReducibleTests[ICons].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[Tree]", ReducibleTests[Tree].reducible[Option, Int, Long])
@@ -85,7 +84,7 @@ class ReducibleSuite extends KittensSuite {
 
   {
     import semiInstances._
-    testReducible("semi")
+    testReducible("semiauto")
   }
 }
 
@@ -98,13 +97,13 @@ object ReducibleSuite {
   type BoxZipper[A] = Box[Zipper[A]]
 
   object semiInstances {
-    implicit val iCons: Reducible[ICons] = semi.reducible
-    implicit val tree: Reducible[Tree] = semi.reducible
-    implicit val nelSCons: Reducible[NelSCons] = semi.reducible
-    implicit val nelAndOne: Reducible[NelAndOne] = semi.reducible
-    implicit val listAndNel: Reducible[ListAndNel] = semi.reducible
-    implicit val interleaved: Reducible[Interleaved] = semi.reducible
-    implicit val boxZipper: Reducible[BoxZipper] = semi.reducible
+    implicit val iCons: Reducible[ICons] = semiauto.reducible
+    implicit val tree: Reducible[Tree] = semiauto.reducible
+    implicit val nelSCons: Reducible[NelSCons] = semiauto.reducible
+    implicit val nelAndOne: Reducible[NelAndOne] = semiauto.reducible
+    implicit val listAndNel: Reducible[ListAndNel] = semiauto.reducible
+    implicit val interleaved: Reducible[Interleaved] = semiauto.reducible
+    implicit val boxZipper: Reducible[BoxZipper] = semiauto.reducible
   }
 
   final case class Zipper[+A](left: List[A], focus: A, right: List[A])

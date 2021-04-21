@@ -16,40 +16,39 @@
 
 package cats
 package derived
-
-import cats.implicits._
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.eq._
 
 class ContravariantSuite extends KittensSuite {
+  import ContravariantSuite._
   import TestDefns._
   import TestEqInstances._
 
-  type OptPred[A] = Option[A => Boolean]
-  type ListPred[A] = List[A => Boolean]
-  type GenericAdtPred[A] = GenericAdt[A => Boolean]
-  type ListSnocF[A] = List[Snoc[A => Int]]
-  type InterleavedPred[A] = Interleaved[A => Boolean]
-  type AndCharPred[A] = (A => Boolean, Char)
-  type TreePred[A] = Tree[A => Boolean]
-
-  def testContravariant(context: String)(
-    implicit
-    optPred: Contravariant[OptPred],
-    treePred: Contravariant[TreePred],
-    listPred: Contravariant[ListPred],
-    genericAdtPred: Contravariant[GenericAdtPred],
-    liftSnocF: Contravariant[ListSnocF],
-    interleavedPred: Contravariant[InterleavedPred],
-    andCharPred: Contravariant[AndCharPred]
+  def testContravariant(context: String)(implicit
+      optPred: Contravariant[OptPred],
+      treePred: Contravariant[TreePred],
+      listPred: Contravariant[ListPred],
+      genericAdtPred: Contravariant[GenericAdtPred],
+      liftSnocF: Contravariant[ListSnocF],
+      interleavedPred: Contravariant[InterleavedPred],
+      andCharPred: Contravariant[AndCharPred]
   ): Unit = {
     checkAll(s"$context.Contravariant[OptPred]", ContravariantTests[OptPred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$context.Contravariant[TreePred]", ContravariantTests[TreePred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$context.Contravariant[ListPred]", ContravariantTests[ListPred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[GenericAdtPred]", ContravariantTests[GenericAdtPred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[InterleavedPred]", ContravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[AndCharPred]", ContravariantTests[AndCharPred].contravariant[MiniInt, String, Boolean])
+    checkAll(
+      s"$context.Contravariant[GenericAdtPred]",
+      ContravariantTests[GenericAdtPred].contravariant[MiniInt, String, Boolean]
+    )
+    checkAll(
+      s"$context.Contravariant[InterleavedPred]",
+      ContravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean]
+    )
+    checkAll(
+      s"$context.Contravariant[AndCharPred]",
+      ContravariantTests[AndCharPred].contravariant[MiniInt, String, Boolean]
+    )
     checkAll(s"$context.Contravariant is Serializable", SerializableTests.serializable(Contravariant[TreePred]))
 
     test(s"$context.Contravariant.contramap is stack safe") {
@@ -71,17 +70,30 @@ class ContravariantSuite extends KittensSuite {
     testContravariant("cached")
   }
 
-  semiTests.run()
-
-  object semiTests {
-    implicit val optPred: Contravariant[OptPred] = semi.contravariant
-    implicit val listPred: Contravariant[ListPred] = semi.contravariant
-    implicit val genericAdtPred: Contravariant[GenericAdtPred] = semi.contravariant
-    implicit val listSnocF: Contravariant[ListSnocF] = semi.contravariant
-    implicit val interleavePred: Contravariant[InterleavedPred] = semi.contravariant
-    implicit val andCharPred: Contravariant[AndCharPred] = semi.contravariant
-    implicit val treePred: Contravariant[TreePred] = semi.contravariant
-    def run(): Unit = testContravariant("semi")
+  {
+    import semiInstances._
+    testContravariant("semiauto")
   }
 }
 
+object ContravariantSuite {
+  import TestDefns._
+
+  type OptPred[A] = Option[A => Boolean]
+  type ListPred[A] = List[A => Boolean]
+  type GenericAdtPred[A] = GenericAdt[A => Boolean]
+  type ListSnocF[A] = List[Snoc[A => Int]]
+  type InterleavedPred[A] = Interleaved[A => Boolean]
+  type AndCharPred[A] = (A => Boolean, Char)
+  type TreePred[A] = Tree[A => Boolean]
+
+  object semiInstances {
+    implicit val optPred: Contravariant[OptPred] = semiauto.contravariant
+    implicit val listPred: Contravariant[ListPred] = semiauto.contravariant
+    implicit val genericAdtPred: Contravariant[GenericAdtPred] = semiauto.contravariant
+    implicit val listSnocF: Contravariant[ListSnocF] = semiauto.contravariant
+    implicit val interleavePred: Contravariant[InterleavedPred] = semiauto.contravariant
+    implicit val andCharPred: Contravariant[AndCharPred] = semiauto.contravariant
+    implicit val treePred: Contravariant[TreePred] = semiauto.contravariant
+  }
+}

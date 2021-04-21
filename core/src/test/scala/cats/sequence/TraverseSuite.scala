@@ -49,4 +49,10 @@ class TraverseSuite extends KittensSuite {
       (x :: y :: z :: HNil).parTraverse(optionToEither) == expected
     }
   }
+
+  test("traversing HNil") {
+    val nil: HNil = HNil
+    assertEquals(nil.traverse[Validated[String, *]](optionToValidation), Validated.valid(HNil))
+    assertEquals(nil.parTraverse[Either[String, *]](optionToEither), Right(HNil))
+  }
 }

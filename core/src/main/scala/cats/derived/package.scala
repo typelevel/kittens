@@ -22,14 +22,19 @@ object auto {
         refute: Refute[Empty[A]],
         ev: Lazy[MkEmpty[A]]
     ): Empty[A] = ev.value
-
   }
 
   object emptyK {
-    implicit def kittensMkEmptyK[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkEmptyK[F[_]](
         refute: Refute[EmptyK[F]],
         F: Lazy[MkEmptyK[F]]
     ): EmptyK[F] = F.value
+
+    implicit def kittensMkEmptyK[F[_]](implicit
+        refute: Refute[EmptyK[F]],
+        F: MkEmptyK[F]
+    ): EmptyK[F] = F
   }
 
   object eq {
@@ -61,38 +66,68 @@ object auto {
   }
 
   object invariant {
-    implicit def kittensMkInvariant[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkInvariant[F[_]](
         refute: Refute[Invariant[F]],
         F: Lazy[MkInvariant[F]]
     ): Invariant[F] = F.value
+
+    implicit def kittensMkInvariant[F[_]](implicit
+        refute: Refute[Invariant[F]],
+        F: MkInvariant[F]
+    ): Invariant[F] = F
   }
 
   object contravariant {
-    implicit def kittensMkContravariant[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkContravariant[F[_]](
         refute: Refute[Contravariant[F]],
         F: Lazy[MkContravariant[F]]
     ): Contravariant[F] = F.value
+
+    implicit def kittensMkContravariant[F[_]](implicit
+        refute: Refute[Contravariant[F]],
+        F: MkContravariant[F]
+    ): Contravariant[F] = F
   }
 
   object functor {
-    implicit def kittensMkFunctor[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkFunctor[F[_]](
         refute: Refute[Functor[F]],
         F: Lazy[MkFunctor[F]]
     ): Functor[F] = F.value
+
+    implicit def kittensMkFunctor[F[_]](implicit
+        refute: Refute[Functor[F]],
+        F: MkFunctor[F]
+    ): Functor[F] = F
   }
 
   object apply {
-    implicit def kittensMkApply[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkApply[F[_]](
         refute: Refute[Apply[F]],
         F: Lazy[MkApply[F]]
     ): Apply[F] = F.value
+
+    implicit def kittensMkApply[F[_]](implicit
+        refute: Refute[Apply[F]],
+        F: MkApply[F]
+    ): Apply[F] = F
   }
 
   object applicative {
-    implicit def kittensMkApplicative[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkApplicative[F[_]](
         refute: Refute[Applicative[F]],
         F: Lazy[MkApplicative[F]]
     ): Applicative[F] = F.value
+
+    implicit def kittensMkApplicative[F[_]](implicit
+        refute: Refute[Applicative[F]],
+        F: MkApplicative[F]
+    ): Applicative[F] = F
   }
 
   object show {
@@ -138,59 +173,107 @@ object auto {
   }
 
   object semigroupK {
-    implicit def kittensMkSemigroupK[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkSemigroupK[F[_]](
         refute: Refute[SemigroupK[F]],
         F: Lazy[MkSemigroupK[F]]
     ): SemigroupK[F] = F.value
+
+    implicit def kittensMkSemigroupK[F[_]](implicit
+        refute: Refute[SemigroupK[F]],
+        F: MkSemigroupK[F]
+    ): SemigroupK[F] = F
   }
 
   object monoidK {
-    implicit def kittensMkMonoidK[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkMonoidK[F[_]](
         refute: Refute[MonoidK[F]],
         F: Lazy[MkMonoidK[F]]
     ): MonoidK[F] = F.value
+
+    implicit def kittensMkMonoidK[F[_]](implicit
+        refute: Refute[MonoidK[F]],
+        F: MkMonoidK[F]
+    ): MonoidK[F] = F
   }
 
   object foldable {
-    implicit def kittensMkFoldable[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkFoldable[F[_]](
         refute: Refute[Foldable[F]],
         F: Lazy[MkFoldable[F]]
     ): Foldable[F] = F.value
+
+    implicit def kittensMkFoldable[F[_]](implicit
+        refute: Refute[Foldable[F]],
+        F: MkFoldable[F]
+    ): Foldable[F] = F
   }
 
   object reducible {
-    implicit def kittensMkReducible[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkReducible[F[_]](
         refute: Refute[Reducible[F]],
         F: Lazy[MkReducible[F]]
     ): Reducible[F] = F.value
+
+    implicit def kittensMkReducible[F[_]](implicit
+        refute: Refute[Reducible[F]],
+        F: MkReducible[F]
+    ): Reducible[F] = F
   }
 
   object traverse {
-    implicit def kittensMkTraverse[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkTraverse[F[_]](
         refute: Refute[Traverse[F]],
         F: Lazy[MkTraverse[F]]
     ): Traverse[F] = F.value
+
+    implicit def kittensMkTraverse[F[_]](implicit
+        refute: Refute[Traverse[F]],
+        F: MkTraverse[F]
+    ): Traverse[F] = F
   }
 
   object nonEmptyTraverse {
-    implicit def kittensMkNonEmptyTraverse[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkNonEmptyTraverse[F[_]](
         refute: Refute[NonEmptyTraverse[F]],
         F: Lazy[MkNonEmptyTraverse[F]]
     ): NonEmptyTraverse[F] = F.value
+
+    implicit def kittensMkNonEmptyTraverse[F[_]](implicit
+        refute: Refute[NonEmptyTraverse[F]],
+        F: MkNonEmptyTraverse[F]
+    ): NonEmptyTraverse[F] = F
   }
 
   object pure {
-    implicit def kittensMkPure[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkPure[F[_]](
         refute: Refute[Pure[F]],
         F: Lazy[MkPure[F]]
     ): Pure[F] = F.value
+
+    implicit def kittensMkPure[F[_]](implicit
+        refute: Refute[Pure[F]],
+        F: MkPure[F]
+    ): Pure[F] = F
   }
 
   object consK {
-    implicit def kittensMkConsK[F[_]](implicit
+    @deprecated("Use overload without Lazy", "2.3.0")
+    private[derived] def kittensMkConsK[F[_]](
         refute: Refute[ConsK[F]],
         F: Lazy[MkConsK[F, F]]
     ): ConsK[F] = MkConsK.consK(F.value)
+
+    implicit def kittensMkConsK[F[_]](implicit
+        refute: Refute[ConsK[F]],
+        F: MkConsK[F, F]
+    ): ConsK[F] = MkConsK.consK(F)
   }
 }
 

@@ -117,7 +117,7 @@ lazy val noPublishSettings =
 
 ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8")
 ThisBuild / githubWorkflowArtifactUpload := false
-ThisBuild / githubWorkflowBuildMatrixAdditions += "ci" -> List("validateJVM")
+ThisBuild / githubWorkflowBuildMatrixAdditions += "ci" -> List("test")
 ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("${{ matrix.ci }}"), name = Some("Validation")))
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))

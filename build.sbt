@@ -1,7 +1,11 @@
 import sbt._
 
-ThisBuild / crossScalaVersions := Seq("2.12.13", "2.13.5")
-ThisBuild / scalaVersion := "2.13.5"
+val scala212 = "2.12.13"
+val scala213 = "2.13.5"
+val scala3 = "3.0.0-RC3"
+
+ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
+ThisBuild / scalaVersion := scala3
 
 lazy val buildSettings = Seq(
   organization := "org.typelevel"
@@ -10,7 +14,8 @@ lazy val buildSettings = Seq(
 val catsVersion = "2.6.0"
 val disciplineMunitVersion = "1.0.8"
 val kindProjectorVersion = "0.11.3"
-val shapelessVersion = "2.3.5"
+val shapeless2Version = "2.3.5"
+val shapeless3Version = "3.0.0-M3"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(
@@ -21,12 +26,10 @@ lazy val commonSettings = Seq(
     "-deprecation",
     "-Xfatal-warnings"
   ),
-  scalacOptions ++= (
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, v)) if v <= 12 => Seq("-Ypartial-unification")
-      case _ => Seq.empty
-    }
-  ),
+  scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).flatMap {
+    case (2, 12) => Some("-Ypartial-unification")
+    case _ => None
+  },
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots")
@@ -34,12 +37,18 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "org.typelevel" %%% "cats-core" % catsVersion,
     "org.typelevel" %%% "alleycats-core" % catsVersion,
-    "com.chuusai" %%% "shapeless" % shapelessVersion,
     "org.typelevel" %%% "cats-testkit" % catsVersion % Test,
-    "org.typelevel" %%% "discipline-munit" % disciplineMunitVersion % Test,
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value % Test,
-    compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
+    "org.typelevel" %%% "discipline-munit" % disciplineMunitVersion % Test
   ),
+  libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((3, _)) =>
+      Seq("org.typelevel" %%% "shapeless3-deriving" % shapeless3Version)
+    case _ =>
+      Seq(
+        "com.chuusai" %%% "shapeless" % shapeless2Version,
+        compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
+      )
+  }),
   Test / parallelExecution := false,
   versionScheme := Some("semver-spec"),
   mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.2.1")
@@ -57,20 +66,17 @@ lazy val coreSettings =
 
 lazy val kittens = project
   .in(file("."))
-  .aggregate(coreJS, coreJVM, coreNative)
-  .dependsOn(coreJS, coreJVM, coreNative)
+  .aggregate(coreJVM)
+  .dependsOn(coreJVM)
   .settings(coreSettings: _*)
   .settings(noPublishSettings)
 
-lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+lazy val core = crossProject(JVMPlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
   .settings(coreSettings: _*)
-  .jsSettings(commonJsSettings: _*)
 
 lazy val coreJVM = core.jvm
-lazy val coreJS = core.js
-lazy val coreNative = core.native
 
 addCommandAlias("root", ";project kittens")
 addCommandAlias("jvm", ";project coreJVM")
@@ -111,7 +117,7 @@ lazy val noPublishSettings =
 
 ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8")
 ThisBuild / githubWorkflowArtifactUpload := false
-ThisBuild / githubWorkflowBuildMatrixAdditions += "ci" -> List("validateJVM", "validateJS", "validateNative")
+ThisBuild / githubWorkflowBuildMatrixAdditions += "ci" -> List("validateJVM")
 ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("${{ matrix.ci }}"), name = Some("Validation")))
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))

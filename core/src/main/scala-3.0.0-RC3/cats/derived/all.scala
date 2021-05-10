@@ -4,4 +4,5 @@ object all extends
   EmptyDerivation,
   SemigroupDerivation,
   MonoidDerivation,
-  FunctorDerivation
+  FunctorDerivation,
+  FoldableDerivation

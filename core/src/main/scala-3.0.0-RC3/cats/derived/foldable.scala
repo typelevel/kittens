@@ -15,11 +15,9 @@ trait ProductFoldable[T[x[_]] <: Foldable[x], F[_]] extends Foldable[F]:
     )
 
   def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-    //TODO update shapeless 3
-    ???
-    // inst.foldRight[A, Eval[B]](fa)(lb)(
-    //   [t[_]] => (fd: Foldable[t], t0: t[A], acc: Eval[B]) => Continue(fd.foldRight(t0)(acc)(f))
-    // )
+    inst.foldRight[A, Eval[B]](fa)(lb)(
+      [t[_]] => (fd: T[t], t0: t[A], acc: Eval[B]) => Continue(fd.foldRight(t0, acc)(f))
+    )
 
 trait CoproductFoldable[T[x[_]] <: Foldable[x], F[_]] extends Foldable[F]:
 

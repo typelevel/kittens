@@ -5,4 +5,5 @@ object all extends
   SemigroupDerivation,
   MonoidDerivation,
   FunctorDerivation,
-  FoldableDerivation
+  FoldableDerivation,
+  TraverseDerivation

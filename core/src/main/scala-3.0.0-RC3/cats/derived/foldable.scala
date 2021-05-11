@@ -5,9 +5,10 @@ import shapeless3.deriving.{K1, Continue}
 
 object foldable extends FoldableDerivation
 
-class ProductFoldable[T[x[_]] <: Foldable[x], F[_]](
-  using inst: => K1.ProductInstances[T, F]
-) extends Foldable[F]:
+trait ProductFoldable[T[x[_]] <: Foldable[x], F[_]] extends Foldable[F]:
+
+  val inst: K1.ProductInstances[T, F]
+
   def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
     inst.foldLeft[A, B](fa)(b)(
       [t[_]] => (acc: B, fd: T[t], t0: t[A]) => Continue(fd.foldLeft(t0, acc)(f))
@@ -20,9 +21,10 @@ class ProductFoldable[T[x[_]] <: Foldable[x], F[_]](
     //   [t[_]] => (fd: Foldable[t], t0: t[A], acc: Eval[B]) => Continue(fd.foldRight(t0)(acc)(f))
     // )
 
-class CoproductFoldable[T[x[_]] <: Foldable[x], F[_]](
-  using inst: => K1.CoproductInstances[T, F]
-) extends Foldable[F]:
+trait CoproductFoldable[T[x[_]] <: Foldable[x], F[_]] extends Foldable[F]:
+
+  val inst: K1.CoproductInstances[T, F]
+
   def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
     inst.fold[A, B](fa)(
       [t[_]] => (fd: T[t], t0: t[A]) => fd.foldLeft(t0, b)(f)
@@ -36,10 +38,17 @@ class CoproductFoldable[T[x[_]] <: Foldable[x], F[_]](
 trait FoldableDerivation:
   extension (F: Foldable.type)
     inline def derived[F[_]](using gen: K1.Generic[F]): Foldable[F] =
-      gen.derive(ProductFoldable[Foldable, F], CoproductFoldable[Foldable, F])
+      gen.derive(productFoldable[F], coproductFoldable[F])
 
-  given foldableGen[F[_]](using inst: => K1.ProductInstances[Foldable, F]): Foldable[F] =
-    ProductFoldable[Foldable, F]
+  given productFoldable[F[_]](using inst: => K1.ProductInstances[Foldable, F]): Foldable[F] =
+    new ProductFoldable[Foldable, F]{
+        val inst: K1.ProductInstances[Foldable, F] = summon[K1.ProductInstances[Foldable, F]]
+      }
+
+  given coproductFoldable[F[_]](using inst: => K1.CoproductInstances[Foldable, F]): Foldable[F] =
+    new CoproductFoldable[Foldable, F]{
+        val inst: K1.CoproductInstances[Foldable, F] = summon[K1.CoproductInstances[Foldable, F]]
+      }
 
   given Foldable[Id] with
     def foldLeft[A, B](fa: Id[A], b: B)(f: (B, A) => B): B = f(b, fa)

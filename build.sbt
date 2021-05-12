@@ -46,6 +46,7 @@ lazy val commonSettings = Seq(
     case _ =>
       Seq(
         "com.chuusai" %%% "shapeless" % shapeless2Version,
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value % Test,
         compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
       )
   }),
@@ -95,7 +96,7 @@ addCommandAlias("fmtCheck", "all scalafmtSbtCheck scalafmtCheckAll")
 
 lazy val crossVersionSharedSources: Seq[Setting[_]] = Seq(Compile, Test).map { sc =>
   (sc / unmanagedSourceDirectories) ++= (sc / unmanagedSourceDirectories).value.map { dir: File =>
-    new File(dir.getPath + "_" + scalaBinaryVersion.value)
+    new File(dir.getPath + "-" + scalaBinaryVersion.value.head)
   }
 }
 

@@ -9,7 +9,7 @@ lazy val buildSettings = Seq(
 
 val catsVersion = "2.6.0"
 val disciplineMunitVersion = "1.0.8"
-val kindProjectorVersion = "0.11.3"
+val kindProjectorVersion = "0.12.0"
 val shapelessVersion = "2.3.6"
 
 lazy val commonSettings = Seq(

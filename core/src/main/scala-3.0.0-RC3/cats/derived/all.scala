@@ -6,4 +6,5 @@ object all extends
   MonoidDerivation,
   EqDerivation,
   PartialOrderDerivation,
-  OrderDerivation
+  OrderDerivation,
+  HashDerivation

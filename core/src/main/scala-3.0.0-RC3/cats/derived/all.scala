@@ -4,4 +4,6 @@ object all extends
   EmptyDerivation,
   SemigroupDerivation,
   MonoidDerivation,
-  EqDerivation
+  EqDerivation,
+  PartialOrderDerivation,
+  OrderDerivation

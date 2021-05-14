@@ -48,11 +48,6 @@ trait FoldableDerivation:
         val inst: K1.CoproductInstances[Foldable, F] = summon[K1.CoproductInstances[Foldable, F]]
       }
 
-  given Foldable[Id] with
-    def foldLeft[A, B](fa: Id[A], b: B)(f: (B, A) => B): B = f(b, fa)
-
-    def foldRight[A, B](fa: Id[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = f(fa, lb)
-
   given [X]: Foldable[Const[X]] with
     def foldLeft[A, B](fa: Const[X][A], b: B)(f: (B, A) => B): B = b
 

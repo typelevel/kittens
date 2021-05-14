@@ -26,8 +26,5 @@ trait FunctorDerivation:
         val inst: K1.Instances[Functor, F] = summon[K1.Instances[Functor, F]]
       }
 
-  given Functor[Id] with
-    def map[A, B](fa: Id[A])(f: A => B): Id[B] = f(fa)
-
   given [X]: Functor[Const[X]] with
       def map[A, B](fa: Const[X][A])(f: A => B): Const[X][B] = fa

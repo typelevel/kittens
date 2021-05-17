@@ -3,18 +3,19 @@ package cats.derived
 import cats.Hash
 import shapeless3.deriving.{K0, Continue}
 
+import scala.compiletime.summonInline
 import scala.util.hashing.MurmurHash3
 
 object hash extends HashDerivation
 
-trait ProductHash[T[x] <: Hash[x], A](using inst: K0.ProductInstances[T, A])
+trait ProductHash[T[x] <: Hash[x], A](using inst: K0.ProductInstances[T, A], ev: A <:< Product)
   extends ProductEq[T, A], Hash[A]:
 
   def hash(x: A): Int = {
-    val (hash, len) = inst.foldLeft[(Int, Int)](x)((MurmurHash3.productSeed, 0))(
-      [t] => (acc: (Int, Int), h: T[t], t0: t) => Continue((MurmurHash3.mix(acc._1, h.hash(t0)), acc._2 + 1))
+    val hash = inst.foldLeft[Int](x)((MurmurHash3.productSeed))(
+      [t] => (acc: Int, h: T[t], t0: t) => Continue(MurmurHash3.mix(acc, h.hash(t0)))
     )
-    MurmurHash3.finalizeHash(hash, len)
+    MurmurHash3.finalizeHash(hash, ev(x).productArity)
   }
 
 trait CoproductHash[T[x] <: Hash[x], A](using inst: K0.CoproductInstances[T, A])
@@ -27,9 +28,12 @@ trait CoproductHash[T[x] <: Hash[x], A](using inst: K0.CoproductInstances[T, A])
 trait HashDerivation:
   extension (F: Hash.type)
     inline def derived[A](using gen: K0.Generic[A]): Hash[A] =
-      gen.derive(productHash, coproductHash)
+      inline gen match {
+        case p: K0.ProductGeneric[A]   => productHash(using p.asInstanceOf, summonInline[A <:< Product])
+        case c: K0.CoproductGeneric[A] => coproductHash(using c.asInstanceOf)
+      }
 
-  given productHash[A](using K0.ProductInstances[Hash, A]): Hash[A] =
+  given productHash[A](using K0.ProductInstances[Hash, A], A <:< Product): Hash[A] =
     new ProductHash[Hash, A]{}
 
   given coproductHash[A](using K0.CoproductInstances[Hash, A]): Hash[A] =

@@ -15,7 +15,7 @@ val catsVersion = "2.6.0"
 val disciplineMunitVersion = "1.0.8"
 val kindProjectorVersion = "0.11.3"
 val shapeless2Version = "2.3.5"
-val shapeless3Version = "3.0.0-M3"
+val shapeless3Version = "3.0.0-M4"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(
@@ -46,6 +46,7 @@ lazy val commonSettings = Seq(
     case _ =>
       Seq(
         "com.chuusai" %%% "shapeless" % shapeless2Version,
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value % Test,
         compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
       )
   }),
@@ -95,7 +96,7 @@ addCommandAlias("fmtCheck", "all scalafmtSbtCheck scalafmtCheckAll")
 
 lazy val crossVersionSharedSources: Seq[Setting[_]] = Seq(Compile, Test).map { sc =>
   (sc / unmanagedSourceDirectories) ++= (sc / unmanagedSourceDirectories).value.map { dir: File =>
-    new File(dir.getPath + "_" + scalaBinaryVersion.value)
+    new File(dir.getPath + "-" + scalaBinaryVersion.value.head)
   }
 }
 

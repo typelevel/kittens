@@ -7,4 +7,7 @@ object all extends
   EqDerivation,
   PartialOrderDerivation,
   OrderDerivation,
-  HashDerivation
+  HashDerivation,
+  FunctorDerivation,
+  FoldableDerivation,
+  TraverseDerivation

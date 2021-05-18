@@ -20,8 +20,7 @@ trait CoproductPartialOrder[T[x] <: PartialOrder[x], A](using inst: K0.Coproduct
     extends PartialOrder[A]:
 
   def partialCompare(x: A, y: A): Double =
-    //TODO is this correct? I _think_ it must be to be consistent with Order
-    inst.fold2(x, y)((x: Int, y: Int) => (x - y).toDouble)(
+    inst.fold2(x, y)(Double.NaN : Double)(
       [t] => (ord: T[t], t0: t, t1: t) => ord.partialCompare(t0, t1)
     )
 

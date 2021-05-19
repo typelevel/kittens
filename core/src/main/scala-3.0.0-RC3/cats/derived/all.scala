@@ -10,4 +10,5 @@ object all extends
   HashDerivation,
   FunctorDerivation,
   FoldableDerivation,
-  TraverseDerivation
+  TraverseDerivation,
+  ShowDerivation

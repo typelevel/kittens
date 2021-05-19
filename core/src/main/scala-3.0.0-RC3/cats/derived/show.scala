@@ -13,15 +13,18 @@ trait ShowDerivation:
   given productShow[A](using inst : => K0.ProductInstances[Show, A], l: Labelling[A]): Show[A] with
     def show(a: A) = {
       var idx = 0
+      var removeTrailingComma = false
       val x = inst.foldLeft[StringBuilder](a)(new StringBuilder(s"${l.label}("))(
         [t] => (acc: StringBuilder, sh: Show[t], t0: t) => {
           //elemLabels is backed by an array so this should be fast
           val res = Continue(acc.append(s"${l.elemLabels(idx)}=${sh.show(t0)}, "))
+          removeTrailingComma = true
           idx = idx + 1
           res
           }
       )
-      x.delete(x.length - 2, x.length).append(")")
+      if(removeTrailingComma) {x.delete(x.length - 2, x.length)}
+      x.append(")")
       x.toString()
     }
 

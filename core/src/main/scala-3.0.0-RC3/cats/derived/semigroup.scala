@@ -5,7 +5,7 @@ import shapeless3.deriving.K0
 
 object semigroup extends SemigroupDerivation
 
-class ProductSemigroup[F[x] <: Semigroup[x], A](
+trait ProductSemigroup[F[x] <: Semigroup[x], A](
   using inst: K0.ProductInstances[F, A]
 ) extends Semigroup[A]:
   def combine(x: A, y: A): A =
@@ -14,4 +14,4 @@ class ProductSemigroup[F[x] <: Semigroup[x], A](
 trait SemigroupDerivation:
   extension (S: Semigroup.type)
     inline def derived[A](using gen: K0.ProductGeneric[A]): Semigroup[A] =
-      ProductSemigroup(using K0.mkProductInstances)
+      new ProductSemigroup[Semigroup, A]{}

@@ -12,4 +12,5 @@ object all extends
   OrderDerivation,
   PartialOrderDerivation,
   SemigroupDerivation,
+  ShowDerivation,
   TraverseDerivation

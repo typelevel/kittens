@@ -6,6 +6,7 @@ object all extends
   SemigroupDerivation,
   SemigroupKDerivation,
   MonoidDerivation,
+  MonoidKDerivation,
   EqDerivation,
   PartialOrderDerivation,
   OrderDerivation,

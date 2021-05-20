@@ -22,4 +22,4 @@ trait FunctorDerivation:
     new ProductFunctor[Functor, F]{}
 
   given [X]: Functor[Const[X]] with
-      def map[A, B](fa: Const[X][A])(f: A => B): Const[X][B] = fa
+    def map[A, B](fa: Const[X][A])(f: A => B): Const[X][B] = fa

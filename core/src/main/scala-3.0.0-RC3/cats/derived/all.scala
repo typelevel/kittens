@@ -1,16 +1,19 @@
 package cats.derived
 
 object all extends
+  CommutativeMonoidDerivation,
+  CommutativeSemigroupDerivation,
   EmptyDerivation,
   EmptyKDerivation,
-  SemigroupDerivation,
-  SemigroupKDerivation,
+  EqDerivation,
   MonoidDerivation,
   MonoidKDerivation,
-  EqDerivation,
-  PartialOrderDerivation,
-  OrderDerivation,
-  HashDerivation,
-  FunctorDerivation,
   FoldableDerivation,
+  FunctorDerivation,
+  HashDerivation,
+  OrderDerivation,
+  PartialOrderDerivation,
+  SemigroupDerivation,
+  SemigroupKDerivation,
+  ShowDerivation,
   TraverseDerivation

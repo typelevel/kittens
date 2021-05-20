@@ -2,6 +2,7 @@ package cats.derived
 
 object all extends
   EmptyDerivation,
+  EmptyKDerivation,
   SemigroupDerivation,
   SemigroupKDerivation,
   MonoidDerivation,

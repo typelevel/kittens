@@ -18,6 +18,9 @@ trait ProductFoldable[T[x[_]] <: Foldable[x], F[_]](using inst: K1.ProductInstan
       [t[_]] => (fd: T[t], t0: t[A], acc: Eval[B]) => Continue(fd.foldRight(t0, acc)(f))
     )
 
+object ProductFoldable:
+  given instance[F[_]](using K1.ProductInstances[Foldable, F]): ProductFoldable[Foldable, F] with {}
+
 trait CoproductFoldable[T[x[_]] <: Foldable[x], F[_]](using inst: K1.CoproductInstances[T, F])
     extends Foldable[F]:
 
@@ -31,16 +34,13 @@ trait CoproductFoldable[T[x[_]] <: Foldable[x], F[_]](using inst: K1.CoproductIn
       [t[_]] => (fd: T[t], t0: t[A]) => fd.foldRight(t0, lb)(f)
     )
 
+object CoproductFoldable:
+  given instance[F[_]](using K1.CoproductInstances[Foldable, F]): CoproductFoldable[Foldable, F] with {}
+
 trait FoldableDerivation:
   extension (F: Foldable.type)
     inline def derived[F[_]](using gen: K1.Generic[F]): Foldable[F] =
-      gen.derive(productFoldable[F], coproductFoldable[F])
-
-  given productFoldable[F[_]](using inst: => K1.ProductInstances[Foldable, F]): Foldable[F] =
-    new ProductFoldable[Foldable, F]{}
-
-  given coproductFoldable[F[_]](using inst: => K1.CoproductInstances[Foldable, F]): Foldable[F] =
-    new CoproductFoldable[Foldable, F]{}
+      gen.derive(ProductFoldable.instance, CoproductFoldable.instance)
 
   given [X]: Foldable[Const[X]] with
     def foldLeft[A, B](fa: X, b: B)(f: (B, A) => B): B = b

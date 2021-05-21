@@ -1,8 +1,8 @@
 import sbt._
 
 val scala212 = "2.12.13"
-val scala213 = "2.13.5"
-val scala3 = "3.0.0-RC3"
+val scala213 = "2.13.6"
+val scala3 = "3.0.0"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
@@ -11,11 +11,11 @@ lazy val buildSettings = Seq(
   organization := "org.typelevel"
 )
 
-val catsVersion = "2.6.0"
-val disciplineMunitVersion = "1.0.8"
-val kindProjectorVersion = "0.11.3"
-val shapeless2Version = "2.3.5"
-val shapeless3Version = "3.0.0-M4"
+val catsVersion = "2.6.1"
+val disciplineMunitVersion = "1.0.9"
+val kindProjectorVersion = "0.13.0"
+val shapeless2Version = "2.3.7"
+val shapeless3Version = "3.0.0"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(

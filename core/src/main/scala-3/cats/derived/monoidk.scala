@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Monoid, MonoidK}
-import shapeless3.deriving.K1
+import shapeless3.deriving.{Const, K1}
 
 object monoidk extends MonoidKDerivation
 
@@ -14,7 +14,5 @@ trait MonoidKDerivation:
     inline def derived[F[_]](using gen: K1.Generic[F]): MonoidK[F] = ???
 
   given [X](using X: Monoid[X]): MonoidK[Const[X]] with
-    def empty[A]: Const[X][A] = X.empty
-
-    def combineK[A](x: Const[X][A], y: Const[X][A]): Const[X][A] =
-      X.combine(x, y)
+    def empty[A]: X = X.empty
+    def combineK[A](x: X, y: X): X = X.combine(x, y)

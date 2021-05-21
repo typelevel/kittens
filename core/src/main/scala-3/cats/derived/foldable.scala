@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Eval, Foldable}
-import shapeless3.deriving.{K1, Continue}
+import shapeless3.deriving.{Const, Continue, K1}
 
 object foldable extends FoldableDerivation
 
@@ -43,6 +43,5 @@ trait FoldableDerivation:
     new CoproductFoldable[Foldable, F]{}
 
   given [X]: Foldable[Const[X]] with
-    def foldLeft[A, B](fa: Const[X][A], b: B)(f: (B, A) => B): B = b
-
-    def foldRight[A, B](fa: Const[X][A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
+    def foldLeft[A, B](fa: X, b: B)(f: (B, A) => B): B = b
+    def foldRight[A, B](fa: X, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb

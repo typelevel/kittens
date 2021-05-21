@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Semigroup, SemigroupK}
-import shapeless3.deriving.K1
+import shapeless3.deriving.{Const, K1}
 
 object semigroupk extends SemigroupKDerivation
 
@@ -17,5 +17,5 @@ trait SemigroupKDerivation:
       new ProductSemigroupK[SemigroupK, F]{}
 
   given [X](using X: Semigroup[X]): SemigroupK[Const[X]] with
-    def combineK[A](x: Const[X][A], y: Const[X][A]): Const[X][A] =
+    def combineK[A](x: X, y: X): X =
       X.combine(x, y)

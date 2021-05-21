@@ -10,6 +10,7 @@ object all extends
   FoldableDerivation,
   FunctorDerivation,
   HashDerivation,
+  InvariantDerivation,
   MonoidDerivation,
   MonoidKDerivation,
   OrderDerivation,
@@ -17,4 +18,5 @@ object all extends
   SemigroupDerivation,
   SemigroupKDerivation,
   ShowDerivation,
-  TraverseDerivation
+  TraverseDerivation,
+  Instances

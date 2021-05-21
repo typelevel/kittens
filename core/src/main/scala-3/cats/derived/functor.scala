@@ -3,7 +3,7 @@ package cats.derived
 import cats.Functor
 import shapeless3.deriving.K1
 
-object functor extends FunctorDerivation
+object functor extends FunctorDerivation, Instances
 
 trait ProductFunctor[T[x[_]] <: Functor[x], F[_]](using inst: K1.Instances[T, F])
     extends Functor[F]:
@@ -20,6 +20,3 @@ trait FunctorDerivation:
 
   given functorGen[F[_]](using inst: => K1.ProductInstances[Functor, F]): Functor[F] =
     new ProductFunctor[Functor, F]{}
-
-  given [X]: Functor[Const[X]] with
-    def map[A, B](fa: Const[X][A])(f: A => B): Const[X][B] = fa

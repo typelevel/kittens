@@ -3,6 +3,7 @@ package cats.derived
 object all extends
   CommutativeMonoidDerivation,
   CommutativeSemigroupDerivation,
+  ContravariantDerivation,
   EmptyDerivation,
   EmptyKDerivation,
   EqDerivation,

@@ -3,7 +3,7 @@ package cats.derived
 import cats.Functor
 import shapeless3.deriving.{Const, K1}
 
-object functor extends FunctorDerivation
+object functor extends FunctorDerivation, Instances
 
 trait GenericFunctor[T[x[_]] <: Functor[x], F[_]](using inst: K1.Instances[T, F])
     extends Functor[F]:
@@ -17,6 +17,3 @@ trait FunctorDerivation:
   extension (F: Functor.type)
     inline def derived[F[_]](using gen: K1.Generic[F]): Functor[F] =
       new GenericFunctor[Functor, F]{}
-
-  given [X]: Functor[Const[X]] with
-    def map[A, B](fa: X)(f: A => B): X = fa

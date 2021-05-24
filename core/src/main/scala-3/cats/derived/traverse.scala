@@ -3,7 +3,7 @@ package cats.derived
 import cats.{Applicative, Eval, Traverse}
 import shapeless3.deriving.{Const, Continue, K1}
 
-object traverse extends TraverseDerivation
+object traverse extends TraverseDerivation, Instances
 
 trait ProductTraverse[T[x[_]] <: Traverse[x], F[_]](using inst: K1.ProductInstances[T, F])
     extends GenericFunctor[T, F], ProductFoldable[T, F], Traverse[F]:
@@ -31,9 +31,3 @@ trait TraverseDerivation:
 
   given coproductTraverse[F[_]](using inst: => K1.CoproductInstances[Traverse, F]): Traverse[F] =
     new CoproductTraverse[Traverse, F]{}
-
-  given [X]: Traverse[Const[X]] with
-    override def map[A, B](fa: X)(f: A => B): X = fa
-    def foldLeft[A, B](fa: X, b: B)(f: (B, A) => B): B = b
-    def foldRight[A, B](fa: X, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
-    def traverse[G[_]: Applicative, A, B](fa: X)(f: A => G[B]): G[X] = Applicative[G].pure(fa)

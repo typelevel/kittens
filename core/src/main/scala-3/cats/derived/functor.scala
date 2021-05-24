@@ -17,6 +17,3 @@ trait FunctorDerivation:
   extension (F: Functor.type)
     inline def derived[F[_]](using gen: K1.Generic[F]): Functor[F] =
       new GenericFunctor[Functor, F]{}
-
-  given functorGen[F[_]](using inst: => K1.ProductInstances[Functor, F]): Functor[F] =
-      new GenericFunctor[Functor, F]{}

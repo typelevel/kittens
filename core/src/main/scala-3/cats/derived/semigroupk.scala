@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Semigroup, SemigroupK}
-import shapeless3.deriving.K1
+import shapeless3.deriving.{Const, K1}
 
 object semigroupk extends SemigroupKDerivation, Instances
 
@@ -15,4 +15,3 @@ trait SemigroupKDerivation:
   extension (F: SemigroupK.type)
     inline def derived[F[_]](using gen: K1.ProductGeneric[F]): SemigroupK[F] =
       new ProductSemigroupK[SemigroupK, F]{}
-

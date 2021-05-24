@@ -1,12 +1,12 @@
 package cats.derived
 
 import cats.{Applicative, Eval, Traverse}
-import shapeless3.deriving.{K1, Continue}
+import shapeless3.deriving.{Const, Continue, K1}
 
 object traverse extends TraverseDerivation, Instances
 
 trait ProductTraverse[T[x[_]] <: Traverse[x], F[_]](using inst: K1.ProductInstances[T, F])
-    extends ProductFunctor[T, F], ProductFoldable[T, F], Traverse[F]:
+    extends GenericFunctor[T, F], ProductFoldable[T, F], Traverse[F]:
 
   def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
     inst.traverse[A, G, B](fa)([a,b] => (ga: G[a], f: a => b) => G.map(ga)(f))([a] => (x: a) => G.pure(x))([a,b] => (gf: G[a => b], ga: G[a]) => G.ap(gf)(ga))(
@@ -14,7 +14,7 @@ trait ProductTraverse[T[x[_]] <: Traverse[x], F[_]](using inst: K1.ProductInstan
     )
 
 trait CoproductTraverse[T[x[_]] <: Traverse[x], F[_]](using inst: K1.CoproductInstances[T, F])
-    extends ProductFunctor[T, F], CoproductFoldable[T, F], Traverse[F]:
+    extends GenericFunctor[T, F], CoproductFoldable[T, F], Traverse[F]:
 
   def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
     inst.traverse[A, G, B](fa)([a,b] => (ga: G[a], f: a => b) => G.map(ga)(f))([a] => (x: a) => G.pure(x))([a,b] => (gf: G[a => b], ga: G[a]) => G.ap(gf)(ga))(

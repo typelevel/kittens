@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.*
+import shapeless3.deriving.Const
 
 private[derived] trait Instances extends Instances1:
 

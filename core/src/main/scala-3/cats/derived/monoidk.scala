@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Monoid, MonoidK}
-import shapeless3.deriving.K1
+import shapeless3.deriving.{Const, K1}
 
 object monoidk extends MonoidKDerivation, Instances
 

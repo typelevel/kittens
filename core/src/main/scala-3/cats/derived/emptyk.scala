@@ -1,7 +1,7 @@
 package cats.derived
 
 import alleycats.{Empty, EmptyK}
-import shapeless3.deriving.K1
+import shapeless3.deriving.{Const, K1}
 
 object emptyk extends EmptyKDerivation
 
@@ -16,4 +16,4 @@ trait EmptyKDerivation:
       new ProductEmptyK[EmptyK, F]{}
 
   given [X](using X: Empty[X]): EmptyK[Const[X]] with
-    def empty[A]: Const[X][A] = X.empty
+    def empty[A]: X = X.empty

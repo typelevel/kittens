@@ -1,5 +1,7 @@
 package cats.derived
 
+import scala.compiletime._
+
 enum OrElse[+A, +B]:
   case Primary(value: A)
   case Secondary(value: () => B)
@@ -12,10 +14,8 @@ enum OrElse[+A, +B]:
     case Primary(value) => value
     case Secondary(value) => value()
 
-object OrElse extends OrElseLowPriority:
-  inline given primary[A, B](using inline a: A): OrElse[A, B] =
-    OrElse.Primary(a)
-
-private[derived] sealed abstract class OrElseLowPriority:
-  inline given secondary[A, B](using inline b: B): OrElse[A, B] =
-    OrElse.Secondary(() => b)
+object OrElse:
+  inline given [A, B]: OrElse[A, B] = summonFrom {
+    case a: A => Primary(a)
+    case b: B => Secondary(() => b)
+  }

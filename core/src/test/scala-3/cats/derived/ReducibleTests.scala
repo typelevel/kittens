@@ -19,8 +19,9 @@ class ReducibleTests {
 
   case class NonEmptyTree[A](size: Int, value: A, tree: Tree[A])
 
+  summon[DerivedFoldable[Tree]]
   case class Foo[A](value: A, xs: List[A])
-  sealed trait Tree[+A] derives Reducible
+  sealed trait Tree[+A]
   case class Leaf[A](value: A) extends Tree[A]
   case class Node[A](left: Tree[A], values: Foo[A], right: Tree[A]) extends Tree[A]
 }

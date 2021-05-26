@@ -13,8 +13,8 @@ object DerivedFoldable:
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
-  def product[F[_]](using inst: => K1.ProductInstances[Of, F]): DerivedFoldable[F] = new Product[Of, F] {}
-  def coproduct[F[_]](using inst: => K1.CoproductInstances[Of, F]): DerivedFoldable[F] = new Coproduct[Of, F] {}
+  def product[F[_]](using K1.ProductInstances[Of, F]): DerivedFoldable[F] = new Product[Of, F] {}
+  def coproduct[F[_]](using K1.CoproductInstances[Of, F]): DerivedFoldable[F] = new Coproduct[Of, F] {}
 
   inline given derived[F[_]](using gen: K1.Generic[F]): DerivedFoldable[F] =
     gen.derive(product, coproduct)
@@ -47,4 +47,4 @@ object DerivedFoldable:
 
 trait FoldableDerivation:
   extension (F: Foldable.type)
-    def derived[F[_]](using instance: => DerivedFoldable[F]): Foldable[F] = instance
+    def derived[F[_]](using instance: DerivedFoldable[F]): Foldable[F] = instance

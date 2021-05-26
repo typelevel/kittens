@@ -14,5 +14,5 @@ class FunctorTests {
 
   sealed trait CList[A] derives Functor
   case object CNil extends CList[Nothing]
-  case class CCons[A](head: A, tail: CCons[A]) extends CList[A]
+  case class CCons[A](head: A, tail: CList[A]) extends CList[A]
 }

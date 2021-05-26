@@ -2,7 +2,7 @@ package cats.derived
 
 import cats.Foldable
 import cats.derived.all._
-import cats.derived.all.given
+import cats.instances.all._
 
 class FoldableTests {
 
@@ -14,5 +14,5 @@ class FoldableTests {
 
   sealed trait CList[A] derives Foldable
   case object CNil extends CList[Nothing]
-  case class CCons[A](head: A, tail: CCons[A]) extends CList[A]
+  case class CCons[A](head: A, tail: CList[A]) extends CList[A]
 }

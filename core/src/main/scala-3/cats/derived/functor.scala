@@ -5,18 +5,24 @@ import shapeless3.deriving.{Const, K1}
 
 object functor extends FunctorDerivation
 
-trait GenericFunctor[T[x[_]] <: Functor[x], F[_]](using inst: K1.Instances[T, F])
-    extends Functor[F]:
+trait DerivedFunctor[F[_]] extends Functor[F]
+object DerivedFunctor:
+  type Of[F[_]] = Functor[F] OrElse DerivedFunctor[F]
 
-  def map[A, B](fa: F[A])(f: A => B): F[B] =
-    inst.map(fa : F[A])(
-      [t[_]] => (func: T[t], t0: t[A]) => func.map(t0)(f)
-    )
+  given [T]: DerivedFunctor[Const[T]] with
+    def map[A, B](fa: T)(f: A => B): T = fa
+
+  def generic[F[_]](using K1.Instances[Of, F]): DerivedFunctor[F] = new Generic[Of, F] {}
+  inline given derived[F[_]](using K1.Generic[F]): DerivedFunctor[F] = generic
+
+  trait Generic[T[x[_]] <: Of[x], F[_]](using inst: K1.Instances[T, F])
+    extends DerivedFunctor[F]:
+
+    def map[A, B](fa: F[A])(f: A => B): F[B] =
+      inst.map(fa: F[A]) { [f[_]] => (tf: T[f], fa: f[A]) =>
+        tf.unify.map(fa)(f)
+      }
 
 trait FunctorDerivation:
   extension (F: Functor.type)
-    inline def derived[F[_]](using gen: K1.Generic[F]): Functor[F] =
-      new GenericFunctor[Functor, F]{}
-
-  given [X]: Functor[Const[X]] with
-    def map[A, B](fa: X)(f: A => B): X = fa
+    def derived[F[_]](using instance: DerivedFunctor[F]): Functor[F] = instance

@@ -3,7 +3,7 @@ package cats.derived
 import cats.Functor
 import shapeless3.deriving.{Const, K1}
 
-object functor extends FunctorDerivation
+object functor extends FunctorDerivation, Instances
 
 trait DerivedFunctor[F[_]] extends Functor[F]
 object DerivedFunctor:

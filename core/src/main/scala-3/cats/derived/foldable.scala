@@ -3,7 +3,7 @@ package cats.derived
 import cats.{Eval, Foldable}
 import shapeless3.deriving.{Const, Continue, K1}
 
-object foldable extends FoldableDerivation
+object foldable extends FoldableDerivation, Instances
 
 trait DerivedFoldable[F[_]] extends Foldable[F]
 object DerivedFoldable:

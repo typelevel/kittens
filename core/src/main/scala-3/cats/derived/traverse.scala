@@ -3,7 +3,7 @@ package cats.derived
 import cats.{Applicative, Eval, Traverse}
 import shapeless3.deriving.{Const, Continue, K1}
 
-object traverse extends TraverseDerivation
+object traverse extends TraverseDerivation, Instances
 
 trait DerivedTraverse[F[_]] extends DerivedFunctor[F], DerivedFoldable[F], Traverse[F]
 object DerivedTraverse:

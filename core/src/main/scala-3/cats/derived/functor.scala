@@ -2,26 +2,39 @@ package cats.derived
 
 import cats.Functor
 import shapeless3.deriving.{Const, K1}
+import scala.annotation.threadUnsafe
 
 object functor extends FunctorDerivation, Instances
 
 trait DerivedFunctor[F[_]] extends Functor[F]
-object DerivedFunctor:
-  type Of[F[_]] = Functor[F] OrElse DerivedFunctor[F]
-
-  given [T]: DerivedFunctor[Const[T]] with
+object DerivedFunctor extends DerivedFunctorLowPriority:
+  given const[T]: DerivedFunctor[Const[T]] with
     def map[A, B](fa: T)(f: A => B): T = fa
 
-  def generic[F[_]](using K1.Instances[Of, F]): DerivedFunctor[F] = new Generic[Of, F] {}
-  inline given derived[F[_]](using K1.Generic[F]): DerivedFunctor[F] = generic
+  given delegated[F[_]](using F: => Functor[F]): DerivedFunctor[F] =
+    new Delegated(F)
 
-  trait Generic[T[x[_]] <: Of[x], F[_]](using inst: K1.Instances[T, F])
+  given composed[F[_]: DerivedFunctor, G[_]: DerivedFunctor]: DerivedFunctor[[x] =>> F[G[x]]] =
+    new Delegated(Functor[F].compose[G])
+
+  def generic[F[_]](using K1.Instances[DerivedFunctor, F]): DerivedFunctor[F] =
+    new Generic[DerivedFunctor, F] {}
+
+  trait Generic[T[x[_]] <: Functor[x], F[_]](using inst: K1.Instances[T, F])
     extends DerivedFunctor[F]:
 
     def map[A, B](fa: F[A])(f: A => B): F[B] =
       inst.map(fa: F[A]) { [f[_]] => (tf: T[f], fa: f[A]) =>
-        tf.unify.map(fa)(f)
+        tf.map(fa)(f)
       }
+
+  private final class Delegated[F[_]](F: => Functor[F]) extends DerivedFunctor[F]:
+    @threadUnsafe private lazy val underlying = F
+    export underlying._
+
+private[derived] sealed abstract class DerivedFunctorLowPriority:
+  inline given derived[F[_]](using K1.Generic[F]): DerivedFunctor[F] =
+    DerivedFunctor.generic
 
 trait FunctorDerivation:
   extension (F: Functor.type)

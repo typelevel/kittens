@@ -3,8 +3,6 @@ package cats.derived
 import cats.Contravariant
 import shapeless3.deriving.K1
 
-object contravariant extends ContravariantDerivation, Instances
-
 trait GenericContravariant[T[x[_]] <: Contravariant[x], F[_]](using inst: K1.Instances[T, F])
   extends Contravariant[F]:
 

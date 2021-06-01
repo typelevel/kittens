@@ -4,8 +4,6 @@ import cats.{Eval, Foldable, Reducible}
 import shapeless3.deriving.{Continue, Const, K1}
 import scala.annotation.threadUnsafe
 
-object reducible extends ReducibleDerivation
-
 trait DerivedReducible[F[_]] extends Reducible[F]
 object DerivedReducible extends DerivedReducibleLowPriority:
   given delegated[F[_]](using F: => Reducible[F]): DerivedReducible[F] =

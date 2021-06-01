@@ -4,8 +4,6 @@ import cats.{Eval, Foldable}
 import shapeless3.deriving.{Const, Continue, K1}
 import scala.annotation.threadUnsafe
 
-object foldable extends FoldableDerivation, Instances
-
 trait DerivedFoldable[F[_]] extends Foldable[F]
 object DerivedFoldable extends DerivedFoldableLowPriority:
   given const[T]: DerivedFoldable[Const[T]] with

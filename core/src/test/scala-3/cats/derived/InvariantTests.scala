@@ -1,8 +1,8 @@
 package cats.derived
 
 import cats.Invariant
-import cats.derived.all._
-import cats.derived.all.given
+import cats.derived.semiauto.*
+import cats.derived.semiauto.given
 
 class InvariantTests {
 

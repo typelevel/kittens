@@ -4,8 +4,6 @@ import cats.Functor
 import shapeless3.deriving.{Const, K1}
 import scala.annotation.threadUnsafe
 
-object functor extends FunctorDerivation, Instances
-
 trait DerivedFunctor[F[_]] extends Functor[F]
 object DerivedFunctor extends DerivedFunctorLowPriority:
   given const[T]: DerivedFunctor[Const[T]] with

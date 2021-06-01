@@ -4,8 +4,6 @@ import cats.{Applicative, Eval, Traverse}
 import shapeless3.deriving.{Const, Continue, K1}
 import scala.annotation.threadUnsafe
 
-object traverse extends TraverseDerivation, Instances
-
 trait DerivedTraverse[F[_]] extends Traverse[F]
 object DerivedTraverse extends DerivedTraverseLowPriority:
   given const[T]: DerivedTraverse[Const[T]] with

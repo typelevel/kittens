@@ -3,8 +3,6 @@ package cats.derived
 import cats.kernel.CommutativeSemigroup
 import shapeless3.deriving.{K0, Continue}
 
-object commutativeSemigroup extends CommutativeSemigroupDerivation
-
 trait ProductCommutativeSemigroup[T[x] <: CommutativeSemigroup[x], A](using inst: K0.ProductInstances[T, A])
     extends ProductSemigroup[T, A], CommutativeSemigroup[A] {}
 

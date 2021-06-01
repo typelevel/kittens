@@ -1,10 +1,10 @@
 package cats.derived
 
-import alleycats._
-import alleycats.std.all._
-import cats._
-import cats.derived.all._
-import cats.derived.all.given
+import alleycats.*
+import alleycats.std.all.*
+import cats.*
+import cats.derived.semiauto.*
+import cats.derived.semiauto.given
 
 class EmptyKTests { //
   case class Foo[A](i: String, l: List[A]) derives EmptyK

@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.Functor
-import cats.derived.all._
+import cats.derived.semiauto.*
 
 class FunctorTests {
 

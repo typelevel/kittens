@@ -2,7 +2,9 @@ package cats.derived
 
 import cats.Reducible
 import cats.data.NonEmptyList
-import cats.derived.all._
+import cats.instances.all.*
+import cats.derived.semiauto.*
+import cats.derived.semiauto.given
 
 class ReducibleTests {
 

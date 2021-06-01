@@ -6,8 +6,6 @@ import shapeless3.deriving.{K0, Continue}
 import scala.compiletime.summonInline
 import scala.util.hashing.MurmurHash3
 
-object hash extends HashDerivation
-
 trait ProductHash[T[x] <: Hash[x], A](using inst: K0.ProductInstances[T, A], ev: A <:< Product)
   extends ProductEq[T, A], Hash[A]:
 

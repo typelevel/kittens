@@ -1,8 +1,7 @@
 package cats.derived
 
 import cats.Contravariant
-import cats.derived.all._
-import cats.derived.all.given
+import cats.derived.semiauto.*
 
 class ContravariantTests {
 

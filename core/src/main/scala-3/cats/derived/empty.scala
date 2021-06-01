@@ -3,8 +3,6 @@ package cats.derived
 import alleycats.Empty
 import shapeless3.deriving.K0
 
-object empty extends EmptyDerivation
-
 trait DerivedEmpty[A] extends Empty[A]:
   protected def emptyValue(): A
   lazy val empty: A = emptyValue()

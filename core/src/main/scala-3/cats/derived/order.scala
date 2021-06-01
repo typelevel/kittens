@@ -3,8 +3,6 @@ package cats.derived
 import cats.Order
 import shapeless3.deriving.{K0, Complete}
 
-object order extends OrderDerivation
-
 trait ProductOrder[T[x] <: Order[x], A](using inst: K0.ProductInstances[T, A])
     extends Order[A]:
 

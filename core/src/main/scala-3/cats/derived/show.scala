@@ -3,8 +3,6 @@ package cats.derived
 import cats.Show
 import shapeless3.deriving.{Continue, K0, Labelling}
 
-object show extends ShowDerivation
-
 trait ShowDerivation:
 
   extension (F: Show.type)

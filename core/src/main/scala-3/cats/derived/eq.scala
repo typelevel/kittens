@@ -3,8 +3,6 @@ package cats.derived
 import cats.Eq
 import shapeless3.deriving.{K0, Complete}
 
-object eq extends EqDerivation
-
 trait ProductEq[T[x] <: Eq[x], A](using inst: K0.ProductInstances[T, A]) extends Eq[A]:
 
   def eqv(x: A, y: A): Boolean =

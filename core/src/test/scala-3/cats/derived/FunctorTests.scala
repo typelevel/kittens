@@ -2,7 +2,6 @@ package cats.derived
 
 import cats.Functor
 import cats.derived.all._
-import cats.derived.all.given
 
 class FunctorTests {
 

@@ -2,7 +2,6 @@ package cats.derived
 
 import cats.Foldable
 import cats.derived.all._
-import cats.instances.all._
 
 class FoldableTests {
 

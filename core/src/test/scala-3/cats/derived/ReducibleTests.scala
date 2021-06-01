@@ -3,7 +3,6 @@ package cats.derived
 import cats.Reducible
 import cats.data.NonEmptyList
 import cats.derived.all._
-import cats.instances.all._
 
 class ReducibleTests {
 

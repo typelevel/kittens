@@ -17,6 +17,7 @@ object semiauto extends
   MonoidKDerivation,
   OrderDerivation,
   PartialOrderDerivation,
+  ReducibleDerivation,
   SemigroupDerivation,
   SemigroupKDerivation,
   ShowDerivation,

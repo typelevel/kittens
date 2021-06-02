@@ -16,7 +16,7 @@ object DerivedEmpty:
     case given K0.Generic[A] => derived
   }
   
-  private def delegated[A](using A: => Empty[A]): DerivedEmpty[A] =
+  def delegated[A](using A: => Empty[A]): DerivedEmpty[A] =
     () => A.empty
 
   inline def derived[A](using gen: K0.Generic[A]): DerivedEmpty[A] =

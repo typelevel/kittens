@@ -2,7 +2,7 @@ package cats.derived
 
 import alleycats.Empty
 import shapeless3.deriving.K0
-import scala.compiletime.summonFrom
+import scala.compiletime.*
 
 object empty extends EmptyDerivation
 
@@ -11,20 +11,18 @@ trait DerivedEmpty[A] extends Empty[A]:
   lazy val empty: A = emptyValue()
 
 object DerivedEmpty:
-  inline given [A]: DerivedEmpty[A] = summonFrom {
-    case given Empty[A] => delegated
-    case given K0.ProductInstances[DerivedEmpty, A] => product
+  type Of[A] = Empty[A] OrElse DerivedEmpty[A]
+
+  inline given derived[A]: DerivedEmpty[A] = summonFrom {
+    case given K0.ProductInstances[Of, A] => product
     case given K0.CoproductGeneric[A] => coproduct
   }
-  
-  def delegated[A](using A: => Empty[A]): DerivedEmpty[A] =
-    () => A.empty
 
-  def product[A](using inst: K0.ProductInstances[DerivedEmpty, A]): DerivedEmpty[A] =
-    () => inst.construct([A] => (A: DerivedEmpty[A]) => A.empty)
+  def product[A](using inst: K0.ProductInstances[Of, A]): DerivedEmpty[A] =
+    () => inst.construct([A] => (A: Of[A]) => A.unify.empty)
 
   inline def coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
-    K0.summonFirst[DerivedEmpty, gen.MirroredElemTypes, A]
+    () => K0.summonFirst[Of, gen.MirroredElemTypes, A].unify.empty
 
 trait EmptyDerivation:
   extension (E: Empty.type)

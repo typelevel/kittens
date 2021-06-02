@@ -4,7 +4,7 @@ import cats.Reducible
 import cats.data.NonEmptyList
 import cats.derived.all._
 
-class ReducibleTests {
+object ReducibleTests {
 
   case class Box[A](value: A) derives Reducible
 

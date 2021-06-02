@@ -53,5 +53,5 @@ enum IntTree:
   case Leaf
   case Node(left: IntTree, value: Int, right: IntTree)
 
-@main def run = 
+@main def test = 
   println(Empty[Foo].empty)

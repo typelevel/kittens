@@ -3,6 +3,7 @@ package cats.derived
 import cats.Reducible
 import cats.data.NonEmptyList
 import cats.derived.all._
+import scala.compiletime._
 
 class ReducibleTests {
 

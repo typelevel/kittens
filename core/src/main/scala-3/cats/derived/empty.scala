@@ -3,7 +3,6 @@ package cats.derived
 import alleycats.Empty
 import shapeless3.deriving.K0
 import scala.compiletime.summonFrom
-import scala.util.NotGiven
 
 object empty extends EmptyDerivation
 

@@ -2,30 +2,23 @@ package cats.derived
 
 import alleycats.Empty
 import shapeless3.deriving.K0
-import scala.compiletime.summonFrom
+import scala.compiletime.*
 
 object empty extends EmptyDerivation
 
-trait DerivedEmpty[A] extends Empty[A]:
-  protected def emptyValue(): A
-  lazy val empty: A = emptyValue()
-
+type DerivedEmpty[A] = Derived[Empty[A]]
 object DerivedEmpty:
-  inline given [A]: DerivedEmpty[A] = summonFrom {
-    case given Empty[A] => delegated
-    case given K0.ProductInstances[DerivedEmpty, A] => product
-    case given K0.CoproductGeneric[A] => coproduct
-  }
-  
-  def delegated[A](using A: => Empty[A]): DerivedEmpty[A] =
-    () => A.empty
+  type Or[A] = Derived.Or[Empty[A]]
+  inline def apply[A]: Empty[A] =
+    import DerivedEmpty.given
+    summonInline[DerivedEmpty[A]].instance
 
-  def product[A](using inst: K0.ProductInstances[DerivedEmpty, A]): DerivedEmpty[A] =
-    () => inst.construct([A] => (A: DerivedEmpty[A]) => A.empty)
+  given product[A](using inst: K0.ProductInstances[Or, A]): DerivedEmpty[A] =
+    Empty(inst.unify.construct([A] => (A: Empty[A]) => A.empty))
 
-  inline def coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
-    K0.summonFirst[DerivedEmpty, gen.MirroredElemTypes, A]
+  inline given coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
+    K0.summonFirst[Or, gen.MirroredElemTypes, A].unify
 
 trait EmptyDerivation:
   extension (E: Empty.type)
-    def derived[A](using instance: DerivedEmpty[A]): Empty[A] = instance
+    inline def derived[A]: Empty[A] = DerivedEmpty[A]

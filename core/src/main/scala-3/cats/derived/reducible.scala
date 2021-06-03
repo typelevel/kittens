@@ -14,16 +14,16 @@ object DerivedReducible:
     private val underlying = F.unify `compose` G.unify
     export underlying.*
 
-  def product[F[_]](ev: Of[Const[Any]])(using inst: K1.ProductInstances[DerivedFoldable.Of, F]): DerivedReducible[F] =
+  def product[F[_]](ev: Reducible[?])(using inst: K1.ProductInstances[DerivedFoldable.Of, F]): DerivedReducible[F] =
     given K1.ProductInstances[Foldable, F] = inst.unify
-    new Product[Foldable, F](ev.unify) {}
+    new Product[Foldable, F](ev) {}
 
   given coproduct[F[_]](using inst: => K1.CoproductInstances[Of, F]): DerivedReducible[F] =
     given K1.CoproductInstances[Reducible, F] = inst.unify
     new Coproduct[Reducible, F] {}
 
   inline given [F[_]](using gen: K1.ProductGeneric[F]): DerivedReducible[F] =
-    DerivedReducible.product(K1.summonFirst[DerivedReducible.Of, gen.MirroredElemTypes, Const[Any]])
+    product(K1.summonFirst[Of, gen.MirroredElemTypes, Const[Any]].unify)
 
   trait Product[T[x[_]] <: Foldable[x], F[_]](ev: Reducible[?])(using inst: K1.ProductInstances[T, F])
     extends DerivedFoldable.Product[T, F], DerivedReducible[F]:

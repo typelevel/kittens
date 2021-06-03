@@ -25,7 +25,7 @@ object Alt extends AltInstances:
     (inst: I[Of2[F, G], T]) @targetName("unifyK2") def unify: I[F, T] = inst
 
 private[derived] sealed abstract class AltInstances:
-  inline given [A, B]: Alt[A, B] = summonFrom {
+  transparent inline given [A, B]: Alt[A, B] = summonFrom {
     case a: A => Alt.primary(a)
     case b: B => Alt.secondary(b)
   }

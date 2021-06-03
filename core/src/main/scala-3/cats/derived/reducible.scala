@@ -9,7 +9,10 @@ object reducible extends ReducibleDerivation
 type DerivedReducible[F[_]] = Derived[Reducible[F]]
 object DerivedReducible:
   type Or[F[_]] = Derived.Or[Reducible[F]]
-  inline def apply[F[_]](using F: DerivedReducible[F]): Reducible[F] = F.instance
+  inline def apply[F[_]]: Reducible[F] =
+    import DerivedFoldable.given
+    import DerivedReducible.given
+    summonInline[DerivedReducible[F]].instance
 
   given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedReducible[[x] =>> F[G[x]]] =
     F.unify `compose` G.unify
@@ -62,7 +65,4 @@ object DerivedReducible:
 
 trait ReducibleDerivation:
   extension (F: Reducible.type)
-    inline def derived[F[_]]: Reducible[F] =
-      import DerivedFoldable.given
-      import DerivedReducible.given
-      summonInline[DerivedReducible[F]].instance
+    inline def derived[F[_]]: Reducible[F] = DerivedReducible[F]

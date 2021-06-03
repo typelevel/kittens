@@ -9,7 +9,9 @@ object traverse extends TraverseDerivation, Instances
 type DerivedTraverse[F[_]] = Derived[Traverse[F]]
 object DerivedTraverse:
   type Or[F[_]] = Derived.Or[Traverse[F]]
-  inline def apply[F[_]](using F: DerivedTraverse[F]): Traverse[F] = F.instance
+  inline def apply[F[_]]: Traverse[F] =
+    import DerivedTraverse.given
+    summonInline[DerivedTraverse[F]].instance
 
   given [T]: DerivedTraverse[Const[T]] = new Traverse[Const[T]]:
     override def map[A, B](fa: T)(f: A => B): T = fa
@@ -58,6 +60,4 @@ object DerivedTraverse:
 
 trait TraverseDerivation:
   extension (F: Traverse.type)
-    inline def derived[F[_]]: Traverse[F] =
-      import DerivedTraverse.given
-      summonInline[DerivedTraverse[F]].instance
+    inline def derived[F[_]]: Traverse[F] = DerivedTraverse[F]

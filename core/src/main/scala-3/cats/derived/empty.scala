@@ -9,6 +9,9 @@ object empty extends EmptyDerivation
 type DerivedEmpty[A] = Derived[Empty[A]]
 object DerivedEmpty:
   type Or[A] = Derived.Or[Empty[A]]
+  inline def apply[A]: Empty[A] =
+    import DerivedEmpty.given
+    summonInline[DerivedEmpty[A]].instance
 
   given product[A](using inst: K0.ProductInstances[Or, A]): DerivedEmpty[A] =
     Empty(inst.unify.construct([A] => (A: Empty[A]) => A.empty))
@@ -18,6 +21,4 @@ object DerivedEmpty:
 
 trait EmptyDerivation:
   extension (E: Empty.type)
-    inline def derived[A]: Empty[A] =
-      import DerivedEmpty.given
-      summonInline[DerivedEmpty[A]].instance
+    inline def derived[A]: Empty[A] = DerivedEmpty[A]

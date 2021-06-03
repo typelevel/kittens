@@ -9,7 +9,9 @@ object functor extends FunctorDerivation, Instances
 type DerivedFunctor[F[_]] = Derived[Functor[F]]
 object DerivedFunctor:
   type Or[F[_]] = Derived.Or[Functor[F]]
-  inline def apply[F[_]](using F: DerivedFunctor[F]): Functor[F] = F.instance
+  inline def apply[F[_]]: Functor[F] =
+    import DerivedFunctor.given
+    summonInline[DerivedFunctor[F]].instance
 
   given [T]: DerivedFunctor[Const[T]] = new Functor[Const[T]]:
     def map[A, B](fa: T)(f: A => B): T = fa
@@ -30,6 +32,4 @@ object DerivedFunctor:
 
 trait FunctorDerivation:
   extension (F: Functor.type)
-    inline def derived[F[_]]: Functor[F] =
-      import DerivedFunctor.given
-      summonInline[DerivedFunctor[F]].instance
+    inline def derived[F[_]]: Functor[F] = DerivedFunctor[F]

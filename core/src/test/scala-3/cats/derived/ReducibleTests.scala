@@ -2,14 +2,9 @@ package cats.derived
 
 import cats.Reducible
 import cats.data.NonEmptyList
-import cats.derived.all._
-import scala.compiletime._
-import DerivedFunctor.given
-import DerivedFoldable.given
-import DerivedReducible.given
+import cats.derived.all.*
 
-object ReducibleTests {
-
+object ReducibleTests:
   case class Box[A](value: A) derives Reducible
 
   sealed trait OneOrMany[+A] derives Reducible
@@ -33,8 +28,7 @@ object ReducibleTests {
   import cats._
 
   DerivedFunctor[MyList]
-  summon[DerivedReducible[NonEmptyTree]]
-}
+  DerivedReducible[NonEmptyTree]
 
 @main def run() =
   println(DerivedFunctor[ReducibleTests.MyList].map(ReducibleTests.MyList.Con(42, ReducibleTests.MyList.Non))(_.toString))

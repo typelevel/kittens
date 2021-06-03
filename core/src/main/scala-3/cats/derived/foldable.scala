@@ -9,7 +9,9 @@ object foldable extends FoldableDerivation, Instances
 type DerivedFoldable[F[_]] = Derived[Foldable[F]]
 object DerivedFoldable:
   type Or[F[_]] = Derived.Or[Foldable[F]]
-  inline def apply[F[_]](using F: DerivedFoldable[F]): Foldable[F] = F.instance
+  inline def apply[F[_]]: Foldable[F] =
+    import DerivedFoldable.given
+    summonInline[DerivedFoldable[F]].instance
 
   given [T]: DerivedFoldable[Const[T]] = new Foldable[Const[T]]:
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
@@ -52,6 +54,4 @@ object DerivedFoldable:
 
 trait FoldableDerivation:
   extension (F: Foldable.type)
-    inline def derived[F[_]]: Foldable[F] =
-      import DerivedFoldable.given
-      summonInline[DerivedFoldable[F]].instance
+    inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]

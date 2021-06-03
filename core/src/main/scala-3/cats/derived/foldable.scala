@@ -2,30 +2,30 @@ package cats.derived
 
 import cats.{Eval, Foldable}
 import shapeless3.deriving.{Const, Continue, K1}
+import scala.compiletime.*
 
 object foldable extends FoldableDerivation, Instances
 
-trait DerivedFoldable[F[_]] extends Foldable[F]
+type DerivedFoldable[F[_]] = Derived[Foldable[F]]
 object DerivedFoldable:
-  type Of[F[_]] = Alt[Foldable[F], DerivedFoldable[F]]
-  inline def apply[F[_]](using F: DerivedFoldable[F]): DerivedFoldable[F] = F
+  type Or[F[_]] = Derived.Or[Foldable[F]]
+  inline def apply[F[_]](using F: DerivedFoldable[F]): Foldable[F] = F.instance
 
-  given const[T]: DerivedFoldable[Const[T]] with
+  given [T]: DerivedFoldable[Const[T]] = new Foldable[Const[T]]:
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
-  given composed[F[_], G[_]](using F: Of[F], G: Of[G]): DerivedFoldable[[x] =>> F[G[x]]] with
-    private val underlying = F.unify `compose` G.unify
-    export underlying.*
+  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFoldable[[x] =>> F[G[x]]] =
+    F.unify `compose` G.unify
 
-  given product[F[_]](using inst: K1.ProductInstances[Of, F]): DerivedFoldable[F] =
+  given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedFoldable[F] =
     new Product(using inst.unify) {}
   
-  given coproduct[F[_]](using inst: => K1.CoproductInstances[Of, F]): DerivedFoldable[F] = 
+  given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedFoldable[F] = 
     new Coproduct(using inst.unify) {}
 
   trait Product[T[x[_]] <: Foldable[x], F[_]](using inst: K1.ProductInstances[T, F])
-    extends DerivedFoldable[F]:
+    extends Foldable[F]:
 
     def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
       inst.foldLeft[A, B](fa)(b) { [f[_]] => (acc: B, tf: T[f], fa: f[A]) => 
@@ -38,7 +38,7 @@ object DerivedFoldable:
       }
 
   trait Coproduct[T[x[_]] <: Foldable[x], F[_]](using inst: K1.CoproductInstances[T, F])
-    extends DerivedFoldable[F]:
+    extends Foldable[F]:
 
     def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
       inst.fold[A, B](fa) { [f[_]] => (tf: T[f], fa: f[A]) =>
@@ -52,4 +52,6 @@ object DerivedFoldable:
 
 trait FoldableDerivation:
   extension (F: Foldable.type)
-    def derived[F[_]](using instance: DerivedFoldable[F]): Foldable[F] = instance
+    inline def derived[F[_]]: Foldable[F] =
+      import DerivedFoldable.given
+      summonInline[DerivedFoldable[F]].instance

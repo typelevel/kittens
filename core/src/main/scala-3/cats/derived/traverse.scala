@@ -2,34 +2,34 @@ package cats.derived
 
 import cats.{Applicative, Eval, Traverse}
 import shapeless3.deriving.{Const, Continue, K1}
+import scala.compiletime.*
 
 object traverse extends TraverseDerivation, Instances
 
-trait DerivedTraverse[F[_]] extends Traverse[F]
+type DerivedTraverse[F[_]] = Derived[Traverse[F]]
 object DerivedTraverse:
-  type Of[F[_]] = Alt[Traverse[F], DerivedTraverse[F]]
-  inline def apply[F[_]](using F: DerivedTraverse[F]): DerivedTraverse[F] = F
+  type Or[F[_]] = Derived.Or[Traverse[F]]
+  inline def apply[F[_]](using F: DerivedTraverse[F]): Traverse[F] = F.instance
 
-  given const[T]: DerivedTraverse[Const[T]] with
+  given [T]: DerivedTraverse[Const[T]] = new Traverse[Const[T]]:
     override def map[A, B](fa: T)(f: A => B): T = fa
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
     def traverse[G[_], A, B](fa: T)(f: A => G[B])(using G: Applicative[G]): G[T] = G.pure(fa)
 
-  given composed[F[_], G[_]](using F: Of[F], G: Of[G]): DerivedTraverse[[x] =>> F[G[x]]] with
-    private val underlying = F.unify `compose` G.unify
-    export underlying.*
+  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedTraverse[[x] =>> F[G[x]]] =
+    F.unify `compose` G.unify
 
-  given product[F[_]](using inst: K1.ProductInstances[Of, F]): DerivedTraverse[F] =
+  given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedTraverse[F] =
     given K1.ProductInstances[Traverse, F] = inst.unify
     new Product[Traverse, F] {}
   
-  given coproduct[F[_]](using inst: => K1.CoproductInstances[Of, F]): DerivedTraverse[F] =
+  given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedTraverse[F] =
     given K1.CoproductInstances[Traverse, F] = inst.unify
     new Coproduct[Traverse, F] {}
 
   trait Product[T[x[_]] <: Traverse[x], F[_]](using inst: K1.ProductInstances[T, F])
-      extends DerivedFunctor.Generic[T, F], DerivedFoldable.Product[T, F], DerivedTraverse[F]:
+      extends DerivedFunctor.Generic[T, F], DerivedFoldable.Product[T, F], Traverse[F]:
 
     def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
       inst.traverse[A, G, B](fa) { [a, b] => (ga: G[a], f: a => b) => 
@@ -43,7 +43,7 @@ object DerivedTraverse:
       }
 
   trait Coproduct[T[x[_]] <: Traverse[x], F[_]](using inst: K1.CoproductInstances[T, F])
-      extends DerivedFunctor.Generic[T, F], DerivedFoldable.Coproduct[T, F], DerivedTraverse[F]:
+      extends DerivedFunctor.Generic[T, F], DerivedFoldable.Coproduct[T, F], Traverse[F]:
 
     def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
       inst.traverse[A, G, B](fa) { [a, b] => (ga: G[a], f: a => b) =>
@@ -58,4 +58,6 @@ object DerivedTraverse:
 
 trait TraverseDerivation:
   extension (F: Traverse.type)
-    def derived[F[_]](using instance: DerivedTraverse[F]): Traverse[F] = instance
+    inline def derived[F[_]]: Traverse[F] =
+      import DerivedTraverse.given
+      summonInline[DerivedTraverse[F]].instance

@@ -4,6 +4,9 @@ import cats.Reducible
 import cats.data.NonEmptyList
 import cats.derived.all._
 import scala.compiletime._
+import DerivedFunctor.given
+import DerivedFoldable.given
+import DerivedReducible.given
 
 object ReducibleTests {
 

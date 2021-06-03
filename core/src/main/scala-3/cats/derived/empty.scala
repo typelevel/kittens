@@ -11,20 +11,13 @@ trait DerivedEmpty[A] extends Empty[A]:
   lazy val empty: A = emptyValue()
 
 object DerivedEmpty:
-  inline given [A]: DerivedEmpty[A] = summonFrom {
-    case given Empty[A] => delegated
-    case given K0.ProductInstances[DerivedEmpty, A] => product
-    case given K0.CoproductGeneric[A] => coproduct
-  }
-  
-  def delegated[A](using A: => Empty[A]): DerivedEmpty[A] =
-    () => A.empty
+  type Of[A] = Alt[Empty[A], DerivedEmpty[A]]
 
-  def product[A](using inst: K0.ProductInstances[DerivedEmpty, A]): DerivedEmpty[A] =
-    () => inst.construct([A] => (A: DerivedEmpty[A]) => A.empty)
+  given product[A](using inst: K0.ProductInstances[Of, A]): DerivedEmpty[A] =
+    () => inst.unify.construct([A] => (A: Empty[A]) => A.empty)
 
-  inline def coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
-    K0.summonFirst[DerivedEmpty, gen.MirroredElemTypes, A]
+  inline given coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
+    () => K0.summonFirst[Of, gen.MirroredElemTypes, A].unify.empty
 
 trait EmptyDerivation:
   extension (E: Empty.type)

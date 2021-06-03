@@ -4,7 +4,7 @@ import alleycats._
 import cats._
 import cats.derived.all._
 
-class EmptyTests:
+object EmptyTests:
   case class Foo(i: Int, b: IntTree) derives Empty
   enum IntTree:
     case Leaf

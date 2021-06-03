@@ -2,23 +2,28 @@ package cats.derived
 
 import cats.{Eval, Foldable, Reducible}
 import shapeless3.deriving.{Continue, Const, K1}
-import scala.annotation.threadUnsafe
 
 object reducible extends ReducibleDerivation
 
 trait DerivedReducible[F[_]] extends Reducible[F]
-object DerivedReducible extends DerivedReducibleLowPriority:
-  given delegated[F[_]](using F: => Reducible[F]): DerivedReducible[F] =
-    new Delegated(F)
+object DerivedReducible:
+  type Of[F[_]] = Alt[Reducible[F], DerivedReducible[F]]
+  inline def apply[F[_]](using F: DerivedReducible[F]): DerivedReducible[F] = F
 
-  given composed[F[_]: DerivedReducible, G[_]: DerivedReducible]: DerivedReducible[[x] =>> F[G[x]]] =
-    new Delegated(Reducible[F].compose[G])
+  given composed[F[_], G[_]](using F: Of[F], G: Of[G]): DerivedReducible[[x] =>> F[G[x]]] with
+    private val underlying = F.unify `compose` G.unify
+    export underlying.*
 
-  def product[F[_]](ev: Reducible[?])(using K1.ProductInstances[DerivedFoldable, F]): DerivedReducible[F] =
-    new Product[DerivedFoldable, F](ev) {}
+  def product[F[_]](ev: Of[Const[Any]])(using inst: K1.ProductInstances[DerivedFoldable.Of, F]): DerivedReducible[F] =
+    given K1.ProductInstances[Foldable, F] = inst.unify
+    new Product[Foldable, F](ev.unify) {}
 
-  def coproduct[F[_]](using K1.CoproductInstances[DerivedReducible, F]): DerivedReducible[F] =
-    new Coproduct[DerivedReducible, F] {}
+  given coproduct[F[_]](using inst: => K1.CoproductInstances[Of, F]): DerivedReducible[F] =
+    given K1.CoproductInstances[Reducible, F] = inst.unify
+    new Coproduct[Reducible, F] {}
+
+  inline given [F[_]](using gen: K1.ProductGeneric[F]): DerivedReducible[F] =
+    DerivedReducible.product(K1.summonFirst[DerivedReducible.Of, gen.MirroredElemTypes, Const[Any]])
 
   trait Product[T[x[_]] <: Foldable[x], F[_]](ev: Reducible[?])(using inst: K1.ProductInstances[T, F])
     extends DerivedFoldable.Product[T, F], DerivedReducible[F]:
@@ -54,18 +59,6 @@ object DerivedReducible extends DerivedReducibleLowPriority:
       inst.fold[A, Eval[B]](fa) { [f[_]] => (tf: T[f], fa: f[A]) =>
         Eval.defer(tf.reduceRightTo(fa)(f)(g))
       }
-
-  private final class Delegated[F[_]](F: => Reducible[F]) extends DerivedReducible[F]:
-    @threadUnsafe private lazy val underlying = F
-    export underlying._
-
-private[derived] sealed abstract class DerivedReducibleLowPriority:
-  inline given derived[F[_]](using gen: K1.Generic[F]): DerivedReducible[F] =
-    inline gen match
-      case given K1.ProductGeneric[F] =>
-        DerivedReducible.product(K1.summonFirst[DerivedReducible, gen.MirroredElemTypes, Const[Any]])
-      case given K1.CoproductGeneric[F] => 
-        DerivedReducible.coproduct
 
 trait ReducibleDerivation:
   extension (F: Reducible.type)

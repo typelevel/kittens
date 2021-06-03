@@ -2,26 +2,23 @@ package cats.derived
 
 import cats.Functor
 import shapeless3.deriving.{Const, K1}
-import scala.annotation.threadUnsafe
 
 object functor extends FunctorDerivation, Instances
 
 trait DerivedFunctor[F[_]] extends Functor[F]
 object DerivedFunctor:
-  type Of[F[_]] = Functor[F] OrElse DerivedFunctor[F]
+  type Of[F[_]] = Alt[Functor[F], DerivedFunctor[F]]
+  inline def apply[F[_]](using F: DerivedFunctor[F]): DerivedFunctor[F] = F
 
   given const[T]: DerivedFunctor[Const[T]] with
     def map[A, B](fa: T)(f: A => B): T = fa
 
   given composed[F[_], G[_]](using F: Of[F], G: Of[G]): DerivedFunctor[[x] =>> F[G[x]]] with
     private val underlying = F.unify `compose` G.unify
-    export underlying._
+    export underlying.*
 
-  inline given derived[F[_]](using K1.Generic[F]): DerivedFunctor[F] =
-    generic
-
-  def generic[F[_]](using inst: K1.Instances[Of, F]): DerivedFunctor[F] =
-    new Generic[Functor, F](using inst.unify) {}
+  given generic[F[_]](using inst: => K1.Instances[Of, F]): DerivedFunctor[F] =
+    new Generic(using inst.unify) {}
 
   trait Generic[T[x[_]] <: Functor[x], F[_]](using inst: K1.Instances[T, F])
     extends DerivedFunctor[F]:

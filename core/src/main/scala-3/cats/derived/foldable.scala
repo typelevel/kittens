@@ -2,27 +2,27 @@ package cats.derived
 
 import cats.{Eval, Foldable}
 import shapeless3.deriving.{Const, Continue, K1}
-import scala.annotation.threadUnsafe
 
 object foldable extends FoldableDerivation, Instances
 
 trait DerivedFoldable[F[_]] extends Foldable[F]
-object DerivedFoldable extends DerivedFoldableLowPriority:
+object DerivedFoldable:
+  type Of[F[_]] = Alt[Foldable[F], DerivedFoldable[F]]
+  inline def apply[F[_]](using F: DerivedFoldable[F]): DerivedFoldable[F] = F
+
   given const[T]: DerivedFoldable[Const[T]] with
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
-  given delegated[F[_]](using F: => Foldable[F]): DerivedFoldable[F] =
-    new Delegated(F)
+  given composed[F[_], G[_]](using F: Of[F], G: Of[G]): DerivedFoldable[[x] =>> F[G[x]]] with
+    private val underlying = F.unify `compose` G.unify
+    export underlying.*
 
-  given composed[F[_]: DerivedFoldable, G[_]: DerivedFoldable]: DerivedFoldable[[x] =>> F[G[x]]] =
-    new Delegated(Foldable[F].compose[G])
-
-  def product[F[_]](using K1.ProductInstances[DerivedFoldable, F]): DerivedFoldable[F] =
-    new Product[DerivedFoldable, F] {}
+  given product[F[_]](using inst: K1.ProductInstances[Of, F]): DerivedFoldable[F] =
+    new Product(using inst.unify) {}
   
-  def coproduct[F[_]](using K1.CoproductInstances[DerivedFoldable, F]): DerivedFoldable[F] = 
-    new Coproduct[DerivedFoldable, F] {}
+  given coproduct[F[_]](using inst: => K1.CoproductInstances[Of, F]): DerivedFoldable[F] = 
+    new Coproduct(using inst.unify) {}
 
   trait Product[T[x[_]] <: Foldable[x], F[_]](using inst: K1.ProductInstances[T, F])
     extends DerivedFoldable[F]:
@@ -49,14 +49,6 @@ object DerivedFoldable extends DerivedFoldableLowPriority:
       inst.fold[A, Eval[B]](fa) { [f[_]] => (tf: T[f], fa: f[A]) =>
         Eval.defer(tf.foldRight(fa, lb)(f))
       }
-
-  private final class Delegated[F[_]](F: => Foldable[F]) extends DerivedFoldable[F]:
-    @threadUnsafe private lazy val underlying = F
-    export underlying._
-
-private[derived] sealed abstract class DerivedFoldableLowPriority:
-  inline given derived[F[_]](using gen: K1.Generic[F]): DerivedFoldable[F] =
-    gen.derive(DerivedFoldable.product, DerivedFoldable.coproduct)
 
 trait FoldableDerivation:
   extension (F: Foldable.type)

@@ -2,13 +2,13 @@ package cats.derived
 
 import alleycats.Empty
 import shapeless3.deriving.K0
-import scala.compiletime.summonFrom
+import scala.annotation.*
 
 object empty extends EmptyDerivation
 
 trait DerivedEmpty[A] extends Empty[A]:
   protected def emptyValue(): A
-  lazy val empty: A = emptyValue()
+  @threadUnsafe lazy val empty: A = emptyValue()
 
 object DerivedEmpty:
   type Of[A] = Alt[Empty[A], DerivedEmpty[A]]

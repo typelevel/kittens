@@ -27,6 +27,6 @@ class ReducibleTests {
     case Non
     case Con(v: A, r: MyList[A])
 
-  summon[DerivedFunctor[MyList]]
+  summon[DerivedFunctor.Of[MyList.Con]]
   summon[DerivedReducible[NonEmptyTree]]
 }

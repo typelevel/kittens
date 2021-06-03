@@ -17,7 +17,7 @@ object DerivedFunctor:
     private val underlying = F.unify `compose` G.unify
     export underlying._
 
-  inline given derived[F[_]](using K1.Generic[F]): DerivedFunctor[F] =
+  transparent inline given derived[F[_]](using K1.Instances[Of, F]): DerivedFunctor[F] =
     generic
 
   def generic[F[_]](using inst: K1.Instances[Of, F]): DerivedFunctor[F] =

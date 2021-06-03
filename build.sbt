@@ -26,6 +26,7 @@ lazy val commonSettings = Seq(
     "-deprecation",
     "-Xfatal-warnings"
   ),
+  Test / scalacOptions += "-Xprint:inline",
   scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).flatMap {
     case (2, 12) => Some("-Ypartial-unification")
     case _ => None

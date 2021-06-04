@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.Functor
-import cats.derived.given
+import cats.derived.*
 
 class FunctorTests {
 

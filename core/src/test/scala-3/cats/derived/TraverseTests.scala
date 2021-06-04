@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.Traverse
-import cats.derived.given
+import cats.derived.*
 
 class TraverseTests {
 

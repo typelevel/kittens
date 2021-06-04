@@ -43,10 +43,10 @@ object semiauto extends
 
 object auto:
 
-  inline given [F[_]](using ev: DerivedFoldable[F]): Foldable[F] = ev.instance
+  inline given [F[_]]: Foldable[F] = DerivedFoldable[F]
 
-  inline given [F[_]](using ev: DerivedFunctor[F]): Functor[F] = ev.instance
+  inline given [F[_]]: Functor[F] = DerivedFunctor[F]
 
-  inline given [F[_]](using ev: DerivedReducible[F]): Reducible[F] = ev.instance
+  inline given [F[_]]: Reducible[F] = DerivedReducible[F]
 
-  inline given [F[_]](using ev: DerivedTraverse[F]): Traverse[F] = ev.instance
+  inline given [F[_]]: Traverse[F] = DerivedTraverse[F]

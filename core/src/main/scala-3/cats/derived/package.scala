@@ -32,13 +32,13 @@ object semiauto extends
   ShowDerivation,
   Instances:
 
-  inline def foldable[F[_]](using ev: DerivedFoldable[F]): Foldable[F] = ev.instance
+  inline def foldable[F[_]]: Foldable[F] = DerivedFoldable[F]
 
-  inline def functor[F[_]](using ev: DerivedFunctor[F]): Functor[F] = ev.instance
+  inline def functor[F[_]]: Functor[F] = DerivedFunctor[F]
 
-  inline def reducible[F[_]](using ev: DerivedReducible[F]): Reducible[F] = ev.instance
+  inline def reducible[F[_]]: Reducible[F] = DerivedReducible[F]
 
-  inline def traverse[F[_]](using ev: DerivedTraverse[F]): Traverse[F] = ev.instance
+  inline def traverse[F[_]]: Traverse[F] = DerivedTraverse[F]
 
 
 object auto:

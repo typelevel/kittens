@@ -55,7 +55,3 @@ object DerivedTraverse:
       } { [f[_]] => (tf: T[f], fa: f[A]) =>
         tf.traverse(fa)(f)
       }
-
-trait TraverseDerivation:
-  extension (F: Traverse.type)
-    inline def derived[F[_]]: Traverse[F] = DerivedTraverse[F]

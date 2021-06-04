@@ -49,7 +49,3 @@ object DerivedFoldable:
       inst.fold[A, Eval[B]](fa) { [f[_]] => (tf: T[f], fa: f[A]) =>
         Eval.defer(tf.foldRight(fa, lb)(f))
       }
-
-trait FoldableDerivation:
-  extension (F: Foldable.type)
-    inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]

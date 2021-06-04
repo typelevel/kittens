@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.Foldable
-import cats.derived.semiauto.*
+import cats.derived.given
 
 class FoldableTests {
 

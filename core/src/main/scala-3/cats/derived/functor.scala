@@ -27,7 +27,3 @@ object DerivedFunctor:
       inst.map(fa: F[A]) { [f[_]] => (tf: T[f], fa: f[A]) =>
         tf.map(fa)(f)
       }
-
-trait FunctorDerivation:
-  extension (F: Functor.type)
-    inline def derived[F[_]]: Functor[F] = DerivedFunctor[F]

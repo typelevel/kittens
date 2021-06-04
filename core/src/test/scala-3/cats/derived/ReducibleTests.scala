@@ -3,7 +3,7 @@ package cats.derived
 import cats.Reducible
 import cats.data.NonEmptyList
 import cats.instances.all.*
-import cats.derived.semiauto.*
+import cats.derived.given
 import cats.derived.semiauto.given
 
 object ReducibleTests:

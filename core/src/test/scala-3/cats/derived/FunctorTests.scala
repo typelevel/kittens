@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.Functor
-import cats.derived.semiauto.*
+import cats.derived.given
 
 class FunctorTests {
 
@@ -14,4 +14,5 @@ class FunctorTests {
   sealed trait CList[A] derives Functor
   case object CNil extends CList[Nothing]
   case class CCons[A](head: A, tail: CList[A]) extends CList[A]
+
 }

@@ -2,28 +2,30 @@ package cats.derived
 
 import cats.{Eval, Foldable}
 import shapeless3.deriving.{Const, Continue, K1}
-import scala.annotation.threadUnsafe
+import scala.compiletime.*
 
-trait DerivedFoldable[F[_]] extends Foldable[F]
-object DerivedFoldable extends DerivedFoldableLowPriority:
-  given const[T]: DerivedFoldable[Const[T]] with
+type DerivedFoldable[F[_]] = Derived[Foldable[F]]
+object DerivedFoldable:
+  type Or[F[_]] = Derived.Or[Foldable[F]]
+  inline def apply[F[_]]: Foldable[F] =
+    import DerivedFoldable.given
+    summonInline[DerivedFoldable[F]].instance
+
+  given [T]: DerivedFoldable[Const[T]] = new Foldable[Const[T]]:
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
-  given delegated[F[_]](using F: => Foldable[F]): DerivedFoldable[F] =
-    new Delegated(F)
+  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFoldable[[x] =>> F[G[x]]] =
+    F.unify `compose` G.unify
 
-  given composed[F[_]: DerivedFoldable, G[_]: DerivedFoldable]: DerivedFoldable[[x] =>> F[G[x]]] =
-    new Delegated(Foldable[F].compose[G])
-
-  def product[F[_]](using K1.ProductInstances[DerivedFoldable, F]): DerivedFoldable[F] =
-    new Product[DerivedFoldable, F] {}
+  given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedFoldable[F] =
+    new Product(using inst.unify) {}
   
-  def coproduct[F[_]](using K1.CoproductInstances[DerivedFoldable, F]): DerivedFoldable[F] = 
-    new Coproduct[DerivedFoldable, F] {}
+  given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedFoldable[F] = 
+    new Coproduct(using inst.unify) {}
 
   trait Product[T[x[_]] <: Foldable[x], F[_]](using inst: K1.ProductInstances[T, F])
-    extends DerivedFoldable[F]:
+    extends Foldable[F]:
 
     def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
       inst.foldLeft[A, B](fa)(b) { [f[_]] => (acc: B, tf: T[f], fa: f[A]) => 
@@ -36,7 +38,7 @@ object DerivedFoldable extends DerivedFoldableLowPriority:
       }
 
   trait Coproduct[T[x[_]] <: Foldable[x], F[_]](using inst: K1.CoproductInstances[T, F])
-    extends DerivedFoldable[F]:
+    extends Foldable[F]:
 
     def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
       inst.fold[A, B](fa) { [f[_]] => (tf: T[f], fa: f[A]) =>
@@ -48,14 +50,6 @@ object DerivedFoldable extends DerivedFoldableLowPriority:
         Eval.defer(tf.foldRight(fa, lb)(f))
       }
 
-  private final class Delegated[F[_]](F: => Foldable[F]) extends DerivedFoldable[F]:
-    @threadUnsafe private lazy val underlying = F
-    export underlying._
-
-private[derived] sealed abstract class DerivedFoldableLowPriority:
-  inline given derived[F[_]](using gen: K1.Generic[F]): DerivedFoldable[F] =
-    gen.derive(DerivedFoldable.product, DerivedFoldable.coproduct)
-
 trait FoldableDerivation:
   extension (F: Foldable.type)
-    def derived[F[_]](using instance: DerivedFoldable[F]): Foldable[F] = instance
+    inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]

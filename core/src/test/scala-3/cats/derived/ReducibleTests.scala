@@ -2,7 +2,9 @@ package cats.derived
 
 import cats.Reducible
 import cats.data.NonEmptyList
-import cats.derived.all.*
+import cats.instances.all.*
+import cats.derived.*
+import cats.derived.semiauto.given
 
 object ReducibleTests:
   case class Box[A](value: A) derives Reducible

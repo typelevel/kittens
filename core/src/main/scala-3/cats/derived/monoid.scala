@@ -3,8 +3,6 @@ package cats.derived
 import cats.Monoid
 import shapeless3.deriving.K0
 
-object monoid extends MonoidDerivation
-
 trait ProductMonoid[F[x] <: Monoid[x], A](
   using inst: K0.ProductInstances[F, A]
 ) extends ProductSemigroup[F, A], Monoid[A]:

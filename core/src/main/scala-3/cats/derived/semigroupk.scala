@@ -3,8 +3,6 @@ package cats.derived
 import cats.{Semigroup, SemigroupK}
 import shapeless3.deriving.{Const, K1}
 
-object semigroupk extends SemigroupKDerivation, Instances
-
 trait ProductSemigroupK[T[x[_]] <: SemigroupK[x], F[_]](using inst: K1.ProductInstances[T, F])
   extends SemigroupK[F]:
     def combineK[A](x: F[A], y: F[A]): F[A] = inst.map2[A, A, A](x,y)(

@@ -4,8 +4,6 @@ import alleycats.Empty
 import shapeless3.deriving.K0
 import scala.compiletime.*
 
-object empty extends EmptyDerivation
-
 type DerivedEmpty[A] = Derived[Empty[A]]
 object DerivedEmpty:
   type Or[A] = Derived.Or[Empty[A]]

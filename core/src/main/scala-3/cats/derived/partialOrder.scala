@@ -3,8 +3,6 @@ package cats.derived
 import cats.PartialOrder
 import shapeless3.deriving.{K0, Complete}
 
-object partialOrder extends PartialOrderDerivation
-
 trait ProductPartialOrder[T[x] <: PartialOrder[x], A](using inst: K0.ProductInstances[T, A])
     extends PartialOrder[A]:
 

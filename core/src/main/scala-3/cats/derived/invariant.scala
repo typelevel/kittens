@@ -3,8 +3,6 @@ package cats.derived
 import cats.Invariant
 import shapeless3.deriving.K1
 
-object invariant extends InvariantDerivation, Instances
-
 trait GenericInvariant[T[x[_]] <: Invariant[x], F[_]](using inst: K1.Instances[T, F])
   extends Invariant[F]:
     def imap[A, B](fa: F[A])(f: A => B)(g: B => A): F[B] = inst.map(fa)(

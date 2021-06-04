@@ -4,8 +4,6 @@ import cats.{Eval, Foldable, Reducible}
 import shapeless3.deriving.{Continue, Const, K1}
 import scala.compiletime.*
 
-object reducible extends ReducibleDerivation
-
 type DerivedReducible[F[_]] = Derived[Reducible[F]]
 object DerivedReducible:
   type Or[F[_]] = Derived.Or[Reducible[F]]
@@ -62,7 +60,3 @@ object DerivedReducible:
       inst.fold[A, Eval[B]](fa) { [f[_]] => (tf: T[f], fa: f[A]) =>
         Eval.defer(tf.reduceRightTo(fa)(f)(g))
       }
-
-trait ReducibleDerivation:
-  extension (F: Reducible.type)
-    inline def derived[F[_]]: Reducible[F] = DerivedReducible[F]

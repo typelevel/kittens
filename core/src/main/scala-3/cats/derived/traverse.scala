@@ -4,8 +4,6 @@ import cats.{Applicative, Eval, Traverse}
 import shapeless3.deriving.{Const, Continue, K1}
 import scala.compiletime.*
 
-object traverse extends TraverseDerivation, Instances
-
 type DerivedTraverse[F[_]] = Derived[Traverse[F]]
 object DerivedTraverse:
   type Or[F[_]] = Derived.Or[Traverse[F]]
@@ -57,7 +55,3 @@ object DerivedTraverse:
       } { [f[_]] => (tf: T[f], fa: f[A]) =>
         tf.traverse(fa)(f)
       }
-
-trait TraverseDerivation:
-  extension (F: Traverse.type)
-    inline def derived[F[_]]: Traverse[F] = DerivedTraverse[F]

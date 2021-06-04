@@ -4,8 +4,6 @@ import cats.Functor
 import shapeless3.deriving.{Const, K1}
 import scala.compiletime.*
 
-object functor extends FunctorDerivation, Instances
-
 type DerivedFunctor[F[_]] = Derived[Functor[F]]
 object DerivedFunctor:
   type Or[F[_]] = Derived.Or[Functor[F]]
@@ -29,7 +27,3 @@ object DerivedFunctor:
       inst.map(fa: F[A]) { [f[_]] => (tf: T[f], fa: f[A]) =>
         tf.map(fa)(f)
       }
-
-trait FunctorDerivation:
-  extension (F: Functor.type)
-    inline def derived[F[_]]: Functor[F] = DerivedFunctor[F]

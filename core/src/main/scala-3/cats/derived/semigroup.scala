@@ -3,8 +3,6 @@ package cats.derived
 import cats.Semigroup
 import shapeless3.deriving.K0
 
-object semigroup extends SemigroupDerivation
-
 trait ProductSemigroup[F[x] <: Semigroup[x], A](
   using inst: K0.ProductInstances[F, A]
 ) extends Semigroup[A]:

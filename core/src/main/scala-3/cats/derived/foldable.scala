@@ -4,8 +4,6 @@ import cats.{Eval, Foldable}
 import shapeless3.deriving.{Const, Continue, K1}
 import scala.compiletime.*
 
-object foldable extends FoldableDerivation, Instances
-
 type DerivedFoldable[F[_]] = Derived[Foldable[F]]
 object DerivedFoldable:
   type Or[F[_]] = Derived.Or[Foldable[F]]
@@ -51,7 +49,3 @@ object DerivedFoldable:
       inst.fold[A, Eval[B]](fa) { [f[_]] => (tf: T[f], fa: f[A]) =>
         Eval.defer(tf.foldRight(fa, lb)(f))
       }
-
-trait FoldableDerivation:
-  extension (F: Foldable.type)
-    inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]

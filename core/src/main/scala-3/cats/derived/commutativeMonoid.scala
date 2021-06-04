@@ -3,8 +3,6 @@ package cats.derived
 import cats.kernel.CommutativeMonoid
 import shapeless3.deriving.K0
 
-object commutativeMonoid extends CommutativeMonoidDerivation
-
 trait ProductCommutativeMonoid[T[x] <: CommutativeMonoid[x], A](using inst: K0.ProductInstances[T, A])
     extends ProductCommutativeSemigroup[T, A], ProductMonoid[T, A], CommutativeMonoid[A] {}
 

@@ -42,11 +42,14 @@ object semiauto extends
 
 
 object auto:
+  object functor:
+    inline given [F[_]]: Functor[F] = DerivedFunctor[F]
 
-  inline given [F[_]]: Foldable[F] = DerivedFoldable[F]
+  object foldable:
+    inline given [F[_]]: Foldable[F] = DerivedFoldable[F]
 
-  inline given [F[_]]: Functor[F] = DerivedFunctor[F]
+  object reducible:
+    inline given [F[_]]: Reducible[F] = DerivedReducible[F]
 
-  inline given [F[_]]: Reducible[F] = DerivedReducible[F]
-
-  inline given [F[_]]: Traverse[F] = DerivedTraverse[F]
+  object traverse:
+    inline given [F[_]]: Traverse[F] = DerivedTraverse[F]

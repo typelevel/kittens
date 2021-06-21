@@ -83,7 +83,7 @@ trait TestDefns {
       Arbitrary(Arbitrary.arbitrary[(Int, T, Long, List[T], String)].map((apply[T] _).tupled))
 
     implicit def cogen[T: Cogen]: Cogen[Interleaved[T]] =
-      Cogen[(Int, T, Long, List[T], String)].contramap(unapply(_).get)
+      Cogen[(Int, T, Long, List[T], String)].contramap(x => (x.i, x.t, x.l, x.tt, x.s))
   }
 
   case class Bivariant[A](run: A => Boolean, store: A)

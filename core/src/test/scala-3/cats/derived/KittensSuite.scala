@@ -20,17 +20,20 @@ import cats.platform.Platform
 import cats.syntax.AllSyntax
 import munit.DisciplineSuite
 import org.scalacheck.Test.Parameters
+import org.scalacheck.Arbitrary
 
 /** An opinionated stack of traits to improve consistency and reduce
   * boilerplate in Kittens tests. Note that unlike the corresponding
   * CatsSuite in the Cat project, this trait does not mix in any
   * instances.
   */
-abstract class KittensSuite extends DisciplineSuite with AllSyntax {
+abstract class KittensSuite extends DisciplineSuite, AllSyntax, TestEqInstances:
   override val scalaCheckTestParameters: Parameters = super.scalaCheckTestParameters
     .withMinSuccessfulTests(if (Platform.isJvm) 50 else 5)
     .withMaxDiscardRatio(if (Platform.isJvm) 5 else 50)
     .withWorkers(if (Platform.isJvm) 2 else 1)
     .withMaxSize(if (Platform.isJvm) 10 else 5)
     .withMinSize(0)
-}
+
+  given [A: Arbitrary]: Arbitrary[List[A]] =
+    Arbitrary.arbContainer

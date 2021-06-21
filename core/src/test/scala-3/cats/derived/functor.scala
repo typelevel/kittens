@@ -16,9 +16,72 @@
 
 package cats
 package derived
+
 import cats.laws.discipline._
 import cats.laws.discipline.eq._
 
-class FunctorVersionSpecificSuite extends KittensSuite with TestEqInstances {
+class FunctorSuite extends KittensSuite {
 
+  implicit val exhaustivePred: ExhaustiveCheck[Predicate[Boolean]] =
+    ExhaustiveCheck.instance(List(_ => true, _ => false, identity, !_))
+
+  def testFunctor(context: String)(implicit
+      iList: Functor[IList],
+      tree: Functor[Tree],
+      genericAdt: Functor[GenericAdt],
+      optList: Functor[OptList],
+      listSnoc: Functor[ListSnoc],
+      andChar: Functor[AndChar],
+      interleaved: Functor[Interleaved],
+      nestedPred: Functor[NestedPred]
+  ): Unit = {
+    checkAll(s"$context.Functor[IList]", FunctorTests[IList].functor[Int, String, Long])
+    checkAll(s"$context.Functor[Tree]", FunctorTests[Tree].functor[Int, String, Long])
+    checkAll(s"$context.Functor[GenericAdt]", FunctorTests[GenericAdt].functor[Int, String, Long])
+    checkAll(s"$context.Functor[OptList]", FunctorTests[OptList].functor[Int, String, Long])
+    checkAll(s"$context.Functor[ListSnoc]", FunctorTests[ListSnoc].functor[Int, String, Long])
+    checkAll(s"$context.Functor[AndChar]", FunctorTests[AndChar].functor[Int, String, Long])
+    checkAll(s"$context.Functor[Interleaved]", FunctorTests[Interleaved].functor[Int, String, Long])
+    checkAll(s"$context.Functor[NestedPred]", FunctorTests[NestedPred].functor[Boolean, Int, Boolean])
+    checkAll(s"$context.Functor is Serializable", SerializableTests.serializable(Functor[Tree]))
+
+    test(s"$context.Functor.map is stack safe") {
+      val n = 10000
+      val largeIList = IList.fromSeq(1 until n)
+      val largeSnoc = Snoc.fromSeq(1 until n) :: Nil
+      val actualIList = IList.toList(largeIList.map(_ + 1))
+      val actualSnoc = listSnoc.map(largeSnoc)(_ + 1).flatMap(Snoc.toList)
+      val expected = (2 until n + 1).toList
+      assert(actualIList == expected)
+      assert(actualSnoc == expected)
+    }
+  }
+
+  {
+    import auto.functor.given
+    testFunctor("auto")
+  }
+
+  {
+    import semiInstances._
+    testFunctor("semiauto")
+  }
+
+  type OptList[A] = Option[List[A]]
+  type ListSnoc[A] = List[Snoc[A]]
+  type AndChar[A] = (A, Char)
+  type Predicate[A] = A => Boolean
+  type NestedPred[A] = Predicate[Predicate[A]]
+
+  object semiInstances {
+    implicit val iList: Functor[IList] = semiauto.functor
+    implicit val tree: Functor[Tree] = semiauto.functor
+    implicit val genericAdt: Functor[GenericAdt] = semiauto.functor
+    implicit val optList: Functor[OptList] = semiauto.functor
+    implicit val listSnoc: Functor[ListSnoc] = semiauto.functor
+    implicit val andChar: Functor[AndChar] = semiauto.functor
+    implicit val interleaved: Functor[Interleaved] = semiauto.functor
+    implicit val nestedPred: Functor[NestedPred] = semiauto.functor
+  }
 }
+

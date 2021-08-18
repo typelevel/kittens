@@ -1,13 +1,14 @@
 package pkg
 
+import cats.Functor
 import munit.FunSuite
 
-class MinimizationSuite extends FunSuite {
+class MinimizationSuite extends FunSuite with IListDefn {
 
   test("basic test") {
-    import cats.derived.semiauto.*
+    import cats.derived.auto.given
 
-    val F = functor[IList]
+    val F = Functor[IList]
 
     val initial = ICons(1, INil())
 

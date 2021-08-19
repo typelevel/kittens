@@ -18,8 +18,8 @@ package cats.derived.util
 
 import shapeless._
 
-/** Summons all available instances of the typeclass `F` for members of the coproduct `C`.
-  * Unlike `LiftAll` members of the coproduct without an instance will be skipped in the result.
+/** Summons all available instances of the typeclass `F` for members of the coproduct `C`. Unlike `LiftAll` members of
+  * the coproduct without an instance will be skipped in the result.
   */
 sealed trait LiftSome[F[_], C <: Coproduct] extends Serializable {
   type Out <: HList

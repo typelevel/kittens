@@ -21,10 +21,8 @@ import cats.syntax.AllSyntax
 import munit.DisciplineSuite
 import org.scalacheck.Test.Parameters
 
-/** An opinionated stack of traits to improve consistency and reduce
-  * boilerplate in Kittens tests. Note that unlike the corresponding
-  * CatsSuite in the Cat project, this trait does not mix in any
-  * instances.
+/** An opinionated stack of traits to improve consistency and reduce boilerplate in Kittens tests. Note that unlike the
+  * corresponding CatsSuite in the Cat project, this trait does not mix in any instances.
   */
 abstract class KittensSuite extends DisciplineSuite with AllSyntax {
   override val scalaCheckTestParameters: Parameters = super.scalaCheckTestParameters

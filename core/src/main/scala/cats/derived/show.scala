@@ -8,16 +8,12 @@ import util.VersionSpecific.{Lazy, OrElse}
 import scala.annotation.implicitNotFound
 import scala.reflect.ClassTag
 
-/** Due to a limitation in the way Shapeless' `describe` is currently
-  * implemented, `Show` can't be derived for ADTs which are _both_
-  * recursive _and_ generic in one or more type parameters.
+/** Due to a limitation in the way Shapeless' `describe` is currently implemented, `Show` can't be derived for ADTs
+  * which are _both_ recursive _and_ generic in one or more type parameters.
   *
-  * See:
-  * https://github.com/typelevel/kittens/pull/48#issue-249836267
-  * https://github.com/milessabin/shapeless/issues/750
+  * See: https://github.com/typelevel/kittens/pull/48#issue-249836267 https://github.com/milessabin/shapeless/issues/750
   *
-  * See the test suite for more precise examples of what can and cannot
-  * be derived.
+  * See the test suite for more precise examples of what can and cannot be derived.
   */
 @implicitNotFound("""Could not derive an instance of Show[A] where A = ${A}.
 Make sure that A satisfies one of the following conditions:

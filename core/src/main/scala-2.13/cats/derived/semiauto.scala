@@ -4,8 +4,8 @@ package derived
 import alleycats.{ConsK, Empty, EmptyK, Pure}
 import cats.kernel.{CommutativeMonoid, CommutativeSemigroup}
 
-/** allows semi automatically derive each instance. The derivation might need help when
-  * there are fields with a type constructor that comes with instances, e.g.
+/** allows semi automatically derive each instance. The derivation might need help when there are fields with a type
+  * constructor that comes with instances, e.g.
   * {{{
   * scala> case class Bar(a: String)
   * scala> case class Foo(bars: List[Bar])
@@ -29,9 +29,9 @@ import cats.kernel.{CommutativeMonoid, CommutativeSemigroup}
   *   scala> implicit val fooShow: Show[Foo] = { |
   *             import cats.derived.auto.show._  |
   *             cats.derived.semiauto.show       |
-  *          }
-  *  scala> Foo(List(Bar("a"))).show
-  *  res3: String = Foo(bars = List(Bar(a = a)))
+  *           }
+  *   scala> Foo(List(Bar("a"))).show
+  *   res3: String = Foo(bars = List(Bar(a = a)))
   * }}}
   */
 object semiauto {

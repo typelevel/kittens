@@ -22,7 +22,7 @@ import org.scalacheck.{Arbitrary, Cogen, Gen}
 
 import scala.annotation.tailrec
 
-trait TestDefns {
+object TestDefns {
 
   sealed trait Rgb
   case object Red extends Rgb
@@ -398,9 +398,8 @@ trait TestDefns {
   )
 }
 
-object TestDefns extends TestDefns
-
-trait TestEqInstances extends TestDefns {
+trait TestEqInstances {
+  import TestDefns.*
 
   implicit def eqComplexProduct[T: Eq]: Eq[ComplexProduct[T]] =
     new Eq[ComplexProduct[T]] {
@@ -472,5 +471,3 @@ trait TestEqInstances extends TestDefns {
   implicit def eqCaseClassWOption[A: Eq]: Eq[CaseClassWOption[A]] =
     Eq.by(_.value)
 }
-
-object TestEqInstances extends TestEqInstances

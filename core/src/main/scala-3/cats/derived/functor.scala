@@ -3,6 +3,7 @@ package cats.derived
 import cats.Functor
 import shapeless3.deriving.{Const, K1}
 import scala.compiletime.*
+import cats.Contravariant
 
 type DerivedFunctor[F[_]] = Derived[Functor[F]]
 object DerivedFunctor:
@@ -16,6 +17,9 @@ object DerivedFunctor:
 
   given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFunctor[[x] =>> F[G[x]]] =
     F.unify `compose` G.unify
+
+  given [F[_], G[_]](using F: Contravariant[F], G: Contravariant[G]): DerivedFunctor[[x] =>> F[G[x]]] =
+    F `compose` G
 
   given [F[_]](using inst: => K1.Instances[Or, F]): DerivedFunctor[F] =
     new Generic(using inst.unify) {}

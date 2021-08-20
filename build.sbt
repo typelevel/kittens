@@ -15,7 +15,7 @@ val catsVersion = "2.6.1"
 val disciplineMunitVersion = "1.0.9"
 val kindProjectorVersion = "0.13.0"
 val shapeless2Version = "2.3.7"
-val shapeless3Version = "3.0.1"
+val shapeless3Version = "3.0.2"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(

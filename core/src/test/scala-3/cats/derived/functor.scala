@@ -17,44 +17,38 @@
 package cats
 package derived
 
-import cats.laws.discipline._
-import cats.laws.discipline.eq._
+import cats.laws.discipline.*
+import cats.laws.discipline.eq.*
+import scala.compiletime.*
 
-class FunctorSuite extends KittensSuite {
+class FunctorSuite extends KittensSuite:
   import TestDefns.*
 
-  implicit val exhaustivePred: ExhaustiveCheck[Predicate[Boolean]] =
+  given ExhaustiveCheck[Predicate[Boolean]] =
     ExhaustiveCheck.instance(List(_ => true, _ => false, identity, !_))
 
-  def testFunctor(context: String)(implicit
-      iList: Functor[IList],
-      tree: Functor[Tree],
-      genericAdt: Functor[GenericAdt],
-      optList: Functor[OptList],
-      listSnoc: Functor[ListSnoc],
-      andChar: Functor[AndChar],
-      interleaved: Functor[Interleaved],
-      nestedPred: Functor[NestedPred]
-  ): Unit = {
-    checkAll(s"$context.Functor[IList]", FunctorTests[IList].functor[Int, String, Long])
-    checkAll(s"$context.Functor[Tree]", FunctorTests[Tree].functor[Int, String, Long])
-    checkAll(s"$context.Functor[GenericAdt]", FunctorTests[GenericAdt].functor[Int, String, Long])
-    checkAll(s"$context.Functor[OptList]", FunctorTests[OptList].functor[Int, String, Long])
-    checkAll(s"$context.Functor[ListSnoc]", FunctorTests[ListSnoc].functor[Int, String, Long])
-    // FIXME: Testing `FunctorTests[AndChar].functor[Int, String, Int]` causes a ClassCastException
-    checkAll(s"$context.Functor[AndChar]", FunctorTests[AndChar].functor[Int, String, Int])
-    checkAll(s"$context.Functor[Interleaved]", FunctorTests[Interleaved].functor[Int, String, Long])
-    checkAll(s"$context.Functor[NestedPred]", FunctorTests[NestedPred].functor[Boolean, Int, Boolean])
-    checkAll(s"$context.Functor is Serializable", SerializableTests.serializable(Functor[Tree]))
-  }
+  inline def functorTests[F[_]]: FunctorTests[F] =
+    FunctorTests[F](summonInline)
 
-  {
+  inline def testFunctor(inline context: String): Unit =
+    checkAll(s"$context.Functor[IList]", functorTests[IList].functor[Int, String, Long])
+    checkAll(s"$context.Functor[Tree]", functorTests[Tree].functor[Int, String, Long])
+    checkAll(s"$context.Functor[GenericAdt]", functorTests[GenericAdt].functor[Int, String, Long])
+    checkAll(s"$context.Functor[OptList]", functorTests[OptList].functor[Int, String, Long])
+    checkAll(s"$context.Functor[ListSnoc]", functorTests[ListSnoc].functor[Int, String, Long])
+    // FIXME: Testing `functorTests[AndChar].functor[Int, String, Long]` causes a ClassCastException
+    checkAll(s"$context.Functor[AndChar]", functorTests[AndChar].functor[Int, String, Int])
+    checkAll(s"$context.Functor[Interleaved]", functorTests[Interleaved].functor[Int, String, Long])
+    checkAll(s"$context.Functor[NestedPred]", functorTests[NestedPred].functor[Boolean, Int, Boolean])
+    checkAll(s"$context.Functor is Serializable", SerializableTests.serializable(summonInline[Functor[Tree]]))
+
+  locally {
     import auto.functor.given
     testFunctor("auto")
   }
 
-  {
-    import semiInstances._
+  locally {
+    import semiInstances.given
     testFunctor("semiauto")
   }
 
@@ -64,14 +58,14 @@ class FunctorSuite extends KittensSuite {
   type Predicate[A] = A => Boolean
   type NestedPred[A] = Predicate[Predicate[A]]
 
-  object semiInstances {
-    implicit val iList: Functor[IList] = semiauto.functor
-    implicit val tree: Functor[Tree] = semiauto.functor
-    implicit val genericAdt: Functor[GenericAdt] = semiauto.functor
-    implicit val optList: Functor[OptList] = semiauto.functor
-    implicit val listSnoc: Functor[ListSnoc] = semiauto.functor
-    implicit val andChar: Functor[AndChar] = semiauto.functor
-    implicit val interleaved: Functor[Interleaved] = semiauto.functor
-    implicit val nestedPred: Functor[NestedPred] = semiauto.functor
-  }
-}
+  object semiInstances:
+    given Functor[IList] = semiauto.functor
+    given Functor[Tree] = semiauto.functor
+    given Functor[GenericAdt] = semiauto.functor
+    given Functor[OptList] = semiauto.functor
+    given Functor[ListSnoc] = semiauto.functor
+    given Functor[AndChar] = semiauto.functor
+    given Functor[Interleaved] = semiauto.functor
+    given Functor[NestedPred] = semiauto.functor
+
+end FunctorSuite

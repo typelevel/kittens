@@ -85,4 +85,18 @@ object FoldableSuite:
       def foldLeft[A, B](fa: Nel[A], b: B)(f: (B, A) => B) = fa.tail.foldl(b)(f)
       def foldRight[A, B](fa: Nel[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) = fa.tail.foldr(lb)(f)
 
+  case class Single[A](value: A) derives Foldable
+
+  enum Many[+A] derives Foldable:
+    case Naught
+    case More(value: A, rest: Many[A])
+
+  enum AtMostOne[+A] derives Foldable:
+    case Naught
+    case Single(value: A)
+
+  enum AtLeastOne[+A] derives Foldable:
+    case Single(value: A)
+    case More(value: A, rest: Option[AtLeastOne[A]])
+
 end FoldableSuite

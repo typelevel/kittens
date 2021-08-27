@@ -22,6 +22,7 @@ import cats.laws.discipline.eq.*
 import scala.compiletime.*
 
 class FunctorSuite extends KittensSuite:
+  import FunctorSuite.*
   import TestDefns.*
 
   given ExhaustiveCheck[Predicate[Boolean]] =
@@ -52,6 +53,11 @@ class FunctorSuite extends KittensSuite:
     testFunctor("semiauto")
   }
 
+end FunctorSuite
+
+object FunctorSuite:
+  import TestDefns.*
+
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]
   type AndChar[A] = (A, Char)
@@ -67,5 +73,19 @@ class FunctorSuite extends KittensSuite:
     given Functor[AndChar] = semiauto.functor
     given Functor[Interleaved] = semiauto.functor
     given Functor[NestedPred] = semiauto.functor
+
+  case class Single[A](value: A) derives Functor
+
+  enum Many[+A] derives Functor:
+    case Naught
+    case More(value: A, rest: Many[A])
+
+  enum AtMostOne[+A] derives Functor:
+    case Naught
+    case Single(value: A)
+
+  enum AtLeastOne[+A] derives Functor:
+    case Single(value: A)
+    case More(value: A, rest: Option[AtLeastOne[A]])
 
 end FunctorSuite

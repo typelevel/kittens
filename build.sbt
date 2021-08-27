@@ -2,7 +2,7 @@ import sbt._
 
 val scala212 = "2.12.13"
 val scala213 = "2.13.6"
-val scala3 = "3.0.0"
+val scala3 = "3.0.2-RC2"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
@@ -24,7 +24,9 @@ lazy val commonSettings = Seq(
     "-language:implicitConversions",
     "-unchecked",
     "-deprecation",
-    "-Xfatal-warnings"
+    "-Xfatal-warnings",
+    "-Xmax-inlines",
+    "64"
   ),
   scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).flatMap {
     case (2, 12) => Some("-Ypartial-unification")

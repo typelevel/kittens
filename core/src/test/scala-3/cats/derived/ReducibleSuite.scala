@@ -20,30 +20,26 @@ package derived
 import cats.data.{NonEmptyList, OneAnd}
 import cats.laws.discipline.arbitrary.*
 import cats.laws.discipline.{ReducibleTests, SerializableTests}
+import cats.syntax.all.*
 import org.scalacheck.Arbitrary
+import scala.compiletime.*
 
-class ReducibleSuite extends KittensSuite {
+class ReducibleSuite extends KittensSuite:
   import ReducibleSuite.*
   import TestDefns.*
 
-  def testReducible(context: String)(implicit
-      iCons: Reducible[ICons],
-      tree: Reducible[Tree],
-      nelSCons: Reducible[NelSCons],
-      nelAndOne: Reducible[NelAndOne],
-      listAndNel: Reducible[ListAndNel],
-      interleaved: Reducible[Interleaved],
-      boxZipper: Reducible[BoxZipper]
-  ): Unit = {
-    checkAll(s"$context.Reducible[ICons]", ReducibleTests[ICons].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[Tree]", ReducibleTests[Tree].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[NelSCons]", ReducibleTests[NelSCons].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[NelAndOne]", ReducibleTests[NelAndOne].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[ListAndNel]", ReducibleTests[ListAndNel].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[Interleaved]", ReducibleTests[Interleaved].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[BoxZipper]", ReducibleTests[BoxZipper].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible is Serializable", SerializableTests.serializable(Reducible[Tree]))
-  }
+  inline def reducibleTests[F[_]]: ReducibleTests[F] =
+    ReducibleTests[F](summonInline)
+
+  inline def testReducible(context: String): Unit =
+    checkAll(s"$context.Reducible[ICons]", reducibleTests[ICons].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[Tree]", reducibleTests[Tree].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[NelSCons]", reducibleTests[NelSCons].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[NelAndOne]", reducibleTests[NelAndOne].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[ListAndNel]", reducibleTests[ListAndNel].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[Interleaved]", reducibleTests[Interleaved].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[BoxZipper]", reducibleTests[BoxZipper].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible is Serializable", SerializableTests.serializable(summonInline[Reducible[Tree]]))
 
   locally {
     import auto.reducible.given
@@ -51,59 +47,60 @@ class ReducibleSuite extends KittensSuite {
   }
 
   locally {
-    import semiInstances._
+    import semiInstances.given
     testReducible("semiauto")
   }
-}
 
-object ReducibleSuite {
+end ReducibleSuite
+
+object ReducibleSuite:
   import TestDefns.*
 
   type NelSCons[A] = NonEmptyList[SCons[A]]
   type NelAndOne[A] = NonEmptyList[OneAnd[List, A]]
-  type ListAndNel[A] = (List[A], NonEmptyList[A])
   type BoxZipper[A] = Box[Zipper[A]]
 
-  object semiInstances {
-    implicit val iCons: Reducible[ICons] = semiauto.reducible
-    implicit val tree: Reducible[Tree] = semiauto.reducible
-    implicit val nelSCons: Reducible[NelSCons] = semiauto.reducible
-    implicit val nelAndOne: Reducible[NelAndOne] = semiauto.reducible
-    implicit val listAndNel: Reducible[ListAndNel] = semiauto.reducible
-    implicit val interleaved: Reducible[Interleaved] = semiauto.reducible
-    implicit val boxZipper: Reducible[BoxZipper] = semiauto.reducible
-  }
+  object semiInstances:
+    given Reducible[ICons] = semiauto.reducible
+    given Reducible[Tree] = semiauto.reducible
+    given Reducible[NelSCons] = semiauto.reducible
+    given Reducible[NelAndOne] = semiauto.reducible
+    given Reducible[ListAndNel] = semiauto.reducible
+    given Reducible[Interleaved] = semiauto.reducible
+    given Reducible[BoxZipper] = semiauto.reducible
+
+  // FIXME: Doesn't work if we define `ListAndNel` as a type alias
+  final case class ListAndNel[A](list: List[A], nel: NonEmptyList[A])
+  object ListAndNel:
+    given [A: Eq]: Eq[ListAndNel[A]] =
+      (x, y) => x.list === y.list && x.nel === y.nel
+
+    given [A: Arbitrary]: Arbitrary[ListAndNel[A]] =
+      Arbitrary(for
+        list <- Arbitrary.arbitrary[List[A]]
+        nel <- Arbitrary.arbitrary[NonEmptyList[A]]
+      yield ListAndNel(list, nel))
 
   final case class Zipper[+A](left: List[A], focus: A, right: List[A])
-  object Zipper {
+  object Zipper:
+    given [A: Eq]: Eq[Zipper[A]] =
+      (x, y) => x.focus === y.focus && x.left === y.left && x.right === y.right
 
-    implicit def eqv[A](implicit A: Eq[A]): Eq[Zipper[A]] = {
-      val listEq = Eq[List[A]]
-      Eq.instance { (x, y) =>
-        A.eqv(x.focus, y.focus) && listEq.eqv(x.left, y.left) && listEq.eqv(x.right, y.right)
-      }
-    }
-
-    implicit def arbitrary[A: Arbitrary]: Arbitrary[Zipper[A]] =
-      Arbitrary(for {
+    given [A: Arbitrary]: Arbitrary[Zipper[A]] =
+      Arbitrary(for
         left <- Arbitrary.arbitrary[List[A]]
         focus <- Arbitrary.arbitrary[A]
         right <- Arbitrary.arbitrary[List[A]]
-      } yield Zipper(left, focus, right))
+      yield Zipper(left, focus, right))
 
-    implicit val reducible: Reducible[Zipper] = new Reducible[Zipper] {
-
+    given Reducible[Zipper] with
       def reduceLeftTo[A, B](fa: Zipper[A])(f: A => B)(g: (B, A) => B) =
-        Reducible[NonEmptyList].reduceLeftTo(NonEmptyList(fa.focus, fa.right))(f)(g)
-
+        NonEmptyList(fa.focus, fa.right).reduceLeftTo(f)(g)
       def reduceRightTo[A, B](fa: Zipper[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]) =
-        Reducible[NonEmptyList].reduceRightTo(NonEmptyList(fa.focus, fa.right))(f)(g)
-
+        NonEmptyList(fa.focus, fa.right).reduceRightTo(f)(g)
       def foldLeft[A, B](fa: Zipper[A], b: B)(f: (B, A) => B) =
-        Foldable[List].foldLeft(fa.focus :: fa.right, b)(f)
-
+        (fa.focus :: fa.right).foldl(b)(f)
       def foldRight[A, B](fa: Zipper[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) =
-        Foldable[List].foldRight(fa.focus :: fa.right, lb)(f)
-    }
-  }
-}
+        (fa.focus :: fa.right).foldr(lb)(f)
+
+end ReducibleSuite

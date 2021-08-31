@@ -27,7 +27,7 @@ lazy val commonSettings = Seq(
     "-Xfatal-warnings"
   ),
   scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).toList.flatMap {
-    case (3, _) => List("-Xmax-inlines", "64")
+    case (3, _) => Nil
     case (2, 12) => List("-Ypartial-unification")
     case _ => Nil
   },

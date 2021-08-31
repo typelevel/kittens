@@ -2,7 +2,7 @@ import sbt._
 
 val scala212 = "2.12.13"
 val scala213 = "2.13.6"
-val scala3 = "3.0.0"
+val scala3 = "3.0.1"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
@@ -26,9 +26,10 @@ lazy val commonSettings = Seq(
     "-deprecation",
     "-Xfatal-warnings"
   ),
-  scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).flatMap {
-    case (2, 12) => Some("-Ypartial-unification")
-    case _ => None
+  scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).toList.flatMap {
+    case (3, _) => List("-Xmax-inlines", "64")
+    case (2, 12) => List("-Ypartial-unification")
+    case _ => Nil
   },
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),

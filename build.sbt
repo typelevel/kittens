@@ -2,7 +2,7 @@ import sbt._
 
 val scala212 = "2.12.13"
 val scala213 = "2.13.6"
-val scala3 = "3.0.1"
+val scala3 = "3.0.2-RC2"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
@@ -43,7 +43,10 @@ lazy val commonSettings = Seq(
   ),
   libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((3, _)) =>
-      Seq("org.typelevel" %%% "shapeless3-deriving" % shapeless3Version)
+      Seq(
+        "org.typelevel" %%% "shapeless3-deriving" % shapeless3Version,
+        "org.scala-lang" %% "scala3-compiler" % scalaVersion.value
+      )
     case _ =>
       Seq(
         "com.chuusai" %%% "shapeless" % shapeless2Version,

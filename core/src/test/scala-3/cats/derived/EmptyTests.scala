@@ -2,7 +2,7 @@ package cats.derived
 
 import alleycats.*
 import cats.*
-import cats.derived.semiauto.*
+import cats.derived.*
 
 object EmptyTests:
   case class Foo(i: Int, b: IntTree) derives Empty

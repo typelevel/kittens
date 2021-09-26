@@ -19,13 +19,13 @@ package cats.derived
 import cats.platform.Platform
 import cats.syntax.AllSyntax
 import munit.DisciplineSuite
-import org.scalacheck.Test.Parameters
 import org.scalacheck.Arbitrary
+import org.scalacheck.Test.Parameters
 
-/** An opinionated stack of traits to improve consistency and reduce
-  * boilerplate in Kittens tests. Note that unlike the corresponding
-  * CatsSuite in the Cat project, this trait does not mix in any
-  * instances.
+import scala.quoted.*
+
+/** An opinionated stack of traits to improve consistency and reduce boilerplate in Kittens tests. Note that unlike the
+  * corresponding CatsSuite in the Cat project, this trait does not mix in any instances.
   */
 abstract class KittensSuite extends DisciplineSuite, AllSyntax, TestEqInstances:
   override val scalaCheckTestParameters: Parameters = super.scalaCheckTestParameters
@@ -37,3 +37,13 @@ abstract class KittensSuite extends DisciplineSuite, AllSyntax, TestEqInstances:
 
   given [A: Arbitrary]: Arbitrary[List[A]] =
     Arbitrary.arbContainer
+
+  inline def nameOf[A]: String =
+    ${ KittensSuite.nameOfMacro[A] }
+    
+  inline def testNoInstance(inline code: String, message: String): Unit =
+    test(s"No $code")(assert(compileErrors(code).contains(message)))
+
+object KittensSuite:
+  def nameOfMacro[A: Type](using Quotes) =
+    Expr(Type.show[A])

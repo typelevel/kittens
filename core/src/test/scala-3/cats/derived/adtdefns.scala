@@ -25,9 +25,10 @@ import scala.annotation.tailrec
 object TestDefns {
 
   sealed trait Rgb
-  case object Red extends Rgb
-  case object Green extends Rgb
-  case object Blue extends Rgb
+  object Rgb:
+    case object Red extends Rgb
+    case object Green extends Rgb
+    case object Blue extends Rgb
 
   final case class ComplexProduct[T](lbl: String, set: Set[T], fns: Vector[() => T], opt: Eval[Option[T]])
   object ComplexProduct {

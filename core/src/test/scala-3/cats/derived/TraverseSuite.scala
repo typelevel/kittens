@@ -1,65 +1,70 @@
-package cats
-package derived
+package cats.derived
 
+import cats.{Eq, Traverse}
 import cats.laws.discipline.{SerializableTests, TraverseTests}
+import org.scalacheck.Arbitrary
 
-class TraverseSuite extends KittensSuite {
+import scala.compiletime.*
+
+class TraverseSuite extends KittensSuite:
   import TestDefns.*
   import TraverseSuite.*
 
-  def testTraverse(context: String)(implicit
-      iList: Traverse[IList],
-      tree: Traverse[Tree],
-      genericAdt: Traverse[GenericAdt],
-      optList: Traverse[OptList],
-      listSnoc: Traverse[ListSnoc],
-      andChar: Traverse[AndChar],
-      interleaved: Traverse[Interleaved]
-  ): Unit = {
-    checkAll(s"$context.Traverse[IList]", TraverseTests[IList].traverse[Int, Double, String, Long, Option, Option])
-    checkAll(s"$context.Traverse[Tree]", TraverseTests[Tree].traverse[Int, Double, String, Long, Option, Option])
+  inline def traverseTests[F[_]]: TraverseTests[F] =
+    TraverseTests[F](summonInline)
+
+  inline def testTraverse(inline context: String): Unit =
+    checkAll(s"$context.Traverse[IList]", traverseTests[IList].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse[Tree]", traverseTests[Tree].traverse[Int, Double, String, Long, Option, Option])
     checkAll(
       s"$context.Traverse[GenericAdt]",
-      TraverseTests[GenericAdt].traverse[Int, Double, String, Long, Option, Option]
+      traverseTests[GenericAdt].traverse[Int, Double, String, Long, Option, Option]
     )
-    checkAll(s"$context.Traverse[OptList]", TraverseTests[OptList].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse[OptList]", traverseTests[OptList].traverse[Int, Double, String, Long, Option, Option])
     checkAll(
       s"$context.Traverse[ListSnoc]",
-      TraverseTests[ListSnoc].traverse[Int, Double, String, Long, Option, Option]
+      traverseTests[ListSnoc].traverse[Int, Double, String, Long, Option, Option]
     )
-    checkAll(s"$context.Traverse[AndChar]", TraverseTests[AndChar].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$context.Traverse[AndChar]", traverseTests[AndChar].traverse[Int, Double, String, Long, Option, Option])
     checkAll(
       s"$context.Traverse[Interleaved]",
-      TraverseTests[Interleaved].traverse[Int, Double, String, Long, Option, Option]
+      traverseTests[Interleaved].traverse[Int, Double, String, Long, Option, Option]
     )
-    checkAll(s"$context.Traverse is Serializable", SerializableTests.serializable(Traverse[Tree]))
-  }
+    checkAll(s"$context.Traverse is Serializable", SerializableTests.serializable(summonInline[Traverse[Tree]]))
 
-  {
+  locally {
     import auto.traverse.given
     testTraverse("auto")
   }
 
-  {
-    import semiInstances._
+  locally {
+    import semiInstances.given
     testTraverse("semiauto")
   }
-}
 
-object TraverseSuite {
-  import TestDefns._
+end TraverseSuite
+
+object TraverseSuite:
+  import TestDefns.*
 
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]
-  type AndChar[A] = (A, Char)
 
-  object semiInstances {
-    implicit val iList: Traverse[IList] = semiauto.traverse
-    implicit val tree: Traverse[Tree] = semiauto.traverse
-    implicit val genericAdt: Traverse[GenericAdt] = semiauto.traverse
-    implicit val optList: Traverse[OptList] = semiauto.traverse
-    implicit val listSnoc: Traverse[ListSnoc] = semiauto.traverse
-    implicit val andChar: Traverse[AndChar] = semiauto.traverse
-    implicit val interleaved: Traverse[Interleaved] = semiauto.traverse
-  }
-}
+  // FIXME: Doesn't work if we define `ListAndNel` as a type alias
+  case class AndChar[A](value: A, letter: Char)
+  object AndChar:
+    given [A: Eq]: Eq[AndChar[A]] =
+      Eq.by(ac => (ac.value, ac.letter))
+    given [A: Arbitrary]: Arbitrary[AndChar[A]] =
+      Arbitrary(Arbitrary.arbitrary[(A, Char)].map(apply[A].tupled))
+
+  object semiInstances:
+    given Traverse[IList] = semiauto.traverse
+    given Traverse[Tree] = semiauto.traverse
+    given Traverse[GenericAdt] = semiauto.traverse
+    given Traverse[OptList] = semiauto.traverse
+    given Traverse[ListSnoc] = semiauto.traverse
+    given Traverse[AndChar] = semiauto.traverse
+    given Traverse[Interleaved] = semiauto.traverse
+
+end TraverseSuite

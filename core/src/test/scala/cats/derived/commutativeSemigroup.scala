@@ -66,23 +66,12 @@ class CommutativeSemigroupSuite extends KittensSuite {
 }
 
 object CommutativeSemigroupSuite {
-
-  // can be removed once kittens depends on a version of cats that includes https://github.com/typelevel/cats/pull/2834
-  implicit def commutativeSemigroupOption[A](implicit sa: CommutativeSemigroup[A]): CommutativeSemigroup[Option[A]] =
-    new CommutativeSemigroup[Option[A]] {
-      def combine(x: Option[A], y: Option[A]): Option[A] =
-        cats.instances.option.catsKernelStdMonoidForOption(sa).combine(x, y)
-    }
-
   final case class Mul(value: Int)
   object Mul {
-
     implicit val eqv: Eq[Mul] =
       Eq.fromUniversalEquals
-
     implicit val arbitrary: Arbitrary[Mul] =
       Arbitrary(Arbitrary.arbitrary[Int].map(apply))
-
     implicit val commutativeSemigroup: CommutativeSemigroup[Mul] =
       CommutativeSemigroup.instance((x, y) => Mul(x.value * y.value))
   }

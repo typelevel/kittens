@@ -6,6 +6,8 @@ import cats.kernel.{CommutativeSemigroup, CommutativeMonoid}
 
 import scala.util.NotGiven
 
+extension (E: Eq.type) inline def derived[A]: Eq[A] = DerivedEq[A]
+extension (H: Hash.type) inline def derived[A]: Hash[A] = DerivedHash[A]
 extension (E: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty[A]
 extension (S: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup[A]
 extension (M: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid[A]
@@ -19,8 +21,6 @@ extension (F: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTrav
 object semiauto
     extends ContravariantDerivation,
       EmptyKDerivation,
-      EqDerivation,
-      HashDerivation,
       InvariantDerivation,
       MonoidKDerivation,
       OrderDerivation,
@@ -29,6 +29,8 @@ object semiauto
       ShowDerivation,
       Instances:
 
+  inline def eq[A]: Eq[A] = DerivedEq[A]
+  inline def hash[A]: Hash[A] = DerivedHash[A]
   inline def empty[A]: Empty[A] = DerivedEmpty[A]
   inline def semigroup[A]: Semigroup[A] = DerivedSemigroup[A]
   inline def monoid[A]: Monoid[A] = DerivedMonoid[A]
@@ -40,6 +42,12 @@ object semiauto
   inline def traverse[F[_]]: Traverse[F] = DerivedTraverse[F]
 
 object auto:
+  object eq:
+    inline given [A](using NotGiven[Eq[A]]): Eq[A] = DerivedEq[A]
+
+  object hash:
+    inline given [A](using NotGiven[Hash[A]]): Hash[A] = DerivedHash[A]
+
   object empty:
     inline given [A](using NotGiven[Empty[A]]): Empty[A] = DerivedEmpty[A]
 
@@ -54,7 +62,7 @@ object auto:
 
   object commutativeMonoid:
     inline given [A](using NotGiven[CommutativeMonoid[A]]): CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
-  
+
   object functor:
     inline given [F[_]](using NotGiven[Functor[F]]): Functor[F] = DerivedFunctor[F]
 

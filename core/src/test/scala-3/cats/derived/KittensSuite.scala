@@ -27,23 +27,25 @@ import scala.quoted.*
 /** An opinionated stack of traits to improve consistency and reduce boilerplate in Kittens tests. Note that unlike the
   * corresponding CatsSuite in the Cat project, this trait does not mix in any instances.
   */
-abstract class KittensSuite extends DisciplineSuite, AllSyntax, TestEqInstances:
-  override val scalaCheckTestParameters: Parameters = super.scalaCheckTestParameters
-    .withMinSuccessfulTests(if (Platform.isJvm) 50 else 5)
-    .withMaxDiscardRatio(if (Platform.isJvm) 5 else 50)
-    .withWorkers(if (Platform.isJvm) 2 else 1)
-    .withMaxSize(if (Platform.isJvm) 10 else 5)
-    .withMinSize(0)
-
-  given [A: Arbitrary]: Arbitrary[List[A]] =
-    Arbitrary.arbContainer
-
-  inline def nameOf[A]: String =
-    ${ KittensSuite.nameOfMacro[A] }
-    
-  inline def testNoInstance(inline code: String, message: String): Unit =
-    test(s"No $code")(assert(compileErrors(code).contains(message)))
-
+abstract class KittensSuite extends KittensSuite.WithoutEq, TestEqInstances
 object KittensSuite:
   def nameOfMacro[A: Type](using Quotes) =
     Expr(Type.show[A])
+
+  /** Used to test `Eq` derivation. */
+  abstract class WithoutEq extends DisciplineSuite, AllSyntax:
+    override val scalaCheckTestParameters: Parameters = super.scalaCheckTestParameters
+      .withMinSuccessfulTests(if (Platform.isJvm) 50 else 5)
+      .withMaxDiscardRatio(if (Platform.isJvm) 5 else 50)
+      .withWorkers(if (Platform.isJvm) 2 else 1)
+      .withMaxSize(if (Platform.isJvm) 10 else 5)
+      .withMinSize(0)
+
+    given [A: Arbitrary]: Arbitrary[List[A]] =
+      Arbitrary.arbContainer
+
+    inline def nameOf[A]: String =
+      ${ KittensSuite.nameOfMacro[A] }
+
+    inline def testNoInstance(inline code: String, message: String): Unit =
+      test(s"No $code")(assert(compileErrors(code).contains(message)))

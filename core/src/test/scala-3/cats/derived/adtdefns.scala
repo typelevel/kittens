@@ -471,4 +471,10 @@ trait TestEqInstances {
 
   implicit def eqCaseClassWOption[A: Eq]: Eq[CaseClassWOption[A]] =
     Eq.by(_.value)
+
+  implicit val eqInner: Eq[Inner] =
+    Eq.fromUniversalEquals
+
+  implicit val eqOuter: Eq[Outer] =
+    Eq.fromUniversalEquals
 }

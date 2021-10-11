@@ -6,17 +6,18 @@ import cats.kernel.{CommutativeSemigroup, CommutativeMonoid}
 
 import scala.util.NotGiven
 
-extension (E: Eq.type) inline def derived[A]: Eq[A] = DerivedEq[A]
-extension (H: Hash.type) inline def derived[A]: Hash[A] = DerivedHash[A]
-extension (E: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty[A]
-extension (S: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup[A]
-extension (M: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid[A]
-extension (S: CommutativeSemigroup.type) inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
-extension (S: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
-extension (F: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]
-extension (F: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor[F]
-extension (F: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible[F]
-extension (F: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTraverse[F]
+extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq[A]
+extension (x: Hash.type) inline def derived[A]: Hash[A] = DerivedHash[A]
+extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty[A]
+extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup[A]
+extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid[A]
+extension (x: CommutativeSemigroup.type) inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
+extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
+extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]
+extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor[F]
+extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible[F]
+extension (x: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTraverse[F]
+extension (x: NonEmptyTraverse.type) inline def derived[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
 
 object semiauto
     extends ContravariantDerivation,
@@ -40,6 +41,7 @@ object semiauto
   inline def functor[F[_]]: Functor[F] = DerivedFunctor[F]
   inline def reducible[F[_]]: Reducible[F] = DerivedReducible[F]
   inline def traverse[F[_]]: Traverse[F] = DerivedTraverse[F]
+  inline def nonEmptyTraverse[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
 
 object auto:
   object eq:
@@ -74,3 +76,6 @@ object auto:
 
   object traverse:
     inline given [F[_]](using NotGiven[Traverse[F]]): Traverse[F] = DerivedTraverse[F]
+
+  object nonEmptyTraverse:
+    inline given [F[_]](using NotGiven[NonEmptyTraverse[F]]): NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]

@@ -19,4 +19,4 @@ object DerivedMonoid:
   trait Product[F[x] <: Monoid[x], A](using inst: K0.ProductInstances[F, A])
       extends DerivedSemigroup.Product[F, A],
         Monoid[A]:
-    val empty: A = inst.construct([A] => (F: F[A]) => F.empty)
+    final override val empty: A = inst.construct([A] => (F: F[A]) => F.empty)

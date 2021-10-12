@@ -23,27 +23,27 @@ object DerivedTraverse:
 
   given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedTraverse[F] =
     given K1.ProductInstances[Traverse, F] = inst.unify
-    new ProductTraverse[Traverse, F] {}
+    new Product[Traverse, F] {}
 
   given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedTraverse[F] =
     given K1.CoproductInstances[Traverse, F] = inst.unify
-    new CoproductTraverse[Traverse, F] {}
+    new Coproduct[Traverse, F] {}
 
-  trait ProductTraverse[T[x[_]] <: Traverse[x], F[_]](using inst: K1.ProductInstances[T, F])
+  trait Product[T[x[_]] <: Traverse[x], F[_]](using inst: K1.ProductInstances[T, F])
       extends Traverse[F],
-        DerivedFunctor.GenericFunctor[T, F],
+        DerivedFunctor.Generic[T, F],
         DerivedFoldable.Product[T, F]:
 
-    override def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
+    final override def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
       val pure = [a] => (x: a) => G.pure(x)
       val map = [a, b] => (ga: G[a], f: a => b) => G.map(ga)(f)
       val ap = [a, b] => (gf: G[a => b], ga: G[a]) => G.ap(gf)(ga)
       inst.traverse[A, G, B](fa)(map)(pure)(ap)([f[_]] => (tf: T[f], fa: f[A]) => tf.traverse(fa)(f))
 
-  trait CoproductTraverse[T[x[_]] <: Traverse[x], F[_]](using inst: K1.CoproductInstances[T, F])
+  trait Coproduct[T[x[_]] <: Traverse[x], F[_]](using inst: K1.CoproductInstances[T, F])
       extends Traverse[F],
-        DerivedFunctor.GenericFunctor[T, F],
+        DerivedFunctor.Generic[T, F],
         DerivedFoldable.Coproduct[T, F]:
 
-    override def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
+    final override def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
       inst.fold(fa)([f[_]] => (tf: T[f], fa: f[A]) => tf.traverse(fa)(f).asInstanceOf[G[F[B]]])

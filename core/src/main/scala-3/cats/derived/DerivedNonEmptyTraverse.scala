@@ -20,37 +20,35 @@ object DerivedNonEmptyTraverse:
       inst: K1.ProductInstances[DerivedTraverse.Or, F]
   ): DerivedNonEmptyTraverse[F] =
     given K1.ProductInstances[Traverse, F] = inst.unify
-    new ProductNonEmptyTraverse[Traverse, F](ev) with DerivedReducible.Product[Traverse, F](ev) {}
+    new Product[Traverse, F](ev)
+      with DerivedReducible.Product[Traverse, F](ev)
+      with DerivedTraverse.Product[Traverse, F] {}
 
   inline given [F[_]](using gen: K1.ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
     product(K1.summonFirst[Or, gen.MirroredElemTypes, Const[Any]].unify)
 
   given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedNonEmptyTraverse[F] =
     given K1.CoproductInstances[NonEmptyTraverse, F] = inst.unify
-    new CoproductNonEmptyTraverse[NonEmptyTraverse, F] {}
+    new Coproduct[NonEmptyTraverse, F] {}
 
-  trait ProductNonEmptyTraverse[T[x[_]] <: Traverse[x], F[_]](ev: NonEmptyTraverse[?])(using
+  trait Product[T[x[_]] <: Traverse[x], F[_]](ev: NonEmptyTraverse[?])(using
       inst: K1.ProductInstances[T, F]
   ) extends NonEmptyTraverse[F],
         DerivedReducible.Product[T, F],
-        DerivedTraverse.ProductTraverse[T, F]:
+        DerivedTraverse.Product[T, F]:
 
-    // FIXME: Why is this override necessary?
-    override def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
-      super[ProductTraverse].traverse(fa)(f)
-
-    override def nonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
+    final override def nonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
       traverse[Alt[G], A, B](fa)(f.andThen(Left.apply)) match
         case Left(value) => value
         case Right(_) => ???
 
-  trait CoproductNonEmptyTraverse[T[x[_]] <: NonEmptyTraverse[x], F[_]](using
+  trait Coproduct[T[x[_]] <: NonEmptyTraverse[x], F[_]](using
       inst: K1.CoproductInstances[T, F]
   ) extends NonEmptyTraverse[F],
         DerivedReducible.Coproduct[T, F],
-        DerivedTraverse.CoproductTraverse[T, F]:
+        DerivedTraverse.Coproduct[T, F]:
 
-    override def nonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
+    final override def nonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
       inst.fold(fa)([f[_]] => (tf: T[f], fa: f[A]) => tf.nonEmptyTraverse(fa)(f).asInstanceOf[G[F[B]]])
 
   private type Alt[F[_]] = [A] =>> Either[F[A], A]

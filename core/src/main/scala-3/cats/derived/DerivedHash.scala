@@ -25,7 +25,7 @@ object DerivedHash:
       extends DerivedEq.Product[F, A],
         Hash[A]:
 
-    def hash(x: A): Int =
+    final override def hash(x: A): Int =
       val arity = x.productArity
       val prefix = x.productPrefix.hashCode
       if arity <= 0 then prefix
@@ -41,5 +41,5 @@ object DerivedHash:
       extends DerivedEq.Coproduct[F, A],
         Hash[A]:
 
-    def hash(x: A): Int =
+    final override def hash(x: A): Int =
       inst.fold[Int](x)([t] => (h: F[t], x: t) => h.hash(x))

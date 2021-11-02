@@ -12,7 +12,7 @@ object DerivedMonoid:
     import DerivedMonoid.given
     summonInline[DerivedMonoid[A]].instance
 
-  given [A](using inst: K0.ProductInstances[Or, A]): DerivedMonoid[A] =
+  given [A](using inst: => K0.ProductInstances[Or, A]): DerivedMonoid[A] =
     given K0.ProductInstances[Monoid, A] = inst.unify
     new Product[Monoid, A] {}
 

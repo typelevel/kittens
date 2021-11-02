@@ -33,8 +33,7 @@ class MonoidSuite extends KittensSuite:
     checkAll(s"$context.Monoid[Foo]", monoidTests[Foo].monoid)
     checkAll(s"$context.Monoid[Interleaved[Int]]", monoidTests[Interleaved[Int]].monoid)
     checkAll(s"$context.Monoid[Box[Mul]]", monoidTests[Box[Mul]].monoid)
-    // FIXME: Doesn't work
-    //checkAll(s"$context.Monoid[Recursive]", monoidTests[Recursive].monoid)
+    checkAll(s"$context.Monoid[Recursive]", monoidTests[Recursive].monoid)
     checkAll(s"$context.Monoid is Serializable", SerializableTests.serializable(summonInline[Monoid[Foo]]))
     test(s"$context.Monoid respects existing instances") {
       val box = summonInline[Monoid[Box[Mul]]]

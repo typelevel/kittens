@@ -12,7 +12,7 @@ object DerivedSemigroup:
     import DerivedSemigroup.given
     summonInline[DerivedSemigroup[A]].instance
 
-  given [A](using inst: K0.ProductInstances[Or, A]): DerivedSemigroup[A] =
+  given [A](using inst: => K0.ProductInstances[Or, A]): DerivedSemigroup[A] =
     given K0.ProductInstances[Semigroup, A] = inst.unify
     new Product[Semigroup, A] {}
 

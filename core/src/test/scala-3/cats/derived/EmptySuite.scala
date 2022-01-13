@@ -33,7 +33,7 @@ class EmptySuite extends KittensSuite:
   inline def testEmpty(inline context: String): Unit =
     test(s"$context.Empty[Foo]")(assert(empty[Foo] == Foo(0, None)))
     test(s"$context.Empty[Outer]")(assert(empty[Outer] == Outer(Inner(0))))
-    test(s"$context.Empty[Interleaved[String]]")(assert(empty[Interleaved[String]] == Interleaved(0, "", 0, Nil, "")))
+    test(s"$context.Empty[Interleaved[String]]")(assert(empty[Interleaved[String]] == Interleaved.empty("")))
     test(s"$context.Empty[Recursive]")(assert(empty[Recursive] == Recursive(0, None)))
     test(s"$context.Empty[IList[Dummy]]")(assert(empty[IList[Dummy]] == INil()))
     test(s"$context.Empty[Snoc[Dummy]]")(assert(empty[Snoc[Dummy]] == SNil()))

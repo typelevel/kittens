@@ -22,14 +22,18 @@ object DerivedNonEmptyTraverse:
     given K1.ProductInstances[Traverse, F] = inst.unify
     new Product[Traverse, F](ev)
       with DerivedReducible.Product[Traverse, F](ev)
-      with DerivedTraverse.Product[Traverse, F] {}
+      with DerivedTraverse.Product[Traverse, F]
+      with DerivedFunctor.Generic[Traverse, F] {}
 
   inline given [F[_]](using gen: K1.ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
     product(K1.summonFirst[Or, gen.MirroredElemTypes, Const[Any]].unify)
 
   given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedNonEmptyTraverse[F] =
     given K1.CoproductInstances[NonEmptyTraverse, F] = inst.unify
-    new Coproduct[NonEmptyTraverse, F] {}
+    new Coproduct[NonEmptyTraverse, F]
+      with DerivedReducible.Coproduct[NonEmptyTraverse, F]
+      with DerivedTraverse.Coproduct[NonEmptyTraverse, F]
+      with DerivedFunctor.Generic[NonEmptyTraverse, F] {}
 
   trait Product[T[x[_]] <: Traverse[x], F[_]](ev: NonEmptyTraverse[?])(using
       inst: K1.ProductInstances[T, F]

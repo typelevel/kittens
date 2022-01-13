@@ -2,9 +2,9 @@ import sbt._
 
 val scala212 = "2.12.13"
 val scala213 = "2.13.6"
-val scala3 = "3.0.1"
+val scala3 = "3.1.0"
 
-ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
+ThisBuild / crossScalaVersions := Seq(scala3)
 ThisBuild / scalaVersion := scala3
 
 lazy val buildSettings = Seq(

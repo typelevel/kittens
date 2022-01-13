@@ -1,10 +1,10 @@
 import sbt._
 
-val scala212 = "2.12.13"
-val scala213 = "2.13.6"
+val scala212 = "2.12.15"
+val scala213 = "2.13.8"
 val scala3 = "3.1.0"
 
-ThisBuild / crossScalaVersions := Seq(scala3)
+ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
 
 lazy val buildSettings = Seq(
@@ -13,7 +13,7 @@ lazy val buildSettings = Seq(
 
 val catsVersion = "2.7.0"
 val disciplineMunitVersion = "1.0.9"
-val kindProjectorVersion = "0.13.0"
+val kindProjectorVersion = "0.13.2"
 val shapeless2Version = "2.3.7"
 val shapeless3Version = "3.0.3"
 

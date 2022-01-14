@@ -77,14 +77,16 @@ object TestDefns {
     }
   }
 
-  final case class Interleaved[T](i: Int, t: T, l: Long, tt: List[T], s: String)
+  final case class Interleaved[T](i: Int, t: T, l: Long, tt: Vector[T], s: String)
   object Interleaved {
+    def empty[T](t: T): Interleaved[T] =
+      Interleaved(0, t, 0, Vector.empty, "")
 
     implicit def arbitrary[T: Arbitrary]: Arbitrary[Interleaved[T]] =
-      Arbitrary(Arbitrary.arbitrary[(Int, T, Long, List[T], String)].map((apply[T] _).tupled))
+      Arbitrary(Arbitrary.arbitrary[(Int, T, Long, Vector[T], String)].map((apply[T] _).tupled))
 
     implicit def cogen[T: Cogen]: Cogen[Interleaved[T]] =
-      Cogen[(Int, T, Long, List[T], String)].contramap(x => (x.i, x.t, x.l, x.tt, x.s))
+      Cogen[(Int, T, Long, Vector[T], String)].contramap(x => (x.i, x.t, x.l, x.tt, x.s))
   }
 
   case class Bivariant[A](run: A => Boolean, store: A)

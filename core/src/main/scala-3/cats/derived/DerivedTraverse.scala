@@ -23,11 +23,11 @@ object DerivedTraverse:
 
   given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedTraverse[F] =
     given K1.ProductInstances[Traverse, F] = inst.unify
-    new Product[Traverse, F] {}
+    new Product[Traverse, F] with DerivedFunctor.Generic[Traverse, F] {}
 
   given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedTraverse[F] =
     given K1.CoproductInstances[Traverse, F] = inst.unify
-    new Coproduct[Traverse, F] {}
+    new Coproduct[Traverse, F] with DerivedFunctor.Generic[Traverse, F] {}
 
   trait Product[T[x[_]] <: Traverse[x], F[_]](using inst: K1.ProductInstances[T, F])
       extends Traverse[F],

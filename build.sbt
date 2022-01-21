@@ -70,13 +70,11 @@ addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
 addCommandAlias("fmt", "all scalafmtSbt scalafmtAll")
 addCommandAlias("fmtCheck", "all scalafmtSbtCheck scalafmtCheckAll")
 
-lazy val publishSettings = Seq(
-  licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-  developers := List(
-    Developer("milessabin", "Miles Sabin", "", url("http://milessabin.com/blog")),
-    Developer("kailuowang", "Kai(luo) Wang", "kailuo.wang@gmail.com", url("http://kailuowang.com/")),
-    Developer("joroKr21", "Georgi Krastev", "joro.kr.21@gmail.com", url("https://twitter.com/Joro_Kr"))
-  )
+ThisBuild / licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+ThisBuild / developers := List(
+  Developer("milessabin", "Miles Sabin", "", url("http://milessabin.com/blog")),
+  Developer("kailuowang", "Kai(luo) Wang", "kailuo.wang@gmail.com", url("http://kailuowang.com/")),
+  Developer("joroKr21", "Georgi Krastev", "joro.kr.21@gmail.com", url("https://twitter.com/Joro_Kr"))
 )
 
 ThisBuild / tlCiReleaseBranches := Seq("main")

@@ -2,10 +2,8 @@ import sbt._
 
 ThisBuild / crossScalaVersions := Seq("2.12.15", "2.13.8")
 ThisBuild / scalaVersion := "2.13.8"
-
-lazy val buildSettings = Seq(
-  organization := "org.typelevel"
-)
+ThisBuild / tlBaseVersion := "2.3"
+ThisBuild / organization := "org.typelevel"
 
 val catsVersion = "2.7.0"
 val disciplineMunitVersion = "1.0.9"
@@ -36,43 +34,28 @@ lazy val commonSettings = Seq(
     "org.typelevel" %%% "alleycats-core" % catsVersion,
     "com.chuusai" %%% "shapeless" % shapelessVersion,
     "org.typelevel" %%% "cats-testkit" % catsVersion % Test,
+    "org.scalameta" %%% "munit" % "0.7.29" % Test,
     "org.typelevel" %%% "discipline-munit" % disciplineMunitVersion % Test,
     "org.scala-lang" % "scala-reflect" % scalaVersion.value % Test,
     compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
   ),
-  Test / parallelExecution := false,
-  versionScheme := Some("semver-spec"),
-  mimaPreviousArtifacts := Set(organization.value %% moduleName.value % "2.2.1")
+  Test / parallelExecution := false
 )
 
 console / initialCommands := """import shapeless._, cats._, cats.derived._"""
 
-lazy val commonJsSettings = Seq(
-  Global / scalaJSStage := FastOptStage,
-  Test / scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule))
-)
-
-lazy val coreSettings =
-  Seq.concat(buildSettings, commonSettings, crossVersionSharedSources, publishSettings)
-
-lazy val kittens = project
-  .in(file("."))
-  .aggregate(coreJS, coreJVM, coreNative)
-  .dependsOn(coreJS, coreJVM, coreNative)
-  .settings(coreSettings: _*)
-  .settings(noPublishSettings)
+lazy val root = tlCrossRootProject.aggregate(core)
 
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
-  .settings(coreSettings: _*)
-  .jsSettings(commonJsSettings: _*)
+  .settings(commonSettings: _*)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 lazy val coreNative = core.native
 
-addCommandAlias("root", ";project kittens")
+addCommandAlias("root", ";project /")
 addCommandAlias("jvm", ";project coreJVM")
 addCommandAlias("js", ";project coreJS")
 addCommandAlias("native", ";project coreNative")
@@ -87,18 +70,8 @@ addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
 addCommandAlias("fmt", "all scalafmtSbt scalafmtAll")
 addCommandAlias("fmtCheck", "all scalafmtSbtCheck scalafmtCheckAll")
 
-lazy val crossVersionSharedSources: Seq[Setting[_]] = Seq(Compile, Test).map { sc =>
-  (sc / unmanagedSourceDirectories) ++= (sc / unmanagedSourceDirectories).value.map { dir: File =>
-    new File(dir.getPath + "_" + scalaBinaryVersion.value)
-  }
-}
-
 lazy val publishSettings = Seq(
-  Test / publishArtifact := false,
-  pomIncludeRepository := (_ => false),
-  homepage := Some(url("https://github.com/typelevel/kittens")),
   licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-  scmInfo := Some(ScmInfo(url("https://github.com/typelevel/kittens"), "scm:git:git@github.com:typelevel/kittens.git")),
   developers := List(
     Developer("milessabin", "Miles Sabin", "", url("http://milessabin.com/blog")),
     Developer("kailuowang", "Kai(luo) Wang", "kailuo.wang@gmail.com", url("http://kailuowang.com/")),
@@ -106,24 +79,12 @@ lazy val publishSettings = Seq(
   )
 )
 
-lazy val noPublishSettings =
-  publish / skip := true
-
-ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("8"))
-ThisBuild / githubWorkflowArtifactUpload := false
-ThisBuild / githubWorkflowBuildMatrixAdditions += "ci" -> List("validateJVM", "validateJS", "validateNative")
-ThisBuild / githubWorkflowBuild := List(WorkflowStep.Sbt(List("${{ matrix.ci }}"), name = Some("Validation")))
-ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
-ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.StartsWith(Ref.Tag("v")))
-ThisBuild / githubWorkflowPublishPreamble += WorkflowStep.Use(UseRef.Public("olafurpg", "setup-gpg", "v3"))
-ThisBuild / githubWorkflowPublish := Seq(
-  WorkflowStep.Sbt(
-    List("ci-release"),
-    env = Map(
-      "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
-      "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
-      "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
-      "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}"
+ThisBuild / tlCiReleaseBranches := Seq("main")
+ThisBuild / githubWorkflowBuild ~= { steps =>
+  val formatStep = WorkflowStep
+    .Sbt(
+      List("scalafmtCheckAll", "scalafmtSbtCheck"),
+      name = Some("Check formatting")
     )
-  )
-)
+  formatStep +: steps
+}

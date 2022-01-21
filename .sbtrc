@@ -1,1 +1,1 @@
-alias boot = ;reload ;project kittens ;iflast shell
+alias boot = ;reload ;project / ;iflast shell

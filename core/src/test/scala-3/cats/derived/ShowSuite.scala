@@ -2,6 +2,7 @@ package cats
 package derived
 
 import cats.laws.discipline.SerializableTests
+import scala.compiletime.*
 
 class ShowSuite extends KittensSuite {
   import ShowSuite._
@@ -18,7 +19,7 @@ class ShowSuite extends KittensSuite {
       tree: Show[Tree[Int]],
       boxBogus: Show[Box[Bogus]]
   ): Unit = {
-    // checkAll(s"$context.Show is Serializable", SerializableTests.serializable(summonInline[Show[IntTree]]))
+    checkAll(s"$context.Show is Serializable", SerializableTests.serializable(summonInline[Show[Foo]]))
 
     test(s"$context.Show[Foo]") {
       val value = Foo(42, Option("Hello"))

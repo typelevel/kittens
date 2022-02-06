@@ -83,7 +83,7 @@ ThisBuild / developers := List(
   Developer("joroKr21", "Georgi Krastev", "joro.kr.21@gmail.com", url("https://twitter.com/Joro_Kr"))
 )
 
-ThisBuild / tlCiReleaseBranches := Seq("main")
+ThisBuild / tlCiReleaseBranches := Seq("master")
 ThisBuild / githubWorkflowBuild ~= { steps =>
   val formatStep = WorkflowStep
     .Sbt(

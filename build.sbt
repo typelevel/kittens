@@ -76,7 +76,7 @@ addCommandAlias("mima", "coreJVM/mimaReportBinaryIssues")
 addCommandAlias("fmt", "all scalafmtSbt scalafmtAll")
 addCommandAlias("fmtCheck", "all scalafmtSbtCheck scalafmtCheckAll")
 
-ThisBuild / licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+ThisBuild / licenses := Seq(License.Apache2)
 ThisBuild / developers := List(
   Developer("milessabin", "Miles Sabin", "", url("http://milessabin.com/blog")),
   Developer("kailuowang", "Kai(luo) Wang", "kailuo.wang@gmail.com", url("http://kailuowang.com/")),

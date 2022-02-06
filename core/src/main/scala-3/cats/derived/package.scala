@@ -13,6 +13,7 @@ extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemig
 extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid[A]
 extension (x: CommutativeSemigroup.type) inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
 extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
+extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow[A]
 extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]
 extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor[F]
 extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible[F]
@@ -27,7 +28,6 @@ object semiauto
       OrderDerivation,
       PartialOrderDerivation,
       SemigroupKDerivation,
-      ShowDerivation,
       Instances:
 
   inline def eq[A]: Eq[A] = DerivedEq[A]
@@ -42,6 +42,7 @@ object semiauto
   inline def reducible[F[_]]: Reducible[F] = DerivedReducible[F]
   inline def traverse[F[_]]: Traverse[F] = DerivedTraverse[F]
   inline def nonEmptyTraverse[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
+  inline def show[A]: Show[A] = DerivedShow[A]
 
 object auto:
   object eq:
@@ -64,6 +65,9 @@ object auto:
 
   object commutativeMonoid:
     inline given [A](using NotGiven[CommutativeMonoid[A]]): CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
+
+  object show:
+    inline given [A](using NotGiven[Show[A]]): Show[A] = DerivedShow[A]
 
   object functor:
     inline given [F[_]](using NotGiven[Functor[F]]): Functor[F] = DerivedFunctor[F]

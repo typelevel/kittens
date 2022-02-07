@@ -27,7 +27,6 @@ object DerivedApplicative:
   given [T](using T: Monoid[T]): DerivedApplicative[Const[T]] = new Applicative[Const[T]]:
     def pure[A](x: A) = T.empty
     def ap[A, B](ff: T)(fa: T) = T.combine(ff, fa)
-    override def map[A, B](fa: T)(f: A => B) = fa
 
   given [F[_], G[_]](using F: Applicative[F], G: Applicative[G]): DerivedApplicative[[x] =>> F[G[x]]] =
     F.compose(G)
@@ -37,8 +36,6 @@ object DerivedApplicative:
     new Product[Applicative, F] {}
 
   trait Product[T[x[_]] <: Applicative[x], F[_]](using inst: K1.ProductInstances[T, F]) extends Applicative[F]:
-
     override def ap[A, B](ff: F[A => B])(fa: F[A]): F[B] =
-      inst.map2(ff, fa)([t[_]] => (emp: T[t], t0: t[A => B], t1: t[A]) => emp.ap(t0)(t1))
-
-    override def pure[A](x: A): F[A] = inst.construct([t[_]] => (emp: T[t]) => emp.pure[A](x))
+      inst.map2(ff, fa)([t[_]] => (apl: T[t], tt: t[A => B], ta: t[A]) => apl.ap(tt)(ta))
+    override def pure[A](x: A): F[A] = inst.construct([t[_]] => (apl: T[t]) => apl.pure[A](x))

@@ -14,6 +14,7 @@ extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid[A]
 extension (x: CommutativeSemigroup.type) inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
 extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
 extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow[A]
+extension (x: Apply.type) inline def derived[F[_]]: Apply[F] = DerivedApply[F]
 extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]
 extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor[F]
 extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible[F]
@@ -37,6 +38,7 @@ object semiauto
   inline def monoid[A]: Monoid[A] = DerivedMonoid[A]
   inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
   inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
+  inline def apply[F[_]]: Apply[F] = DerivedApply[F]
   inline def foldable[F[_]]: Foldable[F] = DerivedFoldable[F]
   inline def functor[F[_]]: Functor[F] = DerivedFunctor[F]
   inline def reducible[F[_]]: Reducible[F] = DerivedReducible[F]
@@ -68,6 +70,9 @@ object auto:
 
   object show:
     inline given [A](using NotGiven[Show[A]]): Show[A] = DerivedShow[A]
+
+  object apply:
+    inline given [F[_]](using NotGiven[Apply[F]]): Apply[F] = DerivedApply[F]
 
   object functor:
     inline given [F[_]](using NotGiven[Functor[F]]): Functor[F] = DerivedFunctor[F]

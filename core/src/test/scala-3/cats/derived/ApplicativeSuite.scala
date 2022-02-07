@@ -27,19 +27,20 @@ class ApplicativeSuite extends KittensSuite {
   def testApplicative(context: String)(using
       caseClassWOption: Applicative[CaseClassWOption],
       optList: Applicative[OptList],
-      andInt: Applicative[AndInt],
+      // Requires Dotty 3.1.2
+//      andInt: Applicative[AndInt],
       interleaved: Applicative[Interleaved],
       listBox: Applicative[ListBox]
   ): Unit = {
     given isoOptList: Isomorphisms[OptList] = Isomorphisms.invariant(optList)
-    given isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)
+//    given isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)
     given isoListBox: Isomorphisms[ListBox] = Isomorphisms.invariant(listBox)
     checkAll(
       s"$context.Applicative[CaseClassWOption]",
       ApplicativeTests[CaseClassWOption].applicative[Int, String, Long]
     )
     checkAll(s"$context.Applicative[OptList]", ApplicativeTests[OptList].applicative[Int, String, Long])
-    checkAll(s"$context.Applicative[AndInt]", ApplicativeTests[AndInt].applicative[Int, String, Long])
+//    checkAll(s"$context.Applicative[AndInt]", ApplicativeTests[AndInt].applicative[Int, String, Long])
     checkAll(s"$context.Applicative[Interleaved]", ApplicativeTests[Interleaved].applicative[Int, String, Long])
     checkAll(s"$context.Applicative[ListBox]", ApplicativeTests[ListBox].applicative[Int, String, Long])
     checkAll(s"$context.Applicative is Serializable", SerializableTests.serializable(Applicative[Interleaved]))
@@ -61,14 +62,14 @@ object ApplicativeSuite {
   import cats.instances.tuple._
 
   type OptList[A] = Option[List[A]]
-  type AndInt[A] = (A, Int)
+//  type AndInt[A] = (A, Int)
   type ListBox[A] = List[Box[A]]
 
   object semiInstances {
     given Applicative[Box] = semiauto.applicative
     given Applicative[CaseClassWOption] = semiauto.applicative
     given Applicative[OptList] = semiauto.applicative
-    given Applicative[AndInt] = semiauto.applicative
+//    given Applicative[AndInt] = semiauto.applicative
     given Applicative[Interleaved] = semiauto.applicative
     given Applicative[ListBox] = semiauto.applicative
   }

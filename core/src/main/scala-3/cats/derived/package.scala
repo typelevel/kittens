@@ -11,6 +11,7 @@ extension (x: Hash.type) inline def derived[A]: Hash[A] = DerivedHash[A]
 extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty[A]
 extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup[A]
 extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid[A]
+extension (x: Order.type) inline def derived[A]: Order[A] = DerivedOrder[A]
 extension (x: CommutativeSemigroup.type) inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
 extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
 extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow[A]
@@ -25,7 +26,6 @@ object semiauto
       EmptyKDerivation,
       InvariantDerivation,
       MonoidKDerivation,
-      OrderDerivation,
       PartialOrderDerivation,
       SemigroupKDerivation,
       Instances:
@@ -35,6 +35,7 @@ object semiauto
   inline def empty[A]: Empty[A] = DerivedEmpty[A]
   inline def semigroup[A]: Semigroup[A] = DerivedSemigroup[A]
   inline def monoid[A]: Monoid[A] = DerivedMonoid[A]
+  inline def order[A]: Order[A] = DerivedOrder[A]
   inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
   inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
   inline def foldable[F[_]]: Foldable[F] = DerivedFoldable[F]
@@ -59,6 +60,9 @@ object auto:
 
   object monoid:
     inline given [A](using NotGiven[Monoid[A]]): Monoid[A] = DerivedMonoid[A]
+
+  object order:
+    inline given [A](using NotGiven[Order[A]]): Order[A] = DerivedOrder[A]
 
   object commutativeSemigroup:
     inline given [A](using NotGiven[CommutativeSemigroup[A]]): CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]

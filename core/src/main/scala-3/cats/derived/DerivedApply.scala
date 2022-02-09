@@ -28,8 +28,8 @@ object DerivedApply:
     def ap[A, B](ff: T)(fa: T) = T.combine(ff, fa)
     def map[A, B](fa: T)(f: A => B) = fa
 
-  given [F[_], G[_]](using F: Apply[F], G: Apply[G]): DerivedApply[[x] =>> F[G[x]]] =
-    F.compose(G)
+  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedApply[[x] =>> F[G[x]]] =
+    F.unify.compose(G.unify)
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApply[F] =
     given K1.ProductInstances[Apply, F] = inst.unify

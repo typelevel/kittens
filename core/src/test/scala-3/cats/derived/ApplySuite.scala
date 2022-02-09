@@ -19,29 +19,28 @@ package cats.derived
 import cats.Apply
 import cats.laws.discipline.{ApplyTests, SerializableTests}
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
+import scala.compiletime.*
 
 class ApplySuite extends KittensSuite {
   import ApplySuite._
   import TestDefns._
 
-  def testApply(context: String)(using
-      caseClassWOption: Apply[CaseClassWOption],
-      optList: Apply[OptList],
-      // Requires scala 3.1.2
-//      andInt: Apply[AndInt],
-      interleaved: Apply[Interleaved],
-      listBox: Apply[ListBox]
-  ): Unit = {
-    given isoOptList: Isomorphisms[OptList] = Isomorphisms.invariant(optList)
-//    given isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)
-    given isoListBox: Isomorphisms[ListBox] = Isomorphisms.invariant(listBox)
+  inline def applyTests[F[_]]: ApplyTests[F] =
+    ApplyTests[F](summonInline)
 
-    checkAll(s"$context.Apply[CaseClassWOption]", ApplyTests[CaseClassWOption].apply[Int, String, Long])
-    checkAll(s"$context.Apply[OptList]", ApplyTests[OptList].apply[Int, String, Long])
-//    checkAll(s"$context.Apply[AndInt]", ApplyTests[AndInt].apply[Int, String, Long])
-    checkAll(s"$context.Apply[Interleaved]", ApplyTests[Interleaved].apply[Int, String, Long])
-    checkAll(s"$context.Apply[ListBox]", ApplyTests[ListBox].apply[Int, String, Long])
-    checkAll(s"$context.Apply is Serializable", SerializableTests.serializable(Apply[Interleaved]))
+  inline def testApply(inline context: String): Unit = {
+    given Isomorphisms[CaseClassWOption] = Isomorphisms.invariant(summonInline[Apply[CaseClassWOption]])
+    given Isomorphisms[OptList] = Isomorphisms.invariant(summonInline[Apply[OptList]])
+    //    given isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)
+    given Isomorphisms[Interleaved] = Isomorphisms.invariant(summonInline[Apply[Interleaved]])
+    given Isomorphisms[ListBox] = Isomorphisms.invariant(summonInline[Apply[ListBox]])
+
+    checkAll(s"$context.Apply[CaseClassWOption]", applyTests[CaseClassWOption].apply[Int, String, Long])
+    checkAll(s"$context.Apply[OptList]", applyTests[OptList].apply[Int, String, Long])
+//    checkAll(s"$context.Apply[AndInt]", applyTests[AndInt].apply[Int, String, Long])
+    checkAll(s"$context.Apply[Interleaved]", applyTests[Interleaved].apply[Int, String, Long])
+    checkAll(s"$context.Apply[ListBox]", applyTests[ListBox].apply[Int, String, Long])
+    checkAll(s"$context.Apply is Serializable", SerializableTests.serializable(summonInline[Apply[Interleaved]]))
   }
 
   {

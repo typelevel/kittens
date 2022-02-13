@@ -17,6 +17,13 @@ target/
 *.iml
 *.iws
 
+# Ignore project files for VSCode
+.bloop
+.bsp
+.metals
+.vscode
+metals.sbt
+
 # Ignore OS X metadata
 .DS_Store
 

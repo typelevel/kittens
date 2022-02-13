@@ -6,9 +6,8 @@ import cats.derived.util.VersionSpecific.Lazy
 import cats.kernel.{CommutativeMonoid, CommutativeSemigroup}
 import shapeless.{Cached, Refute}
 
-/** Fully automatically derive the instance, note that this derivation is not cached, so it
-  * will re-derive every time an instance is needed in the application, which could
-  * significantly impact the compilation time.
+/** Fully automatically derive the instance, note that this derivation is not cached, so it will re-derive every time an
+  * instance is needed in the application, which could significantly impact the compilation time.
   */
 object auto {
 
@@ -277,8 +276,8 @@ object auto {
   }
 }
 
-/** cached cache the derived instance but this cache are global, so be cautious only use it
-  * when there is only one instance globally in your application.
+/** cached cache the derived instance but this cache are global, so be cautious only use it when there is only one
+  * instance globally in your application.
   */
 object cached {
 
@@ -495,8 +494,8 @@ abstract private[derived] class SemiAutoInstances {
   def iterable[F[_], A](fa: F[A])(implicit F: MkIterable[F]): Iterable[A] = F.iterable(fa)
 }
 
-/** allows semi automatically derive each instance. The derivation might need help when
-  * there are fields with a type constructor that comes with instances, e.g.
+/** allows semi automatically derive each instance. The derivation might need help when there are fields with a type
+  * constructor that comes with instances, e.g.
   * {{{
   * scala> case class Bar(a: String)
   * scala> case class Foo(bars: List[Bar])
@@ -520,9 +519,9 @@ abstract private[derived] class SemiAutoInstances {
   *   scala> implicit val fooShow: Show[Foo] = { |
   *             import cats.derived.auto.show._  |
   *             cats.derived.semi.show           |
-  *          }
-  *  scala> Foo(List(Bar("a"))).show
-  *  res3: String = Foo(bars = List(Bar(a = a)))
+  *           }
+  *   scala> Foo(List(Bar("a"))).show
+  *   res3: String = Foo(bars = List(Bar(a = a)))
   * }}}
   */
 @deprecated(message = "Use semiauto instead.", since = "2.1.0")

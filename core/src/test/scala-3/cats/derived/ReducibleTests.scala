@@ -33,4 +33,6 @@ object ReducibleTests:
   DerivedReducible[NonEmptyTree]
 
 @main def run() =
-  println(DerivedFunctor[ReducibleTests.MyList].map(ReducibleTests.MyList.Con(42, ReducibleTests.MyList.Non))(_.toString))
+  println(
+    DerivedFunctor[ReducibleTests.MyList].map(ReducibleTests.MyList.Con(42, ReducibleTests.MyList.Non))(_.toString)
+  )

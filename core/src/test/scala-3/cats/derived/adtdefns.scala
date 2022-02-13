@@ -261,7 +261,7 @@ object TestDefns {
       Arbitrary(Arbitrary.arbitrary[Option[A]].map(GenericAdtCase.apply))
 
     implicit def cogen[A: Cogen]: Cogen[GenericAdt[A]] =
-      Cogen[Option[A]].contramap({ case GenericAdtCase(value) => value })
+      Cogen[Option[A]].contramap { case GenericAdtCase(value) => value }
   }
 
   final case class CaseClassWOption[A](value: Option[A])

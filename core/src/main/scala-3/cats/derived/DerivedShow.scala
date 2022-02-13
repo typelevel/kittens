@@ -21,13 +21,13 @@ object DerivedShow:
     given K0.CoproductInstances[Show, A] = inst.unify
     new Coproduct[Show, A] {}
 
-  trait Product[F[x] <: Show[x], A](using inst: K0.ProductInstances[F, A], labelling: Labelling[A])
-       extends Show[A]:
+  trait Product[F[x] <: Show[x], A](using inst: K0.ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
     def show(a: A): String =
       val prefix = labelling.label
       val labels = labelling.elemLabels
       val n = labels.size
-      if n <= 0 then prefix else
+      if n <= 0 then prefix
+      else
         val sb = new StringBuilder(prefix)
         sb.append('(')
         var i = 0
@@ -43,7 +43,6 @@ object DerivedShow:
         sb.append(')')
         sb.toString
 
-  trait Coproduct[F[x] <: Show[x], A](using inst: K0.CoproductInstances[F, A])
-       extends Show[A]:
+  trait Coproduct[F[x] <: Show[x], A](using inst: K0.CoproductInstances[F, A]) extends Show[A]:
     def show(a: A): String =
       inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))

@@ -34,7 +34,7 @@ class SemigroupSuite extends KittensSuite:
     checkAll(s"$context.Semigroup[Interleaved[Int]]", semigroupTests[Interleaved[Int]].semigroup)
     checkAll(s"$context.Semigroup[Box[Mul]]", semigroupTests[Box[Mul]].semigroup)
     // FIXME: Doesn't work
-    //checkAll(s"$context.Semigroup[Recursive]", semigroupTests[Recursive].semigroup)
+    // checkAll(s"$context.Semigroup[Recursive]", semigroupTests[Recursive].semigroup)
     checkAll(s"$context.Semigroup is Serializable", SerializableTests.serializable(summonInline[Semigroup[Foo]]))
     test(s"$context.Semigroup respects existing instances") {
       val box = summonInline[Semigroup[Box[Mul]]]

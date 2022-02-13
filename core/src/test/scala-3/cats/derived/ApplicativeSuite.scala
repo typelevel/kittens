@@ -32,9 +32,6 @@ class ApplicativeSuite extends KittensSuite {
       interleaved: Applicative[Interleaved],
       listBox: Applicative[ListBox]
   ): Unit = {
-    given isoOptList: Isomorphisms[OptList] = Isomorphisms.invariant(optList)
-//    given isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)
-    given isoListBox: Isomorphisms[ListBox] = Isomorphisms.invariant(listBox)
     checkAll(
       s"$context.Applicative[CaseClassWOption]",
       ApplicativeTests[CaseClassWOption].applicative[Int, String, Long]

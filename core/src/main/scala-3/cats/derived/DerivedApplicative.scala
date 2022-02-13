@@ -25,17 +25,17 @@ object DerivedApplicative:
     summonInline[DerivedApplicative[F]].instance
 
   given [T](using T: Monoid[T]): DerivedApplicative[Const[T]] = new Applicative[Const[T]]:
-    def pure[A](x: A) = T.empty
-    def ap[A, B](ff: T)(fa: T) = T.combine(ff, fa)
+    def pure[A](x: A): Const[T][A] = T.empty
+    def ap[A, B](ff: T)(fa: T): Const[T][B] = T.combine(ff, fa)
 
   given [F[_], G[_]](using F: Applicative[F], G: Applicative[G]): DerivedApplicative[[x] =>> F[G[x]]] =
     F.compose(G)
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApplicative[F] =
     given K1.ProductInstances[Applicative, F] = inst.unify
-    new Product[Applicative, F] {}
+    new Product[Applicative, F] with DerivedApply.Product[Applicative, F] {}
 
-  trait Product[T[x[_]] <: Applicative[x], F[_]](using inst: K1.ProductInstances[T, F]) extends Applicative[F]:
-    override def ap[A, B](ff: F[A => B])(fa: F[A]): F[B] =
-      inst.map2(ff, fa)([t[_]] => (apl: T[t], tt: t[A => B], ta: t[A]) => apl.ap(tt)(ta))
+  trait Product[T[x[_]] <: Applicative[x], F[_]](using inst: K1.ProductInstances[T, F])
+      extends Applicative[F],
+        DerivedApply.Product[T, F]:
     override def pure[A](x: A): F[A] = inst.construct([t[_]] => (apl: T[t]) => apl.pure[A](x))

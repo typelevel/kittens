@@ -17,7 +17,7 @@ val shapeless2Version = "2.3.8"
 val shapeless3Version = "3.0.4"
 
 lazy val commonSettings = Seq(
-  scalacOptions := Seq(
+  scalacOptions ++= Seq(
     "-feature",
     "-language:higherKinds",
     "-language:implicitConversions",

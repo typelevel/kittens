@@ -28,8 +28,8 @@ object DerivedApplicative:
     def pure[A](x: A): Const[T][A] = T.empty
     def ap[A, B](ff: T)(fa: T): Const[T][B] = T.combine(ff, fa)
 
-  given [F[_], G[_]](using F: Applicative[F], G: Applicative[G]): DerivedApplicative[[x] =>> F[G[x]]] =
-    F.compose(G)
+  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedApplicative[[x] =>> F[G[x]]] =
+    F.unify.compose(G.unify)
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApplicative[F] =
     given K1.ProductInstances[Applicative, F] = inst.unify

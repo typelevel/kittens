@@ -10,6 +10,7 @@ ThisBuild / tlBaseVersion := "3.0"
 ThisBuild / organization := "org.typelevel"
 
 val catsVersion = "2.7.0"
+val munitVersion = "0.7.29"
 val disciplineMunitVersion = "1.0.9"
 val kindProjectorVersion = "0.13.2"
 val shapeless2Version = "2.3.8"
@@ -37,7 +38,8 @@ lazy val commonSettings = Seq(
     "org.typelevel" %%% "cats-core" % catsVersion,
     "org.typelevel" %%% "alleycats-core" % catsVersion,
     "org.typelevel" %%% "cats-testkit" % catsVersion % Test,
-    "org.typelevel" %%% "discipline-munit" % disciplineMunitVersion % Test
+    "org.typelevel" %%% "discipline-munit" % disciplineMunitVersion % Test,
+    "org.scalameta" %%% "munit" % munitVersion % Test
   ),
   libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((3, _)) =>

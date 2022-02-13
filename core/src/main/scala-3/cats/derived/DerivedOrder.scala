@@ -16,13 +16,11 @@ object DerivedOrder:
     import DerivedOrder.given
     summonInline[DerivedOrder[A]].instance
 
-  @targetName("product")
-  given [A](using inst: => K0.ProductInstances[Or, A]): DerivedOrder[A] =
+  given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedOrder[A] =
     given K0.ProductInstances[Order, A] = inst.unify
     new Product[Order, A] {}
 
-  @targetName("coproduct")
-  given [A](using inst: => K0.CoproductInstances[Or, A]): DerivedOrder[A] =
+  given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedOrder[A] =
     given K0.CoproductInstances[Order, A] = inst.unify
     new Coproduct[Order, A] {}
 

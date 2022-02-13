@@ -19,24 +19,22 @@ package cats.derived
 import cats.Order
 import cats.kernel.laws.discipline.{OrderTests, SerializableTests}
 import org.scalacheck.Arbitrary
+import scala.compiletime.summonInline
 
 class OrderSuite extends KittensSuite {
   import OrderSuite._
   import TestDefns._
 
-  def testOrder(context: String)(using
-      inner: Order[Inner],
-      outer: Order[Outer],
-      interleaved: Order[Interleaved[Int]],
-      recursive: Order[Recursive],
-      genericAdt: Order[GenericAdt[Int]]
-  ): Unit = {
-    checkAll(s"$context.Order[Inner]", OrderTests[Inner].order)
-    checkAll(s"$context.Order[Outer]", OrderTests[Outer].order)
-    checkAll(s"$context.Order[Interleaved[Int]]", OrderTests[Interleaved[Int]].order)
-    checkAll(s"$context.Order[Recursive]", OrderTests[Recursive].order)
-    checkAll(s"$context.Order[GenericAdt[Int]]", OrderTests[GenericAdt[Int]].order)
-    checkAll(s"$context.Order is Serializable", SerializableTests.serializable(Order[Interleaved[Int]]))
+  inline def orderTests[A]: OrderTests[A] =
+    OrderTests[A](summonInline)
+
+  inline def testOrder(context: String): Unit = {
+    checkAll(s"$context.Order[Inner]", orderTests[Inner].order)
+    checkAll(s"$context.Order[Outer]", orderTests[Outer].order)
+    checkAll(s"$context.Order[Interleaved[Int]]", orderTests[Interleaved[Int]].order)
+    checkAll(s"$context.Order[Recursive]", orderTests[Recursive].order)
+    checkAll(s"$context.Order[GenericAdt[Int]]", orderTests[GenericAdt[Int]].order)
+    checkAll(s"$context.Order is Serializable", SerializableTests.serializable(summonInline[Order[Interleaved[Int]]]))
   }
 
   {

@@ -61,7 +61,7 @@ jobs:
         run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' 'project /' githubWorkflowCheck
 
       - name: Check formatting
-        run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' scalafmtCheckAll scalafmtSbtCheck
+        run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' scalafmtCheckAll root/scalafmtSbtCheck
 
       - name: scalaJSLink
         if: matrix.project == 'rootJS'

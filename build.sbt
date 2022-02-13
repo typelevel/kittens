@@ -88,7 +88,7 @@ ThisBuild / developers := List(
 ThisBuild / tlCiReleaseBranches := Seq("dotty")
 ThisBuild / githubWorkflowBuild ~= { steps =>
   WorkflowStep.Sbt(
-    List("scalafmtCheckAll", "scalafmtSbtCheck"),
+    List("scalafmtCheckAll", "root/scalafmtSbtCheck"),
     name = Some("Check formatting")
   ) +: steps
 }

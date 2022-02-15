@@ -29,8 +29,9 @@ object DerivedEmptyK:
   given or[F[_], G[_]](using F: Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] = new EmptyK[[x] =>> F[G[x]]]:
     def empty[A] = F.unify.empty
 
-  given pureor[F[_], G[_]](using NotGiven[Or[F]])(using F: Pure[F], G: Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] = new EmptyK[[x] =>> F[G[x]]]:
-    def empty[A] = F.pure(G.unify.empty)
+  given pureor[F[_], G[_]](using NotGiven[Or[F]])(using F: Pure[F], G: Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] =
+    new EmptyK[[x] =>> F[G[x]]]:
+      def empty[A] = F.pure(G.unify.empty)
 
   given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedEmptyK[F] =
     given K1.ProductInstances[EmptyK, F] = inst.unify

@@ -35,8 +35,7 @@ class CommutativeSemigroupSuite extends KittensSuite:
       s"$context.CommutativeSemigroup[CommutativeFoo]",
       commutativeSemigroupTests[CommutativeFoo].commutativeSemigroup
     )
-    // FIXME: Doesn't work
-    // checkAll(s"$context.CommutativeSemigroup[Recursive]", commutativeSemigroupTests[Recursive].commutativeSemigroup)
+    checkAll(s"$context.CommutativeSemigroup[Recursive]", commutativeSemigroupTests[Recursive].commutativeSemigroup)
     checkAll(s"$context.CommutativeSemigroup[Box[Mul]]", commutativeSemigroupTests[Box[Mul]].commutativeSemigroup)
     checkAll(
       s"$context.CommutativeSemigroup is Serializable",

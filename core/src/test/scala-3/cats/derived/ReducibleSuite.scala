@@ -34,9 +34,8 @@ class ReducibleSuite extends KittensSuite:
   inline def testReducible(context: String): Unit =
     checkAll(s"$context.Reducible[ICons]", reducibleTests[ICons].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[Tree]", reducibleTests[Tree].reducible[Option, Int, Long])
-    // FIXME: Those don't work
-//    checkAll(s"$context.Reducible[NelSCons]", reducibleTests[NelSCons].reducible[Option, Int, Long])
-//    checkAll(s"$context.Reducible[NelAndOne]", reducibleTests[NelAndOne].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[NelSCons]", reducibleTests[NelSCons].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[NelAndOne]", reducibleTests[NelAndOne].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[VecAndNel]", reducibleTests[VecAndNel].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[Interleaved]", reducibleTests[Interleaved].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[BoxZipper]", reducibleTests[BoxZipper].reducible[Option, Int, Long])
@@ -58,7 +57,8 @@ object ReducibleSuite:
   import TestDefns.*
 
   type NelSCons[A] = NonEmptyList[SCons[A]]
-  type NelAndOne[A] = NonEmptyList[OneAnd[List, A]]
+  type NelAndOne[A] = NonEmptyList[OneAnd[Vector, A]]
+  type VecAndNel[A] = (Vector[A], NonEmptyList[A])
   type BoxZipper[A] = Box[Zipper[A]]
 
   object semiInstances:
@@ -69,18 +69,6 @@ object ReducibleSuite:
     given Reducible[VecAndNel] = semiauto.reducible
     given Reducible[Interleaved] = semiauto.reducible
     given Reducible[BoxZipper] = semiauto.reducible
-
-  // FIXME: Doesn't work if we define `VecAndNel` as a type alias
-  final case class VecAndNel[A](vec: Vector[A], nel: NonEmptyList[A])
-  object VecAndNel:
-    given [A: Eq]: Eq[VecAndNel[A]] =
-      (x, y) => x.vec === y.vec && x.nel === y.nel
-
-    given [A: Arbitrary]: Arbitrary[VecAndNel[A]] =
-      Arbitrary(for
-        vec <- Arbitrary.arbitrary[Vector[A]]
-        nel <- Arbitrary.arbitrary[NonEmptyList[A]]
-      yield VecAndNel(vec, nel))
 
   final case class Zipper[+A](left: List[A], focus: A, right: List[A])
   object Zipper:

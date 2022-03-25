@@ -12,7 +12,7 @@ object DerivedCommutativeMonoid:
     import DerivedCommutativeMonoid.given
     summonInline[DerivedCommutativeMonoid[A]].instance
 
-  given [A](using inst: K0.ProductInstances[Or, A]): DerivedCommutativeMonoid[A] =
+  given [A](using inst: => K0.ProductInstances[Or, A]): DerivedCommutativeMonoid[A] =
     given K0.ProductInstances[CommutativeMonoid, A] = inst.unify
     new Product[CommutativeMonoid, A] {}
 

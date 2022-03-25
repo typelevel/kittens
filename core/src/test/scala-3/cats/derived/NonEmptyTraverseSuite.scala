@@ -41,15 +41,14 @@ class NonEmptyTraverseSuite extends KittensSuite:
       s"$context.NonEmptyTraverse[Tree]",
       nonEmptyTraverseTests[Tree].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
-    // FIXME: Those don't work
-//    checkAll(
-//      s"$context.NonEmptyTraverse[NelSCons]",
-//      nonEmptyTraverseTests[NelSCons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
-//    )
-//    checkAll(
-//      s"$context.NonEmptyTraverse[NelAndOne]",
-//      nonEmptyTraverseTests[NelAndOne].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
-//    )
+    checkAll(
+      s"$context.NonEmptyTraverse[NelSCons]",
+      nonEmptyTraverseTests[NelSCons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
+      s"$context.NonEmptyTraverse[NelAndOne]",
+      nonEmptyTraverseTests[NelAndOne].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
     checkAll(
       s"$context.NonEmptyTraverse[VecAndNel]",
       nonEmptyTraverseTests[VecAndNel].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
@@ -79,19 +78,8 @@ object NonEmptyTraverseSuite:
   import TestDefns.*
 
   type NelSCons[A] = NonEmptyList[SCons[A]]
-  type NelAndOne[A] = NonEmptyList[OneAnd[List, A]]
-
-  // FIXME: Doesn't work if we define `ListAndNel` as a type alias
-  final case class VecAndNel[A](vec: Vector[A], nel: NonEmptyList[A])
-  object VecAndNel:
-    given [A: Eq]: Eq[VecAndNel[A]] =
-      (x, y) => x.vec === y.vec && x.nel === y.nel
-
-    given [A: Arbitrary]: Arbitrary[VecAndNel[A]] =
-      Arbitrary(for
-        vec <- Arbitrary.arbitrary[Vector[A]]
-        nel <- Arbitrary.arbitrary[NonEmptyList[A]]
-      yield VecAndNel(vec, nel))
+  type NelAndOne[A] = NonEmptyList[OneAnd[Vector, A]]
+  type VecAndNel[A] = (Vector[A], NonEmptyList[A])
 
   object semiInstances:
     given NonEmptyTraverse[ICons] = semiauto.nonEmptyTraverse

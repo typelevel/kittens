@@ -35,8 +35,7 @@ class EqSuite extends KittensSuite.WithoutEq:
     checkAll(s"$context.Eq[Outer]", eqTests[Outer].eqv)
     checkAll(s"$context.Eq[Interleaved[Int]]", eqTests[Interleaved[Int]].eqv)
     checkAll(s"$context.Eq[Tree[Int]]", eqTests[Tree[Int]].eqv)
-    // FIXME: Doesn't work for recursive case classes.
-    // checkAll(s"$context.Eq[Recursive]", eqTests[Recursive].eqv)
+    checkAll(s"$context.Eq[Recursive]", eqTests[Recursive].eqv)
     checkAll(s"$context.Eq is Serializable", SerializableTests.serializable(summonInline[Eq[Foo]]))
 
   locally {

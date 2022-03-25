@@ -32,8 +32,7 @@ class CommutativeMonoidSuite extends KittensSuite:
 
   inline def testCommutativeMonoid(inline context: String): Unit =
     checkAll(s"$context.CommutativeMonoid[Foo]", commutativeMonoidTests[CommutativeFoo].commutativeMonoid)
-    // FIXME: Doesn't work
-    // checkAll(s"$context.CommutativeMonoid[Recursive]", commutativeMonoidTests[Recursive].commutativeMonoid)
+    checkAll(s"$context.CommutativeMonoid[Recursive]", commutativeMonoidTests[Recursive].commutativeMonoid)
     checkAll(s"$context.CommutativeMonoid[Box[Mul]]", commutativeMonoidTests[Box[Mul]].commutativeMonoid)
     checkAll(
       s"$context.CommutativeMonoid is Serializable",

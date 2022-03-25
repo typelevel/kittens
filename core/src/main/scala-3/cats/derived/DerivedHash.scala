@@ -13,11 +13,11 @@ object DerivedHash:
     import DerivedHash.given
     summonInline[DerivedHash[A]].instance
 
-  given [A <: scala.Product](using inst: K0.ProductInstances[Or, A]): DerivedHash[A] =
+  given product[A <: scala.Product](using inst: => K0.ProductInstances[Or, A]): DerivedHash[A] =
     given K0.ProductInstances[Hash, A] = inst.unify
     new Product[Hash, A] {}
 
-  given [A](using inst: => K0.CoproductInstances[Or, A]): DerivedHash[A] =
+  given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedHash[A] =
     given K0.CoproductInstances[Hash, A] = inst.unify
     new Coproduct[Hash, A] {}
 

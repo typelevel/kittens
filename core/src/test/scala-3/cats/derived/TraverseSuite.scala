@@ -49,14 +49,7 @@ object TraverseSuite:
 
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]
-
-  // FIXME: Doesn't work if we define `ListAndNel` as a type alias
-  case class AndChar[A](value: A, letter: Char)
-  object AndChar:
-    given [A: Eq]: Eq[AndChar[A]] =
-      Eq.by(ac => (ac.value, ac.letter))
-    given [A: Arbitrary]: Arbitrary[AndChar[A]] =
-      Arbitrary(Arbitrary.arbitrary[(A, Char)].map(apply[A].tupled))
+  type AndChar[A] = (A, Char)
 
   object semiInstances:
     given Traverse[IList] = semiauto.traverse

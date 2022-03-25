@@ -20,8 +20,7 @@ class HashSuite extends KittensSuite:
     // FIXME: typelevel/cats#2878
     // checkAll(s"$context.Hash[Interleaved[Int]]", hashTests[Interleaved[Int]].hash)
     checkAll(s"$context.Hash[Tree[Int]]", hashTests[Tree[Int]].hash)
-    // FIXME: Doesn't work for recursive case classes.
-    // checkAll(s"$context.Hash[Recursive]", hashTests[Recursive].hash)
+    checkAll(s"$context.Hash[Recursive]", hashTests[Recursive].hash)
     checkAll(s"$context.Hash is Serializable", SerializableTests.serializable(summonInline[Hash[Inner]]))
 
   locally {

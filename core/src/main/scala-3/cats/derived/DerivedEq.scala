@@ -12,11 +12,11 @@ object DerivedEq:
     import DerivedEq.given
     summonInline[DerivedEq[A]].instance
 
-  given [A](using inst: K0.ProductInstances[Or, A]): DerivedEq[A] =
+  given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedEq[A] =
     given K0.ProductInstances[Eq, A] = inst.unify
     new Product[Eq, A] {}
 
-  given [A](using inst: => K0.CoproductInstances[Or, A]): DerivedEq[A] =
+  given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedEq[A] =
     given K0.CoproductInstances[Eq, A] = inst.unify
     new Coproduct[Eq, A] {}
 

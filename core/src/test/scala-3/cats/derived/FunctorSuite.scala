@@ -37,8 +37,7 @@ class FunctorSuite extends KittensSuite:
     checkAll(s"$context.Functor[GenericAdt]", functorTests[GenericAdt].functor[Int, String, Long])
     checkAll(s"$context.Functor[OptList]", functorTests[OptList].functor[Int, String, Long])
     checkAll(s"$context.Functor[ListSnoc]", functorTests[ListSnoc].functor[Int, String, Long])
-    // FIXME: Testing `functorTests[AndChar].functor[Int, String, Long]` causes a ClassCastException
-    checkAll(s"$context.Functor[AndChar]", functorTests[AndChar].functor[Int, String, Int])
+    checkAll(s"$context.Functor[AndChar]", functorTests[AndChar].functor[Int, String, Long])
     checkAll(s"$context.Functor[Interleaved]", functorTests[Interleaved].functor[Int, String, Long])
     checkAll(s"$context.Functor[NestedPred]", functorTests[NestedPred].functor[Boolean, Int, Boolean])
     checkAll(s"$context.Functor is Serializable", SerializableTests.serializable(summonInline[Functor[Tree]]))

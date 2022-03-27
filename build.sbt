@@ -8,7 +8,7 @@ ThisBuild / organization := "org.typelevel"
 val catsVersion = "2.7.0"
 val disciplineMunitVersion = "1.0.9"
 val kindProjectorVersion = "0.13.2"
-val shapelessVersion = "2.3.8"
+val shapelessVersion = "2.3.9"
 
 lazy val commonSettings = Seq(
   scalacOptions := Seq(

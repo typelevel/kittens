@@ -50,12 +50,8 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
   .settings(commonSettings: _*)
-  .jsSettings(
-    tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.1.0").toMap
-  )
-  .nativeSettings(
-    tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.2.2").toMap
-  )
+  .jsSettings(tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.1.0").toMap)
+  .nativeSettings(tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.2.2").toMap)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -84,11 +80,7 @@ ThisBuild / developers := List(
 )
 
 ThisBuild / tlCiReleaseBranches := Seq("master")
-ThisBuild / githubWorkflowBuild ~= { steps =>
-  val formatStep = WorkflowStep
-    .Sbt(
-      List("scalafmtCheckAll", "scalafmtSbtCheck"),
-      name = Some("Check formatting")
-    )
-  formatStep +: steps
-}
+ThisBuild / mergifyStewardConfig ~= (_.map(_.copy(mergeMinors = true)))
+ThisBuild / githubWorkflowBuild :=
+  WorkflowStep.Sbt(List("scalafmtCheckAll", "scalafmtSbtCheck"), name = Some("Check formatting")) +:
+    (ThisBuild / githubWorkflowBuild).value

@@ -2,10 +2,11 @@ import sbt._
 
 val scala212 = "2.12.15"
 val scala213 = "2.13.8"
-val scala3 = "3.1.2-RC3"
+val scala3 = "3.1.2"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
+ThisBuild / scalaOutputVersion := (if (tlIsScala3.value) "3.0.2" else scalaVersion.value)
 ThisBuild / tlBaseVersion := "3.0"
 ThisBuild / organization := "org.typelevel"
 

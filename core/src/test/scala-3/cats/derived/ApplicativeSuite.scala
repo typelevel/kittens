@@ -17,57 +17,57 @@
 package cats.derived
 
 import cats.Applicative
-import cats.laws.discipline.{ApplicativeTests, SerializableTests}
+import cats.laws.discipline.*
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
 
-class ApplicativeSuite extends KittensSuite {
-  import ApplicativeSuite._
-  import TestDefns._
+import scala.compiletime.*
 
-  def testApplicative(context: String)(using
-      caseClassWOption: Applicative[CaseClassWOption],
-      optList: Applicative[OptList],
-      // Requires Dotty 3.1.2
-//      andInt: Applicative[AndInt],
-      interleaved: Applicative[Interleaved],
-      listBox: Applicative[ListBox]
-  ): Unit = {
+class ApplicativeSuite extends KittensSuite:
+  import ApplicativeSuite.*
+  import TestDefns.*
+
+  inline def applicativeTests[F[_]](f: Isomorphisms[F] ?=> (at: ApplicativeTests[F]) => at.RuleSet) =
+    f(using summonInline)(ApplicativeTests[F](summonInline))
+
+  inline def testApplicative(inline context: String): Unit =
     checkAll(
       s"$context.Applicative[CaseClassWOption]",
-      ApplicativeTests[CaseClassWOption].applicative[Int, String, Long]
+      applicativeTests[CaseClassWOption](_.applicative[Int, String, Long])
     )
-    checkAll(s"$context.Applicative[OptList]", ApplicativeTests[OptList].applicative[Int, String, Long])
-//    checkAll(s"$context.Applicative[AndInt]", ApplicativeTests[AndInt].applicative[Int, String, Long])
-    checkAll(s"$context.Applicative[Interleaved]", ApplicativeTests[Interleaved].applicative[Int, String, Long])
-    checkAll(s"$context.Applicative[ListBox]", ApplicativeTests[ListBox].applicative[Int, String, Long])
-    checkAll(s"$context.Applicative is Serializable", SerializableTests.serializable(Applicative[Interleaved]))
-  }
+    checkAll(s"$context.Applicative[OptList]", applicativeTests[OptList](_.applicative[Int, String, Long]))
+    checkAll(s"$context.Applicative[AndInt]", applicativeTests[AndInt](_.applicative[Int, String, Long]))
+    checkAll(s"$context.Applicative[Interleaved]", applicativeTests[Interleaved](_.applicative[Int, String, Long]))
+    checkAll(s"$context.Applicative[ListBox]", applicativeTests[ListBox](_.applicative[Int, String, Long]))
+    checkAll(
+      s"$context.Applicative is Serializable",
+      SerializableTests.serializable(summonInline[Applicative[Interleaved]])
+    )
 
-  {
+  locally {
     import auto.applicative.given
     testApplicative("auto")
   }
 
-  {
+  locally {
     import semiInstances.given
     testApplicative("semiauto")
   }
-}
 
-object ApplicativeSuite {
-  import TestDefns._
-  import cats.instances.tuple._
+end ApplicativeSuite
+
+object ApplicativeSuite:
+  import TestDefns.*
 
   type OptList[A] = Option[List[A]]
-//  type AndInt[A] = (A, Int)
+  type AndInt[A] = (A, Int)
   type ListBox[A] = List[Box[A]]
 
-  object semiInstances {
+  object semiInstances:
     given Applicative[Box] = semiauto.applicative
     given Applicative[CaseClassWOption] = semiauto.applicative
     given Applicative[OptList] = semiauto.applicative
-//    given Applicative[AndInt] = semiauto.applicative
+    given Applicative[AndInt] = semiauto.applicative
     given Applicative[Interleaved] = semiauto.applicative
     given Applicative[ListBox] = semiauto.applicative
-  }
-}
+
+end ApplicativeSuite

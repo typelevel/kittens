@@ -1,10 +1,9 @@
 package cats.derived
 
 import cats.*
-import alleycats.*
 import shapeless3.deriving.Const
 
-private[derived] trait Instances extends Instances1:
+private[derived] trait Instances:
 
   given [X](using X: Monoid[X]): MonoidK[Const[X]] with
     def empty[A]: Const[X][A] = X.empty
@@ -23,11 +22,3 @@ private[derived] trait Instances extends Instances1:
 
     def traverse[G[_]: Applicative, A, B](fa: Const[X][A])(f: A => G[B]): G[Const[X][B]] =
       Applicative[G].pure(fa)
-
-private[derived] trait Instances1:
-  given [X](using X: Semigroup[X]): SemigroupK[Const[X]] with
-    def combineK[A](x: Const[X][A], y: Const[X][A]): Const[X][A] =
-      X.combine(x, y)
-
-  given [X](using X: Empty[X]): EmptyK[Const[X]] with
-    def empty[A]: X = X.empty

@@ -17,6 +17,7 @@ extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A
 extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow[A]
 extension (x: Applicative.type) inline def derived[F[_]]: Applicative[F] = DerivedApplicative[F]
 extension (x: Apply.type) inline def derived[F[_]]: Apply[F] = DerivedApply[F]
+extension (x: EmptyK.type) inline def derived[F[_]]: EmptyK[F] = DerivedEmptyK[F]
 extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]
 extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor[F]
 extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible[F]
@@ -25,7 +26,6 @@ extension (x: NonEmptyTraverse.type) inline def derived[F[_]]: NonEmptyTraverse[
 
 object semiauto
     extends ContravariantDerivation,
-      EmptyKDerivation,
       InvariantDerivation,
       MonoidKDerivation,
       PartialOrderDerivation,
@@ -42,6 +42,7 @@ object semiauto
   inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
   inline def applicative[F[_]]: Applicative[F] = DerivedApplicative[F]
   inline def apply[F[_]]: Apply[F] = DerivedApply[F]
+  inline def emptyK[F[_]]: EmptyK[F] = DerivedEmptyK[F]
   inline def foldable[F[_]]: Foldable[F] = DerivedFoldable[F]
   inline def functor[F[_]]: Functor[F] = DerivedFunctor[F]
   inline def reducible[F[_]]: Reducible[F] = DerivedReducible[F]
@@ -82,6 +83,9 @@ object auto:
 
   object apply:
     inline given [F[_]](using NotGiven[Apply[F]]): Apply[F] = DerivedApply[F]
+
+  object emptyK:
+    inline given [F[_]](using NotGiven[EmptyK[F]]): EmptyK[F] = DerivedEmptyK[F]
 
   object functor:
     inline given [F[_]](using NotGiven[Functor[F]]): Functor[F] = DerivedFunctor[F]

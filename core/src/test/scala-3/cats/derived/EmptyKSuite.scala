@@ -36,7 +36,9 @@ class EmptyKSuite extends KittensSuite {
     // Requires Scala 3.1.2
     // test(s"$context.EmptyK[PList]")(assert(EmptyK[PList] == (Nil, Nil)))
     test(s"$context.EmptyK[CaseClassWOption]")(assert(emptyK[CaseClassWOption] == CaseClassWOption(None)))
-    test(s"$context.EmptyK[NelOption]")(assert(emptyK[NelOption] == NonEmptyList.of(None)))
+    test(s"$context.EmptyK[NelOption]")(assert(emptyK[NelOption] == NonEmptyList.one(None)))
+    test(s"$context.EmptyK[IList]")(assert(emptyK[IList] == INil()))
+    test(s"$context.EmptyK[Snoc]")(assert(emptyK[Snoc] == SNil()))
     test(s"$context.EmptyK respects existing instances")(assert(emptyK[BoxColor] == Box(Color(255, 255, 255))))
     checkAll(s"$context.EmptyK is Serializable", SerializableTests.serializable(summonInline[EmptyK[LOption]]))
   }
@@ -44,15 +46,11 @@ class EmptyKSuite extends KittensSuite {
   {
     import auto.emptyK.given
     testEmptyK("auto")
-    illTyped("EmptyK[IList]")
-    illTyped("EmptyK[Snoc]")
   }
 
   {
     import semiInstances.given
     testEmptyK("semiauto")
-    illTyped("semiauto.emptyK[IList]")
-    illTyped("semiauto.emptyK[Snoc]")
   }
 }
 
@@ -69,6 +67,8 @@ object EmptyKSuite {
     // given EmptyK[PList] = semiauto.emptyK
     given EmptyK[CaseClassWOption] = semiauto.emptyK
     given EmptyK[NelOption] = semiauto.emptyK
+    given EmptyK[IList] = semiauto.emptyK
+    given EmptyK[Snoc] = semiauto.emptyK
     given EmptyK[BoxColor] = semiauto.emptyK
   }
 

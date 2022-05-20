@@ -15,6 +15,10 @@ object DerivedSemigroupK:
   given [T](using T: Semigroup[T]): DerivedSemigroupK[Const[T]] = new SemigroupK[Const[T]]:
     final override def combineK[A](x: Const[T][A], y: Const[T][A]) = T.combine(x, y)
 
+  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
+    given SemigroupK[G] = G.unify
+    F.unify.compose[G]
+
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedSemigroupK[F] =
     given K1.ProductInstances[SemigroupK, F] = inst.unify
     new Product[SemigroupK, F] {}

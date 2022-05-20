@@ -24,14 +24,10 @@ extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFuncto
 extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible[F]
 extension (x: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTraverse[F]
 extension (x: NonEmptyTraverse.type) inline def derived[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
+extension (x: SemigroupK.type) inline def derived[F[_]]: SemigroupK[F] = DerivedSemigroupK[F]
+extension (x: MonoidK.type) inline def derived[F[_]]: MonoidK[F] = DerivedMonoidK[F]
 
-object semiauto
-    extends ContravariantDerivation,
-      InvariantDerivation,
-      MonoidKDerivation,
-      PartialOrderDerivation,
-      SemigroupKDerivation,
-      Instances:
+object semiauto extends ContravariantDerivation, InvariantDerivation, PartialOrderDerivation, Instances:
 
   inline def eq[A]: Eq[A] = DerivedEq[A]
   inline def hash[A]: Hash[A] = DerivedHash[A]
@@ -51,6 +47,8 @@ object semiauto
   inline def traverse[F[_]]: Traverse[F] = DerivedTraverse[F]
   inline def nonEmptyTraverse[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
   inline def show[A]: Show[A] = DerivedShow[A]
+  inline def semigroupK[F[_]]: SemigroupK[F] = DerivedSemigroupK[F]
+  inline def monoidK[F[_]]: MonoidK[F] = DerivedMonoidK[F]
 
 object auto:
   object eq:

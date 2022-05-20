@@ -104,3 +104,9 @@ object auto:
 
   object nonEmptyTraverse:
     inline given [F[_]](using NotGiven[NonEmptyTraverse[F]]): NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
+
+  object semigroupK:
+    inline given [F[_]](using NotGiven[SemigroupK[F]]): SemigroupK[F] = DerivedSemigroupK[F]
+
+  object monoidK:
+    inline given [F[_]](using NotGiven[MonoidK[F]]): MonoidK[F] = DerivedMonoidK[F]

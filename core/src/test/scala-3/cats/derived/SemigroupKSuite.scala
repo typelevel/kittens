@@ -9,24 +9,25 @@ class SemigroupKSuite extends KittensSuite {
   import TestDefns.*
 
   def testSemigroupK(context: String)(implicit
-      // complexProduct: SemigroupK[ComplexProduct],
+      complexProduct: SemigroupK[ComplexProduct],
       caseClassWOption: SemigroupK[CaseClassWOption],
       boxMul: SemigroupK[BoxMul]
   ): Unit = {
-    // checkAll(s"$context.SemigroupK[ComplexProduct]", SemigroupKTests[ComplexProduct].semigroupK[Char])
+    checkAll(s"$context.SemigroupK[ComplexProduct]", SemigroupKTests[ComplexProduct].semigroupK[Char])
     checkAll(s"$context.SemigroupK[CaseClassWOption]", SemigroupKTests[CaseClassWOption].semigroupK[Char])
     checkAll(s"$context.SemigroupK[BoxMul]", SemigroupKTests[BoxMul].semigroupK[Char])
-    // checkAll(s"$context.SemigroupK is Serializable", SerializableTests.serializable(SemigroupK[ComplexProduct]))
+    checkAll(s"$context.SemigroupK is Serializable", SerializableTests.serializable(SemigroupK[ComplexProduct]))
 
     test(s"$context.SemigroupK respects existing instances") {
       assert(boxMul.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))) == Box(Mul[Char](25)))
     }
   }
 
-  // locally {
-  //   import auto.semigroupK.given
-  //   testSemigroupK("auto")
-  // }
+  locally {
+    import auto.semigroupK.given
+    summon[SemigroupK[[a] =>> Eval[Option[a]]]]
+    testSemigroupK("auto")
+  }
 
   locally {
     import semiInstances.given
@@ -40,7 +41,7 @@ object SemigroupKSuite {
   type BoxMul[A] = Box[Mul[A]]
 
   object semiInstances {
-    // implicit val complexProduct: SemigroupK[ComplexProduct] = semiauto.semigroupK
+    implicit val complexProduct: SemigroupK[ComplexProduct] = semiauto.semigroupK
     implicit val caseClassWOption: SemigroupK[CaseClassWOption] = semiauto.semigroupK
     implicit val boxMul: SemigroupK[BoxMul] = semiauto.semigroupK
   }

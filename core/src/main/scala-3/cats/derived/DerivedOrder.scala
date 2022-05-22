@@ -1,13 +1,16 @@
 package cats.derived
 
 import cats.{Order, Show}
-
-import scala.compiletime.*
 import shapeless3.deriving.{Complete, Continue, K0, Labelling}
 
-import scala.annotation.targetName
+import scala.annotation.implicitNotFound
+import scala.compiletime.*
 import scala.deriving.Mirror
 
+@implicitNotFound("""Could not derive an instance of Order[A] where A = ${A}.
+Make sure that A satisfies one of the following conditions:
+  * it is a case class where all fields have an Order instance
+  * it is a sealed trait where all subclasses have an Order instance""")
 type DerivedOrder[A] = Derived[Order[A]]
 object DerivedOrder:
   type Or[A] = Derived.Or[Order[A]]

@@ -1,10 +1,16 @@
 package cats.derived
 
 import cats.Show
-import scala.compiletime.*
 import shapeless3.deriving.{Continue, K0, Labelling}
+
+import scala.annotation.implicitNotFound
+import scala.compiletime.*
 import scala.deriving.Mirror
 
+@implicitNotFound("""Could not derive an instance of Show[A] where A = ${A}.
+Make sure that A satisfies one of the following conditions:
+  * it is a case class where all fields have a Show instance
+  * it is a sealed trait where all subclasses have a Show instance""")
 type DerivedShow[A] = Derived[Show[A]]
 object DerivedShow:
   type Or[A] = Derived.Or[Show[A]]

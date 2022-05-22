@@ -19,7 +19,6 @@ package cats.derived
 import alleycats.Pure
 import cats.data.NonEmptyList
 import cats.laws.discipline.SerializableTests
-import shapeless3.test.illTyped
 
 import scala.compiletime.summonInline
 
@@ -43,15 +42,15 @@ class PureSuite extends KittensSuite:
   locally {
     import auto.pure.given
     testPure("auto")
-    illTyped("Pure[IList]")
-    illTyped("Pure[Snoc]")
+    testNoAuto("Pure", "IList")
+    testNoAuto("Pure", "Snoc")
   }
 
   locally {
     import semiInstances.given
     testPure("semiauto")
-    illTyped("semiauto.pure[IList]")
-    illTyped("semiauto.pure[Snoc]")
+    testNoSemi("Pure", "IList")
+    testNoSemi("Pure", "Snoc")
   }
 
 end PureSuite

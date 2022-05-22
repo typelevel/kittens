@@ -20,7 +20,6 @@ import alleycats.Empty
 import cats.laws.discipline.SerializableTests
 
 import scala.compiletime.*
-import scala.util.NotGiven
 
 class EmptySuite extends KittensSuite:
   import EmptySuite.given
@@ -40,26 +39,20 @@ class EmptySuite extends KittensSuite:
     test(s"$context.Empty respects existing instances")(assert(empty[Box[Mask]] == Box(Mask(0xffffffff))))
     checkAll(s"$context.Empty is Serializable", SerializableTests.serializable(summonInline[Empty[Foo]]))
 
-  inline def testNoAuto[A]: Unit =
-    testNoInstance("Empty[" + nameOf[A] + "]", "Could not find an instance of Empty")
-
-  inline def testNoSemi[A]: Unit =
-    testNoInstance("semiauto.empty[" + nameOf[A] + "]", "no implicit argument of type cats.derived.DerivedEmpty")
-
   locally {
     import auto.empty.given
     testEmpty("auto")
-    testNoAuto[IList[Int]]
-    testNoAuto[Snoc[Int]]
-    testNoAuto[Rgb]
+    testNoAuto("Empty", "IList[Int]")
+    testNoAuto("Empty", "Snoc[Int]")
+    testNoAuto("Empty", "Rgb")
   }
 
   locally {
     import semiInstances.given
     testEmpty("semiauto")
-    testNoSemi[IList[Int]]
-    testNoSemi[Snoc[Int]]
-    testNoSemi[Rgb]
+    testNoSemi("Empty", "IList[Int]")
+    testNoSemi("Empty", "Snoc[Int]")
+    testNoSemi("Empty", "Rgb")
   }
 
 end EmptySuite

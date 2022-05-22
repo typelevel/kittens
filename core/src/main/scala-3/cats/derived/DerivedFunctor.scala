@@ -3,8 +3,16 @@ package cats.derived
 import cats.{Contravariant, Functor}
 import shapeless3.deriving.{Const, K1}
 
+import scala.annotation.implicitNotFound
 import scala.compiletime.*
 
+@implicitNotFound("""Could not derive an instance of Functor[F] where F = ${F}.
+Make sure that F[_] satisfies one of the following conditions:
+  * it is a constant type [x] =>> T
+  * it is a nested type [x] =>> G[H[x]] where G: Functor and H: Functor
+  * it is a nested type [x] =>> G[H[x]] where G: Contravariant and H: Contravariant
+  * it is a generic case class where all fields have a Functor instance
+  * it is a generic sealed trait where all subclasses have a Functor instance""")
 type DerivedFunctor[F[_]] = Derived[Functor[F]]
 object DerivedFunctor:
   type Or[F[_]] = Derived.Or[Functor[F]]

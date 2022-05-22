@@ -3,8 +3,11 @@ package cats.derived
 import cats.kernel.CommutativeMonoid
 import shapeless3.deriving.K0
 
+import scala.annotation.implicitNotFound
 import scala.compiletime.*
 
+@implicitNotFound("""Could not derive an instance of CommutativeMonoid[A] where A = ${A}.
+Make sure that A is a case class where all fields have a CommutativeMonoid instance.""")
 type DerivedCommutativeMonoid[A] = Derived[CommutativeMonoid[A]]
 object DerivedCommutativeMonoid:
   type Or[A] = Derived.Or[CommutativeMonoid[A]]

@@ -43,10 +43,7 @@ lazy val commonSettings = Seq(
   ),
   libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((3, _)) =>
-      Seq(
-        "org.typelevel" %%% "shapeless3-deriving" % shapeless3Version,
-        "org.typelevel" %%% "shapeless3-test" % shapeless3Version % Test
-      )
+      Seq("org.typelevel" %%% "shapeless3-deriving" % shapeless3Version)
     case _ =>
       Seq(
         "com.chuusai" %%% "shapeless" % shapeless2Version,

@@ -3,8 +3,14 @@ package cats.derived
 import cats.{Applicative, Apply, NonEmptyTraverse, Traverse}
 import shapeless3.deriving.{Const, K1}
 
+import scala.annotation.implicitNotFound
 import scala.compiletime.*
 
+@implicitNotFound("""Could not derive an instance of NonEmptyTraverse[F] where F = ${F}.
+Make sure that F[_] satisfies one of the following conditions:
+  * it is a nested type [x] =>> G[H[x]] where G: NonEmptyTraverse and H: NonEmptyTraverse
+  * it is a generic case class where at least one field has a NonEmptyTraverse and the rest Traverse instances
+  * it is a generic sealed trait where all subclasses have a NonEmptyTraverse instance""")
 type DerivedNonEmptyTraverse[F[_]] = Derived[NonEmptyTraverse[F]]
 object DerivedNonEmptyTraverse:
   type Or[F[_]] = Derived.Or[NonEmptyTraverse[F]]

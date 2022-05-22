@@ -2,8 +2,15 @@ package cats.derived
 
 import cats.{Eval, Foldable, Reducible}
 import shapeless3.deriving.{Continue, Const, K1}
+
+import scala.annotation.implicitNotFound
 import scala.compiletime.*
 
+@implicitNotFound("""Could not derive an instance of Reducible[F] where F = ${F}.
+Make sure that F[_] satisfies one of the following conditions:
+  * it is a nested type [x] =>> G[H[x]] where G: Reducible and H: Reducible
+  * it is a generic case class where at least one field has a Reducible and the rest Foldable instances
+  * it is a generic sealed trait where all subclasses have a Reducible instance""")
 type DerivedReducible[F[_]] = Derived[Reducible[F]]
 object DerivedReducible:
   type Or[F[_]] = Derived.Or[Reducible[F]]

@@ -3,8 +3,15 @@ package cats.derived
 import cats.{Applicative, Eval, Traverse}
 import shapeless3.deriving.{Const, K1}
 
+import scala.annotation.implicitNotFound
 import scala.compiletime.*
 
+@implicitNotFound("""Could not derive an instance of Traverse[F] where F = ${F}.
+Make sure that F[_] satisfies one of the following conditions:
+  * it is a constant type [x] =>> T
+  * it is a nested type [x] =>> G[H[x]] where G: Traverse and H: Traverse
+  * it is a generic case class where all fields have a Traverse instance
+  * it is a generic sealed trait where all subclasses have a Traverse instance""")
 type DerivedTraverse[F[_]] = Derived[Traverse[F]]
 object DerivedTraverse:
   type Or[F[_]] = Derived.Or[Traverse[F]]

@@ -4,6 +4,7 @@ import shapeless3.deriving.*
 import scala.annotation.*
 import scala.compiletime.*
 
+@implicitNotFound("Could not derive an instance of ${A}")
 opaque type Derived[A] = A
 object Derived:
   def apply[A](instance: A): Derived[A] = instance

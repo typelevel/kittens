@@ -16,7 +16,7 @@ object Derived:
   type Or2[F[_[_, _]]] = [x[_, _]] =>> Or[F[x]]
 
   opaque type Or[A] = A
-  object Or extends OrInstances:
+  object Or:
     def apply[A](instance: A): Or[A] = instance
     extension [A](or: Or[A]) def unify: A = or
     extension [I[f[_], t] <: K0.Instances[f, t], F[_], T](inst: I[Or0[F], T])
@@ -28,8 +28,7 @@ object Derived:
     extension [I[f[_[_, _]], t[_, _]] <: K2.Instances[f, t], F[_[_, _]], T[_, _]](inst: I[Or2[F], T])
       @targetName("unifyK2") def unify: I[F, T] = inst
 
-sealed abstract class OrInstances:
-  inline given [A]: Derived.Or[A] = summonFrom {
-    case instance: A => Derived.Or(instance)
-    case derived: Derived[A] => Derived.Or(derived.instance)
-  }
+    inline given [A]: Or[A] = summonFrom {
+      case instance: A => instance
+      case derived: Derived[A] => derived.instance
+    }

@@ -6,7 +6,6 @@ val scala3 = "3.1.2"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
-ThisBuild / scalaOutputVersion := (if (tlIsScala3.value) "3.0.2" else scalaVersion.value)
 ThisBuild / tlBaseVersion := "3.0"
 ThisBuild / organization := "org.typelevel"
 
@@ -15,7 +14,7 @@ val munitVersion = "0.7.29"
 val disciplineMunitVersion = "1.0.9"
 val kindProjectorVersion = "0.13.2"
 val shapeless2Version = "2.3.8"
-val shapeless3Version = "3.0.4"
+val shapeless3Version = "3.1.0"
 
 lazy val commonSettings = Seq(
   scalacOptions ++= Seq(

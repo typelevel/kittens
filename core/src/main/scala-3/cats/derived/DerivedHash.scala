@@ -3,9 +3,14 @@ package cats.derived
 import cats.Hash
 import shapeless3.deriving.{K0, Continue}
 
+import scala.annotation.implicitNotFound
 import scala.compiletime.*
 import scala.util.hashing.MurmurHash3
 
+@implicitNotFound("""Could not derive an instance of Hash[A] where A = ${A}.
+Make sure that A satisfies one of the following conditions:
+  * it is a case class where all fields have a Hash instance
+  * it is a sealed trait where all subclasses have a Hash instance""")
 type DerivedHash[A] = Derived[Hash[A]]
 object DerivedHash:
   type Or[A] = Derived.Or[Hash[A]]

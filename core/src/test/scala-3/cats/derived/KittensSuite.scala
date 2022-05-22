@@ -29,8 +29,12 @@ import scala.quoted.*
   */
 abstract class KittensSuite extends KittensSuite.WithoutEq, TestEqInstances
 object KittensSuite:
-  def nameOfMacro[A: Type](using Quotes) =
-    Expr(Type.show[A])
+  def deCapitalizeMacro(str: Expr[String])(using Quotes) =
+    val value = str.valueOrAbort
+    Expr(if (value.isEmpty) "" else value.head.toLower +: value.tail)
+
+  inline def deCapitalize(inline str: String): String =
+    ${ deCapitalizeMacro('str) }
 
   /** Used to test `Eq` derivation. */
   abstract class WithoutEq extends DisciplineSuite, AllSyntax:
@@ -44,8 +48,12 @@ object KittensSuite:
     given [A: Arbitrary]: Arbitrary[List[A]] =
       Arbitrary.arbContainer
 
-    inline def nameOf[A]: String =
-      ${ KittensSuite.nameOfMacro[A] }
+    inline def testNoInstance(inline tc: String, target: String, message: String): Unit =
+      val errors = compileErrors(tc + "[" + target + "]")
+      test(s"No $tc for $target")(assert(errors.contains(message), s"$errors did not contain $message"))
 
-    inline def testNoInstance(inline code: String, message: String): Unit =
-      test(s"No $code")(assert(compileErrors(code).contains(message)))
+    inline def testNoAuto(inline tc: String, target: String): Unit =
+      testNoInstance(tc, target, "Could not find an instance of " + tc)
+
+    inline def testNoSemi(inline tc: String, target: String): Unit =
+      testNoInstance("semiauto." + deCapitalize(tc), target, "Could not derive an instance of " + tc)

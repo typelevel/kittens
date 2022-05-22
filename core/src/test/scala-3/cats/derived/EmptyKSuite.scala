@@ -20,8 +20,6 @@ import alleycats.{EmptyK, Pure}
 import alleycats.std.all.*
 import cats.data.NonEmptyList
 import cats.laws.discipline.SerializableTests
-import cats.syntax.all.*
-import shapeless3.test.illTyped
 
 import scala.compiletime.summonInline
 

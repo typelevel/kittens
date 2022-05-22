@@ -3,8 +3,11 @@ package cats.derived
 import cats.Monoid
 import shapeless3.deriving.K0
 
+import scala.annotation.implicitNotFound
 import scala.compiletime.*
 
+@implicitNotFound("""Could not derive an instance of Monoid[A] where A = ${A}.
+Make sure that A is a case class where all fields have a Monoid instance.""")
 type DerivedMonoid[A] = Derived[Monoid[A]]
 object DerivedMonoid:
   type Or[A] = Derived.Or[Monoid[A]]

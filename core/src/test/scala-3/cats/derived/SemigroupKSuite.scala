@@ -25,7 +25,6 @@ class SemigroupKSuite extends KittensSuite {
 
   locally {
     import auto.semigroupK.given
-    summon[SemigroupK[[a] =>> Eval[Option[a]]]]
     testSemigroupK("auto")
   }
 

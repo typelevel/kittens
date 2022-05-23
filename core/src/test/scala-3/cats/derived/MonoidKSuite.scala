@@ -32,7 +32,7 @@ class MonoidKSuite extends KittensSuite {
   }
 
   {
-    import semiInstances.given
+    import monInstances.given
     testMonoidK("semi")
   }
 }
@@ -42,7 +42,7 @@ object MonoidKSuite {
 
   type BoxMul[A] = Box[Mul[A]]
 
-  object semiInstances {
+  object monInstances {
     implicit val complexProduct: MonoidK[ComplexProduct] = semiauto.monoidK
     implicit val caseClassWOption: MonoidK[CaseClassWOption] = semiauto.monoidK
     implicit val boxMul: MonoidK[BoxMul] = semiauto.monoidK

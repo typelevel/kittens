@@ -5,24 +5,24 @@ import cats.*
 import cats.derived.*
 import cats.laws.discipline.{MonoidKTests, SerializableTests}
 import org.scalacheck.Arbitrary
+import scala.compiletime.*
 
 class MonoidKSuite extends KittensSuite {
   import MonoidKSuite.*
   import TestDefns.*
 
-  def testMonoidK(context: String)(implicit
-      complexProduct: MonoidK[ComplexProduct],
-      caseClassWOption: MonoidK[CaseClassWOption],
-      boxMul: MonoidK[BoxMul]
-  ): Unit = {
-    checkAll(s"$context.MonoidK[ComplexProduct]", MonoidKTests[ComplexProduct].monoidK[Char])
-    checkAll(s"$context.MonoidK[CaseClassWOption]", MonoidKTests[CaseClassWOption].monoidK[Char])
-    checkAll(s"$context.MonoidK[BoxMul]", MonoidKTests[BoxMul].monoidK[Char])
-    checkAll(s"$context.MonoidK is Serializable", SerializableTests.serializable(MonoidK[ComplexProduct]))
+  inline def monoidKTests[F[_]]: MonoidKTests[F] = MonoidKTests[F](summonInline)
+
+  inline def testMonoidK(context: String): Unit = {
+    checkAll(s"$context.MonoidK[ComplexProduct]", monoidKTests[ComplexProduct].monoidK[Char])
+    checkAll(s"$context.MonoidK[CaseClassWOption]", monoidKTests[CaseClassWOption].monoidK[Char])
+    checkAll(s"$context.MonoidK[BoxMul]", monoidKTests[BoxMul].monoidK[Char])
+    checkAll(s"$context.MonoidK is Serializable", SerializableTests.serializable(summonInline[MonoidK[ComplexProduct]]))
 
     test(s"$context.MonoidK respects existing instances") {
-      assert(boxMul.empty[Char] == Box(Mul[Char](1)))
-      assert(boxMul.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))) == Box(Mul[Char](25)))
+      val M = summonInline[MonoidK[BoxMul]]
+      assert(M.empty[Char] == Box(Mul[Char](1)))
+      assert(M.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))) == Box(Mul[Char](25)))
     }
   }
 

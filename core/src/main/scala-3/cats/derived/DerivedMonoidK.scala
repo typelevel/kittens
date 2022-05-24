@@ -12,8 +12,7 @@ Make sure that F[_] satisfies one of the following conditions:
   * it is a constant type [x] =>> T where T: Monoid
   * it is a nested type [x] =>> G[H[x]] where G: MonoidK
   * it is a nested type [x] =>> G[H[x]] where G: Applicative and H: MonoidK
-  * it is a generic case class where all fields have a MonoidK instance
-""")
+  * it is a generic case class where all fields have a MonoidK instance""")
 type DerivedMonoidK[F[_]] = Derived[MonoidK[F]]
 object DerivedMonoidK:
   type Or[F[_]] = Derived.Or[MonoidK[F]]

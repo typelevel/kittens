@@ -3,23 +3,25 @@ package cats.derived
 import cats.*
 import cats.laws.discipline.{SemigroupKTests, SerializableTests}
 import org.scalacheck.Arbitrary
+import scala.compiletime.*
 
 class SemigroupKSuite extends KittensSuite {
   import SemigroupKSuite.*
   import TestDefns.*
 
-  def testSemigroupK(context: String)(implicit
-      complexProduct: SemigroupK[ComplexProduct],
-      caseClassWOption: SemigroupK[CaseClassWOption],
-      boxMul: SemigroupK[BoxMul]
-  ): Unit = {
-    checkAll(s"$context.SemigroupK[ComplexProduct]", SemigroupKTests[ComplexProduct].semigroupK[Char])
-    checkAll(s"$context.SemigroupK[CaseClassWOption]", SemigroupKTests[CaseClassWOption].semigroupK[Char])
-    checkAll(s"$context.SemigroupK[BoxMul]", SemigroupKTests[BoxMul].semigroupK[Char])
-    checkAll(s"$context.SemigroupK is Serializable", SerializableTests.serializable(SemigroupK[ComplexProduct]))
+  inline def semigroupKTests[F[_]]: SemigroupKTests[F] = SemigroupKTests[F](summonInline)
+
+  inline def testSemigroupK(context: String): Unit = {
+    checkAll(s"$context.SemigroupK[ComplexProduct]", semigroupKTests[ComplexProduct].semigroupK[Char])
+    checkAll(s"$context.SemigroupK[CaseClassWOption]", semigroupKTests[CaseClassWOption].semigroupK[Char])
+    checkAll(s"$context.SemigroupK[BoxMul]", semigroupKTests[BoxMul].semigroupK[Char])
+    checkAll(
+      s"$context.SemigroupK is Serializable",
+      SerializableTests.serializable(summonInline[SemigroupK[ComplexProduct]])
+    )
 
     test(s"$context.SemigroupK respects existing instances") {
-      assert(boxMul.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))) == Box(Mul[Char](25)))
+      assert(summonInline[SemigroupK[BoxMul]].combineK(Box(Mul[Char](5)), Box(Mul[Char](5))) == Box(Mul[Char](25)))
     }
   }
 

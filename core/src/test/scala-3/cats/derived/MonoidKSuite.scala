@@ -61,4 +61,7 @@ object MonoidKSuite {
       def combineK[A](x: Mul[A], y: Mul[A]) = Mul(x.value * y.value)
     }
   }
+
+  case class Simple[A](value1: List[A], value2: Set[A]) derives MonoidK
+  case class Recursive[A](first: List[A], rest: Recursive[A]) derives MonoidK
 }

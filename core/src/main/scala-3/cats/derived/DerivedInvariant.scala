@@ -27,14 +27,6 @@ object DerivedInvariant:
     given Invariant[G] = G.unify
     F.unify.compose[G]
 
-  given [F[_], G[_]](using N: NotGiven[Or[G]], F: Or[F], G: DerivedFunctor.Or[G]): DerivedInvariant[[x] =>> F[G[x]]] =
-    given Functor[G] = G.unify
-    F.unify.composeFunctor[G]
-
-  // given [F[_], G[_]](using N: NotGiven[Or[G]], N1: NotGiven[DerivedFunctor.Or[G]], F: Or[F], G: DerivedContravariant.Or[G]): DerivedInvariant[[x] =>> F[G[x]]] =
-  //   given Contravariant[G] = G.unify
-  //   F.unify.composeContravariant[G]
-
   given [F[_]](using inst: => K1.Instances[Or, F]): DerivedInvariant[F] =
     given K1.Instances[Invariant, F] = inst.unify
     new Generic[Invariant, F] {}

@@ -1,10 +1,11 @@
 package cats.derived
 
-import cats.Invariant
+import cats.{Contravariant, Functor, Invariant}
 import shapeless3.deriving.{Const, K1}
 
 import scala.annotation.implicitNotFound
 import scala.compiletime.*
+import scala.util.NotGiven
 
 @implicitNotFound("""Could not derive an instance of Invariant[F] where F = ${F}.
 Make sure that F[_] satisfies one of the following conditions:
@@ -21,6 +22,18 @@ object DerivedInvariant:
 
   given [T]: DerivedInvariant[Const[T]] = new Invariant[Const[T]]:
     def imap[A, B](fa: T)(f: A => B)(g: B => A): T = fa
+
+  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedInvariant[[x] =>> F[G[x]]] =
+    given Invariant[G] = G.unify
+    F.unify.compose[G]
+
+  given [F[_], G[_]](using N: NotGiven[Or[G]], F: Or[F], G: DerivedFunctor.Or[G]): DerivedInvariant[[x] =>> F[G[x]]] =
+    given Functor[G] = G.unify
+    F.unify.composeFunctor[G]
+
+  // given [F[_], G[_]](using N: NotGiven[Or[G]], N1: NotGiven[DerivedFunctor.Or[G]], F: Or[F], G: DerivedContravariant.Or[G]): DerivedInvariant[[x] =>> F[G[x]]] =
+  //   given Contravariant[G] = G.unify
+  //   F.unify.composeContravariant[G]
 
   given [F[_]](using inst: => K1.Instances[Or, F]): DerivedInvariant[F] =
     given K1.Instances[Invariant, F] = inst.unify

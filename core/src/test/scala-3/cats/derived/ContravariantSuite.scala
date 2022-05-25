@@ -17,9 +17,9 @@
 package cats
 package derived
 
-import cats.laws.discipline._
-import cats.laws.discipline.arbitrary._
-import cats.laws.discipline.eq._
+import cats.laws.discipline.*
+import cats.laws.discipline.arbitrary.*
+import cats.laws.discipline.eq.*
 import scala.compiletime.*
 
 class ContravariantSuite extends KittensSuite:
@@ -75,7 +75,7 @@ class ContravariantSuite extends KittensSuite:
   }
 
 object ContravariantSuite:
-  import TestDefns._
+  import TestDefns.*
 
   type OptPred[A] = Option[A => Boolean]
   type ListPred[A] = List[A => Boolean]

@@ -94,16 +94,16 @@ object ContravariantSuite:
     implicit val andCharPred: Contravariant[AndCharPred] = semiauto.contravariant
     implicit val listSnocF: Contravariant[ListSnocF] = semiauto.contravariant
 
-  case class Single[A](value: A) derives Functor
+  case class Single[A](value: A => Unit) derives Contravariant
 
-  enum Many[+A] derives Functor:
+  enum Many[-A] derives Contravariant:
     case Naught
-    case More(value: A, rest: Many[A])
+    case More(value: A => Unit, rest: Many[A])
 
-  enum AtMostOne[+A] derives Functor:
+  enum AtMostOne[-A] derives Contravariant:
     case Naught
-    case Single(value: A)
+    case Single(value: A => Unit)
 
-  enum AtLeastOne[+A] derives Functor:
-    case Single(value: A)
-    case More(value: A, rest: Option[AtLeastOne[A]])
+  enum AtLeastOne[-A] derives Contravariant:
+    case Single(value: A => Unit)
+    case More(value: A => Unit, rest: Option[AtLeastOne[A]])

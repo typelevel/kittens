@@ -26,9 +26,10 @@ extension (x: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTrav
 extension (x: NonEmptyTraverse.type) inline def derived[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
 extension (x: SemigroupK.type) inline def derived[F[_]]: SemigroupK[F] = DerivedSemigroupK[F]
 extension (x: MonoidK.type) inline def derived[F[_]]: MonoidK[F] = DerivedMonoidK[F]
+extension (x: Contravariant.type) inline def derived[F[_]]: Contravariant[F] = DerivedContravariant[F]
 extension (x: Invariant.type) inline def derived[F[_]]: Invariant[F] = DerivedInvariant[F]
 
-object semiauto extends ContravariantDerivation, PartialOrderDerivation, Instances:
+object semiauto extends PartialOrderDerivation, Instances:
 
   inline def eq[A]: Eq[A] = DerivedEq[A]
   inline def hash[A]: Hash[A] = DerivedHash[A]
@@ -50,6 +51,7 @@ object semiauto extends ContravariantDerivation, PartialOrderDerivation, Instanc
   inline def show[A]: Show[A] = DerivedShow[A]
   inline def semigroupK[F[_]]: SemigroupK[F] = DerivedSemigroupK[F]
   inline def monoidK[F[_]]: MonoidK[F] = DerivedMonoidK[F]
+  inline def contravariant[F[_]]: Contravariant[F] = DerivedContravariant[F]
   inline def invariant[F[_]]: Invariant[F] = DerivedInvariant[F]
 
 object auto:
@@ -112,6 +114,9 @@ object auto:
 
   object monoidK:
     inline given [F[_]](using NotGiven[MonoidK[F]]): MonoidK[F] = DerivedMonoidK[F]
+
+  object contravariant:
+    inline given [F[_]](using NotGiven[Contravariant[F]]): Contravariant[F] = DerivedContravariant[F]
 
   object invariant:
     inline given [F[_]](using NotGiven[Invariant[F]]): Invariant[F] = DerivedInvariant[F]

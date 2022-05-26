@@ -38,8 +38,7 @@ object DerivedPartialOrder:
         }
       )
 
-  trait Coproduct[T[x] <: PartialOrder[x], A](using inst: K0.CoproductInstances[T, A])
-      extends PartialOrder[A]:
+  trait Coproduct[T[x] <: PartialOrder[x], A](using inst: K0.CoproductInstances[T, A]) extends PartialOrder[A]:
 
     def partialCompare(x: A, y: A): Double =
       inst.fold2(x, y)(Double.NaN: Double)(

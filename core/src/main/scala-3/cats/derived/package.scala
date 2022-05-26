@@ -28,8 +28,9 @@ extension (x: SemigroupK.type) inline def derived[F[_]]: SemigroupK[F] = Derived
 extension (x: MonoidK.type) inline def derived[F[_]]: MonoidK[F] = DerivedMonoidK[F]
 extension (x: Contravariant.type) inline def derived[F[_]]: Contravariant[F] = DerivedContravariant[F]
 extension (x: Invariant.type) inline def derived[F[_]]: Invariant[F] = DerivedInvariant[F]
+extension (x: PartialOrder.type) inline def derived[A]: PartialOrder[A] = DerivedPartialOrder[A]
 
-object semiauto extends PartialOrderDerivation, Instances:
+object semiauto extends Instances:
 
   inline def eq[A]: Eq[A] = DerivedEq[A]
   inline def hash[A]: Hash[A] = DerivedHash[A]
@@ -53,6 +54,7 @@ object semiauto extends PartialOrderDerivation, Instances:
   inline def monoidK[F[_]]: MonoidK[F] = DerivedMonoidK[F]
   inline def contravariant[F[_]]: Contravariant[F] = DerivedContravariant[F]
   inline def invariant[F[_]]: Invariant[F] = DerivedInvariant[F]
+  inline def partialOrder[A]: PartialOrder[A] = DerivedPartialOrder[A]
 
 object auto:
   object eq:
@@ -120,3 +122,6 @@ object auto:
 
   object invariant:
     inline given [F[_]](using NotGiven[Invariant[F]]): Invariant[F] = DerivedInvariant[F]
+
+  object partialOrder:
+    inline given [A](using NotGiven[PartialOrder[A]]): PartialOrder[A] = DerivedPartialOrder[A]

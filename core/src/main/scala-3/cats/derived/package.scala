@@ -31,7 +31,6 @@ extension (x: Invariant.type) inline def derived[F[_]]: Invariant[F] = DerivedIn
 extension (x: PartialOrder.type) inline def derived[A]: PartialOrder[A] = DerivedPartialOrder[A]
 
 object semiauto extends Instances:
-
   inline def eq[A]: Eq[A] = DerivedEq[A]
   inline def hash[A]: Hash[A] = DerivedHash[A]
   inline def empty[A]: Empty[A] = DerivedEmpty[A]

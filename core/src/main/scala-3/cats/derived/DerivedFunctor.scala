@@ -26,8 +26,12 @@ object DerivedFunctor:
   given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFunctor[[x] =>> F[G[x]]] =
     F.unify.compose(G.unify)
 
-  given [F[_], G[_]](using F: Contravariant[F], G: Contravariant[G]): DerivedFunctor[[x] =>> F[G[x]]] =
-    F.compose(G)
+  given [F[_], G[_]](using
+      F: DerivedContravariant.Or[F],
+      G: DerivedContravariant.Or[G]
+  ): DerivedFunctor[[x] =>> F[G[x]]] =
+    given Contravariant[G] = G.unify
+    F.unify.compose[G]
 
   given [F[_]](using inst: => K1.Instances[Or, F]): DerivedFunctor[F] =
     given K1.Instances[Functor, F] = inst.unify

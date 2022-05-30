@@ -62,18 +62,18 @@ object PartialOrderSuite:
   import TestDefns.*
 
   object semiInstances:
-    implicit val iList: PartialOrder[IList[Int]] = semiauto.partialOrder
-    implicit val inner: PartialOrder[Inner] = semiauto.partialOrder
-    implicit val outer: PartialOrder[Outer] = semiauto.partialOrder
-    implicit val interleaved: PartialOrder[Interleaved[Int]] = semiauto.partialOrder
-    implicit val tree: PartialOrder[Tree[Int]] = semiauto.partialOrder
-    implicit val recursive: PartialOrder[Recursive] = semiauto.partialOrder
-    implicit val boxKeyValue: PartialOrder[Box[KeyValue]] = semiauto.partialOrder
+    given PartialOrder[IList[Int]] = semiauto.partialOrder
+    given PartialOrder[Inner] = semiauto.partialOrder
+    given PartialOrder[Outer] = semiauto.partialOrder
+    given PartialOrder[Interleaved[Int]] = semiauto.partialOrder
+    given PartialOrder[Tree[Int]] = semiauto.partialOrder
+    given PartialOrder[Recursive] = semiauto.partialOrder
+    given PartialOrder[Box[KeyValue]] = semiauto.partialOrder
 
   final case class KeyValue(key: String, value: Int)
   object KeyValue extends ((String, Int) => KeyValue):
-    implicit val arbitrary: Arbitrary[KeyValue] = Arbitrary(Arbitrary.arbitrary[(String, Int)].map(tupled))
-    implicit val cogen: Cogen[KeyValue] = Cogen[(String, Int)].contramap(kv => kv.key -> kv.value)
+    given Arbitrary[KeyValue] = Arbitrary(Arbitrary.arbitrary[(String, Int)].map(tupled))
+    given Cogen[KeyValue] = Cogen[(String, Int)].contramap(kv => kv.key -> kv.value)
 
-    implicit val partialOrder: PartialOrder[KeyValue] =
+    given PartialOrder[KeyValue] =
       PartialOrder.from((x, y) => if (x.key == y.key) x.value.toDouble - y.value.toDouble else Double.NaN)

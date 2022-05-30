@@ -76,15 +76,15 @@ object InvariantSuite:
   type TreeF[A] = Tree[A => Boolean]
 
   object semiInstances:
-    implicit val gadt: Invariant[GenericAdtF] = semiauto.invariant[GenericAdtF]
-    implicit val listSnocendo: Invariant[ListFToInt] = semiauto.invariant[ListFToInt]
-    // implicit val interleaveF: Invariant[InterleavedF] = semiauto.invariant[InterleavedF]
-    implicit val andCharF: Invariant[AndCharF] = semiauto.invariant[AndCharF]
-    implicit val treeF: Invariant[TreeF] = semiauto.invariant[TreeF]
-    implicit val pred: Invariant[Pred] = semiauto.invariant[Pred]
-    implicit val snoc: Invariant[ListSnoc] = semiauto.invariant[ListSnoc]
-    implicit val bivariant: Invariant[Bivariant] = semiauto.invariant[Bivariant]
-    implicit val ilist: Invariant[IList] = semiauto.invariant[IList]
+    given Invariant[GenericAdtF] = semiauto.invariant[GenericAdtF]
+    given Invariant[ListFToInt] = semiauto.invariant[ListFToInt]
+    // given Invariant[InterleavedF] = semiauto.invariant[InterleavedF]
+    given Invariant[AndCharF] = semiauto.invariant[AndCharF]
+    given Invariant[TreeF] = semiauto.invariant[TreeF]
+    given Invariant[Pred] = semiauto.invariant[Pred]
+    given Invariant[ListSnoc] = semiauto.invariant[ListSnoc]
+    given Invariant[Bivariant] = semiauto.invariant[Bivariant]
+    given Invariant[IList] = semiauto.invariant[IList]
 
   case class Single[A](value: A) derives Invariant
 

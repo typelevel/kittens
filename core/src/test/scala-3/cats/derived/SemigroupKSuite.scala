@@ -40,21 +40,20 @@ object SemigroupKSuite:
   type BoxMul[A] = Box[Mul[A]]
 
   object semiInstances:
-    implicit val complexProduct: SemigroupK[ComplexProduct] = semiauto.semigroupK
-    implicit val caseClassWOption: SemigroupK[CaseClassWOption] = semiauto.semigroupK
-    implicit val boxMul: SemigroupK[BoxMul] = semiauto.semigroupK
+    given SemigroupK[ComplexProduct] = semiauto.semigroupK
+    given SemigroupK[CaseClassWOption] = semiauto.semigroupK
+    given SemigroupK[BoxMul] = semiauto.semigroupK
 
   final case class Mul[T](value: Int)
   object Mul:
 
-    implicit def eqv[T]: Eq[Mul[T]] = Eq.by(_.value)
+    given [T]: Eq[Mul[T]] = Eq.by(_.value)
 
-    implicit def arbitrary[T]: Arbitrary[Mul[T]] =
+    given [T]: Arbitrary[Mul[T]] =
       Arbitrary(Arbitrary.arbitrary[Int].map(apply))
 
-    implicit val semigroupK: SemigroupK[Mul] = new SemigroupK[Mul] {
+    given SemigroupK[Mul] with
       def combineK[A](x: Mul[A], y: Mul[A]) = Mul(x.value * y.value)
-    }
 
   case class Simple[A](value1: List[A], value2: Set[A]) derives SemigroupK
   case class Recursive[A](first: List[A], rest: Recursive[A]) derives SemigroupK

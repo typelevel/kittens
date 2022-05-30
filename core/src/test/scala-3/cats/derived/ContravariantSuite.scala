@@ -86,13 +86,13 @@ object ContravariantSuite:
   type TreePred[A] = Tree[A => Boolean]
 
   object semiInstances:
-    implicit val optPred: Contravariant[OptPred] = semiauto.contravariant
-    implicit val treePred: Contravariant[TreePred] = semiauto.contravariant
-    implicit val listPred: Contravariant[ListPred] = semiauto.contravariant
-    implicit val genericAdtPred: Contravariant[GenericAdtPred] = semiauto.contravariant
-    // implicit val interleavePred: Contravariant[InterleavedPred] = semiauto.contravariant
-    implicit val andCharPred: Contravariant[AndCharPred] = semiauto.contravariant
-    implicit val listSnocF: Contravariant[ListSnocF] = semiauto.contravariant
+    given Contravariant[OptPred] = semiauto.contravariant
+    given Contravariant[TreePred] = semiauto.contravariant
+    given Contravariant[ListPred] = semiauto.contravariant
+    given Contravariant[GenericAdtPred] = semiauto.contravariant
+    // given Contravariant[InterleavedPred] = semiauto.contravariant
+    given Contravariant[AndCharPred] = semiauto.contravariant
+    given Contravariant[ListSnocF] = semiauto.contravariant
 
   case class Single[A](value: A => Unit) derives Contravariant
 

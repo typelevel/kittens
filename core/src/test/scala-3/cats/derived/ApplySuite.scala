@@ -21,9 +21,9 @@ import cats.laws.discipline.{ApplyTests, SerializableTests}
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
 import scala.compiletime.*
 
-class ApplySuite extends KittensSuite {
-  import ApplySuite._
-  import TestDefns._
+class ApplySuite extends KittensSuite:
+  import ApplySuite.*
+  import TestDefns.*
 
   inline def applyTests[F[_]]: ApplyTests[F] =
     ApplyTests[F](summonInline)
@@ -43,30 +43,27 @@ class ApplySuite extends KittensSuite {
     checkAll(s"$context.Apply is Serializable", SerializableTests.serializable(summonInline[Apply[Interleaved]]))
   }
 
-  {
+  locally {
     import auto.apply.given
     testApply("auto")
   }
 
-  {
+  locally {
     import semiInstances.given
     testApply("semiauto")
   }
-}
 
-object ApplySuite {
-  import TestDefns._
+object ApplySuite:
+  import TestDefns.*
 
   type OptList[A] = Option[List[A]]
 //  type AndInt[A] = (A, Int)
   type ListBox[A] = List[Box[A]]
 
-  object semiInstances {
+  object semiInstances:
     given Apply[Box] = semiauto.apply
     given Apply[CaseClassWOption] = semiauto.apply
     given Apply[OptList] = semiauto.apply
 //    given Apply[AndInt] = semiauto.apply
     given Apply[Interleaved] = semiauto.apply
     given Apply[ListBox] = semiauto.apply
-  }
-}

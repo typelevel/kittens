@@ -29,6 +29,7 @@ extension (x: MonoidK.type) inline def derived[F[_]]: MonoidK[F] = DerivedMonoid
 extension (x: Contravariant.type) inline def derived[F[_]]: Contravariant[F] = DerivedContravariant[F]
 extension (x: Invariant.type) inline def derived[F[_]]: Invariant[F] = DerivedInvariant[F]
 extension (x: PartialOrder.type) inline def derived[A]: PartialOrder[A] = DerivedPartialOrder[A]
+extension (x: ShowPretty.type) inline def derived[A]: ShowPretty[A] = DerivedShowPretty[A]
 
 object semiauto:
   inline def eq[A]: Eq[A] = DerivedEq[A]
@@ -54,6 +55,7 @@ object semiauto:
   inline def contravariant[F[_]]: Contravariant[F] = DerivedContravariant[F]
   inline def invariant[F[_]]: Invariant[F] = DerivedInvariant[F]
   inline def partialOrder[A]: PartialOrder[A] = DerivedPartialOrder[A]
+  inline def showPretty[A]: ShowPretty[A] = DerivedShowPretty[A]
 
 object auto:
   object eq:
@@ -124,3 +126,6 @@ object auto:
 
   object partialOrder:
     inline given [A](using NotGiven[PartialOrder[A]]): PartialOrder[A] = DerivedPartialOrder[A]
+
+  object showPretty:
+    inline given [A](using NotGiven[ShowPretty[A]]): ShowPretty[A] = DerivedShowPretty[A]

@@ -16,6 +16,7 @@
 
 package cats
 package derived
+
 import cats.kernel.laws.discipline.{PartialOrderTests, SerializableTests}
 import org.scalacheck.{Arbitrary, Cogen}
 import scala.compiletime.*
@@ -24,7 +25,8 @@ class PartialOrderSuite extends KittensSuite:
   import PartialOrderSuite.*
   import TestDefns.*
 
-  inline def partialOrderTests[A]: PartialOrderTests[A] = PartialOrderTests[A](summonInline)
+  inline def partialOrderTests[A]: PartialOrderTests[A] =
+    PartialOrderTests[A](summonInline)
 
   inline def testPartialOrder(context: String): Unit =
     checkAll(s"$context.PartialOrder[IList[Int]]", partialOrderTests[IList[Int]].partialOrder)
@@ -58,6 +60,8 @@ class PartialOrderSuite extends KittensSuite:
     testPartialOrder("semiauto")
   }
 
+end PartialOrderSuite
+
 object PartialOrderSuite:
   import TestDefns.*
 
@@ -73,7 +77,10 @@ object PartialOrderSuite:
   final case class KeyValue(key: String, value: Int)
   object KeyValue extends ((String, Int) => KeyValue):
     given Arbitrary[KeyValue] = Arbitrary(Arbitrary.arbitrary[(String, Int)].map(tupled))
+
     given Cogen[KeyValue] = Cogen[(String, Int)].contramap(kv => kv.key -> kv.value)
 
     given PartialOrder[KeyValue] =
       PartialOrder.from((x, y) => if (x.key == y.key) x.value.toDouble - y.value.toDouble else Double.NaN)
+
+end PartialOrderSuite

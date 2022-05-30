@@ -9,7 +9,8 @@ class SemigroupKSuite extends KittensSuite:
   import SemigroupKSuite.*
   import TestDefns.*
 
-  inline def semigroupKTests[F[_]]: SemigroupKTests[F] = SemigroupKTests[F](summonInline)
+  inline def semigroupKTests[F[_]]: SemigroupKTests[F] =
+    SemigroupKTests[F](summonInline)
 
   inline def testSemigroupK(context: String): Unit =
     checkAll(s"$context.SemigroupK[ComplexProduct]", semigroupKTests[ComplexProduct].semigroupK[Char])
@@ -34,6 +35,8 @@ class SemigroupKSuite extends KittensSuite:
     testSemigroupK("semiauto")
   }
 
+end SemigroupKSuite
+
 object SemigroupKSuite:
   import TestDefns.*
 
@@ -46,7 +49,6 @@ object SemigroupKSuite:
 
   final case class Mul[T](value: Int)
   object Mul:
-
     given [T]: Eq[Mul[T]] = Eq.by(_.value)
 
     given [T]: Arbitrary[Mul[T]] =
@@ -57,3 +59,5 @@ object SemigroupKSuite:
 
   case class Simple[A](value1: List[A], value2: Set[A]) derives SemigroupK
   case class Recursive[A](first: List[A], rest: Recursive[A]) derives SemigroupK
+
+end SemigroupKSuite

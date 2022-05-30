@@ -17,6 +17,7 @@
 package cats.derived
 
 import cats.{Eq, Eval}
+import cats.syntax.all.given
 import org.scalacheck.rng.Seed
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 
@@ -31,30 +32,22 @@ object TestDefns:
     case object Blue extends Rgb
 
   final case class ComplexProduct[T](lbl: String, set: Set[T], fns: Vector[() => T], opt: Eval[Option[T]])
-  object ComplexProduct {
-
-    given [T: Arbitrary]: Arbitrary[ComplexProduct[T]] =
-      Arbitrary(for
-        lbl <- Arbitrary.arbitrary[String]
-        set <- Arbitrary.arbitrary[Set[T]]
-        vec <- Arbitrary.arbitrary[Vector[T]]
-        fns = vec.map(x => () => x)
-        opt <- Arbitrary.arbitrary[Option[T]]
-      yield ComplexProduct(lbl, set, fns, Eval.now(opt)))
-  }
+  object ComplexProduct:
+    given [T: Arbitrary]: Arbitrary[ComplexProduct[T]] = Arbitrary(for
+      lbl <- Arbitrary.arbitrary[String]
+      set <- Arbitrary.arbitrary[Set[T]]
+      vec <- Arbitrary.arbitrary[Vector[T]]
+      fns = vec.map(x => () => x)
+      opt <- Arbitrary.arbitrary[Option[T]]
+    yield ComplexProduct(lbl, set, fns, Eval.now(opt)))
 
   final case class Box[+A](content: A)
   object Box:
-
-    given [A: Arbitrary]: Arbitrary[Box[A]] =
-      Arbitrary(Arbitrary.arbitrary[A].map(apply))
-
-    given [A: Cogen]: Cogen[Box[A]] =
-      Cogen[A].contramap(_.content)
+    given [A: Arbitrary]: Arbitrary[Box[A]] = Arbitrary(Arbitrary.arbitrary[A].map(apply))
+    given [A: Cogen]: Cogen[Box[A]] = Cogen[A].contramap(_.content)
 
   final case class Recursive(i: Int, is: Option[Recursive])
   object Recursive extends ((Int, Option[Recursive]) => Recursive):
-
     given Arbitrary[Recursive] =
       def recursive(size: Int): Gen[Recursive] = for
         i <- Arbitrary.arbitrary[Int]
@@ -119,7 +112,6 @@ object TestDefns:
       @tailrec def loop(list: IList[T], acc: List[T]): List[T] = list match
         case INil() => acc.reverse
         case ICons(head, tail) => loop(tail, head :: acc)
-
       loop(list, Nil)
 
   sealed trait Snoc[A]
@@ -138,7 +130,6 @@ object TestDefns:
       @tailrec def loop(snoc: Snoc[T], acc: List[T]): List[T] = snoc match
         case SNil() => acc
         case SCons(init, last) => loop(init, last :: acc)
-
       loop(snoc, Nil)
 
   object SCons:
@@ -154,8 +145,7 @@ object TestDefns:
   final case class Node[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
   object Tree:
-
-    given [A: Arbitrary]: Arbitrary[Tree[A]] = {
+    given [A: Arbitrary]: Arbitrary[Tree[A]] =
       val leaf = Arbitrary.arbitrary[A].map(Leaf.apply)
 
       def tree(maxDepth: Int): Gen[Tree[A]] =
@@ -170,7 +160,6 @@ object TestDefns:
       yield Node(left, right)
 
       Arbitrary(Gen.sized(tree))
-    }
 
     given [A: Cogen]: Cogen[Tree[A]] =
       lazy val cogen: Cogen[Tree[A]] = Cogen { (seed, tree) =>
@@ -374,6 +363,8 @@ object TestDefns:
       bar21: String
   )
 
+end TestDefns
+
 trait TestEqInstances:
   import TestDefns.*
 
@@ -436,3 +427,5 @@ trait TestEqInstances:
   given Eq[Inner] = Eq.fromUniversalEquals
 
   given Eq[Outer] = Eq.fromUniversalEquals
+
+end TestEqInstances

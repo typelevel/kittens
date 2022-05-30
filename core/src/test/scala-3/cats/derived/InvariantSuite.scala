@@ -16,6 +16,7 @@
 
 package cats
 package derived
+
 import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
 import cats.laws.discipline.eq.*
@@ -27,7 +28,8 @@ class InvariantSuite extends KittensSuite:
   import InvariantSuite.*
   import TestDefns.*
 
-  inline def invariantTests[F[_]]: InvariantTests[F] = InvariantTests[F](summonInline)
+  inline def invariantTests[F[_]]: InvariantTests[F] =
+    InvariantTests[F](summonInline)
 
   inline def testInvariant(context: String): Unit = {
     checkAll(s"$context.Invariant[TreeF]", invariantTests[TreeF].invariant[MiniInt, String, Boolean])
@@ -37,7 +39,6 @@ class InvariantSuite extends KittensSuite:
     checkAll(s"$context.Invariant[AndCharF]", invariantTests[AndCharF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[ListSnoc", invariantTests[ListSnoc].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[Bivariant]", invariantTests[Bivariant].invariant[MiniInt, String, Boolean])
-
     checkAll(s"$context.Invariant is Serializable", SerializableTests.serializable(summonInline[Invariant[TreeF]]))
 
     // TODO https://github.com/typelevel/kittens/issues/476
@@ -65,6 +66,8 @@ class InvariantSuite extends KittensSuite:
     testInvariant("semiauto")
   }
 
+end InvariantSuite
+
 object InvariantSuite:
   import TestDefns.*
 
@@ -76,15 +79,15 @@ object InvariantSuite:
   type TreeF[A] = Tree[A => Boolean]
 
   object semiInstances:
-    given Invariant[GenericAdtF] = semiauto.invariant[GenericAdtF]
-    given Invariant[ListFToInt] = semiauto.invariant[ListFToInt]
-    // given Invariant[InterleavedF] = semiauto.invariant[InterleavedF]
-    given Invariant[AndCharF] = semiauto.invariant[AndCharF]
-    given Invariant[TreeF] = semiauto.invariant[TreeF]
-    given Invariant[Pred] = semiauto.invariant[Pred]
-    given Invariant[ListSnoc] = semiauto.invariant[ListSnoc]
-    given Invariant[Bivariant] = semiauto.invariant[Bivariant]
-    given Invariant[IList] = semiauto.invariant[IList]
+    given Invariant[GenericAdtF] = semiauto.invariant
+    given Invariant[ListFToInt] = semiauto.invariant
+    // given Invariant[InterleavedF] = semiauto.invariant
+    given Invariant[AndCharF] = semiauto.invariant
+    given Invariant[TreeF] = semiauto.invariant
+    given Invariant[Pred] = semiauto.invariant
+    given Invariant[ListSnoc] = semiauto.invariant
+    given Invariant[Bivariant] = semiauto.invariant
+    given Invariant[IList] = semiauto.invariant
 
   case class Single[A](value: A) derives Invariant
 
@@ -99,3 +102,5 @@ object InvariantSuite:
   enum AtLeastOne[A] derives Invariant:
     case Single(value: A)
     case More(value: A, rest: Option[AtLeastOne[A]])
+
+end InvariantSuite

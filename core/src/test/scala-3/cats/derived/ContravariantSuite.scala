@@ -26,7 +26,8 @@ class ContravariantSuite extends KittensSuite:
   import ContravariantSuite.*
   import TestDefns.*
 
-  inline def contravariantTests[F[_]]: ContravariantTests[F] = ContravariantTests[F](summonInline)
+  inline def contravariantTests[F[_]]: ContravariantTests[F] =
+    ContravariantTests[F](summonInline)
 
   inline def testContravariant(context: String): Unit =
     checkAll(s"$context.Contravariant[OptPred]", contravariantTests[OptPred].contravariant[MiniInt, String, Boolean])
@@ -39,7 +40,7 @@ class ContravariantSuite extends KittensSuite:
     // TODO https://github.com/typelevel/kittens/issues/473
     // checkAll(
     //   s"$context.Contravariant[InterleavedPred]",
-    //   ContravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean]
+    //   contravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean]
     // )
     checkAll(
       s"$context.Contravariant[AndCharPred]",
@@ -74,6 +75,8 @@ class ContravariantSuite extends KittensSuite:
     testContravariant("semiauto")
   }
 
+end ContravariantSuite
+
 object ContravariantSuite:
   import TestDefns.*
 
@@ -107,3 +110,5 @@ object ContravariantSuite:
   enum AtLeastOne[-A] derives Contravariant:
     case Single(value: A => Unit)
     case More(value: A => Unit, rest: Option[AtLeastOne[A]])
+
+end ContravariantSuite

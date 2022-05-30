@@ -26,7 +26,8 @@ class ContravariantSuite extends KittensSuite:
   import ContravariantSuite.*
   import TestDefns.*
 
-  inline def contravariantTests[F[_]]: ContravariantTests[F] = ContravariantTests[F](summonInline)
+  inline def contravariantTests[F[_]]: ContravariantTests[F] =
+    ContravariantTests[F](summonInline)
 
   inline def testContravariant(context: String): Unit =
     checkAll(s"$context.Contravariant[OptPred]", contravariantTests[OptPred].contravariant[MiniInt, String, Boolean])
@@ -39,7 +40,7 @@ class ContravariantSuite extends KittensSuite:
     // TODO https://github.com/typelevel/kittens/issues/473
     // checkAll(
     //   s"$context.Contravariant[InterleavedPred]",
-    //   ContravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean]
+    //   contravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean]
     // )
     checkAll(
       s"$context.Contravariant[AndCharPred]",
@@ -74,6 +75,8 @@ class ContravariantSuite extends KittensSuite:
     testContravariant("semiauto")
   }
 
+end ContravariantSuite
+
 object ContravariantSuite:
   import TestDefns.*
 
@@ -86,13 +89,13 @@ object ContravariantSuite:
   type TreePred[A] = Tree[A => Boolean]
 
   object semiInstances:
-    implicit val optPred: Contravariant[OptPred] = semiauto.contravariant
-    implicit val treePred: Contravariant[TreePred] = semiauto.contravariant
-    implicit val listPred: Contravariant[ListPred] = semiauto.contravariant
-    implicit val genericAdtPred: Contravariant[GenericAdtPred] = semiauto.contravariant
-    // implicit val interleavePred: Contravariant[InterleavedPred] = semiauto.contravariant
-    implicit val andCharPred: Contravariant[AndCharPred] = semiauto.contravariant
-    implicit val listSnocF: Contravariant[ListSnocF] = semiauto.contravariant
+    given Contravariant[OptPred] = semiauto.contravariant
+    given Contravariant[TreePred] = semiauto.contravariant
+    given Contravariant[ListPred] = semiauto.contravariant
+    given Contravariant[GenericAdtPred] = semiauto.contravariant
+    // given Contravariant[InterleavedPred] = semiauto.contravariant
+    given Contravariant[AndCharPred] = semiauto.contravariant
+    given Contravariant[ListSnocF] = semiauto.contravariant
 
   case class Single[A](value: A => Unit) derives Contravariant
 
@@ -107,3 +110,5 @@ object ContravariantSuite:
   enum AtLeastOne[-A] derives Contravariant:
     case Single(value: A => Unit)
     case More(value: A => Unit, rest: Option[AtLeastOne[A]])
+
+end ContravariantSuite

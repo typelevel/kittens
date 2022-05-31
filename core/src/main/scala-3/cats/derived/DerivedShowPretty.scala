@@ -20,26 +20,28 @@ Make sure that A satisfies one of the following conditions:
   * it is a sealed trait where all subclasses have a Show instance""")
 type DerivedShowPretty[A] = Derived[ShowPretty[A]]
 object DerivedShowPretty:
-  type Or[A] = Derived.Or[ShowPretty[A]]
+  opaque type Or[A] = A => List[String]
+  object Or extends OrInstances:
+    def apply[A](instance: A => List[String]): Or[A] = instance
+    extension [A](or: Or[A]) def apply(a: A): List[String] = or(a)
+
+  sealed abstract class OrInstances:
+    inline given [A]: Or[A] = summonFrom {
+      case instance: Show[A] => Or((a: A) => instance.show(a).split(System.lineSeparator).toList)
+      case derived: DerivedShowPretty[A] => Or(derived.instance.showLines(_))
+    }
 
   inline def apply[A]: ShowPretty[A] =
     import DerivedShowPretty.given
     summonInline[DerivedShowPretty[A]].instance
 
   given [A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]): DerivedShowPretty[A] =
-    given K0.ProductInstances[ShowPretty, A] = inst.unify
-    new Product[ShowPretty, A] {}
+    new Product[A] {}
 
   given [A](using inst: => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] =
-    given K0.CoproductInstances[ShowPretty, A] = inst.unify
-    new Coproduct[ShowPretty, A] {}
+    new Coproduct[A] {}
 
-  given [A](using A: Show[A]): ShowPretty[A] with
-    override def show(a: A) = A.show(a)
-    def showLines(a: A): List[String] = A.show(a).split(System.lineSeparator).toList
-
-  trait Product[F[x] <: ShowPretty[x], A](using inst: K0.ProductInstances[F, A], labelling: Labelling[A])
-      extends ShowPretty[A]:
+  trait Product[A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =
       val prefix = labelling.label
       val labels = labelling.elemLabels
@@ -47,13 +49,13 @@ object DerivedShowPretty:
       if n <= 0 then List(s"$prefix()")
       else
         var lines: List[String] = List(")")
-        val inner = inst.project(a)(n - 1)([t] => (show: F[t], x: t) => show.showLines(x))
+        val inner = inst.project(a)(n - 1)([t] => (show: Or[t], x: t) => show.apply(x))
         inner match
           case Nil => lines = s"  ${labels(n - 1)} = \"\"," :: lines
           case h :: t => lines = s"  ${labels(n - 1)} = $h" :: t.map(s => "  " + s) ::: lines
         var i = n - 2
         while i >= 0 do
-          val inner = inst.project(a)(i)([t] => (show: F[t], x: t) => show.showLines(x))
+          val inner = inst.project(a)(i)([t] => (show: Or[t], x: t) => show.apply(x))
           inner match
             case Nil => lines = s"  ${labels(i)} = \"\"," :: lines
             case v :: Nil => lines = s"  ${labels(i)} = $v," :: lines
@@ -64,6 +66,6 @@ object DerivedShowPretty:
 
         lines
 
-  trait Coproduct[F[x] <: ShowPretty[x], A](using inst: K0.CoproductInstances[F, A]) extends ShowPretty[A]:
+  trait Coproduct[A](using inst: K0.CoproductInstances[Or, A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =
-      inst.fold(a)([t] => (st: F[t], t: t) => st.showLines(t))
+      inst.fold(a)([t] => (st: Or[t], t: t) => st.apply(t))

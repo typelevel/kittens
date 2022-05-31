@@ -29,7 +29,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assert(value.show == pretty)
+      assertEquals(value.show, pretty)
     }
 
     test(s"$context.ShowPretty[Outer]") {
@@ -42,7 +42,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assert(value.show == pretty)
+      assertEquals(value.show, pretty)
     }
 
     test(s"$context.ShowPretty[IntTree]") {
@@ -68,7 +68,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assert(value.show == pretty)
+      assertEquals(value.show, pretty)
     }
 
     test(s"$context.ShowPretty[GenericAdt[Int]]") {
@@ -79,7 +79,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assert(value.show == pretty)
+      assertEquals(value.show, pretty)
     }
 
     test(s"$context.ShowPretty[People]") {
@@ -94,7 +94,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assert(value.show == pretty)
+      assertEquals(value.show, pretty)
     }
 
     test(s"$context.ShowPretty[ListField]") {
@@ -108,7 +108,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assert(value.show == pretty)
+      assertEquals(value.show, pretty)
     }
 
     test(s"$context.ShowPretty[Interleaved[Int]]") {
@@ -118,12 +118,12 @@ class ShowPrettySuite extends KittensSuite:
         |  i = 1,
         |  t = 2,
         |  l = 3,
-        |  tt = List(4, 5, 6),
+        |  tt = Vector(4, 5, 6),
         |  s = 789
         |)
       """.stripMargin.trim
 
-      assert(value.show == pretty)
+      assertEquals(value.show, pretty)
     }
 
     test(s"$context.ShowPretty[Tree[Int]]") {
@@ -149,7 +149,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assert(value.show == pretty)
+      assertEquals(value.show, pretty)
     }
 
     test(s"$context.ShowPretty respects existing instances") {
@@ -160,7 +160,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assert(value.show == pretty)
+      assertEquals(value.show, pretty)
     }
   }
 

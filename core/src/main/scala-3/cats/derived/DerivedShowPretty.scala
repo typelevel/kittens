@@ -34,6 +34,10 @@ object DerivedShowPretty:
     given K0.CoproductInstances[ShowPretty, A] = inst.unify
     new Coproduct[ShowPretty, A] {}
 
+  given [A](using A: Show[A]): ShowPretty[A] with
+    override def show(a: A) = A.show(a)
+    def showLines(a: A): List[String] = A.show(a).split(System.lineSeparator).toList
+
   trait Product[F[x] <: ShowPretty[x], A](using inst: K0.ProductInstances[F, A], labelling: Labelling[A])
       extends ShowPretty[A]:
     def showLines(a: A): List[String] =
@@ -53,7 +57,7 @@ object DerivedShowPretty:
           inner match
             case Nil => lines = s"  ${labels(i)} = \"\"," :: lines
             case v :: Nil => lines = s"  ${labels(i)} = $v," :: lines
-            case h :: t => lines = s"  ${labels(i)} = $h" :: t.drop(1).map(s => "  " + s) ::: s"  ${t.last}," :: lines
+            case h :: t => lines = s"  ${labels(i)} = $h" :: t.init.map(s => "  " + s) ::: s"  ${t.last}," :: lines
           i -= 1
 
         lines = s"$prefix(" :: lines

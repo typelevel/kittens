@@ -128,4 +128,4 @@ object auto:
     inline given [A](using NotGiven[PartialOrder[A]]): PartialOrder[A] = DerivedPartialOrder[A]
 
   object showPretty:
-    inline given [A](using NotGiven[ShowPretty[A]]): ShowPretty[A] = DerivedShowPretty[A]
+    inline given [A](using NotGiven[Show[A]]): ShowPretty[A] = DerivedShowPretty[A]

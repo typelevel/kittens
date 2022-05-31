@@ -2,23 +2,18 @@ package cats
 package derived
 
 import cats.laws.discipline.SerializableTests
+import scala.compiletime.*
 
 class ShowPrettySuite extends KittensSuite:
   import ShowPrettySuite.*
+  import ShowPrettySuite.given
   import TestDefns.*
 
-  def testShowPretty(context: String)(using
-      foo: ShowPretty[Foo],
-      outer: ShowPretty[Outer],
-      intTree: ShowPretty[IntTree],
-      genericAdt: ShowPretty[GenericAdt[Int]],
-      people: ShowPretty[People],
-      listField: ShowPretty[ListField],
-      interleaved: ShowPretty[Interleaved[Int]],
-      tree: ShowPretty[Tree[Int]],
-      boxBogus: ShowPretty[Box[Bogus]]
-  ): Unit = {
-    checkAll(s"$context.ShowPretty is Serializable", SerializableTests.serializable(ShowPretty[IntTree]))
+  inline def showPretty[A](value: A): String =
+    summonInline[ShowPretty[A]].show(value)
+
+  inline def testShowPretty(context: String): Unit = {
+    checkAll(s"$context.ShowPretty is Serializable", SerializableTests.serializable(summonInline[ShowPretty[IntTree]]))
 
     test(s"$context.ShowPretty[Foo]") {
       val value = Foo(42, Option("Hello"))
@@ -29,7 +24,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assertEquals(value.show, pretty)
+      assertEquals(showPretty(value), pretty)
     }
 
     test(s"$context.ShowPretty[Outer]") {
@@ -42,7 +37,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assertEquals(value.show, pretty)
+      assertEquals(showPretty(value), pretty)
     }
 
     test(s"$context.ShowPretty[IntTree]") {
@@ -68,7 +63,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assertEquals(value.show, pretty)
+      assertEquals(showPretty(value), pretty)
     }
 
     test(s"$context.ShowPretty[GenericAdt[Int]]") {
@@ -79,7 +74,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assertEquals(value.show, pretty)
+      assertEquals(showPretty(value), pretty)
     }
 
     test(s"$context.ShowPretty[People]") {
@@ -94,7 +89,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assertEquals(value.show, pretty)
+      assertEquals(showPretty(value), pretty)
     }
 
     test(s"$context.ShowPretty[ListField]") {
@@ -108,7 +103,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assertEquals(value.show, pretty)
+      assertEquals(showPretty(value), pretty)
     }
 
     test(s"$context.ShowPretty[Interleaved[Int]]") {
@@ -123,7 +118,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assertEquals(value.show, pretty)
+      assertEquals(showPretty(value), pretty)
     }
 
     test(s"$context.ShowPretty[Tree[Int]]") {
@@ -149,7 +144,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assertEquals(value.show, pretty)
+      assertEquals(showPretty(value), pretty)
     }
 
     test(s"$context.ShowPretty respects existing instances") {
@@ -160,7 +155,7 @@ class ShowPrettySuite extends KittensSuite:
         |)
       """.stripMargin.trim
 
-      assertEquals(value.show, pretty)
+      assertEquals(showPretty(value), pretty)
     }
   }
 
@@ -177,7 +172,7 @@ class ShowPrettySuite extends KittensSuite:
 object ShowPrettySuite:
   import TestDefns.*
 
-  implicit val showAddress: Show[Address] = Show.show { a =>
+  given Show[Address] = Show.show { a =>
     List(a.street, a.city, a.state).mkString(" ")
   }
 

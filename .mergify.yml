@@ -8,7 +8,7 @@
 pull_request_rules:
 - name: merge scala-steward's PRs
   conditions:
-  - author=scala-steward
+  - author=typlevel-steward
   - or:
     - body~=labels:.*early-semver-patch
     - body~=labels:.*early-semver-minor

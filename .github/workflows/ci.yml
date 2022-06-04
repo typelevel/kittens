@@ -70,7 +70,8 @@ jobs:
         run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' 'project /' githubWorkflowCheck
 
       - name: Check formatting
-        run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' scalafmtCheckAll scalafmtSbtCheck
+        if: matrix.java == 'temurin@8'
+        run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' scalafmtCheckAll 'project /' scalafmtSbtCheck
 
       - name: scalaJSLink
         if: matrix.project == 'rootJS'

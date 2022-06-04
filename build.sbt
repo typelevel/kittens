@@ -80,7 +80,10 @@ ThisBuild / developers := List(
 )
 
 ThisBuild / tlCiReleaseBranches := Seq("master")
-ThisBuild / mergifyStewardConfig ~= (_.map(_.copy(mergeMinors = true)))
-ThisBuild / githubWorkflowBuild :=
-  WorkflowStep.Sbt(List("scalafmtCheckAll", "scalafmtSbtCheck"), name = Some("Check formatting")) +:
-    (ThisBuild / githubWorkflowBuild).value
+ThisBuild / mergifyStewardConfig := Some(
+  MergifyStewardConfig(
+    author = "typelevel-steward",
+    mergeMinors = true
+  )
+)
+ThisBuild / tlCiScalafmtCheck := true

@@ -82,7 +82,7 @@ ThisBuild / developers := List(
 ThisBuild / tlCiReleaseBranches := Seq("master")
 ThisBuild / mergifyStewardConfig := Some(
   MergifyStewardConfig(
-    author = "typelevel-steward",
+    author = "typelevel-steward[bot]",
     mergeMinors = true
   )
 )

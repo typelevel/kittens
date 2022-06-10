@@ -259,6 +259,8 @@ object TestDefns:
   final case class IntLeaf(t: Int) extends IntTree
   final case class IntNode(l: IntTree, r: IntTree) extends IntTree
 
+  object IntTree
+
   sealed trait GenericAdt[A]
   final case class GenericAdtCase[A](value: Option[A]) extends GenericAdt[A]
 

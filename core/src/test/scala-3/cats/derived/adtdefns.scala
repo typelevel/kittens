@@ -48,6 +48,25 @@ object TestDefns:
   object EnumK1:
     given [A](using Arbitrary[A]): Arbitrary[EnumK1[A]] = Arbitrary(Arbitrary.arbitrary[A].map(Leaf.apply))
 
+  enum EnumK1Contra[-A]:
+    case Leaf(value: A => Unit)
+
+  object EnumK1Contra:
+    given [A](using Arbitrary[A => Unit]): Arbitrary[EnumK1Contra[A]] = Arbitrary(
+      Arbitrary.arbitrary[A => Unit].map(Leaf.apply)
+    )
+
+  enum EnumK1Inv[A]:
+    case Leaf(cov: A, contra: A => Unit)
+
+  object EnumK1Inv:
+    given [A](using Arbitrary[A], Arbitrary[A => Unit]): Arbitrary[EnumK1Inv[A]] = Arbitrary(
+      for
+        cov <- Arbitrary.arbitrary[A]
+        contra <- Arbitrary.arbitrary[A => Unit]
+      yield Leaf(cov, contra)
+    )
+
   sealed trait Rgb
   object Rgb:
     case object Red extends Rgb
@@ -454,15 +473,27 @@ trait TestEqInstances:
   given Eq[EnumK0] =
     import EnumK0.*
     Eq.instance {
-    case (LeafS(s1), LeafS(s2)) => s1 === s2
-    case (LeafI(i1), LeafI(i2)) => i1 === i2
-    case _ => false
-  }
+      case (LeafS(s1), LeafS(s2)) => s1 === s2
+      case (LeafI(i1), LeafI(i2)) => i1 === i2
+      case _ => false
+    }
 
   given [A](using Eq[A]): Eq[EnumK1[A]] =
     import EnumK1.*
-    Eq.instance {
-    case (Leaf(v1), Leaf(v2)) => v1 === v2
-  }
+    Eq.instance { case (Leaf(v1), Leaf(v2)) =>
+      v1 === v2
+    }
+
+  given [A](using Eq[A => Unit]): Eq[EnumK1Contra[A]] =
+    import EnumK1Contra.*
+    Eq.instance { case (Leaf(v1), Leaf(v2)) =>
+      v1 === v2
+    }
+
+  given [A](using Eq[A], Eq[A => Unit]): Eq[EnumK1Inv[A]] =
+    import EnumK1Inv.*
+    Eq.instance { case (Leaf(cov1, contra1), Leaf(cov2, contra2)) =>
+      cov1 === cov2 && contra1 === contra2
+    }
 
 end TestEqInstances

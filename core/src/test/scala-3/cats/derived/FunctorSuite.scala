@@ -75,7 +75,6 @@ object FunctorSuite:
     given Functor[NestedPred] = semiauto.functor
     given Functor[EnumK1] = semiauto.functor
 
-
   case class Single[A](value: A) derives Functor
 
   enum Many[+A] derives Functor:

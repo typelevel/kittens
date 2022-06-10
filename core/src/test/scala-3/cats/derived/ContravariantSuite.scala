@@ -51,6 +51,10 @@ class ContravariantSuite extends KittensSuite:
       contravariantTests[ListSnocF].contravariant[MiniInt, String, Boolean]
     )
     checkAll(
+      s"$context.Contravariant[EnumK1Contra]",
+      contravariantTests[EnumK1Contra].contravariant[MiniInt, String, Boolean]
+    )
+    checkAll(
       s"$context.Contravariant is Serializable",
       SerializableTests.serializable(summonInline[Contravariant[TreePred]])
     )
@@ -96,6 +100,7 @@ object ContravariantSuite:
     // given Contravariant[InterleavedPred] = semiauto.contravariant
     given Contravariant[AndCharPred] = semiauto.contravariant
     given Contravariant[ListSnocF] = semiauto.contravariant
+    given Contravariant[EnumK1Contra] = semiauto.contravariant
 
   case class Single[A](value: A => Unit) derives Contravariant
 

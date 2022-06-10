@@ -39,6 +39,7 @@ class InvariantSuite extends KittensSuite:
     checkAll(s"$context.Invariant[AndCharF]", invariantTests[AndCharF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[ListSnoc", invariantTests[ListSnoc].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[Bivariant]", invariantTests[Bivariant].invariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Invariant[EnumK1Inv]", invariantTests[EnumK1Inv].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant is Serializable", SerializableTests.serializable(summonInline[Invariant[TreeF]]))
 
     // TODO https://github.com/typelevel/kittens/issues/476
@@ -88,6 +89,7 @@ object InvariantSuite:
     given Invariant[ListSnoc] = semiauto.invariant
     given Invariant[Bivariant] = semiauto.invariant
     given Invariant[IList] = semiauto.invariant
+    given Invariant[EnumK1Inv] = semiauto.invariant
 
   case class Single[A](value: A) derives Invariant
 

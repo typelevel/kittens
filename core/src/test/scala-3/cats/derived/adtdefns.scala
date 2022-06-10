@@ -44,27 +44,72 @@ object TestDefns:
 
   enum EnumK1[A]:
     case Leaf(value: A)
+    case Rec(l: EnumK1[A], r: EnumK1[A])
 
   object EnumK1:
-    given [A](using Arbitrary[A]): Arbitrary[EnumK1[A]] = Arbitrary(Arbitrary.arbitrary[A].map(Leaf.apply))
+    given [A](using Arbitrary[A]): Arbitrary[EnumK1[A]] = Arbitrary(
+      Gen.recursive(rec =>
+        Gen.sized(size =>
+          val leaf = Arbitrary.arbitrary[A].map(Leaf.apply)
+          if size == 0 then leaf
+          else
+            Gen.oneOf(
+              leaf,
+              for
+                l <- Gen.resize(size / 2, rec)
+                r <- Gen.resize(size / 2, rec)
+              yield Rec(l, r)
+            )
+        )
+      )
+    )
 
   enum EnumK1Contra[-A]:
     case Leaf(value: A => Unit)
+    case Rec(l: EnumK1Contra[A], r: EnumK1Contra[A])
 
   object EnumK1Contra:
     given [A](using Arbitrary[A => Unit]): Arbitrary[EnumK1Contra[A]] = Arbitrary(
-      Arbitrary.arbitrary[A => Unit].map(Leaf.apply)
+      Gen.recursive(rec =>
+        Gen.sized(size =>
+          val leaf = Arbitrary.arbitrary[A => Unit].map(Leaf.apply)
+          if size == 0 then leaf
+          else
+            Gen.oneOf(
+              leaf,
+              for
+                l <- Gen.resize(size / 2, rec)
+                r <- Gen.resize(size / 2, rec)
+              yield Rec(l, r)
+            )
+        )
+      )
     )
 
   enum EnumK1Inv[A]:
     case Leaf(cov: A, contra: A => Unit)
+    case Rec(l: EnumK1Inv[A], r: EnumK1Inv[A])
 
   object EnumK1Inv:
     given [A](using Arbitrary[A], Arbitrary[A => Unit]): Arbitrary[EnumK1Inv[A]] = Arbitrary(
-      for
-        cov <- Arbitrary.arbitrary[A]
-        contra <- Arbitrary.arbitrary[A => Unit]
-      yield Leaf(cov, contra)
+      Gen.recursive(rec =>
+        Gen.sized(size =>
+          val leaf =
+            for
+              cov <- Arbitrary.arbitrary[A]
+              contra <- Arbitrary.arbitrary[A => Unit]
+            yield Leaf(cov, contra)
+          if size == 0 then leaf
+          else
+            Gen.oneOf(
+              leaf,
+              for
+                l <- Gen.resize(size / 2, rec)
+                r <- Gen.resize(size / 2, rec)
+              yield Rec(l, r)
+            )
+        )
+      )
     )
 
   sealed trait Rgb
@@ -482,20 +527,26 @@ trait TestEqInstances:
 
   given [A](using Eq[A]): Eq[EnumK1[A]] =
     import EnumK1.*
-    Eq.instance { case (Leaf(v1), Leaf(v2)) =>
-      v1 === v2
+    Eq.instance {
+      case (Leaf(v1), Leaf(v2)) => v1 === v2
+      case (Rec(l1, r1), Rec(l2, r2)) => l1 === l2 && r1 === r2
+      case _ => false
     }
 
   given [A](using Eq[A => Unit]): Eq[EnumK1Contra[A]] =
     import EnumK1Contra.*
-    Eq.instance { case (Leaf(v1), Leaf(v2)) =>
-      v1 === v2
+    Eq.instance {
+      case (Leaf(v1), Leaf(v2)) => v1 === v2
+      case (Rec(l1, r1), Rec(l2, r2)) => l1 === l2 && r1 === r2
+      case _ => false
     }
 
   given [A](using Eq[A], Eq[A => Unit]): Eq[EnumK1Inv[A]] =
     import EnumK1Inv.*
-    Eq.instance { case (Leaf(cov1, contra1), Leaf(cov2, contra2)) =>
-      cov1 === cov2 && contra1 === contra2
+    Eq.instance {
+      case (Leaf(cov1, contra1), Leaf(cov2, contra2)) => cov1 === cov2 && contra1 === contra2
+      case (Rec(l1, r1), Rec(l2, r2)) => l1 === l2 && r1 === r2
+      case _ => false
     }
 
 end TestEqInstances

@@ -53,12 +53,15 @@ object TestDefns:
           val leaf = Arbitrary.arbitrary[A].map(Leaf.apply)
           if size == 0 then leaf
           else
-            Gen.oneOf(
-              leaf,
-              for
-                l <- Gen.resize(size / 2, rec)
-                r <- Gen.resize(size / 2, rec)
-              yield Rec(l, r)
+            Gen.resize(
+              size / 2,
+              Gen.oneOf(
+                leaf,
+                for
+                  l <- rec
+                  r <- rec
+                yield Rec(l, r)
+              )
             )
         )
       )
@@ -75,12 +78,15 @@ object TestDefns:
           val leaf = Arbitrary.arbitrary[A => Unit].map(Leaf.apply)
           if size == 0 then leaf
           else
-            Gen.oneOf(
-              leaf,
-              for
-                l <- Gen.resize(size / 2, rec)
-                r <- Gen.resize(size / 2, rec)
-              yield Rec(l, r)
+            Gen.resize(
+              size / 2,
+              Gen.oneOf(
+                leaf,
+                for
+                  l <- rec
+                  r <- rec
+                yield Rec(l, r)
+              )
             )
         )
       )
@@ -101,12 +107,15 @@ object TestDefns:
             yield Leaf(cov, contra)
           if size == 0 then leaf
           else
-            Gen.oneOf(
-              leaf,
-              for
-                l <- Gen.resize(size / 2, rec)
-                r <- Gen.resize(size / 2, rec)
-              yield Rec(l, r)
+            Gen.resize(
+              size / 2,
+              Gen.oneOf(
+                leaf,
+                for
+                  l <- rec
+                  r <- rec
+                yield Rec(l, r)
+              )
             )
         )
       )

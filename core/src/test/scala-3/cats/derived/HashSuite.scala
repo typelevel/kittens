@@ -21,6 +21,7 @@ class HashSuite extends KittensSuite:
     // checkAll(s"$context.Hash[Interleaved[Int]]", hashTests[Interleaved[Int]].hash)
     checkAll(s"$context.Hash[Tree[Int]]", hashTests[Tree[Int]].hash)
     checkAll(s"$context.Hash[Recursive]", hashTests[Recursive].hash)
+    checkAll(s"$context.Hash[EnumK0]", hashTests[EnumK0].hash)
     checkAll(s"$context.Hash is Serializable", SerializableTests.serializable(summonInline[Hash[Inner]]))
 
   locally {
@@ -45,5 +46,6 @@ object HashSuite:
     given Hash[Interleaved[Int]] = semiauto.hash
     given Hash[Tree[Int]] = semiauto.hash
     given Hash[Recursive] = semiauto.hash
+    given Hash[EnumK0] = semiauto.hash
 
 end HashSuite

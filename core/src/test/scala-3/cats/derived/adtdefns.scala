@@ -25,6 +25,29 @@ import scala.annotation.tailrec
 
 object TestDefns:
 
+  enum EnumK0:
+    case LeafS(value: String)
+    case LeafI(value: Int)
+
+  object EnumK0:
+    given Arbitrary[EnumK0] = Arbitrary(
+      Gen.oneOf(
+        Arbitrary.arbitrary[String].map(LeafS.apply),
+        Arbitrary.arbitrary[Int].map(LeafI.apply)
+      )
+    )
+
+    given Cogen[EnumK0] = Cogen[Either[String, Int]].contramap {
+      case LeafS(s) => Left(s)
+      case LeafI(i) => Right(i)
+    }
+
+  enum EnumK1[A]:
+    case Leaf(value: A)
+
+  object EnumK1:
+    given [A](using Arbitrary[A]): Arbitrary[EnumK1[A]] = Arbitrary(Arbitrary.arbitrary[A].map(Leaf.apply))
+
   sealed trait Rgb
   object Rgb:
     case object Red extends Rgb
@@ -427,5 +450,19 @@ trait TestEqInstances:
   given Eq[Inner] = Eq.fromUniversalEquals
 
   given Eq[Outer] = Eq.fromUniversalEquals
+
+  given Eq[EnumK0] =
+    import EnumK0.*
+    Eq.instance {
+    case (LeafS(s1), LeafS(s2)) => s1 === s2
+    case (LeafI(i1), LeafI(i2)) => i1 === i2
+    case _ => false
+  }
+
+  given [A](using Eq[A]): Eq[EnumK1[A]] =
+    import EnumK1.*
+    Eq.instance {
+    case (Leaf(v1), Leaf(v2)) => v1 === v2
+  }
 
 end TestEqInstances

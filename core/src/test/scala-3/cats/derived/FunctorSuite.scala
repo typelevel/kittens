@@ -40,6 +40,7 @@ class FunctorSuite extends KittensSuite:
     checkAll(s"$context.Functor[AndChar]", functorTests[AndChar].functor[Int, String, Long])
     checkAll(s"$context.Functor[Interleaved]", functorTests[Interleaved].functor[Int, String, Long])
     checkAll(s"$context.Functor[NestedPred]", functorTests[NestedPred].functor[Boolean, Int, Boolean])
+    checkAll(s"$context.Functor[EnumK1]", functorTests[EnumK1].functor[Boolean, Int, Boolean])
     checkAll(s"$context.Functor is Serializable", SerializableTests.serializable(summonInline[Functor[Tree]]))
 
   locally {
@@ -72,6 +73,8 @@ object FunctorSuite:
     given Functor[AndChar] = semiauto.functor
     given Functor[Interleaved] = semiauto.functor
     given Functor[NestedPred] = semiauto.functor
+    given Functor[EnumK1] = semiauto.functor
+
 
   case class Single[A](value: A) derives Functor
 

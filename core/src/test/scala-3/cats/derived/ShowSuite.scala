@@ -66,6 +66,13 @@ class ShowSuite extends KittensSuite:
       assertEquals(show(value), shown)
     }
 
+    test(s"$context.Show[EnumK0]") {
+      val value: EnumK0 = EnumK0.LeafI(3)
+      val shown =
+        "LeafI(value = 3)"
+      assertEquals(show(value), shown)
+    }
+
     test(s"$context.Show respects existing instances") {
       val value = Box(Bogus(42))
       val shown = "Box(content = Blah)"
@@ -108,5 +115,6 @@ object ShowSuite:
     given Show[Interleaved[Int]] = semiauto.show
     given Show[Tree[Int]] = semiauto.show
     given Show[Box[Bogus]] = semiauto.show
+    given Show[EnumK0] = semiauto.show
 
 end ShowSuite

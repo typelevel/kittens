@@ -58,6 +58,10 @@ class NonEmptyTraverseSuite extends KittensSuite:
       nonEmptyTraverseTests[Interleaved].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
+      s"$context.NonEmptyTraverse[EnumK1]",
+      nonEmptyTraverseTests[EnumK1].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
       s"$context.NonEmptyTraverse is Serializable",
       SerializableTests.serializable(summonInline[NonEmptyTraverse[Tree]])
     )
@@ -88,5 +92,6 @@ object NonEmptyTraverseSuite:
     given NonEmptyTraverse[NelAndOne] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[VecAndNel] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[Interleaved] = semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[EnumK1] = semiauto.nonEmptyTraverse
 
 end NonEmptyTraverseSuite

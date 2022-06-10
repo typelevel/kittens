@@ -38,6 +38,7 @@ class FoldableSuite extends KittensSuite:
     checkAll(s"$context.Foldable[AndChar]", foldableTests[AndChar].foldable[Int, Long])
     checkAll(s"$context.Foldable[Interleaved]", foldableTests[Interleaved].foldable[Int, Long])
     checkAll(s"$context.Foldable[BoxNel]", foldableTests[BoxNel].foldable[Int, Long])
+    checkAll(s"$context.Foldable[EnumK1]", foldableTests[EnumK1].foldable[Int, Long])
     checkAll(s"$context.Foldable is Serializable", SerializableTests.serializable(summonInline[Foldable[Tree]]))
 
   locally {
@@ -69,6 +70,7 @@ object FoldableSuite:
     given Foldable[AndChar] = semiauto.foldable
     given Foldable[Interleaved] = semiauto.foldable
     given Foldable[BoxNel] = semiauto.foldable
+    given Foldable[EnumK1] = semiauto.foldable
 
   final case class Nel[+A](head: A, tail: List[A])
   object Nel:

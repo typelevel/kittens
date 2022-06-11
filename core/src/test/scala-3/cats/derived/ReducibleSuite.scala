@@ -39,6 +39,7 @@ class ReducibleSuite extends KittensSuite:
     checkAll(s"$context.Reducible[VecAndNel]", reducibleTests[VecAndNel].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[Interleaved]", reducibleTests[Interleaved].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[BoxZipper]", reducibleTests[BoxZipper].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[EnumK1]", reducibleTests[EnumK1].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible is Serializable", SerializableTests.serializable(summonInline[Reducible[Tree]]))
 
   locally {
@@ -69,6 +70,7 @@ object ReducibleSuite:
     given Reducible[VecAndNel] = semiauto.reducible
     given Reducible[Interleaved] = semiauto.reducible
     given Reducible[BoxZipper] = semiauto.reducible
+    given Reducible[EnumK1] = semiauto.reducible
 
   final case class Zipper[+A](left: List[A], focus: A, right: List[A])
   object Zipper:

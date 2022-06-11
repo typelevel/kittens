@@ -30,6 +30,10 @@ class TraverseSuite extends KittensSuite:
       s"$context.Traverse[Interleaved]",
       traverseTests[Interleaved].traverse[Int, Double, String, Long, Option, Option]
     )
+    checkAll(
+      s"$context.Traverse[EnumK1]",
+      traverseTests[EnumK1].traverse[Int, Double, String, Long, Option, Option]
+    )
     checkAll(s"$context.Traverse is Serializable", SerializableTests.serializable(summonInline[Traverse[Tree]]))
 
   locally {
@@ -59,5 +63,6 @@ object TraverseSuite:
     given Traverse[ListSnoc] = semiauto.traverse
     given Traverse[AndChar] = semiauto.traverse
     given Traverse[Interleaved] = semiauto.traverse
+    given Traverse[EnumK1] = semiauto.traverse
 
 end TraverseSuite

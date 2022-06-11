@@ -34,6 +34,7 @@ class OrderSuite extends KittensSuite {
     checkAll(s"$context.Order[Interleaved[Int]]", orderTests[Interleaved[Int]].order)
     checkAll(s"$context.Order[Recursive]", orderTests[Recursive].order)
     checkAll(s"$context.Order[GenericAdt[Int]]", orderTests[GenericAdt[Int]].order)
+    checkAll(s"$context.Order[EnumK0]", orderTests[EnumK0].order)
     checkAll(s"$context.Order is Serializable", SerializableTests.serializable(summonInline[Order[Interleaved[Int]]]))
   }
 
@@ -57,5 +58,6 @@ object OrderSuite {
     given Order[Interleaved[Int]] = semiauto.order
     given Order[Recursive] = semiauto.order
     given Order[GenericAdt[Int]] = semiauto.order
+    given Order[EnumK0] = semiauto.order
   }
 }

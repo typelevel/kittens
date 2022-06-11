@@ -36,6 +36,7 @@ class PartialOrderSuite extends KittensSuite:
     checkAll(s"$context.PartialOrder[Tree[Int]]", partialOrderTests[Tree[Int]].partialOrder)
     checkAll(s"$context.PartialOrder[Recursive]", partialOrderTests[Recursive].partialOrder)
     checkAll(s"$context.PartialOrder[Box[KeyValue]]", partialOrderTests[Box[KeyValue]].partialOrder)
+    checkAll(s"$context.PartialOrder[EnumK0]", partialOrderTests[EnumK0].partialOrder)
     checkAll(
       s"$context.PartialOrder is Serialiable",
       SerializableTests.serializable(summonInline[PartialOrder[Tree[Int]]])
@@ -73,6 +74,7 @@ object PartialOrderSuite:
     given PartialOrder[Tree[Int]] = semiauto.partialOrder
     given PartialOrder[Recursive] = semiauto.partialOrder
     given PartialOrder[Box[KeyValue]] = semiauto.partialOrder
+    given PartialOrder[EnumK0] = semiauto.partialOrder
 
   final case class KeyValue(key: String, value: Int)
   object KeyValue extends ((String, Int) => KeyValue):

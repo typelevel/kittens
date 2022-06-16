@@ -58,7 +58,7 @@ console / initialCommands := """import shapeless._, cats._, cats.derived._"""
 
 lazy val root = tlCrossRootProject.aggregate(core)
 
-lazy val core = crossProject(JVMPlatform, JSPlatform)
+lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
   .settings(commonSettings: _*)
@@ -86,9 +86,4 @@ ThisBuild / developers := List(
 )
 
 ThisBuild / tlCiReleaseBranches := Seq("dotty")
-ThisBuild / githubWorkflowBuild ~= { steps =>
-  WorkflowStep.Sbt(
-    List("scalafmtCheckAll", "root/scalafmtSbtCheck"),
-    name = Some("Check formatting")
-  ) +: steps
-}
+ThisBuild / tlCiScalafmtCheck := true

@@ -5,7 +5,7 @@ ThisBuild / scalaVersion := "2.13.8"
 ThisBuild / tlBaseVersion := "2.3"
 ThisBuild / organization := "org.typelevel"
 
-val catsVersion = "2.7.0"
+val catsVersion = "2.8.0"
 val disciplineMunitVersion = "1.0.9"
 val kindProjectorVersion = "0.13.2"
 val shapelessVersion = "2.3.9"

@@ -9,9 +9,9 @@ ThisBuild / scalaVersion := scala3
 ThisBuild / tlBaseVersion := "3.0"
 ThisBuild / organization := "org.typelevel"
 
-val catsVersion = "2.7.0"
-val munitVersion = "0.7.29"
-val disciplineMunitVersion = "1.0.9"
+val catsVersion = "2.8.0"
+val munitVersion = "1.0.0-M5"
+val disciplineMunitVersion = "2.0.0-M2"
 val kindProjectorVersion = "0.13.2"
 val shapeless2Version = "2.3.8"
 val shapeless3Version = "3.1.0"
@@ -58,7 +58,7 @@ console / initialCommands := """import shapeless._, cats._, cats.derived._"""
 
 lazy val root = tlCrossRootProject.aggregate(core)
 
-lazy val core = crossProject(JVMPlatform, JSPlatform)
+lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
   .settings(commonSettings: _*)
@@ -86,9 +86,4 @@ ThisBuild / developers := List(
 )
 
 ThisBuild / tlCiReleaseBranches := Seq("dotty")
-ThisBuild / githubWorkflowBuild ~= { steps =>
-  WorkflowStep.Sbt(
-    List("scalafmtCheckAll", "root/scalafmtSbtCheck"),
-    name = Some("Check formatting")
-  ) +: steps
-}
+ThisBuild / tlCiScalafmtCheck := true

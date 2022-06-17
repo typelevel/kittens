@@ -9,9 +9,9 @@ name: Continuous Integration
 
 on:
   pull_request:
-    branches: ['**']
+    branches: ['**', '!update/**', '!pr/**']
   push:
-    branches: ['**']
+    branches: ['**', '!update/**', '!pr/**']
     tags: [v*]
 
 env:
@@ -30,7 +30,7 @@ jobs:
         os: [ubuntu-latest]
         scala: [2.12.15, 2.13.8, 3.1.2]
         java: [temurin@8]
-        project: [rootJS, rootJVM]
+        project: [rootJS, rootJVM, rootNative]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout current branch (full)
@@ -38,12 +38,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Download Java (temurin@8)
+        id: download-java-temurin-8
+        if: matrix.java == 'temurin@8'
+        uses: typelevel/download-java@v1
+        with:
+          distribution: temurin
+          java-version: 8
+
       - name: Setup Java (temurin@8)
         if: matrix.java == 'temurin@8'
         uses: actions/setup-java@v2
         with:
-          distribution: temurin
+          distribution: jdkfile
           java-version: 8
+          jdkFile: ${{ steps.download-java-temurin-8.outputs.jdkFile }}
 
       - name: Cache sbt
         uses: actions/cache@v2
@@ -61,11 +70,16 @@ jobs:
         run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' 'project /' githubWorkflowCheck
 
       - name: Check formatting
-        run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' scalafmtCheckAll root/scalafmtSbtCheck
+        if: matrix.java == 'temurin@8'
+        run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' scalafmtCheckAll 'project /' scalafmtSbtCheck
 
       - name: scalaJSLink
         if: matrix.project == 'rootJS'
         run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' Test/scalaJSLinkerResult
+
+      - name: nativeLink
+        if: matrix.project == 'rootNative'
+        run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' Test/nativeLink
 
       - name: Test
         run: sbt 'project ${{ matrix.project }}' '++${{ matrix.scala }}' test
@@ -80,11 +94,11 @@ jobs:
 
       - name: Make target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dotty')
-        run: mkdir -p target .js/target core/.js/target core/.jvm/target .jvm/target .native/target project/target
+        run: mkdir -p target .js/target core/.native/target core/.js/target core/.jvm/target .jvm/target .native/target project/target
 
       - name: Compress target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dotty')
-        run: tar cf targets.tar target .js/target core/.js/target core/.jvm/target .jvm/target .native/target project/target
+        run: tar cf targets.tar target .js/target core/.native/target core/.js/target core/.jvm/target .jvm/target .native/target project/target
 
       - name: Upload target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dotty')
@@ -109,12 +123,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Download Java (temurin@8)
+        id: download-java-temurin-8
+        if: matrix.java == 'temurin@8'
+        uses: typelevel/download-java@v1
+        with:
+          distribution: temurin
+          java-version: 8
+
       - name: Setup Java (temurin@8)
         if: matrix.java == 'temurin@8'
         uses: actions/setup-java@v2
         with:
-          distribution: temurin
+          distribution: jdkfile
           java-version: 8
+          jdkFile: ${{ steps.download-java-temurin-8.outputs.jdkFile }}
 
       - name: Cache sbt
         uses: actions/cache@v2
@@ -148,6 +171,16 @@ jobs:
           tar xf targets.tar
           rm targets.tar
 
+      - name: Download target directories (2.12.15, rootNative)
+        uses: actions/download-artifact@v2
+        with:
+          name: target-${{ matrix.os }}-${{ matrix.java }}-2.12.15-rootNative
+
+      - name: Inflate target directories (2.12.15, rootNative)
+        run: |
+          tar xf targets.tar
+          rm targets.tar
+
       - name: Download target directories (2.13.8, rootJS)
         uses: actions/download-artifact@v2
         with:
@@ -168,6 +201,16 @@ jobs:
           tar xf targets.tar
           rm targets.tar
 
+      - name: Download target directories (2.13.8, rootNative)
+        uses: actions/download-artifact@v2
+        with:
+          name: target-${{ matrix.os }}-${{ matrix.java }}-2.13.8-rootNative
+
+      - name: Inflate target directories (2.13.8, rootNative)
+        run: |
+          tar xf targets.tar
+          rm targets.tar
+
       - name: Download target directories (3.1.2, rootJS)
         uses: actions/download-artifact@v2
         with:
@@ -184,6 +227,16 @@ jobs:
           name: target-${{ matrix.os }}-${{ matrix.java }}-3.1.2-rootJVM
 
       - name: Inflate target directories (3.1.2, rootJVM)
+        run: |
+          tar xf targets.tar
+          rm targets.tar
+
+      - name: Download target directories (3.1.2, rootNative)
+        uses: actions/download-artifact@v2
+        with:
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.1.2-rootNative
+
+      - name: Inflate target directories (3.1.2, rootNative)
         run: |
           tar xf targets.tar
           rm targets.tar

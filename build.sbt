@@ -82,7 +82,8 @@ ThisBuild / licenses := Seq(License.Apache2)
 ThisBuild / developers := List(
   Developer("milessabin", "Miles Sabin", "", url("http://milessabin.com/blog")),
   Developer("kailuowang", "Kai(luo) Wang", "kailuo.wang@gmail.com", url("http://kailuowang.com/")),
-  Developer("joroKr21", "Georgi Krastev", "joro.kr.21@gmail.com", url("https://twitter.com/Joro_Kr"))
+  Developer("joroKr21", "Georgi Krastev", "joro.kr.21@gmail.com", url("https://twitter.com/Joro_Kr")),
+  Developer("TimWSpence", "Tim Spence", "timothywspence@gmail.com", url("https://twitter.com/timwspence"))
 )
 
 ThisBuild / tlCiReleaseBranches := Seq("dotty")

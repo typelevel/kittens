@@ -214,16 +214,20 @@ This way the native instance for `Show[List]` would be used.
 
 ## Scala 3
 
-We also offer 3 methods of derivation for Scala 3:
+We also offer 3 methods of derivation for Scala 3. All of them have the same behaviour wrt to recursively defining instances: 
+1. Instances will always be recursively instantiated if necessary (unlike scala 2 semi auto derivation)
+2. Subject to the same type constructor field limitation as the Scala 2 auto and manual semi derivations
 
 ### `derives` syntax (recommended)
 
-Kittens for scala 3 supports Scala 3's [derivation syntax](https://docs.scala-lang.org/scala3/reference/contextual/derivation.html).
+Kittens for scala 3 supports Scala 3's [derivation syntax](https://docs.scala-lang.org/scala3/reference/contextual/derivation.html). 
 
 ``` scala
 import cats.derived.*
 
-case class Person(name: String, age: Int) derives Eq, Show
+//No instances declared for Name
+case class Name(value: String)
+case class Person(name: Name, age: Int) derives Eq, Show
 
 enum CList[+A] derives Functor:
   case CNil
@@ -232,12 +236,14 @@ enum CList[+A] derives Functor:
 
 ### semiauto derivation
 
-This works similarly to `semiauto` for Scala 2.
+This looks similar to `semiauto` for Scala 2.
 
 ``` scala
 import cats.derived.semiauto
 
-case class Person(name: String, age: Int)
+//No instances declared for Name
+case class Name(value: String)
+case class Person(name: Name, age: Int)
 
 object Person:
   given Eq[Person] = semiauto.eq
@@ -253,14 +259,15 @@ object CList:
 
 ### auto derivation
 
-This works similarly to `auto` for Scala 2.
+This looks similar to `auto` for Scala 2.
 
 ``` scala
 import cats.derived.auto.eq.given
 import cats.derived.auto.show.given
 import cats.derived.auto.functor.given
 
-case class Person(name: String, age: Int)
+case class Name(value: String)
+case class Person(name: Name, age: Int)
 
 enum CList[+A]:
   case CNil

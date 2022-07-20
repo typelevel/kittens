@@ -257,6 +257,24 @@ object CList:
   given Functor[CList] = semiauto.functor
 ```
 
+As with Scala 2, you can combine `auto` and `semiauto` to avoid the type constructor field limitation:
+
+``` scala
+import cats.derived.*
+
+case class Name(value: String)
+case class Person(name: Name, age: Int)
+
+case class People(people: List[Person])
+object People:
+  given Show[People] =
+    import auto.show.given
+    //Uses the correct List instance despite deriving an instance for Person automatically
+    semiauto.show
+```
+
+`
+
 ### auto derivation
 
 This looks similar to `auto` for Scala 2.

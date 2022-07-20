@@ -277,7 +277,7 @@ List[Set[x]]]`.
 
 #### Stack safety
 
-Our derived instances are not stack-safe. This is a departure from the behaviour for Scala 2 because we didn't want to incur the performance penalty of trampoling all instances in `cats.Eval`. If your data-type is recursive or _extremely_ large then you may want to write instances by hand instead.
+Our derived instances are not stack-safe. This is a departure from the behaviour for Scala 2 because we didn't want to incur the performance penalty of trampolining all instances in `cats.Eval`. If your data-type is recursive or _extremely_ large then you may want to write instances by hand instead.
 
 #### Missing features
 

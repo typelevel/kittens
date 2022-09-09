@@ -1,6 +1,6 @@
 import sbt._
 
-val scala212 = "2.12.15"
+val scala212 = "2.12.16"
 val scala213 = "2.13.8"
 val scala3 = "3.2.0"
 
@@ -60,6 +60,12 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
   .settings(commonSettings: _*)
+  .jsSettings(tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.1.0").toMap)
+  .nativeSettings(tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.2.2").toMap)
+
+lazy val coreJVM = core.jvm
+lazy val coreJS = core.js
+lazy val coreNative = core.native
 
 addCommandAlias("root", ";project /")
 addCommandAlias("jvm", ";project coreJVM")
@@ -84,5 +90,11 @@ ThisBuild / developers := List(
   Developer("TimWSpence", "Tim Spence", "timothywspence@gmail.com", url("https://twitter.com/timwspence"))
 )
 
-ThisBuild / tlCiReleaseBranches := Seq("dotty")
 ThisBuild / tlCiScalafmtCheck := true
+ThisBuild / tlCiReleaseBranches := Seq("master")
+ThisBuild / mergifyStewardConfig := Some(
+  MergifyStewardConfig(
+    author = "typelevel-steward[bot]",
+    mergeMinors = true
+  )
+)

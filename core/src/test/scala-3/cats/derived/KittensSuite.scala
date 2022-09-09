@@ -53,7 +53,7 @@ object KittensSuite:
       test(s"No $tc for $target")(assert(errors.contains(message), s"$errors did not contain $message"))
 
     inline def testNoAuto(inline tc: String, target: String): Unit =
-      testNoInstance(tc, target, "no implicit argument of type")
+      testNoInstance(tc, target, "No given instance of type")
 
     inline def testNoSemi(inline tc: String, target: String): Unit =
       testNoInstance("semiauto." + deCapitalize(tc), target, "Could not derive an instance of " + tc)

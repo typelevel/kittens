@@ -2,7 +2,7 @@ import sbt._
 
 val scala212 = "2.12.15"
 val scala213 = "2.13.8"
-val scala3 = "3.1.2"
+val scala3 = "3.2.0"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
@@ -10,8 +10,8 @@ ThisBuild / tlBaseVersion := "3.0"
 ThisBuild / organization := "org.typelevel"
 
 val catsVersion = "2.8.0"
-val munitVersion = "1.0.0-M5"
-val disciplineMunitVersion = "2.0.0-M2"
+val munitVersion = "1.0.0-M6"
+val disciplineMunitVersion = "2.0.0-M3"
 val kindProjectorVersion = "0.13.2"
 val shapeless2Version = "2.3.8"
 val shapeless3Version = "3.1.0"
@@ -30,10 +30,8 @@ lazy val commonSettings = Seq(
     case (2, 12) => List("-Ypartial-unification")
     case _ => Nil
   },
-  resolvers ++= Seq(
-    Resolver.sonatypeRepo("releases"),
-    Resolver.sonatypeRepo("snapshots")
-  ),
+  resolvers ++= Resolver.sonatypeOssRepos("releases"),
+  resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
   libraryDependencies ++= Seq(
     "org.typelevel" %%% "cats-core" % catsVersion,
     "org.typelevel" %%% "alleycats-core" % catsVersion,

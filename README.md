@@ -215,7 +215,7 @@ This way the native instance for `Show[List]` would be used.
 ## Scala 3
 
 We also offer 3 methods of derivation for Scala 3. All of them have the same behaviour wrt to recursively defining instances: 
-1. Instances will always be recursively instantiated if necessary (unlike scala 2 semi auto derivation)
+1. Instances will always be recursively instantiated if necessary
 2. Subject to the same type constructor field limitation as the Scala 2 auto and manual semi derivations
 
 ### `derives` syntax (recommended)
@@ -225,7 +225,7 @@ Kittens for scala 3 supports Scala 3's [derivation syntax](https://docs.scala-la
 ``` scala
 import cats.derived.*
 
-//No instances declared for Name
+// No instances declared for Name
 case class Name(value: String)
 case class Person(name: Name, age: Int) derives Eq, Show
 
@@ -241,7 +241,7 @@ This looks similar to `semiauto` for Scala 2.
 ``` scala
 import cats.derived.semiauto
 
-//No instances declared for Name
+// No instances declared for Name
 case class Name(value: String)
 case class Person(name: Name, age: Int)
 
@@ -269,7 +269,7 @@ case class People(people: List[Person])
 object People:
   given Show[People] =
     import auto.show.given
-    //Uses the correct List instance despite deriving an instance for Person automatically
+    // Uses the correct List instance despite deriving an instance for Person automatically
     semiauto.show
 ```
 

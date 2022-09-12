@@ -25,23 +25,19 @@ class ApplySuite extends KittensSuite:
   import ApplySuite.*
   import TestDefns.*
 
+  inline given [F[_]]: Isomorphisms[F] =
+    Isomorphisms.invariant(summonInline[Apply[F]])
+
   inline def applyTests[F[_]]: ApplyTests[F] =
     ApplyTests[F](summonInline)
 
-  inline def testApply(inline context: String): Unit = {
-    given Isomorphisms[CaseClassWOption] = Isomorphisms.invariant(summonInline[Apply[CaseClassWOption]])
-    given Isomorphisms[OptList] = Isomorphisms.invariant(summonInline[Apply[OptList]])
-    //    given isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)
-    given Isomorphisms[Interleaved] = Isomorphisms.invariant(summonInline[Apply[Interleaved]])
-    given Isomorphisms[ListBox] = Isomorphisms.invariant(summonInline[Apply[ListBox]])
-
+  inline def testApply(inline context: String): Unit =
     checkAll(s"$context.Apply[CaseClassWOption]", applyTests[CaseClassWOption].apply[Int, String, Long])
     checkAll(s"$context.Apply[OptList]", applyTests[OptList].apply[Int, String, Long])
-//    checkAll(s"$context.Apply[AndInt]", applyTests[AndInt].apply[Int, String, Long])
+    checkAll(s"$context.Apply[AndInt]", applyTests[AndInt].apply[Int, String, Long])
     checkAll(s"$context.Apply[Interleaved]", applyTests[Interleaved].apply[Int, String, Long])
     checkAll(s"$context.Apply[ListBox]", applyTests[ListBox].apply[Int, String, Long])
     checkAll(s"$context.Apply is Serializable", SerializableTests.serializable(summonInline[Apply[Interleaved]]))
-  }
 
   locally {
     import auto.apply.given
@@ -53,17 +49,21 @@ class ApplySuite extends KittensSuite:
     testApply("semiauto")
   }
 
+end ApplySuite
+
 object ApplySuite:
   import TestDefns.*
 
   type OptList[A] = Option[List[A]]
-//  type AndInt[A] = (A, Int)
+  type AndInt[A] = (A, Int)
   type ListBox[A] = List[Box[A]]
 
   object semiInstances:
     given Apply[Box] = semiauto.apply
     given Apply[CaseClassWOption] = semiauto.apply
     given Apply[OptList] = semiauto.apply
-//    given Apply[AndInt] = semiauto.apply
+    given Apply[AndInt] = semiauto.apply
     given Apply[Interleaved] = semiauto.apply
     given Apply[ListBox] = semiauto.apply
+
+end ApplySuite

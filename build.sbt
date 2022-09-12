@@ -1,17 +1,23 @@
 import sbt._
 
-ThisBuild / crossScalaVersions := Seq("2.12.16", "2.13.8")
-ThisBuild / scalaVersion := "2.13.8"
-ThisBuild / tlBaseVersion := "2.3"
+val scala212 = "2.12.16"
+val scala213 = "2.13.8"
+val scala3 = "3.2.0"
+
+ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
+ThisBuild / scalaVersion := scala3
+ThisBuild / tlBaseVersion := "3.0"
 ThisBuild / organization := "org.typelevel"
 
 val catsVersion = "2.8.0"
-val disciplineMunitVersion = "1.0.9"
+val munitVersion = "1.0.0-M6"
+val disciplineMunitVersion = "2.0.0-M3"
 val kindProjectorVersion = "0.13.2"
-val shapelessVersion = "2.3.9"
+val shapeless2Version = "2.3.8"
+val shapeless3Version = "3.1.0"
 
 lazy val commonSettings = Seq(
-  scalacOptions := Seq(
+  scalacOptions ++= Seq(
     "-feature",
     "-language:higherKinds",
     "-language:implicitConversions",
@@ -19,24 +25,30 @@ lazy val commonSettings = Seq(
     "-deprecation",
     "-Xfatal-warnings"
   ),
-  scalacOptions ++= (
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, v)) if v <= 12 => Seq("-Ypartial-unification")
-      case _ => Seq.empty
-    }
-  ),
+  scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).toList.flatMap {
+    case (3, _) => List("-Xmax-inlines", "64")
+    case (2, 12) => List("-Ypartial-unification")
+    case _ => Nil
+  },
   resolvers ++= Resolver.sonatypeOssRepos("releases"),
   resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
   libraryDependencies ++= Seq(
     "org.typelevel" %%% "cats-core" % catsVersion,
     "org.typelevel" %%% "alleycats-core" % catsVersion,
-    "com.chuusai" %%% "shapeless" % shapelessVersion,
     "org.typelevel" %%% "cats-testkit" % catsVersion % Test,
-    "org.scalameta" %%% "munit" % "0.7.29" % Test,
     "org.typelevel" %%% "discipline-munit" % disciplineMunitVersion % Test,
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value % Test,
-    compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
+    "org.scalameta" %%% "munit" % munitVersion % Test
   ),
+  libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((3, _)) =>
+      Seq("org.typelevel" %%% "shapeless3-deriving" % shapeless3Version)
+    case _ =>
+      Seq(
+        "com.chuusai" %%% "shapeless" % shapeless2Version,
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value % Test,
+        compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
+      )
+  }),
   Test / parallelExecution := false
 )
 
@@ -74,9 +86,11 @@ ThisBuild / licenses := Seq(License.Apache2)
 ThisBuild / developers := List(
   Developer("milessabin", "Miles Sabin", "", url("http://milessabin.com/blog")),
   Developer("kailuowang", "Kai(luo) Wang", "kailuo.wang@gmail.com", url("http://kailuowang.com/")),
-  Developer("joroKr21", "Georgi Krastev", "joro.kr.21@gmail.com", url("https://twitter.com/Joro_Kr"))
+  Developer("joroKr21", "Georgi Krastev", "joro.kr.21@gmail.com", url("https://twitter.com/Joro_Kr")),
+  Developer("TimWSpence", "Tim Spence", "timothywspence@gmail.com", url("https://twitter.com/timwspence"))
 )
 
+ThisBuild / tlCiScalafmtCheck := true
 ThisBuild / tlCiReleaseBranches := Seq("master")
 ThisBuild / mergifyStewardConfig := Some(
   MergifyStewardConfig(
@@ -84,4 +98,3 @@ ThisBuild / mergifyStewardConfig := Some(
     mergeMinors = true
   )
 )
-ThisBuild / tlCiScalafmtCheck := true

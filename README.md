@@ -24,6 +24,8 @@ libraryDependencies += "org.typelevel" %% "kittens" % "latestVersion" // indicat
 [![Scala.js](http://scala-js.org/assets/badges/scalajs-1.5.0.svg)](http://scala-js.org)
 [![Latest version](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.12.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/kittens_2.12)
 
+## Scala 2
+
 Instance derivations are available for the following type classes:
 
 * `Eq`, `PartialOrder`, `Order`, `Hash`
@@ -210,7 +212,109 @@ implicit val showFoo: Show[Foo] =  semiauto.show
 
 This way the native instance for `Show[List]` would be used.
 
-### Type class support matrix
+## Scala 3
+
+We also offer 3 methods of derivation for Scala 3. All of them have the same behaviour wrt to recursively defining instances: 
+1. Instances will always be recursively instantiated if necessary
+2. Subject to the same type constructor field limitation as the Scala 2 auto and manual semi derivations
+
+### `derives` syntax (recommended)
+
+Kittens for scala 3 supports Scala 3's [derivation syntax](https://docs.scala-lang.org/scala3/reference/contextual/derivation.html). 
+
+``` scala
+import cats.derived.*
+
+// No instances declared for Name
+case class Name(value: String)
+case class Person(name: Name, age: Int) derives Eq, Show
+
+enum CList[+A] derives Functor:
+  case CNil
+  case CCons(head: A, tail: CList[A])
+```
+
+### semiauto derivation
+
+This looks similar to `semiauto` for Scala 2.
+
+``` scala
+import cats.derived.semiauto
+
+// No instances declared for Name
+case class Name(value: String)
+case class Person(name: Name, age: Int)
+
+object Person:
+  given Eq[Person] = semiauto.eq
+  given Show[Person] = semiauto.show
+
+enum CList[+A]:
+  case CNil
+  case CCons(head: A, tail: CList[A])
+  
+object CList:
+  given Functor[CList] = semiauto.functor
+```
+
+As with Scala 2, you can combine `auto` and `semiauto` to avoid the type constructor field limitation:
+
+``` scala
+import cats.derived.*
+
+case class Name(value: String)
+case class Person(name: Name, age: Int)
+
+case class People(people: List[Person])
+object People:
+  given Show[People] =
+    import auto.show.given
+    // Uses the correct List instance despite deriving an instance for Person automatically
+    semiauto.show
+```
+
+`
+
+### auto derivation
+
+This looks similar to `auto` for Scala 2.
+
+``` scala
+import cats.derived.auto.eq.given
+import cats.derived.auto.show.given
+import cats.derived.auto.functor.given
+
+case class Name(value: String)
+case class Person(name: Name, age: Int)
+
+enum CList[+A]:
+  case CNil
+  case CCons(head: A, tail: CList[A])
+```
+
+### Caveats
+
+#### Nested type constructors
+
+We are [currently](https://github.com/typelevel/kittens/issues/473) unable to
+derive instances for nested type constructors, such as `Functor[[x] =>>
+List[Set[x]]]`.
+
+#### Stack safety
+
+Our derived instances are not stack-safe. This is a departure from the behaviour for Scala 2 because we didn't want to incur the performance penalty of trampolining all instances in `cats.Eval`. If your data-type is recursive or _extremely_ large then you may want to write instances by hand instead.
+
+#### Missing features
+
+Kittens for Scala 3 is built on top of [Shapeless
+3](https://github.com/typelevel/shapeless-3) which has a completely different
+API than [Shapeless 2](https://github.com/milessabin/shapeless) so we don't
+support features like `Sequence` and `Lift`.
+
+`ConsK` derivation is also not supported although we expect this to be
+[added](https://github.com/typelevel/kittens/issues/489) in a future release.
+
+## Type class support matrix
 
 Legend:
 - `∀` - all must satisfy a constraint
@@ -277,4 +381,5 @@ Kittens is built with SBT 1.x, and its master branch is built with Scala 2.13 by
 + Miles Sabin <miles@milessabin.com> [@milessabin](https://twitter.com/milessabin)
 + Qi Wang [Qi77Qi](http://github.com/Qi77Qi)
 + Kailuo Wang <kailuo.wang@gmail.com> [@kailuowang](https://twitter.com/kailuowang)
++ Tim Spence <timothywspence@gmail.com> [timwspence](https://twitter.com/timwspence)
 + Your name here :-)

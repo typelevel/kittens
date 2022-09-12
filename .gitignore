@@ -32,3 +32,10 @@ metals.sbt
 .*.swp
 .swo
 .*.swo
+
+# VS Code
+.bloop
+.bsp
+.metals
+.vscode
+**/metals.sbt

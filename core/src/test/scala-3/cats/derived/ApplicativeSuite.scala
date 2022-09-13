@@ -24,7 +24,7 @@ import scala.compiletime.*
 
 class ApplicativeSuite extends KittensSuite:
   import ApplicativeSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline given [F[_]]: Isomorphisms[F] =
     Isomorphisms.invariant(summonInline[Applicative[F]])
@@ -62,7 +62,7 @@ class ApplicativeSuite extends KittensSuite:
 end ApplicativeSuite
 
 object ApplicativeSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type OptList[A] = Option[List[A]]
   type AndInt[A] = (A, Int)
@@ -77,8 +77,8 @@ object ApplicativeSuite:
     given Applicative[ListBox] = semiauto.applicative
 
   object derivedInstances:
-    case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives Applicative
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Applicative
+    case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives Applicative
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Applicative
     case class AndInt[A](x: ApplicativeSuite.AndInt[A]) derives Applicative
 
 end ApplicativeSuite

@@ -18,12 +18,12 @@ package cats.derived
 
 import cats.{Eval, Foldable}
 import cats.laws.discipline.*
-import cats.syntax.all.*
+import cats.syntax.all.given
 import scala.compiletime.*
 
 class FoldableSuite extends KittensSuite:
   import FoldableSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[F[_]]: FoldableTests[F] =
     FoldableTests[F](summonInline)
@@ -71,7 +71,7 @@ class FoldableSuite extends KittensSuite:
 end FoldableSuite
 
 object FoldableSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]
@@ -93,15 +93,15 @@ object FoldableSuite:
     given Foldable[AtLeastOne] = semiauto.foldable
 
   object derivedInstances:
-    case class IList[A](x: TestDefns.IList[A]) derives Foldable
-    case class Tree[A](x: TestDefns.Tree[A]) derives Foldable
-    case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Foldable
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Foldable
-    case class EnumK1[A](x: TestDefns.EnumK1[A]) derives Foldable
+    case class IList[A](x: ADTs.IList[A]) derives Foldable
+    case class Tree[A](x: ADTs.Tree[A]) derives Foldable
+    case class GenericAdt[A](x: ADTs.GenericAdt[A]) derives Foldable
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Foldable
+    case class EnumK1[A](x: ADTs.EnumK1[A]) derives Foldable
     case class AndChar[A](x: FoldableSuite.AndChar[A]) derives Foldable
-    case class Many[+A](x: TestDefns.Many[A]) derives Foldable
-    case class AtMostOne[+A](x: TestDefns.AtMostOne[A]) derives Foldable
-    case class AtLeastOne[+A](x: TestDefns.AtLeastOne[A]) derives Foldable
+    case class Many[+A](x: ADTs.Many[A]) derives Foldable
+    case class AtMostOne[+A](x: ADTs.AtMostOne[A]) derives Foldable
+    case class AtLeastOne[+A](x: ADTs.AtLeastOne[A]) derives Foldable
 
   final case class Nel[+A](head: A, tail: List[A])
   object Nel:

@@ -24,7 +24,7 @@ import scala.compiletime.*
 
 class ContravariantSuite extends KittensSuite:
   import ContravariantSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[F[_]]: ContravariantTests[F] =
     ContravariantTests[F](summonInline)
@@ -62,7 +62,7 @@ class ContravariantSuite extends KittensSuite:
 end ContravariantSuite
 
 object ContravariantSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type OptPred[A] = Option[A => Boolean]
   type ListPred[A] = List[A => Boolean]
@@ -84,7 +84,7 @@ object ContravariantSuite:
     given Contravariant[EnumK1Contra] = semiauto.contravariant
 
   object derivedInstances:
-    case class EnumK1Contra[-A](x: TestDefns.EnumK1Contra[A]) derives Contravariant
+    case class EnumK1Contra[-A](x: ADTs.EnumK1Contra[A]) derives Contravariant
     case class Single[-A](value: A => Unit) derives Contravariant
 
     enum Many[-A] derives Contravariant:

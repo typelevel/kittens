@@ -7,7 +7,7 @@ import scala.util.hashing.MurmurHash3
 
 class HashSuite extends KittensSuite:
   import HashSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[A]: HashTests[A] =
     HashTests[A](summonInline)
@@ -50,7 +50,7 @@ class HashSuite extends KittensSuite:
 end HashSuite
 
 object HashSuite:
-  import TestDefns.*
+  import ADTs.*
 
   object semiInstances:
     given Hash[IList[Int]] = semiauto.hash
@@ -62,12 +62,12 @@ object HashSuite:
     given Hash[EnumK0] = semiauto.hash
 
   object derivedInstances:
-    case class IList[A](x: TestDefns.IList[A]) derives Hash
-    case class Inner(x: TestDefns.Inner) derives Hash
-    case class Outer(x: TestDefns.Outer) derives Hash
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Hash
-    case class Tree[A](x: TestDefns.Tree[A]) derives Hash
-    case class Recursive(x: TestDefns.Recursive) derives Hash
-    case class EnumK0(x: TestDefns.EnumK0) derives Hash
+    case class IList[A](x: ADTs.IList[A]) derives Hash
+    case class Inner(x: ADTs.Inner) derives Hash
+    case class Outer(x: ADTs.Outer) derives Hash
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Hash
+    case class Tree[A](x: ADTs.Tree[A]) derives Hash
+    case class Recursive(x: ADTs.Recursive) derives Hash
+    case class EnumK0(x: ADTs.EnumK0) derives Hash
 
 end HashSuite

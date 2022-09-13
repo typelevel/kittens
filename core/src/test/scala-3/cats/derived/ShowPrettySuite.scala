@@ -5,9 +5,9 @@ import cats.laws.discipline.SerializableTests
 import scala.compiletime.*
 
 class ShowPrettySuite extends KittensSuite:
-  import ShowPrettySuite.*
   import ShowPrettySuite.given
-  import TestDefns.*
+  import ShowPrettySuite.*
+  import ADTs.*
 
   inline def show[A](value: A): String =
     summonInline[ShowPretty[A]].show(value)
@@ -173,7 +173,7 @@ class ShowPrettySuite extends KittensSuite:
 end ShowPrettySuite
 
 object ShowPrettySuite:
-  import TestDefns.*
+  import ADTs.*
 
   given Show[Address] =
     Show.show(a => List(a.street, a.city, a.state).mkString(" "))
@@ -195,15 +195,15 @@ object ShowPrettySuite:
     given ShowPretty[Box[Bogus]] = semiauto.showPretty
 
   object derivedInstances:
-    case class Foo(x: TestDefns.Foo) derives ShowPretty
-    case class Outer(x: TestDefns.Outer) derives ShowPretty
-    case class IntTree(x: TestDefns.IntTree) derives ShowPretty
-    case class People(x: TestDefns.People) derives ShowPretty
-    case class ListFieldChild(x: TestDefns.ListFieldChild) derives ShowPretty
-    case class ListField(x: TestDefns.ListField) derives ShowPretty
-    case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives ShowPretty
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives ShowPretty
-    case class Tree[A](x: TestDefns.Tree[A]) derives ShowPretty
+    case class Foo(x: ADTs.Foo) derives ShowPretty
+    case class Outer(x: ADTs.Outer) derives ShowPretty
+    case class IntTree(x: ADTs.IntTree) derives ShowPretty
+    case class People(x: ADTs.People) derives ShowPretty
+    case class ListFieldChild(x: ADTs.ListFieldChild) derives ShowPretty
+    case class ListField(x: ADTs.ListField) derives ShowPretty
+    case class GenericAdt[A](x: ADTs.GenericAdt[A]) derives ShowPretty
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives ShowPretty
+    case class Tree[A](x: ADTs.Tree[A]) derives ShowPretty
     case class BoxBogus(x: Box[Bogus]) derives ShowPretty
 
 end ShowPrettySuite

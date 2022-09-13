@@ -22,7 +22,7 @@ import scala.compiletime.*
 
 class OrderSuite extends KittensSuite:
   import OrderSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[A]: OrderTests[A] =
     OrderTests[A](summonInline)
@@ -61,7 +61,7 @@ class OrderSuite extends KittensSuite:
 end OrderSuite
 
 object OrderSuite:
-  import TestDefns.*
+  import ADTs.*
 
   object semiInstances:
     given Order[Inner] = semiauto.order
@@ -72,11 +72,11 @@ object OrderSuite:
     given Order[EnumK0] = semiauto.order
 
   object derivedInstances:
-    case class Inner(x: TestDefns.Inner) derives Order
-    case class Outer(x: TestDefns.Outer) derives Order
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Order
-    case class Recursive(x: TestDefns.Recursive) derives Order
-    case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Order
-    case class EnumK0(x: TestDefns.EnumK0) derives Order
+    case class Inner(x: ADTs.Inner) derives Order
+    case class Outer(x: ADTs.Outer) derives Order
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Order
+    case class Recursive(x: ADTs.Recursive) derives Order
+    case class GenericAdt[A](x: ADTs.GenericAdt[A]) derives Order
+    case class EnumK0(x: ADTs.EnumK0) derives Order
 
 end OrderSuite

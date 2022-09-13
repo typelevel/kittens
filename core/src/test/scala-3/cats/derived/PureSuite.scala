@@ -23,7 +23,7 @@ import scala.compiletime.*
 
 class PureSuite extends KittensSuite:
   import PureSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   extension [A](a: A)
     inline def pure[F[_]] =
@@ -57,17 +57,17 @@ class PureSuite extends KittensSuite:
     val instance = "derived.pure"
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Pure[Interleaved]))
     test(s"$instance[CaseClassWOption]")(
-      assert(3.14.pure[CaseClassWOption].x == TestDefns.CaseClassWOption(Some(3.14)))
+      assert(3.14.pure[CaseClassWOption].x == ADTs.CaseClassWOption(Some(3.14)))
     )
     test(s"$instance[Interleaved]")(
-      assert('x'.pure[Interleaved].x == TestDefns.Interleaved(0, 'x', 0, Vector('x'), ""))
+      assert('x'.pure[Interleaved].x == ADTs.Interleaved(0, 'x', 0, Vector('x'), ""))
     )
   }
 
 end PureSuite
 
 object PureSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type LOption[A] = List[Option[A]]
   type PList[A] = (List[A], List[A])
@@ -83,8 +83,8 @@ object PureSuite:
     given Pure[BoxColor] = semiauto.pure
 
   object derivedInstances:
-    case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives Pure
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Pure
+    case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives Pure
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Pure
 
   final case class Color[A](r: Int, g: Int, b: Int)
   object Color:

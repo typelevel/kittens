@@ -5,7 +5,7 @@ import cats.laws.discipline.*
 import scala.compiletime.*
 
 class TraverseSuite extends KittensSuite:
-  import TestDefns.*
+  import ADTs.*
   import TraverseSuite.*
 
   inline def tests[F[_]]: TraverseTests[F] =
@@ -52,7 +52,7 @@ class TraverseSuite extends KittensSuite:
 end TraverseSuite
 
 object TraverseSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]
@@ -72,13 +72,13 @@ object TraverseSuite:
     given Traverse[AtMostOne] = semiauto.traverse
 
   object derivedInstances:
-    case class IList[A](x: TestDefns.IList[A]) derives Traverse
-    case class Tree[A](x: TestDefns.Tree[A]) derives Traverse
-    case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Traverse
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Traverse
-    case class EnumK1[A](x: TestDefns.EnumK1[A]) derives Traverse
-    case class Many[A](x: TestDefns.Many[A]) derives Traverse
-    case class AtMostOne[A](x: TestDefns.AtMostOne[A]) derives Traverse
-    case class AtLeastOne[A](x: TestDefns.AtLeastOne[A]) derives Traverse
+    case class IList[A](x: ADTs.IList[A]) derives Traverse
+    case class Tree[A](x: ADTs.Tree[A]) derives Traverse
+    case class GenericAdt[A](x: ADTs.GenericAdt[A]) derives Traverse
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Traverse
+    case class EnumK1[A](x: ADTs.EnumK1[A]) derives Traverse
+    case class Many[A](x: ADTs.Many[A]) derives Traverse
+    case class AtMostOne[A](x: ADTs.AtMostOne[A]) derives Traverse
+    case class AtLeastOne[A](x: ADTs.AtLeastOne[A]) derives Traverse
 
 end TraverseSuite

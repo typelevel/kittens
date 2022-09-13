@@ -22,7 +22,7 @@ import scala.compiletime.*
 
 class CommutativeMonoidSuite extends KittensSuite:
   import CommutativeMonoidSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[A]: CommutativeMonoidTests[A] =
     CommutativeMonoidTests[A](summonInline)
@@ -62,7 +62,7 @@ class CommutativeMonoidSuite extends KittensSuite:
 end CommutativeMonoidSuite
 
 object CommutativeMonoidSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type BoxMul = Box[Mul]
 
@@ -72,7 +72,7 @@ object CommutativeMonoidSuite:
     given CommutativeMonoid[Box[Mul]] = semiauto.commutativeMonoid
 
   object derivedInstances:
-    case class CommutativeFoo(x: TestDefns.CommutativeFoo) derives CommutativeMonoid
+    case class CommutativeFoo(x: ADTs.CommutativeFoo) derives CommutativeMonoid
     case class BoxMul(x: CommutativeMonoidSuite.BoxMul) derives CommutativeMonoid
 
   final case class Mul(value: Int)

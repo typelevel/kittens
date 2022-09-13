@@ -24,7 +24,7 @@ import scala.compiletime.*
 
 class InvariantSuite extends KittensSuite:
   import InvariantSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[F[_]]: InvariantTests[F] =
     InvariantTests[F](summonInline)
@@ -69,7 +69,7 @@ class InvariantSuite extends KittensSuite:
 end InvariantSuite
 
 object InvariantSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type ListSnoc[A] = List[Snoc[A]]
   type GenericAdtF[A] = GenericAdt[A => Boolean]
@@ -95,11 +95,11 @@ object InvariantSuite:
     given Invariant[AtLeastOne] = semiauto.invariant
 
   object derivedInstances:
-    case class Bivariant[A](x: TestDefns.Bivariant[A]) derives Invariant
-    case class IList[A](x: TestDefns.IList[A]) derives Invariant
-    case class EnumK1Inv[A](x: TestDefns.EnumK1Inv[A]) derives Invariant
-    case class Many[A](x: TestDefns.Many[A]) derives Invariant
-    case class AtMostOne[A](x: TestDefns.AtMostOne[A]) derives Invariant
-    case class AtLeastOne[A](x: TestDefns.AtLeastOne[A]) derives Invariant
+    case class Bivariant[A](x: ADTs.Bivariant[A]) derives Invariant
+    case class IList[A](x: ADTs.IList[A]) derives Invariant
+    case class EnumK1Inv[A](x: ADTs.EnumK1Inv[A]) derives Invariant
+    case class Many[A](x: ADTs.Many[A]) derives Invariant
+    case class AtMostOne[A](x: ADTs.AtMostOne[A]) derives Invariant
+    case class AtLeastOne[A](x: ADTs.AtLeastOne[A]) derives Invariant
 
 end InvariantSuite

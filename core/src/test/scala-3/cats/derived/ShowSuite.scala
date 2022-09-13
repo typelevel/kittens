@@ -7,7 +7,7 @@ import scala.compiletime.*
 class ShowSuite extends KittensSuite:
   import ShowSuite.given
   import ShowSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def show[A](value: A): String =
     summonInline[Show[A]].show(value)
@@ -94,7 +94,7 @@ class ShowSuite extends KittensSuite:
 end ShowSuite
 
 object ShowSuite:
-  import TestDefns.*
+  import ADTs.*
 
   given Show[Address] =
     Show.show(a => List(a.street, a.city, a.state).mkString(" "))
@@ -117,16 +117,16 @@ object ShowSuite:
     given Show[EnumK0] = semiauto.show
 
   object derivedInstances:
-    case class Foo(x: TestDefns.Foo) derives Show
-    case class Outer(x: TestDefns.Outer) derives Show
-    case class IntTree(x: TestDefns.IntTree) derives Show
-    case class People(x: TestDefns.People) derives Show
-    case class ListFieldChild(x: TestDefns.ListFieldChild) derives Show
-    case class ListField(x: TestDefns.ListField) derives Show
-    case class EnumK0(x: TestDefns.EnumK0) derives Show
-    case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Show
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Show
-    case class Tree[A](x: TestDefns.Tree[A]) derives Show
+    case class Foo(x: ADTs.Foo) derives Show
+    case class Outer(x: ADTs.Outer) derives Show
+    case class IntTree(x: ADTs.IntTree) derives Show
+    case class People(x: ADTs.People) derives Show
+    case class ListFieldChild(x: ADTs.ListFieldChild) derives Show
+    case class ListField(x: ADTs.ListField) derives Show
+    case class EnumK0(x: ADTs.EnumK0) derives Show
+    case class GenericAdt[A](x: ADTs.GenericAdt[A]) derives Show
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Show
+    case class Tree[A](x: ADTs.Tree[A]) derives Show
     case class BoxBogus(x: Box[Bogus]) derives Show
 
 end ShowSuite

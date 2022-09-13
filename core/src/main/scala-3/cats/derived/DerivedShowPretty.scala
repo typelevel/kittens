@@ -21,14 +21,11 @@ Make sure that A satisfies one of the following conditions:
 type DerivedShowPretty[A] = Derived[ShowPretty[A]]
 object DerivedShowPretty:
   opaque type Or[A] = A => List[String]
-  object Or extends OrInstances:
-    def apply[A](instance: A => List[String]): Or[A] = instance
+  object Or:
     extension [A](or: Or[A]) def apply(a: A): List[String] = or(a)
-
-  sealed abstract class OrInstances:
     inline given [A]: Or[A] = summonFrom {
-      case instance: Show[A] => Or((a: A) => instance.show(a).split(System.lineSeparator).toList)
-      case derived: DerivedShowPretty[A] => Or(derived.instance.showLines(_))
+      case instance: Show[A] => instance.show(_).split(System.lineSeparator).toList
+      case derived: DerivedShowPretty[A] => derived.instance.showLines(_)
     }
 
   inline def apply[A]: ShowPretty[A] =
@@ -48,23 +45,18 @@ object DerivedShowPretty:
       val n = labels.size
       if n <= 0 then List(s"$prefix()")
       else
-        var lines: List[String] = List(")")
-        val inner = inst.project(a)(n - 1)([t] => (show: Or[t], x: t) => show.apply(x))
-        inner match
-          case Nil => lines = s"  ${labels(n - 1)} = \"\"," :: lines
-          case h :: t => lines = s"  ${labels(n - 1)} = $h" :: t.map(s => "  " + s) ::: lines
+        var lines = List(")")
+        inst.project(a)(n - 1)([t] => (show: Or[t], x: t) => show.apply(x)) match
+          case Nil => lines ::= s"  ${labels(n - 1)} = \"\","
+          case h :: t => lines :::= s"  ${labels(n - 1)} = $h" :: t.map(s => "  " + s)
         var i = n - 2
         while i >= 0 do
-          val inner = inst.project(a)(i)([t] => (show: Or[t], x: t) => show.apply(x))
-          inner match
-            case Nil => lines = s"  ${labels(i)} = \"\"," :: lines
-            case v :: Nil => lines = s"  ${labels(i)} = $v," :: lines
+          inst.project(a)(i)([t] => (show: Or[t], x: t) => show.apply(x)) match
+            case Nil => lines ::= s"  ${labels(i)} = \"\","
+            case v :: Nil => lines ::= s"  ${labels(i)} = $v,"
             case h :: t => lines = s"  ${labels(i)} = $h" :: t.init.map(s => "  " + s) ::: s"  ${t.last}," :: lines
           i -= 1
-
-        lines = s"$prefix(" :: lines
-
-        lines
+        s"$prefix(" :: lines
 
   trait Coproduct[A](using inst: K0.CoproductInstances[Or, A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =

@@ -29,30 +29,43 @@ class EmptySuite extends KittensSuite:
   inline def empty[A]: A =
     summonInline[Empty[A]].empty
 
-  inline def testEmpty(inline context: String): Unit =
-    test(s"$context.Empty[Foo]")(assert(empty[Foo] == Foo(0, None)))
-    test(s"$context.Empty[Outer]")(assert(empty[Outer] == Outer(Inner(0))))
-    test(s"$context.Empty[Interleaved[String]]")(assert(empty[Interleaved[String]] == Interleaved.empty("")))
-    test(s"$context.Empty[Recursive]")(assert(empty[Recursive] == Recursive(0, None)))
-    test(s"$context.Empty[IList[Dummy]]")(assert(empty[IList[Dummy]] == INil()))
-    test(s"$context.Empty[Snoc[Dummy]]")(assert(empty[Snoc[Dummy]] == SNil()))
-    test(s"$context.Empty respects existing instances")(assert(empty[Box[Mask]] == Box(Mask(0xffffffff))))
-    checkAll(s"$context.Empty is Serializable", SerializableTests.serializable(summonInline[Empty[Foo]]))
+  inline def validate(inline instance: String): Unit =
+    test(s"$instance[Foo]")(assert(empty[Foo] == Foo(0, None)))
+    test(s"$instance[Outer]")(assert(empty[Outer] == Outer(Inner(0))))
+    test(s"$instance[Interleaved[String]]")(assert(empty[Interleaved[String]] == Interleaved.empty("")))
+    test(s"$instance[Recursive]")(assert(empty[Recursive] == Recursive(0, None)))
+    test(s"$instance[IList[Dummy]]")(assert(empty[IList[Dummy]] == INil()))
+    test(s"$instance[Snoc[Dummy]]")(assert(empty[Snoc[Dummy]] == SNil()))
+    test(s"$instance respects existing instances")(assert(empty[Box[Mask]] == Box(Mask(0xffffffff))))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Empty[Foo]]))
 
   locally {
     import auto.empty.given
-    testEmpty("auto")
+    validate("auto.empty")
     testNoAuto("Empty", "IList[Int]")
     testNoAuto("Empty", "Snoc[Int]")
     testNoAuto("Empty", "Rgb")
   }
 
   locally {
-    import semiInstances.given
-    testEmpty("semiauto")
+    import semiEmpty.given
+    validate("semiauto.empty")
     testNoSemi("Empty", "IList[Int]")
     testNoSemi("Empty", "Snoc[Int]")
     testNoSemi("Empty", "Rgb")
+  }
+
+  locally {
+    import derivedEmpty.*
+    val instance = "derived.empty"
+    test(s"$instance[Foo]")(assert(empty[Foo].x == TestDefns.Foo(0, None)))
+    test(s"$instance[Outer]")(assert(empty[Outer].x == TestDefns.Outer(Inner(0))))
+    test(s"$instance[Interleaved[String]]")(assert(empty[Interleaved[String]].x == TestDefns.Interleaved.empty("")))
+    test(s"$instance[Recursive]")(assert(empty[Recursive].x == TestDefns.Recursive(0, None)))
+    test(s"$instance[IList[Dummy]]")(assert(empty[IList[Int]].x == INil()))
+    test(s"$instance[Snoc[Dummy]]")(assert(empty[Snoc[Int]].x == SNil()))
+    test(s"$instance respects existing instances")(assert(empty[BoxMask].x == Box(Mask(0xffffffff))))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Empty[Foo]]))
   }
 
 end EmptySuite
@@ -63,7 +76,7 @@ object EmptySuite:
   // `Monoid[Option[A]]` gives us `Empty[Option[A]]` but it requires a `Semigroup[A]`.
   given [A]: Empty[Option[A]] = Empty(None)
 
-  object semiInstances:
+  object semiEmpty:
     given Empty[Foo] = semiauto.empty
     given Empty[Outer] = semiauto.empty
     given Empty[Interleaved[String]] = semiauto.empty
@@ -72,6 +85,15 @@ object EmptySuite:
     given Empty[Snoc[Dummy]] = semiauto.empty
     given Empty[Box[Mask]] = semiauto.empty
     given Empty[Chain] = semiauto.empty
+
+  object derivedEmpty:
+    case class Foo(x: TestDefns.Foo) derives Empty
+    case class Outer(x: TestDefns.Outer) derives Empty
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Empty
+    case class Recursive(x: TestDefns.Recursive) derives Empty
+    case class IList[A](x: TestDefns.IList[A]) derives Empty
+    case class Snoc[A](x: TestDefns.Snoc[A]) derives Empty
+    case class BoxMask(x: Box[Mask]) derives Empty
 
   trait Dummy
   final case class Chain(head: Int, tail: Chain)

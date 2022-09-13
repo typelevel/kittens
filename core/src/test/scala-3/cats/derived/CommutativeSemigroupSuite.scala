@@ -56,7 +56,6 @@ class CommutativeSemigroupSuite extends KittensSuite:
   locally {
     import derivedCommutativeSemigroup.*
     val instance = "derived.commutativeSemigroup"
-    // Copy pasted from `validate`
     checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeSemigroup)
     checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeSemigroup)
     checkAll(

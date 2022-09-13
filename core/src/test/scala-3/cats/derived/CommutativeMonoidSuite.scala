@@ -57,7 +57,6 @@ class CommutativeMonoidSuite extends KittensSuite:
   locally {
     import derivedCommutativeMonoid.*
     val instance = "derived.commutativeMonoid"
-    // Copy pasted from `validate`
     checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeMonoid)
     checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeMonoid)
     checkAll(

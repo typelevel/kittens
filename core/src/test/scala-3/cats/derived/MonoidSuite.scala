@@ -26,16 +26,16 @@ class MonoidSuite extends KittensSuite:
   import MonoidSuite.*
   import TestDefns.*
 
-  inline def monoidTests[A]: MonoidTests[A] =
+  inline def tests[A]: MonoidTests[A] =
     MonoidTests[A](summonInline)
 
-  inline def testMonoid(inline context: String): Unit =
-    checkAll(s"$context.Monoid[Foo]", monoidTests[Foo].monoid)
-    checkAll(s"$context.Monoid[Interleaved[Int]]", monoidTests[Interleaved[Int]].monoid)
-    checkAll(s"$context.Monoid[Box[Mul]]", monoidTests[Box[Mul]].monoid)
-    checkAll(s"$context.Monoid[Recursive]", monoidTests[Recursive].monoid)
-    checkAll(s"$context.Monoid is Serializable", SerializableTests.serializable(summonInline[Monoid[Foo]]))
-    test(s"$context.Monoid respects existing instances") {
+  inline def validate(inline instance: String): Unit =
+    checkAll(s"$instance[Foo]", tests[Foo].monoid)
+    checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].monoid)
+    checkAll(s"$instance[Box[Mul]]", tests[Box[Mul]].monoid)
+    checkAll(s"$instance[Recursive]", tests[Recursive].monoid)
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Monoid[Foo]]))
+    test(s"$instance respects existing instances") {
       val box = summonInline[Monoid[Box[Mul]]]
       assert(box.empty == Box(Mul(1)))
       assert(box.combine(Box(Mul(5)), Box(Mul(5))) == Box(Mul(25)))
@@ -43,12 +43,26 @@ class MonoidSuite extends KittensSuite:
 
   locally {
     import auto.monoid.given
-    testMonoid("auto")
+    validate("auto.monoid")
   }
 
   locally {
-    import semiInstances.given
-    testMonoid("semiauto")
+    import semiMonoid.given
+    validate("semiauto.monoid")
+  }
+
+  locally {
+    import derivedMonoid.*
+    val instance = "derived.monoid"
+    checkAll(s"$instance[Foo]", tests[Foo].monoid)
+    checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].monoid)
+    checkAll(s"$instance[BoxMul]", tests[BoxMul].monoid)
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Monoid[Foo]]))
+    test(s"$instance respects existing instances") {
+      val box = summonInline[Monoid[BoxMul]]
+      assert(box.empty == BoxMul(Box(Mul(1))))
+      assert(box.combine(BoxMul(Box(Mul(5))), BoxMul(Box(Mul(5)))) == BoxMul(Box(Mul(25))))
+    }
   }
 
 end MonoidSuite
@@ -56,11 +70,16 @@ end MonoidSuite
 object MonoidSuite:
   import TestDefns.*
 
-  object semiInstances:
+  object semiMonoid:
     given Monoid[Foo] = semiauto.monoid
     given Monoid[Recursive] = semiauto.monoid
     given Monoid[Interleaved[Int]] = semiauto.monoid
     given Monoid[Box[Mul]] = semiauto.monoid
+
+  object derivedMonoid:
+    case class Foo(x: TestDefns.Foo) derives Monoid
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Monoid
+    case class BoxMul(x: Box[Mul]) derives Monoid
 
   final case class Mul(value: Int)
   object Mul:

@@ -18,7 +18,7 @@ class HashSuite extends KittensSuite:
     checkAll(s"$instance[Inner]", tests[Inner].hash)
     checkAll(s"$instance[Outer]", tests[Outer].hash)
     // FIXME: typelevel/cats#2878
-    // checkAll(s"$context[Interleaved[Int]]", tests[Interleaved[Int]].hash)
+    // checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].hash)
     checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].hash)
     checkAll(s"$instance[Recursive]", tests[Recursive].hash)
     checkAll(s"$instance[EnumK0]", tests[EnumK0].hash)

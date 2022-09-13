@@ -18,6 +18,7 @@ package cats
 package derived
 
 import shapeless._
+import shapeless.labelled._
 import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
@@ -49,6 +50,13 @@ abstract private[derived] class MkFunctorDerivation extends MkFunctorNested {
   implicit def mkFunctorConst[T]: MkFunctor[Const[T]#λ] =
     new MkFunctor[Const[T]#λ] {
       def safeMap[A, B](t: T)(f: A => Eval[B]) = Eval.now(t)
+    }
+
+  implicit def mkFunctorFieldType[K, V[_]](implicit V: Strict[FunctorOrMk[V]]): MkFunctor[λ[a => FieldType[K, V[a]]]] =
+    new MkFunctor[λ[a => FieldType[K, V[a]]]] {
+      private val v = V.value
+      def safeMap[A, B](fa: FieldType[K, V[A]])(f: A => Eval[B]) =
+        mkSafeMap(v)(fa)(f).map(field[K].apply)
     }
 }
 

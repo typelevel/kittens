@@ -16,8 +16,10 @@
 
 package cats
 package derived
+
 import cats.laws.discipline._
 import cats.laws.discipline.eq._
+import shapeless._
 
 class FunctorSuite extends KittensSuite {
   import FunctorSuite._
@@ -36,7 +38,9 @@ class FunctorSuite extends KittensSuite {
       andChar: Functor[AndChar],
       interleaved: Functor[Interleaved],
       nestedPred: Functor[NestedPred],
-      singletons: Functor[Singletons]
+      singletons: Functor[Singletons],
+      record: Functor[Record],
+      union: Functor[Union]
   ): Unit = {
     checkAll(s"$context.Functor[IList]", FunctorTests[IList].functor[Int, String, Long])
     checkAll(s"$context.Functor[Tree]", FunctorTests[Tree].functor[Int, String, Long])
@@ -47,6 +51,8 @@ class FunctorSuite extends KittensSuite {
     checkAll(s"$context.Functor[Interleaved]", FunctorTests[Interleaved].functor[Int, String, Long])
     checkAll(s"$context.Functor[NestedPred]", FunctorTests[NestedPred].functor[Boolean, Int, Boolean])
     checkAll(s"$context.Functor[Singletons]", FunctorTests[Singletons].functor[Boolean, Int, Boolean])
+    checkAll(s"$context.Functor[Record]", FunctorTests[Record].functor[Boolean, Int, Boolean])
+    checkAll(s"$context.Functor[Union]", FunctorTests[Union].functor[Boolean, Int, Boolean])
     checkAll(s"$context.Functor is Serializable", SerializableTests.serializable(Functor[Tree]))
 
     test(s"$context.Functor.map is stack safe") {
@@ -85,6 +91,8 @@ object FunctorSuite {
   type AndChar[A] = (A, Char)
   type Predicate[A] = A => Boolean
   type NestedPred[A] = Predicate[Predicate[A]]
+  type Record[A] = (Mon ->> Option[A]) :: (Sun ->> List[A]) :: HNil
+  type Union[A] = (Tue ->> IList[A]) :+: (Wed ->> Tree[A]) :+: CNil
 
   object semiInstances {
     implicit val iList: Functor[IList] = semiauto.functor
@@ -96,5 +104,7 @@ object FunctorSuite {
     implicit val interleaved: Functor[Interleaved] = semiauto.functor
     implicit val nestedPred: Functor[NestedPred] = semiauto.functor
     implicit val singletons: Functor[Singletons] = semiauto.functor
+    implicit val record: Functor[Record] = semiauto.functor
+    implicit val union: Functor[Union] = semiauto.functor
   }
 }

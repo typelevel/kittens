@@ -27,31 +27,48 @@ class CommutativeMonoidSuite extends KittensSuite:
   import CommutativeMonoidSuite.*
   import TestDefns.*
 
-  inline def commutativeMonoidTests[A]: CommutativeMonoidTests[A] =
+  inline def tests[A]: CommutativeMonoidTests[A] =
     CommutativeMonoidTests[A](summonInline)
 
-  inline def testCommutativeMonoid(inline context: String): Unit =
-    checkAll(s"$context.CommutativeMonoid[Foo]", commutativeMonoidTests[CommutativeFoo].commutativeMonoid)
-    checkAll(s"$context.CommutativeMonoid[Recursive]", commutativeMonoidTests[Recursive].commutativeMonoid)
-    checkAll(s"$context.CommutativeMonoid[Box[Mul]]", commutativeMonoidTests[Box[Mul]].commutativeMonoid)
+  inline def validate(inline instance: String): Unit =
+    checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeMonoid)
+    checkAll(s"$instance[Recursive]", tests[Recursive].commutativeMonoid)
+    checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeMonoid)
     checkAll(
-      s"$context.CommutativeMonoid is Serializable",
+      s"$instance is Serializable",
       SerializableTests.serializable(summonInline[CommutativeMonoid[CommutativeFoo]])
     )
-    test(s"$context.CommutativeMonoid respects existing instances") {
-      val box = summonInline[CommutativeMonoid[Box[Mul]]]
+    test(s"$instance respects existing instances") {
+      val box = summonInline[CommutativeMonoid[BoxMul]]
       assert(box.empty == Box(Mul(1)))
       assert(box.combine(Box(Mul(5)), Box(Mul(5))) == Box(Mul(25)))
     }
 
   locally {
     import auto.commutativeMonoid.given
-    testCommutativeMonoid("auto")
+    validate("auto.commutativeMonoid")
   }
 
   locally {
-    import semiInstances.given
-    testCommutativeMonoid("semiauto")
+    import semiCommutativeMonoid.given
+    validate("semiauto.commutativeMonoid")
+  }
+
+  locally {
+    import derivedCommutativeMonoid.*
+    val instance = "derived.commutativeMonoid"
+    // Copy pasted from `validate`
+    checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeMonoid)
+    checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeMonoid)
+    checkAll(
+      s"$instance is Serializable",
+      SerializableTests.serializable(summonInline[CommutativeMonoid[CommutativeFoo]])
+    )
+    test(s"$instance respects existing instances") {
+      val box = summonInline[CommutativeMonoid[BoxMul]]
+      assert(box.empty == BoxMul(Box(Mul(1))))
+      assert(box.combine(BoxMul(Box(Mul(5))), BoxMul(Box(Mul(5)))) == BoxMul(Box(Mul(25))))
+    }
   }
 
 end CommutativeMonoidSuite
@@ -59,10 +76,16 @@ end CommutativeMonoidSuite
 object CommutativeMonoidSuite:
   import TestDefns.*
 
-  object semiInstances:
+  type BoxMul = Box[Mul]
+
+  object semiCommutativeMonoid:
     given CommutativeMonoid[CommutativeFoo] = semiauto.commutativeMonoid
     given CommutativeMonoid[Recursive] = semiauto.commutativeMonoid
     given CommutativeMonoid[Box[Mul]] = semiauto.commutativeMonoid
+
+  object derivedCommutativeMonoid:
+    case class CommutativeFoo(x: TestDefns.CommutativeFoo) derives CommutativeMonoid
+    case class BoxMul(x: CommutativeMonoidSuite.BoxMul) derives CommutativeMonoid
 
   final case class Mul(value: Int)
   object Mul:

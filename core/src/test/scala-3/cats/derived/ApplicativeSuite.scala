@@ -26,18 +26,21 @@ class ApplicativeSuite extends KittensSuite:
   import ApplicativeSuite.*
   import TestDefns.*
 
-  inline def applicativeTests[F[_]](f: Isomorphisms[F] ?=> (at: ApplicativeTests[F]) => at.RuleSet) =
-    f(using summonInline)(ApplicativeTests[F](summonInline))
+  inline given [F[_]]: Isomorphisms[F] =
+    Isomorphisms.invariant(summonInline[Applicative[F]])
+
+  inline def applicativeTests[F[_]]: ApplicativeTests[F] =
+    ApplicativeTests[F](summonInline)
 
   inline def testApplicative(inline context: String): Unit =
     checkAll(
       s"$context.Applicative[CaseClassWOption]",
-      applicativeTests[CaseClassWOption](_.applicative[Int, String, Long])
+      applicativeTests[CaseClassWOption].applicative[Int, String, Long]
     )
-    checkAll(s"$context.Applicative[OptList]", applicativeTests[OptList](_.applicative[Int, String, Long]))
-    checkAll(s"$context.Applicative[AndInt]", applicativeTests[AndInt](_.applicative[Int, String, Long]))
-    checkAll(s"$context.Applicative[Interleaved]", applicativeTests[Interleaved](_.applicative[Int, String, Long]))
-    checkAll(s"$context.Applicative[ListBox]", applicativeTests[ListBox](_.applicative[Int, String, Long]))
+    checkAll(s"$context.Applicative[OptList]", applicativeTests[OptList].applicative[Int, String, Long])
+    checkAll(s"$context.Applicative[AndInt]", applicativeTests[AndInt].applicative[Int, String, Long])
+    checkAll(s"$context.Applicative[Interleaved]", applicativeTests[Interleaved].applicative[Int, String, Long])
+    checkAll(s"$context.Applicative[ListBox]", applicativeTests[ListBox].applicative[Int, String, Long])
     checkAll(
       s"$context.Applicative is Serializable",
       SerializableTests.serializable(summonInline[Applicative[Interleaved]])

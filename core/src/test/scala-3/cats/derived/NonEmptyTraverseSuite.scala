@@ -29,51 +29,84 @@ class NonEmptyTraverseSuite extends KittensSuite:
   import NonEmptyTraverseSuite.*
   import TestDefns.*
 
-  inline def nonEmptyTraverseTests[F[_]]: NonEmptyTraverseTests[F] =
+  inline def tests[F[_]]: NonEmptyTraverseTests[F] =
     NonEmptyTraverseTests[F](summonInline)
 
-  inline def testReducible(inline context: String): Unit =
+  inline def validate(inline instance: String): Unit =
     checkAll(
-      s"$context.NonEmptyTraverse[ICons]",
-      nonEmptyTraverseTests[ICons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+      s"$instance[ICons]",
+      tests[ICons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
-      s"$context.NonEmptyTraverse[Tree]",
-      nonEmptyTraverseTests[Tree].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+      s"$instance[Tree]",
+      tests[Tree].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
-      s"$context.NonEmptyTraverse[NelSCons]",
-      nonEmptyTraverseTests[NelSCons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+      s"$instance[NelSCons]",
+      tests[NelSCons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
-      s"$context.NonEmptyTraverse[NelAndOne]",
-      nonEmptyTraverseTests[NelAndOne].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+      s"$instance[NelAndOne]",
+      tests[NelAndOne].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
-      s"$context.NonEmptyTraverse[VecAndNel]",
-      nonEmptyTraverseTests[VecAndNel].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+      s"$instance[VecAndNel]",
+      tests[VecAndNel].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
-      s"$context.NonEmptyTraverse[Interleaved]",
-      nonEmptyTraverseTests[Interleaved].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+      s"$instance[Interleaved]",
+      tests[Interleaved].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
-      s"$context.NonEmptyTraverse[EnumK1]",
-      nonEmptyTraverseTests[EnumK1].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+      s"$instance[EnumK1]",
+      tests[EnumK1].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
-      s"$context.NonEmptyTraverse is Serializable",
+      s"$instance[AtLeastOne]",
+      tests[AtLeastOne].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
+      s"$instance is Serializable",
       SerializableTests.serializable(summonInline[NonEmptyTraverse[Tree]])
     )
 
   locally {
     import auto.nonEmptyTraverse.given
-    testReducible("auto")
+    validate("auto.nonEmptyTraverse")
   }
 
   locally {
-    import semiInstances.given
-    testReducible("semiauto")
+    import semiNonEmptyTraverse.given
+    validate("semiauto.nonEmptyTraverse")
+  }
+
+  locally {
+    import derivedNonEmptyTraverse.*
+    val instance = "derived.nonEmptyTraverse"
+    checkAll(
+      s"$instance[ICons]",
+      tests[ICons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
+      s"$instance[Tree]",
+      tests[Tree].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
+      s"$instance[Interleaved]",
+      tests[Interleaved].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
+      s"$instance[EnumK1]",
+      tests[EnumK1].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
+      s"$instance[AtLeastOne]",
+      tests[AtLeastOne].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
+      s"$instance is Serializable",
+      SerializableTests.serializable(summonInline[NonEmptyTraverse[Tree]])
+    )
   }
 
 end NonEmptyTraverseSuite
@@ -85,7 +118,7 @@ object NonEmptyTraverseSuite:
   type NelAndOne[A] = NonEmptyList[OneAnd[Vector, A]]
   type VecAndNel[A] = (Vector[A], NonEmptyList[A])
 
-  object semiInstances:
+  object semiNonEmptyTraverse:
     given NonEmptyTraverse[ICons] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[Tree] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[NelSCons] = semiauto.nonEmptyTraverse
@@ -93,5 +126,13 @@ object NonEmptyTraverseSuite:
     given NonEmptyTraverse[VecAndNel] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[Interleaved] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[EnumK1] = semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[AtLeastOne] = semiauto.nonEmptyTraverse
+
+  object derivedNonEmptyTraverse:
+    case class ICons[A](x: TestDefns.ICons[A]) derives NonEmptyTraverse
+    case class Tree[A](x: TestDefns.Tree[A]) derives NonEmptyTraverse
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives NonEmptyTraverse
+    case class EnumK1[A](x: TestDefns.EnumK1[A]) derives NonEmptyTraverse
+    case class AtLeastOne[A](x: TestDefns.AtLeastOne[A]) derives NonEmptyTraverse
 
 end NonEmptyTraverseSuite

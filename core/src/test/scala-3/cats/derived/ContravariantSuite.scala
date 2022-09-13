@@ -34,13 +34,13 @@ class ContravariantSuite extends KittensSuite:
     checkAll(s"$instance[TreePred]", tests[TreePred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[ListPred]", tests[ListPred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[GenericAdtPred]", tests[GenericAdtPred].contravariant[MiniInt, String, Boolean])
-    // TODO https://github.com/typelevel/kittens/issues/473
+    // TODO: https://github.com/typelevel/kittens/issues/473
     // checkAll(s"instance[InterleavedPred]", tests[InterleavedPred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AndCharPred]", tests[AndCharPred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[ListSnocF]", tests[ListSnocF].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[EnumK1Contra]", tests[EnumK1Contra].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Contravariant[TreePred]]))
-    // TODO https://github.com/typelevel/kittens/issues/476
+    // TODO: https://github.com/typelevel/kittens/issues/476
     // test(s"instance.contramap is stack safe") {
     //   val C = summonInline[Contravariant[ListSnocF]]
     //   val n = 10000
@@ -86,6 +86,7 @@ object ContravariantSuite:
     given Contravariant[TreePred] = semiauto.contravariant
     given Contravariant[ListPred] = semiauto.contravariant
     given Contravariant[GenericAdtPred] = semiauto.contravariant
+    // TODO: https://github.com/typelevel/kittens/issues/473
     // given Contravariant[InterleavedPred] = semiauto.contravariant
     given Contravariant[AndCharPred] = semiauto.contravariant
     given Contravariant[ListSnocF] = semiauto.contravariant

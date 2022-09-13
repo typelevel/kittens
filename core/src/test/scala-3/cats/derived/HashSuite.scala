@@ -10,28 +10,42 @@ class HashSuite extends KittensSuite:
   import HashSuite.*
   import TestDefns.*
 
-  inline def hashTests[A]: HashTests[A] =
+  inline def tests[A]: HashTests[A] =
     HashTests[A](summonInline)
 
-  inline def testHash(inline context: String): Unit =
-    checkAll(s"$context.Hash[IList[Int]]", hashTests[IList[Int]].hash)
-    checkAll(s"$context.Hash[Inner]", hashTests[Inner].hash)
-    checkAll(s"$context.Hash[Outer]", hashTests[Outer].hash)
+  inline def validate(inline instance: String): Unit =
+    checkAll(s"$instance[IList[Int]]", tests[IList[Int]].hash)
+    checkAll(s"$instance[Inner]", tests[Inner].hash)
+    checkAll(s"$instance[Outer]", tests[Outer].hash)
     // FIXME: typelevel/cats#2878
-    // checkAll(s"$context.Hash[Interleaved[Int]]", hashTests[Interleaved[Int]].hash)
-    checkAll(s"$context.Hash[Tree[Int]]", hashTests[Tree[Int]].hash)
-    checkAll(s"$context.Hash[Recursive]", hashTests[Recursive].hash)
-    checkAll(s"$context.Hash[EnumK0]", hashTests[EnumK0].hash)
-    checkAll(s"$context.Hash is Serializable", SerializableTests.serializable(summonInline[Hash[Inner]]))
+    // checkAll(s"$context[Interleaved[Int]]", tests[Interleaved[Int]].hash)
+    checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].hash)
+    checkAll(s"$instance[Recursive]", tests[Recursive].hash)
+    checkAll(s"$instance[EnumK0]", tests[EnumK0].hash)
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Hash[Inner]]))
 
   locally {
     import auto.hash.given
-    testHash("auto")
+    validate("auto.hash")
   }
 
   locally {
-    import semiInstances.given
-    testHash("semiauto")
+    import semiHash.given
+    validate("semiauto.hash")
+  }
+
+  locally {
+    import derivedHash.*
+    val instance = "derived.hash"
+    checkAll(s"$instance[IList[Int]]", tests[IList[Int]].hash)
+    checkAll(s"$instance[Inner]", tests[Inner].hash)
+    checkAll(s"$instance[Outer]", tests[Outer].hash)
+    // FIXME: typelevel/cats#2878
+    // checkAll(s"$context[Interleaved[Int]]", tests[Interleaved[Int]].hash)
+    checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].hash)
+    checkAll(s"$instance[Recursive]", tests[Recursive].hash)
+    checkAll(s"$instance[EnumK0]", tests[EnumK0].hash)
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Hash[Inner]]))
   }
 
 end HashSuite
@@ -39,7 +53,7 @@ end HashSuite
 object HashSuite:
   import TestDefns.*
 
-  object semiInstances:
+  object semiHash:
     given Hash[IList[Int]] = semiauto.hash
     given Hash[Inner] = semiauto.hash
     given Hash[Outer] = semiauto.hash
@@ -47,5 +61,14 @@ object HashSuite:
     given Hash[Tree[Int]] = semiauto.hash
     given Hash[Recursive] = semiauto.hash
     given Hash[EnumK0] = semiauto.hash
+
+  object derivedHash:
+    case class IList[A](x: TestDefns.IList[A]) derives Hash
+    case class Inner(x: TestDefns.Inner) derives Hash
+    case class Outer(x: TestDefns.Outer) derives Hash
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Hash
+    case class Tree[A](x: TestDefns.Tree[A]) derives Hash
+    case class Recursive(x: TestDefns.Recursive) derives Hash
+    case class EnumK0(x: TestDefns.EnumK0) derives Hash
 
 end HashSuite

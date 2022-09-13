@@ -13,7 +13,7 @@ val catsVersion = "2.8.0"
 val munitVersion = "1.0.0-M6"
 val disciplineMunitVersion = "2.0.0-M3"
 val kindProjectorVersion = "0.13.2"
-val shapeless2Version = "2.3.8"
+val shapeless2Version = "2.3.10"
 val shapeless3Version = "3.1.0"
 
 lazy val commonSettings = Seq(

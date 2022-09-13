@@ -28,12 +28,12 @@ class MonoidKSuite extends KittensSuite:
   }
 
   locally {
-    import semiMonoidK.given
+    import semiInstances.given
     validate("semiauto.monoidK")
   }
 
   locally {
-    import derivedMonoidK.*
+    import derivedInstances.*
     val instance = "derived.monoidK"
     checkAll(s"$instance[ComplexProduct]", tests[ComplexProduct].monoidK[Char])
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].monoidK[Char])
@@ -48,12 +48,12 @@ object MonoidKSuite:
 
   type BoxMul[A] = Box[Mul[A]]
 
-  object semiMonoidK:
+  object semiInstances:
     given MonoidK[ComplexProduct] = semiauto.monoidK
     given MonoidK[CaseClassWOption] = semiauto.monoidK
     given MonoidK[BoxMul] = semiauto.monoidK
 
-  object derivedMonoidK:
+  object derivedInstances:
     case class ComplexProduct[A](x: TestDefns.ComplexProduct[A]) derives MonoidK
     case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives MonoidK
     case class Simple[A](value1: List[A], value2: Set[A]) derives MonoidK

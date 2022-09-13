@@ -18,7 +18,6 @@ package cats.derived
 
 import cats.Monoid
 import cats.kernel.laws.discipline.{MonoidTests, SerializableTests}
-
 import scala.compiletime.*
 
 class MonoidSuite extends KittensSuite:
@@ -46,12 +45,12 @@ class MonoidSuite extends KittensSuite:
   }
 
   locally {
-    import semiMonoid.given
+    import semiInstances.given
     validate("semiauto.monoid")
   }
 
   locally {
-    import derivedMonoid.*
+    import derivedInstances.*
     val instance = "derived.monoid"
     checkAll(s"$instance[Foo]", tests[Foo].monoid)
     checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].monoid)
@@ -69,13 +68,13 @@ end MonoidSuite
 object MonoidSuite:
   import TestDefns.*
 
-  object semiMonoid:
+  object semiInstances:
     given Monoid[Foo] = semiauto.monoid
     given Monoid[Recursive] = semiauto.monoid
     given Monoid[Interleaved[Int]] = semiauto.monoid
     given Monoid[Box[Mul]] = semiauto.monoid
 
-  object derivedMonoid:
+  object derivedInstances:
     case class Foo(x: TestDefns.Foo) derives Monoid
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Monoid
     case class BoxMul(x: Box[Mul]) derives Monoid

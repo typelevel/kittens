@@ -19,8 +19,7 @@ package cats.derived
 import alleycats.Pure
 import cats.data.NonEmptyList
 import cats.laws.discipline.SerializableTests
-
-import scala.compiletime.summonInline
+import scala.compiletime.*
 
 class PureSuite extends KittensSuite:
   import PureSuite.*
@@ -47,14 +46,14 @@ class PureSuite extends KittensSuite:
   }
 
   locally {
-    import semiPure.given
+    import semiInstances.given
     validate("semiauto.pure")
     testNoSemi("Pure", "IList")
     testNoSemi("Pure", "Snoc")
   }
 
   locally {
-    import derivedPure.*
+    import derivedInstances.*
     val instance = "derived.pure"
     test(s"$instance[CaseClassWOption]")(
       assert(3.14.pure[CaseClassWOption].x == TestDefns.CaseClassWOption(Some(3.14)))
@@ -75,7 +74,7 @@ object PureSuite:
   type NelOption[A] = NonEmptyList[Option[A]]
   type BoxColor[A] = Box[Color[A]]
 
-  object semiPure:
+  object semiInstances:
     given Pure[LOption] = semiauto.pure
     given Pure[PList] = semiauto.pure
     given Pure[CaseClassWOption] = semiauto.pure
@@ -83,7 +82,7 @@ object PureSuite:
     given Pure[Interleaved] = semiauto.pure
     given Pure[BoxColor] = semiauto.pure
 
-  object derivedPure:
+  object derivedInstances:
     case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives Pure
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Pure
 

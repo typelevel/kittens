@@ -18,7 +18,6 @@ package cats.derived
 
 import cats.kernel.CommutativeSemigroup
 import cats.kernel.laws.discipline.{CommutativeSemigroupTests, SerializableTests}
-
 import scala.compiletime.*
 
 class CommutativeSemigroupSuite extends KittensSuite:
@@ -47,12 +46,12 @@ class CommutativeSemigroupSuite extends KittensSuite:
   }
 
   locally {
-    import semiCommutativeSemigroup.given
+    import semiInstances.given
     validate("semiauto.commutativeSemigroup")
   }
 
   locally {
-    import derivedCommutativeSemigroup.*
+    import derivedInstances.*
     val instance = "derived.commutativeSemigroup"
     checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeSemigroup)
     checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeSemigroup)
@@ -73,12 +72,12 @@ object CommutativeSemigroupSuite:
 
   type BoxMul = Box[Mul]
 
-  object semiCommutativeSemigroup:
+  object semiInstances:
     given CommutativeSemigroup[CommutativeFoo] = semiauto.commutativeSemigroup
     given CommutativeSemigroup[Recursive] = semiauto.commutativeSemigroup
     given CommutativeSemigroup[BoxMul] = semiauto.commutativeSemigroup
 
-  object derivedCommutativeSemigroup:
+  object derivedInstances:
     case class CommutativeFoo(x: TestDefns.CommutativeFoo) derives CommutativeSemigroup
     case class BoxMul(x: CommutativeSemigroupSuite.BoxMul) derives CommutativeSemigroup
 

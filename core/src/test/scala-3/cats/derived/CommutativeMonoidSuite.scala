@@ -17,7 +17,7 @@
 package cats.derived
 
 import cats.kernel.{CommutativeMonoid, CommutativeSemigroup}
-import cats.kernel.laws.discipline.{CommutativeMonoidTests, SerializableTests}
+import cats.kernel.laws.discipline.*
 import scala.compiletime.*
 
 class CommutativeMonoidSuite extends KittensSuite:
@@ -56,15 +56,7 @@ class CommutativeMonoidSuite extends KittensSuite:
     val instance = "derived.commutativeMonoid"
     checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeMonoid)
     checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeMonoid)
-    checkAll(
-      s"$instance is Serializable",
-      SerializableTests.serializable(summonInline[CommutativeMonoid[CommutativeFoo]])
-    )
-    test(s"$instance respects existing instances") {
-      val box = summonInline[CommutativeMonoid[BoxMul]]
-      assert(box.empty == BoxMul(Box(Mul(1))))
-      assert(box.combine(BoxMul(Box(Mul(5))), BoxMul(Box(Mul(5)))) == BoxMul(Box(Mul(25))))
-    }
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(CommutativeMonoid[CommutativeFoo]))
   }
 
 end CommutativeMonoidSuite

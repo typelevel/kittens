@@ -58,6 +58,7 @@ class EmptyKSuite extends KittensSuite:
     test(s"$instance[CaseClassWOption]")(assert(emptyK[CaseClassWOption].x.value.isEmpty))
     test(s"$instance[IList]")(assert(emptyK[IList].x == INil()))
     test(s"$instance[Snoc]")(assert(emptyK[Snoc].x == SNil()))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(EmptyK[Snoc]))
   }
 
 end EmptyKSuite

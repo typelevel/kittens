@@ -68,7 +68,7 @@ class FunctorSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].functor[Boolean, Int, Boolean])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].functor[Boolean, Int, Boolean])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].functor[Boolean, Int, Boolean])
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Functor[Tree]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Functor[Tree]))
   }
 
 end FunctorSuite

@@ -55,13 +55,13 @@ class PureSuite extends KittensSuite:
   locally {
     import derivedInstances.*
     val instance = "derived.pure"
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Pure[Interleaved]))
     test(s"$instance[CaseClassWOption]")(
       assert(3.14.pure[CaseClassWOption].x == TestDefns.CaseClassWOption(Some(3.14)))
     )
     test(s"$instance[Interleaved]")(
       assert('x'.pure[Interleaved].x == TestDefns.Interleaved(0, 'x', 0, Vector('x'), ""))
     )
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Pure[Interleaved]]))
   }
 
 end PureSuite

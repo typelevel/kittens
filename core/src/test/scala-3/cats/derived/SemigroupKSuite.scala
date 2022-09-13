@@ -36,7 +36,7 @@ class SemigroupKSuite extends KittensSuite:
     checkAll(s"$instance[ComplexProduct]", tests[ComplexProduct].semigroupK[Char])
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].semigroupK[Char])
     checkAll(s"$instance[Simple]", tests[Simple].semigroupK[Char])
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[SemigroupK[ComplexProduct]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(SemigroupK[ComplexProduct]))
   }
 
 end SemigroupKSuite

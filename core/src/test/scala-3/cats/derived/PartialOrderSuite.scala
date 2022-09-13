@@ -18,31 +18,26 @@ package cats
 package derived
 
 import cats.kernel.laws.discipline.{PartialOrderTests, SerializableTests}
-import org.scalacheck.{Arbitrary, Cogen}
 import scala.compiletime.*
 
 class PartialOrderSuite extends KittensSuite:
   import PartialOrderSuite.*
   import TestDefns.*
 
-  inline def partialOrderTests[A]: PartialOrderTests[A] =
+  inline def tests[A]: PartialOrderTests[A] =
     PartialOrderTests[A](summonInline)
 
-  inline def testPartialOrder(context: String): Unit =
-    checkAll(s"$context.PartialOrder[IList[Int]]", partialOrderTests[IList[Int]].partialOrder)
-    checkAll(s"$context.PartialOrder[Inner]", partialOrderTests[Inner].partialOrder)
-    checkAll(s"$context.PartialOrder[Outer]", partialOrderTests[Outer].partialOrder)
-    checkAll(s"$context.PartialOrder[Interleaved[Int]]", partialOrderTests[Interleaved[Int]].partialOrder)
-    checkAll(s"$context.PartialOrder[Tree[Int]]", partialOrderTests[Tree[Int]].partialOrder)
-    checkAll(s"$context.PartialOrder[Recursive]", partialOrderTests[Recursive].partialOrder)
-    checkAll(s"$context.PartialOrder[Box[KeyValue]]", partialOrderTests[Box[KeyValue]].partialOrder)
-    checkAll(s"$context.PartialOrder[EnumK0]", partialOrderTests[EnumK0].partialOrder)
-    checkAll(
-      s"$context.PartialOrder is Serialiable",
-      SerializableTests.serializable(summonInline[PartialOrder[Tree[Int]]])
-    )
-
-    test(s"$context.PartialOrder respects existing instances") {
+  inline def validate(instance: String): Unit =
+    checkAll(s"$instance[IList[Int]]", tests[IList[Int]].partialOrder)
+    checkAll(s"$instance[Inner]", tests[Inner].partialOrder)
+    checkAll(s"$instance[Outer]", tests[Outer].partialOrder)
+    checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].partialOrder)
+    checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].partialOrder)
+    checkAll(s"$instance[Recursive]", tests[Recursive].partialOrder)
+    checkAll(s"$instance[Box[KeyValue]]", tests[Box[KeyValue]].partialOrder)
+    checkAll(s"$instance[EnumK0]", tests[EnumK0].partialOrder)
+    checkAll(s"$instance is Serialiable", SerializableTests.serializable(summonInline[PartialOrder[Tree[Int]]]))
+    test(s"$instance respects existing instances") {
       val boxKeyValue = summonInline[PartialOrder[Box[KeyValue]]]
       val x = Box(KeyValue("red", 1))
       val y = Box(KeyValue("red", 2))
@@ -53,12 +48,26 @@ class PartialOrderSuite extends KittensSuite:
 
   locally {
     import auto.partialOrder.given
-    testPartialOrder("auto")
+    validate("auto.partialOrder")
   }
 
   locally {
-    import semiInstances.given
-    testPartialOrder("semiauto")
+    import semiPartialOrder.given
+    validate("semiauto.partialOrder")
+  }
+
+  locally {
+    import derivedPartialOrder.*
+    val instance = "derived.partialOrder"
+    checkAll(s"$instance[IList[Int]]", tests[IList[Int]].partialOrder)
+    checkAll(s"$instance[Inner]", tests[Inner].partialOrder)
+    checkAll(s"$instance[Outer]", tests[Outer].partialOrder)
+    checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].partialOrder)
+    checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].partialOrder)
+    checkAll(s"$instance[Recursive]", tests[Recursive].partialOrder)
+    checkAll(s"$instance[BoxKV]", tests[BoxKV].partialOrder)
+    checkAll(s"$instance[EnumK0]", tests[EnumK0].partialOrder)
+    checkAll(s"$instance is Serialiable", SerializableTests.serializable(summonInline[PartialOrder[Tree[Int]]]))
   }
 
 end PartialOrderSuite
@@ -66,7 +75,7 @@ end PartialOrderSuite
 object PartialOrderSuite:
   import TestDefns.*
 
-  object semiInstances:
+  object semiPartialOrder:
     given PartialOrder[IList[Int]] = semiauto.partialOrder
     given PartialOrder[Inner] = semiauto.partialOrder
     given PartialOrder[Outer] = semiauto.partialOrder
@@ -76,12 +85,18 @@ object PartialOrderSuite:
     given PartialOrder[Box[KeyValue]] = semiauto.partialOrder
     given PartialOrder[EnumK0] = semiauto.partialOrder
 
+  object derivedPartialOrder:
+    case class IList[A](x: TestDefns.IList[A]) derives PartialOrder
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives PartialOrder
+    case class Tree[A](x: TestDefns.Tree[A]) derives PartialOrder
+    case class Inner(x: TestDefns.Inner) derives PartialOrder
+    case class Outer(x: TestDefns.Outer) derives PartialOrder
+    case class Recursive(x: TestDefns.Recursive) derives PartialOrder
+    case class EnumK0(x: TestDefns.EnumK0) derives PartialOrder
+    case class BoxKV(x: Box[KeyValue]) derives PartialOrder
+
   final case class KeyValue(key: String, value: Int)
-  object KeyValue extends ((String, Int) => KeyValue):
-    given Arbitrary[KeyValue] = Arbitrary(Arbitrary.arbitrary[(String, Int)].map(tupled))
-
-    given Cogen[KeyValue] = Cogen[(String, Int)].contramap(kv => kv.key -> kv.value)
-
+  object KeyValue:
     given PartialOrder[KeyValue] =
       PartialOrder.from((x, y) => if (x.key == y.key) x.value.toDouble - y.value.toDouble else Double.NaN)
 

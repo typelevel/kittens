@@ -17,8 +17,7 @@
 package cats.derived
 
 import cats.Eq
-import cats.kernel.laws.discipline.{EqTests, SerializableTests}
-
+import cats.kernel.laws.discipline.*
 import scala.compiletime.*
 
 class EqSuite extends KittensSuite.WithoutEq:
@@ -44,12 +43,12 @@ class EqSuite extends KittensSuite.WithoutEq:
   }
 
   locally {
-    import semiEq.given
+    import semiInstances.given
     validate("semiauto.eq")
   }
 
   locally {
-    import derivedEq.*
+    import derivedInstances.*
     val instance = "derived.eq"
     checkAll(s"$instance[Foo]]", tests[Foo].eqv)
     checkAll(s"$instance[IList[Int]]", tests[IList[Int]].eqv)
@@ -66,7 +65,7 @@ end EqSuite
 object EqSuite:
   import TestDefns.*
 
-  object semiEq:
+  object semiInstances:
     given Eq[Foo] = semiauto.eq
     given Eq[IList[Int]] = semiauto.eq
     given Eq[Inner] = semiauto.eq
@@ -75,7 +74,7 @@ object EqSuite:
     given Eq[Tree[Int]] = semiauto.eq
     given Eq[Recursive] = semiauto.eq
 
-  object derivedEq:
+  object derivedInstances:
     case class Foo(x: TestDefns.Foo) derives Eq
     case class IList[A](x: TestDefns.IList[A]) derives Eq
     case class Inner(x: TestDefns.Inner) derives Eq

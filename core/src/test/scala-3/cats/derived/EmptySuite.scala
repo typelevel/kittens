@@ -18,7 +18,6 @@ package cats.derived
 
 import alleycats.Empty
 import cats.laws.discipline.SerializableTests
-
 import scala.compiletime.*
 
 class EmptySuite extends KittensSuite:
@@ -48,7 +47,7 @@ class EmptySuite extends KittensSuite:
   }
 
   locally {
-    import semiEmpty.given
+    import semiInstances.given
     validate("semiauto.empty")
     testNoSemi("Empty", "IList[Int]")
     testNoSemi("Empty", "Snoc[Int]")
@@ -56,7 +55,7 @@ class EmptySuite extends KittensSuite:
   }
 
   locally {
-    import derivedEmpty.*
+    import derivedInstances.*
     val instance = "derived.empty"
     test(s"$instance[Foo]")(assert(empty[Foo].x == TestDefns.Foo(0, None)))
     test(s"$instance[Outer]")(assert(empty[Outer].x == TestDefns.Outer(Inner(0))))
@@ -76,7 +75,7 @@ object EmptySuite:
   // `Monoid[Option[A]]` gives us `Empty[Option[A]]` but it requires a `Semigroup[A]`.
   given [A]: Empty[Option[A]] = Empty(None)
 
-  object semiEmpty:
+  object semiInstances:
     given Empty[Foo] = semiauto.empty
     given Empty[Outer] = semiauto.empty
     given Empty[Interleaved[String]] = semiauto.empty
@@ -86,7 +85,7 @@ object EmptySuite:
     given Empty[Box[Mask]] = semiauto.empty
     given Empty[Chain] = semiauto.empty
 
-  object derivedEmpty:
+  object derivedInstances:
     case class Foo(x: TestDefns.Foo) derives Empty
     case class Outer(x: TestDefns.Outer) derives Empty
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Empty

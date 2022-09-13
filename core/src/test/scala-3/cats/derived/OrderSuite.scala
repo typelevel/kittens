@@ -17,9 +17,8 @@
 package cats.derived
 
 import cats.Order
-import cats.kernel.laws.discipline.{OrderTests, SerializableTests}
-import org.scalacheck.Arbitrary
-import scala.compiletime.summonInline
+import cats.kernel.laws.discipline.*
+import scala.compiletime.*
 
 class OrderSuite extends KittensSuite:
   import OrderSuite.*
@@ -43,12 +42,12 @@ class OrderSuite extends KittensSuite:
   }
 
   locally {
-    import semiOrder.given
+    import semiInstances.given
     validate("semiauto.order")
   }
 
   locally {
-    import derivedOrder.*
+    import derivedInstances.*
     val instance = "derived.order"
     checkAll(s"$instance[Inner]", tests[Inner].order)
     checkAll(s"$instance[Outer]", tests[Outer].order)
@@ -64,7 +63,7 @@ end OrderSuite
 object OrderSuite:
   import TestDefns.*
 
-  object semiOrder:
+  object semiInstances:
     given Order[Inner] = semiauto.order
     given Order[Outer] = semiauto.order
     given Order[Interleaved[Int]] = semiauto.order
@@ -72,7 +71,7 @@ object OrderSuite:
     given Order[GenericAdt[Int]] = semiauto.order
     given Order[EnumK0] = semiauto.order
 
-  object derivedOrder:
+  object derivedInstances:
     case class Inner(x: TestDefns.Inner) derives Order
     case class Outer(x: TestDefns.Outer) derives Order
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Order

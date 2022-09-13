@@ -17,7 +17,7 @@
 package cats.derived
 
 import cats.{Eval, Foldable}
-import cats.laws.discipline.{FoldableTests, SerializableTests}
+import cats.laws.discipline.*
 import cats.syntax.all.*
 import scala.compiletime.*
 
@@ -49,12 +49,12 @@ class FoldableSuite extends KittensSuite:
   }
 
   locally {
-    import semiFoldable.given
+    import semiInstances.given
     validate("semiauto.foldable")
   }
 
   locally {
-    import derivedFoldable.*
+    import derivedInstances.*
     val instance = "derived.foldable"
     checkAll(s"$instance[IList]", tests[IList].foldable[Int, Long])
     checkAll(s"$instance[Tree]", tests[Tree].foldable[Int, Long])
@@ -78,7 +78,7 @@ object FoldableSuite:
   type AndChar[A] = (A, Char)
   type BoxNel[A] = Box[Nel[A]]
 
-  object semiFoldable:
+  object semiInstances:
     given Foldable[IList] = semiauto.foldable
     given Foldable[Tree] = semiauto.foldable
     given Foldable[GenericAdt] = semiauto.foldable
@@ -92,7 +92,7 @@ object FoldableSuite:
     given Foldable[AtMostOne] = semiauto.foldable
     given Foldable[AtLeastOne] = semiauto.foldable
 
-  object derivedFoldable:
+  object derivedInstances:
     case class IList[A](x: TestDefns.IList[A]) derives Foldable
     case class Tree[A](x: TestDefns.Tree[A]) derives Foldable
     case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Foldable

@@ -22,7 +22,7 @@ import scala.compiletime.*
 
 class PartialOrderSuite extends KittensSuite:
   import PartialOrderSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[A]: PartialOrderTests[A] =
     PartialOrderTests[A](summonInline)
@@ -73,7 +73,7 @@ class PartialOrderSuite extends KittensSuite:
 end PartialOrderSuite
 
 object PartialOrderSuite:
-  import TestDefns.*
+  import ADTs.*
 
   object semiInstances:
     given PartialOrder[IList[Int]] = semiauto.partialOrder
@@ -86,13 +86,13 @@ object PartialOrderSuite:
     given PartialOrder[EnumK0] = semiauto.partialOrder
 
   object derivedInstances:
-    case class IList[A](x: TestDefns.IList[A]) derives PartialOrder
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives PartialOrder
-    case class Tree[A](x: TestDefns.Tree[A]) derives PartialOrder
-    case class Inner(x: TestDefns.Inner) derives PartialOrder
-    case class Outer(x: TestDefns.Outer) derives PartialOrder
-    case class Recursive(x: TestDefns.Recursive) derives PartialOrder
-    case class EnumK0(x: TestDefns.EnumK0) derives PartialOrder
+    case class IList[A](x: ADTs.IList[A]) derives PartialOrder
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives PartialOrder
+    case class Tree[A](x: ADTs.Tree[A]) derives PartialOrder
+    case class Inner(x: ADTs.Inner) derives PartialOrder
+    case class Outer(x: ADTs.Outer) derives PartialOrder
+    case class Recursive(x: ADTs.Recursive) derives PartialOrder
+    case class EnumK0(x: ADTs.EnumK0) derives PartialOrder
     case class BoxKV(x: Box[KeyValue]) derives PartialOrder
 
   final case class KeyValue(key: String, value: Int)

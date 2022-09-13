@@ -23,7 +23,7 @@ import scala.compiletime.*
 
 class ApplySuite extends KittensSuite:
   import ApplySuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline given [F[_]]: Isomorphisms[F] =
     Isomorphisms.invariant(summonInline[Apply[F]])
@@ -61,7 +61,7 @@ class ApplySuite extends KittensSuite:
 end ApplySuite
 
 object ApplySuite:
-  import TestDefns.*
+  import ADTs.*
 
   type OptList[A] = Option[List[A]]
   type AndInt[A] = (A, Int)
@@ -76,8 +76,8 @@ object ApplySuite:
     given Apply[ListBox] = semiauto.apply
 
   object derivedInstances:
-    case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives Apply
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Apply
+    case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives Apply
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Apply
     case class AndInt[A](x: ApplySuite.AndInt[A]) derives Apply
 
 end ApplySuite

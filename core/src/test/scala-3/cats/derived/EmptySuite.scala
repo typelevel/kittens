@@ -23,7 +23,7 @@ import scala.compiletime.*
 class EmptySuite extends KittensSuite:
   import EmptySuite.given
   import EmptySuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def empty[A]: A =
     summonInline[Empty[A]].empty
@@ -57,10 +57,10 @@ class EmptySuite extends KittensSuite:
   locally {
     import derivedInstances.*
     val instance = "derived.empty"
-    test(s"$instance[Foo]")(assert(empty[Foo].x == TestDefns.Foo(0, None)))
-    test(s"$instance[Outer]")(assert(empty[Outer].x == TestDefns.Outer(Inner(0))))
-    test(s"$instance[Interleaved[String]]")(assert(empty[Interleaved[String]].x == TestDefns.Interleaved.empty("")))
-    test(s"$instance[Recursive]")(assert(empty[Recursive].x == TestDefns.Recursive(0, None)))
+    test(s"$instance[Foo]")(assert(empty[Foo].x == ADTs.Foo(0, None)))
+    test(s"$instance[Outer]")(assert(empty[Outer].x == ADTs.Outer(Inner(0))))
+    test(s"$instance[Interleaved[String]]")(assert(empty[Interleaved[String]].x == ADTs.Interleaved.empty("")))
+    test(s"$instance[Recursive]")(assert(empty[Recursive].x == ADTs.Recursive(0, None)))
     test(s"$instance[IList[Dummy]]")(assert(empty[IList[Int]].x == INil()))
     test(s"$instance[Snoc[Dummy]]")(assert(empty[Snoc[Int]].x == SNil()))
     test(s"$instance respects existing instances")(assert(empty[BoxMask].x == Box(Mask(0xffffffff))))
@@ -70,7 +70,7 @@ class EmptySuite extends KittensSuite:
 end EmptySuite
 
 object EmptySuite:
-  import TestDefns.*
+  import ADTs.*
 
   // `Monoid[Option[A]]` gives us `Empty[Option[A]]` but it requires a `Semigroup[A]`.
   given [A]: Empty[Option[A]] = Empty(None)
@@ -86,12 +86,12 @@ object EmptySuite:
     given Empty[Chain] = semiauto.empty
 
   object derivedInstances:
-    case class Foo(x: TestDefns.Foo) derives Empty
-    case class Outer(x: TestDefns.Outer) derives Empty
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Empty
-    case class Recursive(x: TestDefns.Recursive) derives Empty
-    case class IList[A](x: TestDefns.IList[A]) derives Empty
-    case class Snoc[A](x: TestDefns.Snoc[A]) derives Empty
+    case class Foo(x: ADTs.Foo) derives Empty
+    case class Outer(x: ADTs.Outer) derives Empty
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Empty
+    case class Recursive(x: ADTs.Recursive) derives Empty
+    case class IList[A](x: ADTs.IList[A]) derives Empty
+    case class Snoc[A](x: ADTs.Snoc[A]) derives Empty
     case class BoxMask(x: Box[Mask]) derives Empty
 
   trait Dummy

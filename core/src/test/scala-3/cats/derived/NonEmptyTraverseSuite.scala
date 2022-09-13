@@ -20,12 +20,12 @@ import cats.{Eq, NonEmptyTraverse}
 import cats.data.{NonEmptyList, NonEmptyVector, OneAnd}
 import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
-import cats.syntax.all.*
+import cats.syntax.all.given
 import scala.compiletime.*
 
 class NonEmptyTraverseSuite extends KittensSuite:
   import NonEmptyTraverseSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[F[_]]: NonEmptyTraverseTests[F] =
     NonEmptyTraverseTests[F](summonInline)
@@ -107,7 +107,7 @@ class NonEmptyTraverseSuite extends KittensSuite:
 end NonEmptyTraverseSuite
 
 object NonEmptyTraverseSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type NelSCons[A] = NonEmptyList[SCons[A]]
   type NelAndOne[A] = NonEmptyList[OneAnd[Vector, A]]
@@ -124,10 +124,10 @@ object NonEmptyTraverseSuite:
     given NonEmptyTraverse[AtLeastOne] = semiauto.nonEmptyTraverse
 
   object derivedInstances:
-    case class ICons[A](x: TestDefns.ICons[A]) derives NonEmptyTraverse
-    case class Tree[A](x: TestDefns.Tree[A]) derives NonEmptyTraverse
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives NonEmptyTraverse
-    case class EnumK1[A](x: TestDefns.EnumK1[A]) derives NonEmptyTraverse
-    case class AtLeastOne[A](x: TestDefns.AtLeastOne[A]) derives NonEmptyTraverse
+    case class ICons[A](x: ADTs.ICons[A]) derives NonEmptyTraverse
+    case class Tree[A](x: ADTs.Tree[A]) derives NonEmptyTraverse
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives NonEmptyTraverse
+    case class EnumK1[A](x: ADTs.EnumK1[A]) derives NonEmptyTraverse
+    case class AtLeastOne[A](x: ADTs.AtLeastOne[A]) derives NonEmptyTraverse
 
 end NonEmptyTraverseSuite

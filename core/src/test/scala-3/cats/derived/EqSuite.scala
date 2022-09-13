@@ -22,7 +22,7 @@ import scala.compiletime.*
 
 class EqSuite extends KittensSuite.WithoutEq:
   import EqSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[A]: EqTests[A] =
     EqTests[A](summonInline)
@@ -63,7 +63,7 @@ class EqSuite extends KittensSuite.WithoutEq:
 end EqSuite
 
 object EqSuite:
-  import TestDefns.*
+  import ADTs.*
 
   object semiInstances:
     given Eq[Foo] = semiauto.eq
@@ -75,12 +75,12 @@ object EqSuite:
     given Eq[Recursive] = semiauto.eq
 
   object derivedInstances:
-    case class Foo(x: TestDefns.Foo) derives Eq
-    case class IList[A](x: TestDefns.IList[A]) derives Eq
-    case class Inner(x: TestDefns.Inner) derives Eq
-    case class Outer(x: TestDefns.Outer) derives Eq
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Eq
-    case class Tree[A](x: TestDefns.Tree[A]) derives Eq
-    case class Recursive(x: TestDefns.Recursive) derives Eq
+    case class Foo(x: ADTs.Foo) derives Eq
+    case class IList[A](x: ADTs.IList[A]) derives Eq
+    case class Inner(x: ADTs.Inner) derives Eq
+    case class Outer(x: ADTs.Outer) derives Eq
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Eq
+    case class Tree[A](x: ADTs.Tree[A]) derives Eq
+    case class Recursive(x: ADTs.Recursive) derives Eq
 
 end EqSuite

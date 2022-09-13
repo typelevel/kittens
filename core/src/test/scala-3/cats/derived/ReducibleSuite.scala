@@ -14,42 +14,51 @@
  * limitations under the License.
  */
 
-package cats
-package derived
+package cats.derived
 
+import cats.{Eval, Reducible}
 import cats.data.{NonEmptyList, OneAnd}
 import cats.laws.discipline.arbitrary.*
 import cats.laws.discipline.{ReducibleTests, SerializableTests}
 import cats.syntax.all.*
-import org.scalacheck.Arbitrary
 import scala.compiletime.*
 
 class ReducibleSuite extends KittensSuite:
   import ReducibleSuite.*
   import TestDefns.*
 
-  inline def reducibleTests[F[_]]: ReducibleTests[F] =
+  inline def tests[F[_]]: ReducibleTests[F] =
     ReducibleTests[F](summonInline)
 
-  inline def testReducible(context: String): Unit =
-    checkAll(s"$context.Reducible[ICons]", reducibleTests[ICons].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[Tree]", reducibleTests[Tree].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[NelSCons]", reducibleTests[NelSCons].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[NelAndOne]", reducibleTests[NelAndOne].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[VecAndNel]", reducibleTests[VecAndNel].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[Interleaved]", reducibleTests[Interleaved].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[BoxZipper]", reducibleTests[BoxZipper].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible[EnumK1]", reducibleTests[EnumK1].reducible[Option, Int, Long])
-    checkAll(s"$context.Reducible is Serializable", SerializableTests.serializable(summonInline[Reducible[Tree]]))
+  inline def validate(instance: String): Unit =
+    checkAll(s"$instance[ICons]", tests[ICons].reducible[Option, Int, Long])
+    checkAll(s"$instance[Tree]", tests[Tree].reducible[Option, Int, Long])
+    checkAll(s"$instance[NelSCons]", tests[NelSCons].reducible[Option, Int, Long])
+    checkAll(s"$instance[NelAndOne]", tests[NelAndOne].reducible[Option, Int, Long])
+    checkAll(s"$instance[VecAndNel]", tests[VecAndNel].reducible[Option, Int, Long])
+    checkAll(s"$instance[Interleaved]", tests[Interleaved].reducible[Option, Int, Long])
+    checkAll(s"$instance[BoxZipper]", tests[BoxZipper].reducible[Option, Int, Long])
+    checkAll(s"$instance[EnumK1]", tests[EnumK1].reducible[Option, Int, Long])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Reducible[Tree]]))
 
   locally {
     import auto.reducible.given
-    testReducible("auto")
+    validate("auto.reducible")
   }
 
   locally {
-    import semiInstances.given
-    testReducible("semiauto")
+    import semiReducible.given
+    validate("semiauto.reducible")
+  }
+
+  locally {
+    import derivedReducible.*
+    val instance = "derived.reducible"
+    checkAll(s"$instance[ICons]", tests[ICons].reducible[Option, Int, Long])
+    checkAll(s"$instance[Tree]", tests[Tree].reducible[Option, Int, Long])
+    checkAll(s"$instance[Interleaved]", tests[Interleaved].reducible[Option, Int, Long])
+    checkAll(s"$instance[EnumK1]", tests[EnumK1].reducible[Option, Int, Long])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Reducible[Tree]]))
   }
 
 end ReducibleSuite
@@ -62,7 +71,7 @@ object ReducibleSuite:
   type VecAndNel[A] = (Vector[A], NonEmptyList[A])
   type BoxZipper[A] = Box[Zipper[A]]
 
-  object semiInstances:
+  object semiReducible:
     given Reducible[ICons] = semiauto.reducible
     given Reducible[Tree] = semiauto.reducible
     given Reducible[NelSCons] = semiauto.reducible
@@ -72,18 +81,14 @@ object ReducibleSuite:
     given Reducible[BoxZipper] = semiauto.reducible
     given Reducible[EnumK1] = semiauto.reducible
 
+  object derivedReducible:
+    case class ICons[A](x: TestDefns.ICons[A]) derives Reducible
+    case class Tree[A](x: TestDefns.Tree[A]) derives Reducible
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Reducible
+    case class EnumK1[A](x: TestDefns.EnumK1[A]) derives Reducible
+
   final case class Zipper[+A](left: List[A], focus: A, right: List[A])
   object Zipper:
-    given [A: Eq]: Eq[Zipper[A]] =
-      (x, y) => x.focus === y.focus && x.left === y.left && x.right === y.right
-
-    given [A: Arbitrary]: Arbitrary[Zipper[A]] =
-      Arbitrary(for
-        left <- Arbitrary.arbitrary[List[A]]
-        focus <- Arbitrary.arbitrary[A]
-        right <- Arbitrary.arbitrary[List[A]]
-      yield Zipper(left, focus, right))
-
     given Reducible[Zipper] with
       def reduceLeftTo[A, B](fa: Zipper[A])(f: A => B)(g: (B, A) => B) =
         NonEmptyList(fa.focus, fa.right).reduceLeftTo(f)(g)

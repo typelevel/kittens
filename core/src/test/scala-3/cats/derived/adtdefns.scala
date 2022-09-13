@@ -343,6 +343,42 @@ object TestDefns:
   final case class ListField(a: String, b: List[ListFieldChild])
   final case class ListFieldChild(c: Int)
 
+  enum Many[+A] derives Eq:
+    case Naught
+    case More(value: A, rest: Many[A])
+
+  enum AtMostOne[+A] derives Eq:
+    case Naught
+    case Single(value: A)
+
+  enum AtLeastOne[+A] derives Eq:
+    case Single(value: A)
+    case More(value: A, rest: Option[AtLeastOne[A]])
+
+  object Many:
+    given [A: Arbitrary]: Arbitrary[Many[A]] = Arbitrary(
+      Gen.oneOf(
+        Gen.const(Many.Naught),
+        Gen.lzy(Arbitrary.arbitrary[(A, Many[A])].map(Many.More.apply))
+      )
+    )
+
+  object AtMostOne:
+    given [A: Arbitrary]: Arbitrary[AtMostOne[A]] = Arbitrary(
+      Gen.oneOf(
+        Gen.const(AtMostOne.Naught),
+        Arbitrary.arbitrary[A].map(AtMostOne.Single.apply)
+      )
+    )
+
+  object AtLeastOne:
+    given [A: Arbitrary]: Arbitrary[AtLeastOne[A]] = Arbitrary(
+      Gen.oneOf(
+        Arbitrary.arbitrary[A].map(AtLeastOne.Single.apply),
+        Gen.lzy(Arbitrary.arbitrary[(A, Option[AtLeastOne[A]])].map(AtLeastOne.More.apply))
+      )
+    )
+
 end TestDefns
 
 trait TestEqInstances:

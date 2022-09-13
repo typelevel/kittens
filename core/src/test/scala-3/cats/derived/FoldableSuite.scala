@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package cats
-package derived
+package cats.derived
 
+import cats.{Eval, Foldable}
 import cats.laws.discipline.{FoldableTests, SerializableTests}
 import cats.syntax.all.*
-import org.scalacheck.{Arbitrary, Gen}
 import scala.compiletime.*
 
 class FoldableSuite extends KittensSuite:
@@ -106,15 +105,6 @@ object FoldableSuite:
 
   final case class Nel[+A](head: A, tail: List[A])
   object Nel:
-    given [A: Eq]: Eq[Nel[A]] =
-      (x, y) => x.head === y.head && x.tail === y.tail
-
-    given [A: Arbitrary]: Arbitrary[Nel[A]] =
-      Arbitrary(for
-        head <- Arbitrary.arbitrary[A]
-        tail <- Arbitrary.arbitrary[List[A]]
-      yield Nel(head, tail))
-
     given Foldable[Nel] with
       def foldLeft[A, B](fa: Nel[A], b: B)(f: (B, A) => B) = fa.tail.foldl(b)(f)
       def foldRight[A, B](fa: Nel[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) = fa.tail.foldr(lb)(f)

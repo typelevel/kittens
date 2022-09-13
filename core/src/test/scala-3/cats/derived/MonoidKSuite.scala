@@ -1,9 +1,7 @@
 package cats.derived
 
-import alleycats.*
-import cats.*
+import cats.MonoidK
 import cats.laws.discipline.{MonoidKTests, SerializableTests}
-import org.scalacheck.Arbitrary
 import scala.compiletime.*
 
 class MonoidKSuite extends KittensSuite:
@@ -63,8 +61,6 @@ object MonoidKSuite:
 
   final case class Mul[T](value: Int)
   object Mul:
-    given [T]: Eq[Mul[T]] = Eq.by(_.value)
-    given [T]: Arbitrary[Mul[T]] = Arbitrary(Arbitrary.arbitrary[Int].map(apply))
     given MonoidK[Mul] with
       def empty[A] = Mul(1)
       def combineK[A](x: Mul[A], y: Mul[A]) = Mul(x.value * y.value)

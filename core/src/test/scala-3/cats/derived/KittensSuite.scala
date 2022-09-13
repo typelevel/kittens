@@ -16,18 +16,23 @@
 
 package cats.derived
 
+import cats.Eq
 import cats.platform.Platform
 import cats.syntax.AllSyntax
 import munit.DisciplineSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Test.Parameters
 
+import scala.deriving.Mirror
 import scala.quoted.*
 
 /** An opinionated stack of traits to improve consistency and reduce boilerplate in Kittens tests. Note that unlike the
   * corresponding CatsSuite in the Cat project, this trait does not mix in any instances.
   */
-abstract class KittensSuite extends KittensSuite.WithoutEq, TestEqInstances
+abstract class KittensSuite extends KittensSuite.WithoutEq, TestEqInstances:
+  given [A <: Product](using mirror: Mirror.ProductOf[A], via: Eq[mirror.MirroredElemTypes]): Eq[A] =
+    Eq.by(Tuple.fromProductTyped)
+
 object KittensSuite:
   def deCapitalizeMacro(str: Expr[String])(using Quotes) =
     val value = str.valueOrAbort
@@ -47,6 +52,9 @@ object KittensSuite:
 
     given [A: Arbitrary]: Arbitrary[List[A]] =
       Arbitrary.arbContainer
+
+    given [A <: Product](using mirror: Mirror.ProductOf[A], via: Arbitrary[mirror.MirroredElemTypes]): Arbitrary[A] =
+      Arbitrary(via.arbitrary.map(mirror.fromTuple))
 
     inline def testNoInstance(inline tc: String, target: String, message: String): Unit =
       val errors = compileErrors(tc + "[" + target + "]")

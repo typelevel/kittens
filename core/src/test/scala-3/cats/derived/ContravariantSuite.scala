@@ -26,41 +26,22 @@ class ContravariantSuite extends KittensSuite:
   import ContravariantSuite.*
   import TestDefns.*
 
-  inline def contravariantTests[F[_]]: ContravariantTests[F] =
+  inline def tests[F[_]]: ContravariantTests[F] =
     ContravariantTests[F](summonInline)
 
-  inline def testContravariant(context: String): Unit =
-    checkAll(s"$context.Contravariant[OptPred]", contravariantTests[OptPred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[TreePred]", contravariantTests[TreePred].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Contravariant[ListPred]", contravariantTests[ListPred].contravariant[MiniInt, String, Boolean])
-    checkAll(
-      s"$context.Contravariant[GenericAdtPred]",
-      contravariantTests[GenericAdtPred].contravariant[MiniInt, String, Boolean]
-    )
+  inline def validate(instance: String): Unit =
+    checkAll(s"$instance[OptPred]", tests[OptPred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[TreePred]", tests[TreePred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[ListPred]", tests[ListPred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[GenericAdtPred]", tests[GenericAdtPred].contravariant[MiniInt, String, Boolean])
     // TODO https://github.com/typelevel/kittens/issues/473
-    // checkAll(
-    //   s"$context.Contravariant[InterleavedPred]",
-    //   contravariantTests[InterleavedPred].contravariant[MiniInt, String, Boolean]
-    // )
-    checkAll(
-      s"$context.Contravariant[AndCharPred]",
-      contravariantTests[AndCharPred].contravariant[MiniInt, String, Boolean]
-    )
-    checkAll(
-      s"$context.Contravariant[ListSnocF]",
-      contravariantTests[ListSnocF].contravariant[MiniInt, String, Boolean]
-    )
-    checkAll(
-      s"$context.Contravariant[EnumK1Contra]",
-      contravariantTests[EnumK1Contra].contravariant[MiniInt, String, Boolean]
-    )
-    checkAll(
-      s"$context.Contravariant is Serializable",
-      SerializableTests.serializable(summonInline[Contravariant[TreePred]])
-    )
-
+    // checkAll(s"instance[InterleavedPred]", tests[InterleavedPred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[AndCharPred]", tests[AndCharPred].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[ListSnocF]", tests[ListSnocF].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[EnumK1Contra]", tests[EnumK1Contra].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Contravariant[TreePred]]))
     // TODO https://github.com/typelevel/kittens/issues/476
-    // test(s"$context.Contravariant.contramap is stack safe") {
+    // test(s"instance.contramap is stack safe") {
     //   val C = summonInline[Contravariant[ListSnocF]]
     //   val n = 10000
     //   val largeBoxed = Snoc.fromSeq((1 until n).map((j: Int) => (i: Int) => i + j)) :: Nil
@@ -71,12 +52,19 @@ class ContravariantSuite extends KittensSuite:
 
   locally {
     import auto.contravariant.given
-    testContravariant("auto")
+    validate("auto.contravariant")
   }
 
   locally {
-    import semiInstances.given
-    testContravariant("semiauto")
+    import semiContravariant.given
+    validate("semiauto.contravariant")
+  }
+
+  locally {
+    import derivedContravariant.*
+    val instance = "derived.contravariant"
+    checkAll(s"$instance[EnumK1Contra]", tests[EnumK1Contra].contravariant[MiniInt, String, Boolean])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Contravariant[EnumK1Contra]]))
   }
 
 end ContravariantSuite
@@ -92,7 +80,7 @@ object ContravariantSuite:
   type AndCharPred[A] = (A => Boolean, Char)
   type TreePred[A] = Tree[A => Boolean]
 
-  object semiInstances:
+  object semiContravariant:
     given Contravariant[OptPred] = semiauto.contravariant
     given Contravariant[TreePred] = semiauto.contravariant
     given Contravariant[ListPred] = semiauto.contravariant
@@ -102,18 +90,19 @@ object ContravariantSuite:
     given Contravariant[ListSnocF] = semiauto.contravariant
     given Contravariant[EnumK1Contra] = semiauto.contravariant
 
-  case class Single[A](value: A => Unit) derives Contravariant
+  object derivedContravariant:
+    case class EnumK1Contra[-A](x: TestDefns.EnumK1Contra[A]) derives Contravariant
 
-  enum Many[-A] derives Contravariant:
-    case Naught
-    case More(value: A => Unit, rest: Many[A])
+    enum Many[-A] derives Contravariant:
+      case Naught
+      case More(value: A => Unit, rest: Many[A])
 
-  enum AtMostOne[-A] derives Contravariant:
-    case Naught
-    case Single(value: A => Unit)
+    enum AtMostOne[-A] derives Contravariant:
+      case Naught
+      case Single(value: A => Unit)
 
-  enum AtLeastOne[-A] derives Contravariant:
-    case Single(value: A => Unit)
-    case More(value: A => Unit, rest: Option[AtLeastOne[A]])
+    enum AtLeastOne[-A] derives Contravariant:
+      case Single(value: A => Unit)
+      case More(value: A => Unit, rest: Option[AtLeastOne[A]])
 
 end ContravariantSuite

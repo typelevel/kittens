@@ -27,33 +27,46 @@ class CommutativeSemigroupSuite extends KittensSuite:
   import CommutativeSemigroupSuite.*
   import TestDefns.*
 
-  inline def commutativeSemigroupTests[A]: CommutativeSemigroupTests[A] =
+  inline def tests[A]: CommutativeSemigroupTests[A] =
     CommutativeSemigroupTests[A](summonInline)
 
-  inline def testCommutativeSemigroup(inline context: String): Unit =
+  inline def validate(inline instance: String): Unit =
+    checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeSemigroup)
+    checkAll(s"$instance[Recursive]", tests[Recursive].commutativeSemigroup)
+    checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeSemigroup)
     checkAll(
-      s"$context.CommutativeSemigroup[CommutativeFoo]",
-      commutativeSemigroupTests[CommutativeFoo].commutativeSemigroup
-    )
-    checkAll(s"$context.CommutativeSemigroup[Recursive]", commutativeSemigroupTests[Recursive].commutativeSemigroup)
-    checkAll(s"$context.CommutativeSemigroup[Box[Mul]]", commutativeSemigroupTests[Box[Mul]].commutativeSemigroup)
-    checkAll(
-      s"$context.CommutativeSemigroup is Serializable",
+      s"$instance is Serializable",
       SerializableTests.serializable(summonInline[CommutativeSemigroup[CommutativeFoo]])
     )
-    test(s"$context.CommutativeSemigroup respects existing instances") {
-      val box = summonInline[CommutativeSemigroup[Box[Mul]]]
+    test(s"$instance respects existing instances") {
+      val box = summonInline[CommutativeSemigroup[BoxMul]]
       assert(box.combine(Box(Mul(5)), Box(Mul(5))).content.value == 25)
     }
 
   locally {
     import auto.commutativeSemigroup.given
-    testCommutativeSemigroup("auto")
+    validate("auto.commutativeSemigroup")
   }
 
   locally {
-    import semiInstances.given
-    testCommutativeSemigroup("semiauto")
+    import semiCommutativeSemigroup.given
+    validate("semiauto.commutativeSemigroup")
+  }
+
+  locally {
+    import derivedCommutativeSemigroup.*
+    val instance = "derived.commutativeSemigroup"
+    // Copy pasted from `validate`
+    checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeSemigroup)
+    checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeSemigroup)
+    checkAll(
+      s"$instance is Serializable",
+      SerializableTests.serializable(summonInline[CommutativeSemigroup[CommutativeFoo]])
+    )
+    test(s"$instance respects existing instances") {
+      val box = summonInline[CommutativeSemigroup[BoxMul]]
+      assert(box.combine(BoxMul(Box(Mul(5))), BoxMul(Box(Mul(5)))).x.content.value == 25)
+    }
   }
 
 end CommutativeSemigroupSuite
@@ -61,10 +74,16 @@ end CommutativeSemigroupSuite
 object CommutativeSemigroupSuite:
   import TestDefns.*
 
-  object semiInstances:
+  type BoxMul = Box[Mul]
+
+  object semiCommutativeSemigroup:
     given CommutativeSemigroup[CommutativeFoo] = semiauto.commutativeSemigroup
     given CommutativeSemigroup[Recursive] = semiauto.commutativeSemigroup
-    given CommutativeSemigroup[Box[Mul]] = semiauto.commutativeSemigroup
+    given CommutativeSemigroup[BoxMul] = semiauto.commutativeSemigroup
+
+  object derivedCommutativeSemigroup:
+    case class CommutativeFoo(x: TestDefns.CommutativeFoo) derives CommutativeSemigroup
+    case class BoxMul(x: CommutativeSemigroupSuite.BoxMul) derives CommutativeSemigroup
 
   final case class Mul(value: Int)
   object Mul:

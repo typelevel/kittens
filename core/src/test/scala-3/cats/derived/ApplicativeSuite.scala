@@ -56,7 +56,7 @@ class ApplicativeSuite extends KittensSuite:
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].applicative[Int, String, Long])
     checkAll(s"$instance[AndInt]", tests[AndInt].applicative[Int, String, Long])
     checkAll(s"$instance[Interleaved]", tests[Interleaved].applicative[Int, String, Long])
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Applicative[Interleaved]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Applicative[Interleaved]))
   }
 
 end ApplicativeSuite

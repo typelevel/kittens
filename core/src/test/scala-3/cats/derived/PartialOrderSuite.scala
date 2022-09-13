@@ -67,7 +67,7 @@ class PartialOrderSuite extends KittensSuite:
     checkAll(s"$instance[Recursive]", tests[Recursive].partialOrder)
     checkAll(s"$instance[BoxKV]", tests[BoxKV].partialOrder)
     checkAll(s"$instance[EnumK0]", tests[EnumK0].partialOrder)
-    checkAll(s"$instance is Serialiable", SerializableTests.serializable(summonInline[PartialOrder[Tree[Int]]]))
+    checkAll(s"$instance is Serialiable", SerializableTests.serializable(PartialOrder[Tree[Int]]))
   }
 
 end PartialOrderSuite

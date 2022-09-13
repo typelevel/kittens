@@ -57,7 +57,7 @@ class EqSuite extends KittensSuite.WithoutEq:
     checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].eqv)
     checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].eqv)
     checkAll(s"$instance[Recursive]", tests[Recursive].eqv)
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Eq[Foo]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Eq[Foo]))
   }
 
 end EqSuite

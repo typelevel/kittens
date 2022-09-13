@@ -55,7 +55,7 @@ class OrderSuite extends KittensSuite:
     checkAll(s"$instance[Recursive]", tests[Recursive].order)
     checkAll(s"$instance[GenericAdt[Int]]", tests[GenericAdt[Int]].order)
     checkAll(s"$instance[EnumK0]", tests[EnumK0].order)
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Order[Interleaved[Int]]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Order[Interleaved[Int]]))
   }
 
 end OrderSuite

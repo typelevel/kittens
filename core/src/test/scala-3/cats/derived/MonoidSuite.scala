@@ -55,12 +55,7 @@ class MonoidSuite extends KittensSuite:
     checkAll(s"$instance[Foo]", tests[Foo].monoid)
     checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].monoid)
     checkAll(s"$instance[BoxMul]", tests[BoxMul].monoid)
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Monoid[Foo]]))
-    test(s"$instance respects existing instances") {
-      val box = summonInline[Monoid[BoxMul]]
-      assert(box.empty == BoxMul(Box(Mul(1))))
-      assert(box.combine(BoxMul(Box(Mul(5))), BoxMul(Box(Mul(5)))) == BoxMul(Box(Mul(25))))
-    }
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Monoid[Foo]))
   }
 
 end MonoidSuite

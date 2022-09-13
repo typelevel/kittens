@@ -101,10 +101,7 @@ class NonEmptyTraverseSuite extends KittensSuite:
       s"$instance[AtLeastOne]",
       tests[AtLeastOne].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
-    checkAll(
-      s"$instance is Serializable",
-      SerializableTests.serializable(summonInline[NonEmptyTraverse[Tree]])
-    )
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(NonEmptyTraverse[Tree]))
   }
 
 end NonEmptyTraverseSuite

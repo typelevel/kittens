@@ -44,7 +44,7 @@ class HashSuite extends KittensSuite:
     checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].hash)
     checkAll(s"$instance[Recursive]", tests[Recursive].hash)
     checkAll(s"$instance[EnumK0]", tests[EnumK0].hash)
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Hash[Inner]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Hash[Inner]))
   }
 
 end HashSuite

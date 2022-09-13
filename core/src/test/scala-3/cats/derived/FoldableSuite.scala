@@ -65,7 +65,7 @@ class FoldableSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].foldable[Int, Long])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].foldable[Int, Long])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].foldable[Int, Long])
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Foldable[Tree]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Foldable[Tree]))
   }
 
 end FoldableSuite

@@ -56,7 +56,7 @@ class SemigroupSuite extends KittensSuite:
     checkAll(s"$instances[Foo]", tests[Foo].semigroup)
     checkAll(s"$instances[Interleaved[Int]]", tests[Interleaved[Int]].semigroup)
     checkAll(s"$instances[BoxMul]", tests[BoxMul].semigroup)
-    checkAll(s"$instances is Serializable", SerializableTests.serializable(summonInline[Semigroup[Foo]]))
+    checkAll(s"$instances is Serializable", SerializableTests.serializable(Semigroup[Foo]))
   }
 
 end SemigroupSuite

@@ -33,24 +33,32 @@ class EmptyKSuite extends KittensSuite:
   inline def emptyK[F[_]] =
     summonInline[EmptyK[F]].empty
 
-  inline def testEmptyK(context: String): Unit =
-    test(s"$context.EmptyK[LOption]")(assert(emptyK[LOption] == Nil))
-    test(s"$context.EmptyK[PList]")(assert(emptyK[PList] == (Nil, Nil)))
-    test(s"$context.EmptyK[CaseClassWOption]")(assert(emptyK[CaseClassWOption] == CaseClassWOption(None)))
-    test(s"$context.EmptyK[NelOption]")(assert(emptyK[NelOption] == NonEmptyList.one(None)))
-    test(s"$context.EmptyK[IList]")(assert(emptyK[IList] == INil()))
-    test(s"$context.EmptyK[Snoc]")(assert(emptyK[Snoc] == SNil()))
-    test(s"$context.EmptyK respects existing instances")(assert(emptyK[BoxColor] == Box(Color(255, 255, 255))))
-    checkAll(s"$context.EmptyK is Serializable", SerializableTests.serializable(summonInline[EmptyK[LOption]]))
+  inline def validate(instance: String): Unit =
+    test(s"$instance[LOption]")(assert(emptyK[LOption] == Nil))
+    test(s"$instance[PList]")(assert(emptyK[PList] == (Nil, Nil)))
+    test(s"$instance[CaseClassWOption]")(assert(emptyK[CaseClassWOption] == CaseClassWOption(None)))
+    test(s"$instance[NelOption]")(assert(emptyK[NelOption] == NonEmptyList.one(None)))
+    test(s"$instance[IList]")(assert(emptyK[IList] == INil()))
+    test(s"$instance[Snoc]")(assert(emptyK[Snoc] == SNil()))
+    test(s"$instance respects existing instances")(assert(emptyK[BoxColor] == Box(Color(255, 255, 255))))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[EmptyK[LOption]]))
 
   locally {
     import auto.emptyK.given
-    testEmptyK("auto")
+    validate("auto.emptyK")
   }
 
   locally {
-    import semiInstances.given
-    testEmptyK("semiauto")
+    import semiEmptyK.given
+    validate("semiauto.emptyK")
+  }
+
+  locally {
+    import derivedInstances.*
+    val instance = "derived.emptyK"
+    test(s"$instance[CaseClassWOption]")(assert(emptyK[CaseClassWOption].x.value.isEmpty))
+    test(s"$instance[IList]")(assert(emptyK[IList].x == INil()))
+    test(s"$instance[Snoc]")(assert(emptyK[Snoc].x == SNil()))
   }
 
 end EmptyKSuite
@@ -63,7 +71,7 @@ object EmptyKSuite:
   type NelOption[A] = NonEmptyList[Option[A]]
   type BoxColor[A] = Box[Color[A]]
 
-  object semiInstances:
+  object semiEmptyK:
     given EmptyK[LOption] = semiauto.emptyK
     given EmptyK[PList] = semiauto.emptyK
     given EmptyK[CaseClassWOption] = semiauto.emptyK
@@ -71,6 +79,11 @@ object EmptyKSuite:
     given EmptyK[IList] = semiauto.emptyK
     given EmptyK[Snoc] = semiauto.emptyK
     given EmptyK[BoxColor] = semiauto.emptyK
+
+  object derivedInstances:
+    case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives EmptyK
+    case class IList[A](x: TestDefns.IList[A]) derives EmptyK
+    case class Snoc[A](x: TestDefns.Snoc[A]) derives EmptyK
 
   final case class Color[A](r: Int, g: Int, b: Int)
   object Color:

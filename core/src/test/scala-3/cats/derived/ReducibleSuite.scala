@@ -20,12 +20,12 @@ import cats.{Eval, Reducible}
 import cats.data.{NonEmptyList, OneAnd}
 import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
-import cats.syntax.all.*
+import cats.syntax.all.given
 import scala.compiletime.*
 
 class ReducibleSuite extends KittensSuite:
   import ReducibleSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[F[_]]: ReducibleTests[F] =
     ReducibleTests[F](summonInline)
@@ -66,7 +66,7 @@ class ReducibleSuite extends KittensSuite:
 end ReducibleSuite
 
 object ReducibleSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type NelSCons[A] = NonEmptyList[SCons[A]]
   type NelAndOne[A] = NonEmptyList[OneAnd[Vector, A]]
@@ -85,11 +85,11 @@ object ReducibleSuite:
     given Reducible[AtLeastOne] = semiauto.reducible
 
   object derivedInstances:
-    case class ICons[A](x: TestDefns.ICons[A]) derives Reducible
-    case class Tree[A](x: TestDefns.Tree[A]) derives Reducible
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Reducible
-    case class EnumK1[A](x: TestDefns.EnumK1[A]) derives Reducible
-    case class AtLeastOne[A](x: TestDefns.AtLeastOne[A]) derives Reducible
+    case class ICons[A](x: ADTs.ICons[A]) derives Reducible
+    case class Tree[A](x: ADTs.Tree[A]) derives Reducible
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Reducible
+    case class EnumK1[A](x: ADTs.EnumK1[A]) derives Reducible
+    case class AtLeastOne[A](x: ADTs.AtLeastOne[A]) derives Reducible
 
   final case class Zipper[+A](left: List[A], focus: A, right: List[A])
   object Zipper:

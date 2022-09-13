@@ -6,7 +6,7 @@ import scala.compiletime.*
 
 class MonoidKSuite extends KittensSuite:
   import MonoidKSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[F[_]]: MonoidKTests[F] =
     MonoidKTests[F](summonInline)
@@ -44,7 +44,7 @@ class MonoidKSuite extends KittensSuite:
 end MonoidKSuite
 
 object MonoidKSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type BoxMul[A] = Box[Mul[A]]
 
@@ -54,8 +54,8 @@ object MonoidKSuite:
     given MonoidK[BoxMul] = semiauto.monoidK
 
   object derivedInstances:
-    case class ComplexProduct[A](x: TestDefns.ComplexProduct[A]) derives MonoidK
-    case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives MonoidK
+    case class ComplexProduct[A](x: ADTs.ComplexProduct[A]) derives MonoidK
+    case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives MonoidK
     case class Simple[A](value1: List[A], value2: Set[A]) derives MonoidK
     case class Recursive[A](first: List[A], rest: Recursive[A]) derives MonoidK
 

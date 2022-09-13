@@ -22,7 +22,7 @@ import scala.compiletime.*
 
 class CommutativeSemigroupSuite extends KittensSuite:
   import CommutativeSemigroupSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[A]: CommutativeSemigroupTests[A] =
     CommutativeSemigroupTests[A](summonInline)
@@ -61,7 +61,7 @@ class CommutativeSemigroupSuite extends KittensSuite:
 end CommutativeSemigroupSuite
 
 object CommutativeSemigroupSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type BoxMul = Box[Mul]
 
@@ -71,7 +71,7 @@ object CommutativeSemigroupSuite:
     given CommutativeSemigroup[BoxMul] = semiauto.commutativeSemigroup
 
   object derivedInstances:
-    case class CommutativeFoo(x: TestDefns.CommutativeFoo) derives CommutativeSemigroup
+    case class CommutativeFoo(x: ADTs.CommutativeFoo) derives CommutativeSemigroup
     case class BoxMul(x: CommutativeSemigroupSuite.BoxMul) derives CommutativeSemigroup
 
   final case class Mul(value: Int)

@@ -24,7 +24,7 @@ import scala.compiletime.summonInline
 
 class EmptyKSuite extends KittensSuite:
   import EmptyKSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   given Pure[Box] with
     def pure[A](a: A) = Box(a)
@@ -64,7 +64,7 @@ class EmptyKSuite extends KittensSuite:
 end EmptyKSuite
 
 object EmptyKSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type LOption[A] = List[Option[A]]
   type PList[A] = (List[A], List[A])
@@ -81,9 +81,9 @@ object EmptyKSuite:
     given EmptyK[BoxColor] = semiauto.emptyK
 
   object derivedInstances:
-    case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives EmptyK
-    case class IList[A](x: TestDefns.IList[A]) derives EmptyK
-    case class Snoc[A](x: TestDefns.Snoc[A]) derives EmptyK
+    case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives EmptyK
+    case class IList[A](x: ADTs.IList[A]) derives EmptyK
+    case class Snoc[A](x: ADTs.Snoc[A]) derives EmptyK
 
   final case class Color[A](r: Int, g: Int, b: Int)
   object Color:

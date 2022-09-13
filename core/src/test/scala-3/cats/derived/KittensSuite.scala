@@ -29,7 +29,7 @@ import scala.quoted.*
 /** An opinionated stack of traits to improve consistency and reduce boilerplate in Kittens tests. Note that unlike the
   * corresponding CatsSuite in the Cat project, this trait does not mix in any instances.
   */
-abstract class KittensSuite extends KittensSuite.WithoutEq, TestEqInstances:
+abstract class KittensSuite extends KittensSuite.WithoutEq, ADTs.EqInstances:
   given [A <: Product](using mirror: Mirror.ProductOf[A], via: Eq[mirror.MirroredElemTypes]): Eq[A] =
     Eq.by(Tuple.fromProductTyped)
 

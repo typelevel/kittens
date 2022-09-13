@@ -6,7 +6,7 @@ import scala.compiletime.*
 
 class SemigroupKSuite extends KittensSuite:
   import SemigroupKSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[F[_]]: SemigroupKTests[F] =
     SemigroupKTests[F](summonInline)
@@ -42,7 +42,7 @@ class SemigroupKSuite extends KittensSuite:
 end SemigroupKSuite
 
 object SemigroupKSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type BoxMul[A] = Box[Mul[A]]
 
@@ -52,8 +52,8 @@ object SemigroupKSuite:
     given SemigroupK[BoxMul] = semiauto.semigroupK
 
   object derivedInstances:
-    case class ComplexProduct[A](x: TestDefns.ComplexProduct[A]) derives SemigroupK
-    case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives SemigroupK
+    case class ComplexProduct[A](x: ADTs.ComplexProduct[A]) derives SemigroupK
+    case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives SemigroupK
     case class Simple[A](value1: List[A], value2: Set[A]) derives SemigroupK
     case class Recursive[A](first: List[A], rest: Recursive[A]) derives SemigroupK
 

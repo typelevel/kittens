@@ -24,7 +24,7 @@ import scala.compiletime.*
 
 class SemigroupSuite extends KittensSuite:
   import SemigroupSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[A]: SemigroupTests[A] =
     SemigroupTests[A](summonInline)
@@ -62,7 +62,7 @@ class SemigroupSuite extends KittensSuite:
 end SemigroupSuite
 
 object SemigroupSuite:
-  import TestDefns.*
+  import ADTs.*
 
   object semiInstances:
     given Semigroup[Foo] = semiauto.semigroup
@@ -71,8 +71,8 @@ object SemigroupSuite:
     given Semigroup[Box[Mul]] = semiauto.semigroup
 
   object derivedInstances:
-    case class Foo(x: TestDefns.Foo) derives Semigroup
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Semigroup
+    case class Foo(x: ADTs.Foo) derives Semigroup
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Semigroup
     case class BoxMul(x: Box[Mul]) derives Semigroup
 
   final case class Mul(value: Int)

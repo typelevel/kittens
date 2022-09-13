@@ -22,7 +22,7 @@ import scala.compiletime.*
 
 class MonoidSuite extends KittensSuite:
   import MonoidSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   inline def tests[A]: MonoidTests[A] =
     MonoidTests[A](summonInline)
@@ -61,7 +61,7 @@ class MonoidSuite extends KittensSuite:
 end MonoidSuite
 
 object MonoidSuite:
-  import TestDefns.*
+  import ADTs.*
 
   object semiInstances:
     given Monoid[Foo] = semiauto.monoid
@@ -70,8 +70,8 @@ object MonoidSuite:
     given Monoid[Box[Mul]] = semiauto.monoid
 
   object derivedInstances:
-    case class Foo(x: TestDefns.Foo) derives Monoid
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Monoid
+    case class Foo(x: ADTs.Foo) derives Monoid
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Monoid
     case class BoxMul(x: Box[Mul]) derives Monoid
 
   final case class Mul(value: Int)

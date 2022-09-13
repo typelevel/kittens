@@ -23,7 +23,7 @@ import scala.compiletime.*
 
 class FunctorSuite extends KittensSuite:
   import FunctorSuite.*
-  import TestDefns.*
+  import ADTs.*
 
   given ExhaustiveCheck[Predicate[Boolean]] =
     ExhaustiveCheck.instance(List(_ => true, _ => false, identity, !_))
@@ -74,7 +74,7 @@ class FunctorSuite extends KittensSuite:
 end FunctorSuite
 
 object FunctorSuite:
-  import TestDefns.*
+  import ADTs.*
 
   type OptList[A] = Option[List[A]]
   type ListSnoc[A] = List[Snoc[A]]
@@ -97,14 +97,14 @@ object FunctorSuite:
     given Functor[AtLeastOne] = semiauto.functor
 
   object derivedInstances:
-    case class IList[A](x: TestDefns.IList[A]) derives Functor
-    case class Tree[A](x: TestDefns.Tree[A]) derives Functor
-    case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Functor
-    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Functor
-    case class EnumK1[A](x: TestDefns.EnumK1[A]) derives Functor
+    case class IList[A](x: ADTs.IList[A]) derives Functor
+    case class Tree[A](x: ADTs.Tree[A]) derives Functor
+    case class GenericAdt[A](x: ADTs.GenericAdt[A]) derives Functor
+    case class Interleaved[A](x: ADTs.Interleaved[A]) derives Functor
+    case class EnumK1[A](x: ADTs.EnumK1[A]) derives Functor
     case class AndChar[A](x: FoldableSuite.AndChar[A]) derives Functor
-    case class Many[+A](x: TestDefns.Many[A]) derives Functor
-    case class AtMostOne[+A](x: TestDefns.AtMostOne[A]) derives Functor
-    case class AtLeastOne[+A](x: TestDefns.AtLeastOne[A]) derives Functor
+    case class Many[+A](x: ADTs.Many[A]) derives Functor
+    case class AtMostOne[+A](x: ADTs.AtMostOne[A]) derives Functor
+    case class AtLeastOne[+A](x: ADTs.AtLeastOne[A]) derives Functor
 
 end FunctorSuite

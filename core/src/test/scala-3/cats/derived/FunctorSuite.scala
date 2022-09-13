@@ -19,6 +19,7 @@ package derived
 
 import cats.laws.discipline.*
 import cats.laws.discipline.eq.*
+import org.scalacheck.{Arbitrary, Gen}
 import scala.compiletime.*
 
 class FunctorSuite extends KittensSuite:
@@ -28,29 +29,46 @@ class FunctorSuite extends KittensSuite:
   given ExhaustiveCheck[Predicate[Boolean]] =
     ExhaustiveCheck.instance(List(_ => true, _ => false, identity, !_))
 
-  inline def functorTests[F[_]]: FunctorTests[F] =
+  inline def tests[F[_]]: FunctorTests[F] =
     FunctorTests[F](summonInline)
 
-  inline def testFunctor(inline context: String): Unit =
-    checkAll(s"$context.Functor[IList]", functorTests[IList].functor[Int, String, Long])
-    checkAll(s"$context.Functor[Tree]", functorTests[Tree].functor[Int, String, Long])
-    checkAll(s"$context.Functor[GenericAdt]", functorTests[GenericAdt].functor[Int, String, Long])
-    checkAll(s"$context.Functor[OptList]", functorTests[OptList].functor[Int, String, Long])
-    checkAll(s"$context.Functor[ListSnoc]", functorTests[ListSnoc].functor[Int, String, Long])
-    checkAll(s"$context.Functor[AndChar]", functorTests[AndChar].functor[Int, String, Long])
-    checkAll(s"$context.Functor[Interleaved]", functorTests[Interleaved].functor[Int, String, Long])
-    checkAll(s"$context.Functor[NestedPred]", functorTests[NestedPred].functor[Boolean, Int, Boolean])
-    checkAll(s"$context.Functor[EnumK1]", functorTests[EnumK1].functor[Boolean, Int, Boolean])
-    checkAll(s"$context.Functor is Serializable", SerializableTests.serializable(summonInline[Functor[Tree]]))
+  inline def validate(inline instance: String): Unit =
+    checkAll(s"$instance[IList]", tests[IList].functor[Int, String, Long])
+    checkAll(s"$instance[Tree]", tests[Tree].functor[Int, String, Long])
+    checkAll(s"$instance[GenericAdt]", tests[GenericAdt].functor[Int, String, Long])
+    checkAll(s"$instance[OptList]", tests[OptList].functor[Int, String, Long])
+    checkAll(s"$instance[ListSnoc]", tests[ListSnoc].functor[Int, String, Long])
+    checkAll(s"$instance[AndChar]", tests[AndChar].functor[Int, String, Long])
+    checkAll(s"$instance[Interleaved]", tests[Interleaved].functor[Int, String, Long])
+    checkAll(s"$instance[NestedPred]", tests[NestedPred].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance[EnumK1]", tests[EnumK1].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Functor[Tree]]))
 
   locally {
     import auto.functor.given
-    testFunctor("auto")
+    validate("auto.functor")
   }
 
   locally {
-    import semiInstances.given
-    testFunctor("semiauto")
+    import semiFunctor.given
+    validate("semiauto.functor")
+  }
+
+  locally {
+    import derivedFunctor.*
+    import derivedFunctor.given
+    val instance = "derived.functor"
+    checkAll(s"$instance[IList]", tests[IList].functor[Int, String, Long])
+    checkAll(s"$instance[Tree]", tests[Tree].functor[Int, String, Long])
+    checkAll(s"$instance[GenericAdt]", tests[GenericAdt].functor[Int, String, Long])
+    checkAll(s"$instance[AndChar]", tests[AndChar].functor[Int, String, Long])
+    checkAll(s"$instance[Interleaved]", tests[Interleaved].functor[Int, String, Long])
+    checkAll(s"$instance[EnumK1]", tests[EnumK1].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance[Single]", tests[Single].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance[Many]", tests[Many].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance[AtMostOne]", tests[AtMostOne].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Functor[Tree]]))
   }
 
 end FunctorSuite
@@ -64,7 +82,7 @@ object FunctorSuite:
   type Predicate[A] = A => Boolean
   type NestedPred[A] = Predicate[Predicate[A]]
 
-  object semiInstances:
+  object semiFunctor:
     given Functor[IList] = semiauto.functor
     given Functor[Tree] = semiauto.functor
     given Functor[GenericAdt] = semiauto.functor
@@ -75,18 +93,46 @@ object FunctorSuite:
     given Functor[NestedPred] = semiauto.functor
     given Functor[EnumK1] = semiauto.functor
 
-  case class Single[A](value: A) derives Functor
+  object derivedFunctor:
+    case class IList[A](x: TestDefns.IList[A]) derives Functor
+    case class Tree[A](x: TestDefns.Tree[A]) derives Functor
+    case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Functor
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Functor
+    case class EnumK1[A](x: TestDefns.EnumK1[A]) derives Functor
+    case class AndChar[A](x: FoldableSuite.AndChar[A]) derives Functor
+    case class Single[A](value: A) derives Functor
 
-  enum Many[+A] derives Functor:
-    case Naught
-    case More(value: A, rest: Many[A])
+    enum Many[+A] derives Functor, Eq:
+      case Naught
+      case More(value: A, rest: Many[A])
 
-  enum AtMostOne[+A] derives Functor:
-    case Naught
-    case Single(value: A)
+    enum AtMostOne[+A] derives Functor, Eq:
+      case Naught
+      case Single(value: A)
 
-  enum AtLeastOne[+A] derives Functor:
-    case Single(value: A)
-    case More(value: A, rest: Option[AtLeastOne[A]])
+    enum AtLeastOne[+A] derives Functor, Eq:
+      case Single(value: A)
+      case More(value: A, rest: Option[AtLeastOne[A]])
+
+    given [A: Arbitrary]: Arbitrary[Many[A]] = Arbitrary(
+      Gen.oneOf(
+        Gen.const(Many.Naught),
+        Gen.lzy(Arbitrary.arbitrary[(A, Many[A])].map(Many.More.apply))
+      )
+    )
+
+    given [A: Arbitrary]: Arbitrary[AtMostOne[A]] = Arbitrary(
+      Gen.oneOf(
+        Gen.const(AtMostOne.Naught),
+        Arbitrary.arbitrary[A].map(AtMostOne.Single.apply)
+      )
+    )
+
+    given [A: Arbitrary]: Arbitrary[AtLeastOne[A]] = Arbitrary(
+      Gen.oneOf(
+        Arbitrary.arbitrary[A].map(AtLeastOne.Single.apply),
+        Gen.lzy(Arbitrary.arbitrary[(A, Option[AtLeastOne[A]])].map(AtLeastOne.More.apply))
+      )
+    )
 
 end FunctorSuite

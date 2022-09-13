@@ -56,7 +56,7 @@ class ContravariantSuite extends KittensSuite:
     val instance = "derived.contravariant"
     checkAll(s"$instance[EnumK1Contra]", tests[EnumK1Contra].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[Single]", tests[Single].contravariant[MiniInt, String, Boolean])
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Contravariant[EnumK1Contra]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Contravariant[EnumK1Contra]))
   }
 
 end ContravariantSuite

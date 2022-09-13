@@ -1,49 +1,52 @@
 package cats.derived
 
 import cats.{Eq, Traverse}
-import cats.laws.discipline.{SerializableTests, TraverseTests}
-import org.scalacheck.Arbitrary
-
+import cats.laws.discipline.*
 import scala.compiletime.*
 
 class TraverseSuite extends KittensSuite:
   import TestDefns.*
   import TraverseSuite.*
 
-  inline def traverseTests[F[_]]: TraverseTests[F] =
+  inline def tests[F[_]]: TraverseTests[F] =
     TraverseTests[F](summonInline)
 
-  inline def testTraverse(inline context: String): Unit =
-    checkAll(s"$context.Traverse[IList]", traverseTests[IList].traverse[Int, Double, String, Long, Option, Option])
-    checkAll(s"$context.Traverse[Tree]", traverseTests[Tree].traverse[Int, Double, String, Long, Option, Option])
-    checkAll(
-      s"$context.Traverse[GenericAdt]",
-      traverseTests[GenericAdt].traverse[Int, Double, String, Long, Option, Option]
-    )
-    checkAll(s"$context.Traverse[OptList]", traverseTests[OptList].traverse[Int, Double, String, Long, Option, Option])
-    checkAll(
-      s"$context.Traverse[ListSnoc]",
-      traverseTests[ListSnoc].traverse[Int, Double, String, Long, Option, Option]
-    )
-    checkAll(s"$context.Traverse[AndChar]", traverseTests[AndChar].traverse[Int, Double, String, Long, Option, Option])
-    checkAll(
-      s"$context.Traverse[Interleaved]",
-      traverseTests[Interleaved].traverse[Int, Double, String, Long, Option, Option]
-    )
-    checkAll(
-      s"$context.Traverse[EnumK1]",
-      traverseTests[EnumK1].traverse[Int, Double, String, Long, Option, Option]
-    )
-    checkAll(s"$context.Traverse is Serializable", SerializableTests.serializable(summonInline[Traverse[Tree]]))
+  inline def validate(inline instance: String): Unit =
+    checkAll(s"$instance[IList]", tests[IList].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[Tree]", tests[Tree].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[GenericAdt]", tests[GenericAdt].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[OptList]", tests[OptList].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[ListSnoc]", tests[ListSnoc].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[AndChar]", tests[AndChar].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[Interleaved]", tests[Interleaved].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[EnumK1]", tests[EnumK1].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[Many]", tests[Many].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[AtMostOne]", tests[AtMostOne].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Traverse[Tree]]))
 
   locally {
     import auto.traverse.given
-    testTraverse("auto")
+    validate("auto.traverse")
   }
 
   locally {
     import semiInstances.given
-    testTraverse("semiauto")
+    validate("semiauto.traverse")
+  }
+
+  locally {
+    import derivedInstances.*
+    val instance = "derived.traverse"
+    checkAll(s"$instance[IList]", tests[IList].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[Tree]", tests[Tree].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[GenericAdt]", tests[GenericAdt].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[Interleaved]", tests[Interleaved].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[EnumK1]", tests[EnumK1].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[Many]", tests[Many].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[AtMostOne]", tests[AtMostOne].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Traverse[Tree]))
   }
 
 end TraverseSuite
@@ -64,5 +67,18 @@ object TraverseSuite:
     given Traverse[AndChar] = semiauto.traverse
     given Traverse[Interleaved] = semiauto.traverse
     given Traverse[EnumK1] = semiauto.traverse
+    given Traverse[Many] = semiauto.traverse
+    given Traverse[AtLeastOne] = semiauto.traverse
+    given Traverse[AtMostOne] = semiauto.traverse
+
+  object derivedInstances:
+    case class IList[A](x: TestDefns.IList[A]) derives Traverse
+    case class Tree[A](x: TestDefns.Tree[A]) derives Traverse
+    case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Traverse
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Traverse
+    case class EnumK1[A](x: TestDefns.EnumK1[A]) derives Traverse
+    case class Many[A](x: TestDefns.Many[A]) derives Traverse
+    case class AtMostOne[A](x: TestDefns.AtMostOne[A]) derives Traverse
+    case class AtLeastOne[A](x: TestDefns.AtLeastOne[A]) derives Traverse
 
 end TraverseSuite

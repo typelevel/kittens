@@ -17,7 +17,7 @@
 package cats.derived
 
 import cats.kernel.CommutativeSemigroup
-import cats.kernel.laws.discipline.{CommutativeSemigroupTests, SerializableTests}
+import cats.kernel.laws.discipline.*
 import scala.compiletime.*
 
 class CommutativeSemigroupSuite extends KittensSuite:
@@ -55,14 +55,7 @@ class CommutativeSemigroupSuite extends KittensSuite:
     val instance = "derived.commutativeSemigroup"
     checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeSemigroup)
     checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeSemigroup)
-    checkAll(
-      s"$instance is Serializable",
-      SerializableTests.serializable(summonInline[CommutativeSemigroup[CommutativeFoo]])
-    )
-    test(s"$instance respects existing instances") {
-      val box = summonInline[CommutativeSemigroup[BoxMul]]
-      assert(box.combine(BoxMul(Box(Mul(5))), BoxMul(Box(Mul(5)))).x.content.value == 25)
-    }
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(CommutativeSemigroup[CommutativeFoo]))
   }
 
 end CommutativeSemigroupSuite

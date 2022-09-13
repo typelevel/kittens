@@ -38,7 +38,7 @@ class MonoidKSuite extends KittensSuite:
     checkAll(s"$instance[ComplexProduct]", tests[ComplexProduct].monoidK[Char])
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].monoidK[Char])
     checkAll(s"$instance[Simple]", tests[Simple].monoidK[Char])
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[MonoidK[ComplexProduct]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(MonoidK[ComplexProduct]))
   }
 
 end MonoidKSuite

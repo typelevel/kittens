@@ -64,7 +64,7 @@ class EmptySuite extends KittensSuite:
     test(s"$instance[IList[Dummy]]")(assert(empty[IList[Int]].x == INil()))
     test(s"$instance[Snoc[Dummy]]")(assert(empty[Snoc[Int]].x == SNil()))
     test(s"$instance respects existing instances")(assert(empty[BoxMask].x == Box(Mask(0xffffffff))))
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Empty[Foo]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Empty[Foo]))
   }
 
 end EmptySuite

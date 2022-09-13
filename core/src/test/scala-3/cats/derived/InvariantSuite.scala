@@ -63,6 +63,7 @@ class InvariantSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Invariant[AtMostOne]))
   }
 
 end InvariantSuite

@@ -39,6 +39,7 @@ class ReducibleSuite extends KittensSuite:
     checkAll(s"$instance[Interleaved]", tests[Interleaved].reducible[Option, Int, Long])
     checkAll(s"$instance[BoxZipper]", tests[BoxZipper].reducible[Option, Int, Long])
     checkAll(s"$instance[EnumK1]", tests[EnumK1].reducible[Option, Int, Long])
+    checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].reducible[Option, Int, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Reducible[Tree]]))
 
   locally {
@@ -58,7 +59,8 @@ class ReducibleSuite extends KittensSuite:
     checkAll(s"$instance[Tree]", tests[Tree].reducible[Option, Int, Long])
     checkAll(s"$instance[Interleaved]", tests[Interleaved].reducible[Option, Int, Long])
     checkAll(s"$instance[EnumK1]", tests[EnumK1].reducible[Option, Int, Long])
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Reducible[Tree]]))
+    checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].reducible[Option, Int, Long])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(Reducible[Tree]))
   }
 
 end ReducibleSuite
@@ -80,12 +82,14 @@ object ReducibleSuite:
     given Reducible[Interleaved] = semiauto.reducible
     given Reducible[BoxZipper] = semiauto.reducible
     given Reducible[EnumK1] = semiauto.reducible
+    given Reducible[AtLeastOne] = semiauto.reducible
 
   object derivedInstances:
     case class ICons[A](x: TestDefns.ICons[A]) derives Reducible
     case class Tree[A](x: TestDefns.Tree[A]) derives Reducible
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Reducible
     case class EnumK1[A](x: TestDefns.EnumK1[A]) derives Reducible
+    case class AtLeastOne[A](x: TestDefns.AtLeastOne[A]) derives Reducible
 
   final case class Zipper[+A](left: List[A], focus: A, right: List[A])
   object Zipper:

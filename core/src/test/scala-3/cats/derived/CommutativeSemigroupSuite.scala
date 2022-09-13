@@ -16,10 +16,8 @@
 
 package cats.derived
 
-import cats.Eq
 import cats.kernel.CommutativeSemigroup
 import cats.kernel.laws.discipline.{CommutativeSemigroupTests, SerializableTests}
-import org.scalacheck.Arbitrary
 
 import scala.compiletime.*
 
@@ -86,8 +84,6 @@ object CommutativeSemigroupSuite:
 
   final case class Mul(value: Int)
   object Mul:
-    given Eq[Mul] = Eq.fromUniversalEquals
-    given Arbitrary[Mul] = Arbitrary(Arbitrary.arbitrary[Int].map(apply))
     given CommutativeSemigroup[Mul] = (x, y) => Mul(x.value * y.value)
 
 end CommutativeSemigroupSuite

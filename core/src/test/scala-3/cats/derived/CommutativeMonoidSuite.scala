@@ -16,10 +16,8 @@
 
 package cats.derived
 
-import cats.Eq
 import cats.kernel.{CommutativeMonoid, CommutativeSemigroup}
 import cats.kernel.laws.discipline.{CommutativeMonoidTests, SerializableTests}
-import org.scalacheck.Arbitrary
 
 import scala.compiletime.*
 
@@ -88,8 +86,6 @@ object CommutativeMonoidSuite:
 
   final case class Mul(value: Int)
   object Mul:
-    given Eq[Mul] = Eq.fromUniversalEquals
-    given Arbitrary[Mul] = Arbitrary(Arbitrary.arbitrary[Int].map(apply))
     given CommutativeMonoid[Mul] with
       val empty = Mul(1)
       def combine(x: Mul, y: Mul) = Mul(x.value * y.value)

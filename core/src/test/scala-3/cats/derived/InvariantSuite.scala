@@ -28,43 +28,43 @@ class InvariantSuite extends KittensSuite:
   import InvariantSuite.*
   import TestDefns.*
 
-  inline def invariantTests[F[_]]: InvariantTests[F] =
+  inline def tests[F[_]]: InvariantTests[F] =
     InvariantTests[F](summonInline)
 
-  inline def testInvariant(context: String): Unit = {
-    checkAll(s"$context.Invariant[TreeF]", invariantTests[TreeF].invariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Invariant[GenAdtF]", invariantTests[GenericAdtF].invariant[MiniInt, String, Boolean])
-    // TODO https://github.com/typelevel/kittens/issues/473
-    // checkAll(s"$context.Invariant[InterleavedF]", invariantTests[InterleavedF].invariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Invariant[AndCharF]", invariantTests[AndCharF].invariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Invariant[ListSnoc", invariantTests[ListSnoc].invariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Invariant[Bivariant]", invariantTests[Bivariant].invariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Invariant[EnumK1Inv]", invariantTests[EnumK1Inv].invariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Invariant is Serializable", SerializableTests.serializable(summonInline[Invariant[TreeF]]))
-
-    // TODO https://github.com/typelevel/kittens/issues/476
-    // test(s"$context.Invariant.imap is stack safe") {
-    //   val I = summonInline[Invariant[ListSnoc]]
-    //   val J = summonInline[Invariant[IList]]
-    //   val n = 10000
-    //   val largeIList = IList.fromSeq(1 until n)
-    //   val largeSnoc = Snoc.fromSeq(1 until n) :: Nil
-    //   val actualIList = IList.toList(J.imap(largeIList)(_ + 1)(_ - 1))
-    //   val actualSnoc = I.imap(largeSnoc)(_ + 1)(_ - 1).flatMap(Snoc.toList)
-    //   val expected = (2 until n + 1).toList
-    //   assert(actualIList == expected)
-    //   assert(actualSnoc == expected)
-    // }
-  }
+  inline def validate(instance: String): Unit =
+    checkAll(s"$instance[TreeF]", tests[TreeF].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[GenAdtF]", tests[GenericAdtF].invariant[MiniInt, String, Boolean])
+    // TODO: https://github.com/typelevel/kittens/issues/473
+    // checkAll(s"$instance[InterleavedF]", tests[InterleavedF].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[AndCharF]", tests[AndCharF].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[ListSnoc]", tests[ListSnoc].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[IList]", tests[IList].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[Bivariant]", tests[Bivariant].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[EnumK1Inv]", tests[EnumK1Inv].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[Many]", tests[Many].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[AtMostOne]", tests[AtMostOne].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Invariant[TreeF]]))
 
   locally {
     import auto.invariant.given
-    testInvariant("auto")
+    validate("auto.invariant")
   }
 
   locally {
-    import semiInstances.given
-    testInvariant("semiauto")
+    import semiInvariant.given
+    validate("semiauto.invariant")
+  }
+
+  locally {
+    import derivedInvariant.*
+    val instance = "derived.invariant"
+    checkAll(s"$instance[IList]", tests[IList].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[Bivariant]", tests[Bivariant].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[EnumK1Inv]", tests[EnumK1Inv].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[Many]", tests[Many].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[AtMostOne]", tests[AtMostOne].invariant[MiniInt, String, Boolean])
   }
 
 end InvariantSuite
@@ -79,9 +79,10 @@ object InvariantSuite:
   type AndCharF[A] = (A => Boolean, Char)
   type TreeF[A] = Tree[A => Boolean]
 
-  object semiInstances:
+  object semiInvariant:
     given Invariant[GenericAdtF] = semiauto.invariant
     given Invariant[ListFToInt] = semiauto.invariant
+    // TODO: https://github.com/typelevel/kittens/issues/473
     // given Invariant[InterleavedF] = semiauto.invariant
     given Invariant[AndCharF] = semiauto.invariant
     given Invariant[TreeF] = semiauto.invariant
@@ -90,19 +91,16 @@ object InvariantSuite:
     given Invariant[Bivariant] = semiauto.invariant
     given Invariant[IList] = semiauto.invariant
     given Invariant[EnumK1Inv] = semiauto.invariant
+    given Invariant[Many] = semiauto.invariant
+    given Invariant[AtMostOne] = semiauto.invariant
+    given Invariant[AtLeastOne] = semiauto.invariant
 
-  case class Single[A](value: A) derives Invariant
-
-  enum Many[A] derives Invariant:
-    case Naught()
-    case More(value: A, rest: Many[A])
-
-  enum AtMostOne[A] derives Invariant:
-    case Naught()
-    case Single(value: A)
-
-  enum AtLeastOne[A] derives Invariant:
-    case Single(value: A)
-    case More(value: A, rest: Option[AtLeastOne[A]])
+  object derivedInvariant:
+    case class Bivariant[A](x: TestDefns.Bivariant[A]) derives Invariant
+    case class IList[A](x: TestDefns.IList[A]) derives Invariant
+    case class EnumK1Inv[A](x: TestDefns.EnumK1Inv[A]) derives Invariant
+    case class Many[A](x: TestDefns.Many[A]) derives Invariant
+    case class AtMostOne[A](x: TestDefns.AtMostOne[A]) derives Invariant
+    case class AtLeastOne[A](x: TestDefns.AtLeastOne[A]) derives Invariant
 
 end InvariantSuite

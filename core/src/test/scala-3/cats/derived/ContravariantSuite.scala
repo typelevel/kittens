@@ -35,20 +35,11 @@ class ContravariantSuite extends KittensSuite:
     checkAll(s"$instance[ListPred]", tests[ListPred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[GenericAdtPred]", tests[GenericAdtPred].contravariant[MiniInt, String, Boolean])
     // TODO: https://github.com/typelevel/kittens/issues/473
-    // checkAll(s"instance[InterleavedPred]", tests[InterleavedPred].contravariant[MiniInt, String, Boolean])
+    // checkAll(s"$instance[InterleavedPred]", tests[InterleavedPred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AndCharPred]", tests[AndCharPred].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[ListSnocF]", tests[ListSnocF].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[EnumK1Contra]", tests[EnumK1Contra].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Contravariant[TreePred]]))
-    // TODO: https://github.com/typelevel/kittens/issues/476
-    // test(s"instance.contramap is stack safe") {
-    //   val C = summonInline[Contravariant[ListSnocF]]
-    //   val n = 10000
-    //   val largeBoxed = Snoc.fromSeq((1 until n).map((j: Int) => (i: Int) => i + j)) :: Nil
-    //   val actualBoxed = C.contramap[Int, Int](largeBoxed)((j: Int) => j + 1).flatMap(Snoc.toList)
-    //   val expected = (3 until n + 2).toList
-    //   assert(actualBoxed.map(_.apply(1)) == expected)
-    // }
 
   locally {
     import auto.contravariant.given

@@ -21,43 +21,63 @@ import cats.kernel.laws.discipline.{OrderTests, SerializableTests}
 import org.scalacheck.Arbitrary
 import scala.compiletime.summonInline
 
-class OrderSuite extends KittensSuite {
-  import OrderSuite._
-  import TestDefns._
+class OrderSuite extends KittensSuite:
+  import OrderSuite.*
+  import TestDefns.*
 
-  inline def orderTests[A]: OrderTests[A] =
+  inline def tests[A]: OrderTests[A] =
     OrderTests[A](summonInline)
 
-  inline def testOrder(context: String): Unit = {
-    checkAll(s"$context.Order[Inner]", orderTests[Inner].order)
-    checkAll(s"$context.Order[Outer]", orderTests[Outer].order)
-    checkAll(s"$context.Order[Interleaved[Int]]", orderTests[Interleaved[Int]].order)
-    checkAll(s"$context.Order[Recursive]", orderTests[Recursive].order)
-    checkAll(s"$context.Order[GenericAdt[Int]]", orderTests[GenericAdt[Int]].order)
-    checkAll(s"$context.Order[EnumK0]", orderTests[EnumK0].order)
-    checkAll(s"$context.Order is Serializable", SerializableTests.serializable(summonInline[Order[Interleaved[Int]]]))
-  }
+  inline def validate(instance: String): Unit =
+    checkAll(s"$instance[Inner]", tests[Inner].order)
+    checkAll(s"$instance[Outer]", tests[Outer].order)
+    checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].order)
+    checkAll(s"$instance[Recursive]", tests[Recursive].order)
+    checkAll(s"$instance[GenericAdt[Int]]", tests[GenericAdt[Int]].order)
+    checkAll(s"$instance[EnumK0]", tests[EnumK0].order)
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Order[Interleaved[Int]]]))
 
-  {
+  locally {
     import auto.order.given
-    testOrder("auto")
+    validate("auto.order")
   }
 
-  {
-    import semiInstances.given
-    testOrder("semiauto")
+  locally {
+    import semiOrder.given
+    validate("semiauto.order")
   }
-}
 
-object OrderSuite {
-  import TestDefns._
+  locally {
+    import derivedOrder.*
+    val instance = "derived.order"
+    checkAll(s"$instance[Inner]", tests[Inner].order)
+    checkAll(s"$instance[Outer]", tests[Outer].order)
+    checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].order)
+    checkAll(s"$instance[Recursive]", tests[Recursive].order)
+    checkAll(s"$instance[GenericAdt[Int]]", tests[GenericAdt[Int]].order)
+    checkAll(s"$instance[EnumK0]", tests[EnumK0].order)
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Order[Interleaved[Int]]]))
+  }
 
-  object semiInstances {
+end OrderSuite
+
+object OrderSuite:
+  import TestDefns.*
+
+  object semiOrder:
     given Order[Inner] = semiauto.order
     given Order[Outer] = semiauto.order
     given Order[Interleaved[Int]] = semiauto.order
     given Order[Recursive] = semiauto.order
     given Order[GenericAdt[Int]] = semiauto.order
     given Order[EnumK0] = semiauto.order
-  }
-}
+
+  object derivedOrder:
+    case class Inner(x: TestDefns.Inner) derives Order
+    case class Outer(x: TestDefns.Outer) derives Order
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Order
+    case class Recursive(x: TestDefns.Recursive) derives Order
+    case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Order
+    case class EnumK0(x: TestDefns.EnumK0) derives Order
+
+end OrderSuite

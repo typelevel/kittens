@@ -20,7 +20,7 @@ import cats.Eq
 import cats.platform.Platform
 import cats.syntax.AllSyntax
 import munit.DisciplineSuite
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Cogen}
 import org.scalacheck.Test.Parameters
 
 import scala.deriving.Mirror
@@ -55,6 +55,9 @@ object KittensSuite:
 
     given [A <: Product](using mirror: Mirror.ProductOf[A], via: Arbitrary[mirror.MirroredElemTypes]): Arbitrary[A] =
       Arbitrary(via.arbitrary.map(mirror.fromTuple))
+
+    given [A <: Product](using mirror: Mirror.ProductOf[A], via: Cogen[mirror.MirroredElemTypes]): Cogen[A] =
+      via.contramap(Tuple.fromProductTyped)
 
     inline def testNoInstance(inline tc: String, target: String, message: String): Unit =
       val errors = compileErrors(tc + "[" + target + "]")

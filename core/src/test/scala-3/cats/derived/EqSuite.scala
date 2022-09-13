@@ -25,27 +25,40 @@ class EqSuite extends KittensSuite.WithoutEq:
   import EqSuite.*
   import TestDefns.*
 
-  inline def eqTests[A]: EqTests[A] =
+  inline def tests[A]: EqTests[A] =
     EqTests[A](summonInline)
 
-  inline def testEq(inline context: String): Unit =
-    checkAll(s"$context.Eq[Foo]]", eqTests[Foo].eqv)
-    checkAll(s"$context.Eq[IList[Int]]", eqTests[IList[Int]].eqv)
-    checkAll(s"$context.Eq[Inner]", eqTests[Inner].eqv)
-    checkAll(s"$context.Eq[Outer]", eqTests[Outer].eqv)
-    checkAll(s"$context.Eq[Interleaved[Int]]", eqTests[Interleaved[Int]].eqv)
-    checkAll(s"$context.Eq[Tree[Int]]", eqTests[Tree[Int]].eqv)
-    checkAll(s"$context.Eq[Recursive]", eqTests[Recursive].eqv)
-    checkAll(s"$context.Eq is Serializable", SerializableTests.serializable(summonInline[Eq[Foo]]))
+  inline def validate(inline instance: String): Unit =
+    checkAll(s"$instance[Foo]]", tests[Foo].eqv)
+    checkAll(s"$instance[IList[Int]]", tests[IList[Int]].eqv)
+    checkAll(s"$instance[Inner]", tests[Inner].eqv)
+    checkAll(s"$instance[Outer]", tests[Outer].eqv)
+    checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].eqv)
+    checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].eqv)
+    checkAll(s"$instance[Recursive]", tests[Recursive].eqv)
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Eq[Foo]]))
 
   locally {
     import auto.eq.given
-    testEq("auto")
+    validate("auto.eq")
   }
 
   locally {
-    import semiInstances.given
-    testEq("semiauto")
+    import semiEq.given
+    validate("semiauto.eq")
+  }
+
+  locally {
+    import derivedEq.*
+    val instance = "derived.eq"
+    checkAll(s"$instance[Foo]]", tests[Foo].eqv)
+    checkAll(s"$instance[IList[Int]]", tests[IList[Int]].eqv)
+    checkAll(s"$instance[Inner]", tests[Inner].eqv)
+    checkAll(s"$instance[Outer]", tests[Outer].eqv)
+    checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].eqv)
+    checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].eqv)
+    checkAll(s"$instance[Recursive]", tests[Recursive].eqv)
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Eq[Foo]]))
   }
 
 end EqSuite
@@ -53,7 +66,7 @@ end EqSuite
 object EqSuite:
   import TestDefns.*
 
-  object semiInstances:
+  object semiEq:
     given Eq[Foo] = semiauto.eq
     given Eq[IList[Int]] = semiauto.eq
     given Eq[Inner] = semiauto.eq
@@ -61,5 +74,14 @@ object EqSuite:
     given Eq[Interleaved[Int]] = semiauto.eq
     given Eq[Tree[Int]] = semiauto.eq
     given Eq[Recursive] = semiauto.eq
+
+  object derivedEq:
+    case class Foo(x: TestDefns.Foo) derives Eq
+    case class IList[A](x: TestDefns.IList[A]) derives Eq
+    case class Inner(x: TestDefns.Inner) derives Eq
+    case class Outer(x: TestDefns.Outer) derives Eq
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Eq
+    case class Tree[A](x: TestDefns.Tree[A]) derives Eq
+    case class Recursive(x: TestDefns.Recursive) derives Eq
 
 end EqSuite

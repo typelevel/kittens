@@ -52,7 +52,6 @@ class ApplySuite extends KittensSuite:
   locally {
     import derivedApply.*
     val instance = "derived.apply"
-    // Copy pasted from `validate`
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].apply[Int, String, Long])
     checkAll(s"$instance[AndInt]", tests[AndInt].apply[Int, String, Long])
     checkAll(s"$instance[Interleaved]", tests[Interleaved].apply[Int, String, Long])

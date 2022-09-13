@@ -17,7 +17,7 @@
 package cats.derived
 
 import cats.{Eq, Semigroup}
-import cats.kernel.laws.discipline.{SemigroupTests, SerializableTests}
+import cats.kernel.laws.discipline.*
 import org.scalacheck.Arbitrary
 
 import scala.compiletime.*
@@ -26,28 +26,37 @@ class SemigroupSuite extends KittensSuite:
   import SemigroupSuite.*
   import TestDefns.*
 
-  inline def semigroupTests[A]: SemigroupTests[A] =
+  inline def tests[A]: SemigroupTests[A] =
     SemigroupTests[A](summonInline)
 
-  inline def testSemigroup(inline context: String): Unit =
-    checkAll(s"$context.Semigroup[Foo]", semigroupTests[Foo].semigroup)
-    checkAll(s"$context.Semigroup[Interleaved[Int]]", semigroupTests[Interleaved[Int]].semigroup)
-    checkAll(s"$context.Semigroup[Box[Mul]]", semigroupTests[Box[Mul]].semigroup)
-    checkAll(s"$context.Semigroup[Recursive]", semigroupTests[Recursive].semigroup)
-    checkAll(s"$context.Semigroup is Serializable", SerializableTests.serializable(summonInline[Semigroup[Foo]]))
-    test(s"$context.Semigroup respects existing instances") {
+  inline def validate(inline instances: String): Unit =
+    checkAll(s"$instances[Foo]", tests[Foo].semigroup)
+    checkAll(s"$instances[Interleaved[Int]]", tests[Interleaved[Int]].semigroup)
+    checkAll(s"$instances[Box[Mul]]", tests[Box[Mul]].semigroup)
+    checkAll(s"$instances[Recursive]", tests[Recursive].semigroup)
+    checkAll(s"$instances is Serializable", SerializableTests.serializable(summonInline[Semigroup[Foo]]))
+    test(s"$instances respects existing instances") {
       val box = summonInline[Semigroup[Box[Mul]]]
       assert(box.combine(Box(Mul(5)), Box(Mul(5))).content.value == 25)
     }
 
   locally {
     import auto.semigroup.given
-    testSemigroup("auto")
+    validate("auto.semigroup")
   }
 
   locally {
     import semiInstances.given
-    testSemigroup("semiauto")
+    validate("semiauto.semigroup")
+  }
+
+  locally {
+    import derivedInstances.*
+    val instances = "derived.semigroup"
+    checkAll(s"$instances[Foo]", tests[Foo].semigroup)
+    checkAll(s"$instances[Interleaved[Int]]", tests[Interleaved[Int]].semigroup)
+    checkAll(s"$instances[BoxMul]", tests[BoxMul].semigroup)
+    checkAll(s"$instances is Serializable", SerializableTests.serializable(summonInline[Semigroup[Foo]]))
   }
 
 end SemigroupSuite
@@ -61,10 +70,13 @@ object SemigroupSuite:
     given Semigroup[Interleaved[Int]] = semiauto.semigroup
     given Semigroup[Box[Mul]] = semiauto.semigroup
 
+  object derivedInstances:
+    case class Foo(x: TestDefns.Foo) derives Semigroup
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Semigroup
+    case class BoxMul(x: Box[Mul]) derives Semigroup
+
   final case class Mul(value: Int)
   object Mul:
-    given Eq[Mul] = Eq.fromUniversalEquals
-    given Arbitrary[Mul] = Arbitrary(Arbitrary.arbitrary[Int].map(apply))
     given Semigroup[Mul] = (x, y) => Mul(x.value * y.value)
 
 end SemigroupSuite

@@ -12,7 +12,7 @@ class ShowPrettySuite extends KittensSuite:
   inline def show[A](value: A): String =
     summonInline[ShowPretty[A]].show(value)
 
-  inline def validate(instance: String): Unit = {
+  inline def validate(instance: String): Unit =
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[ShowPretty[IntTree]]))
 
     test(s"$instance[Foo]") {
@@ -157,7 +157,8 @@ class ShowPrettySuite extends KittensSuite:
 
       assertEquals(show(value), pretty)
     }
-  }
+
+  end validate
 
   locally {
     import auto.showPretty.given

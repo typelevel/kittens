@@ -28,25 +28,35 @@ class ApplySuite extends KittensSuite:
   inline given [F[_]]: Isomorphisms[F] =
     Isomorphisms.invariant(summonInline[Apply[F]])
 
-  inline def applyTests[F[_]]: ApplyTests[F] =
+  inline def tests[F[_]]: ApplyTests[F] =
     ApplyTests[F](summonInline)
 
-  inline def testApply(inline context: String): Unit =
-    checkAll(s"$context.Apply[CaseClassWOption]", applyTests[CaseClassWOption].apply[Int, String, Long])
-    checkAll(s"$context.Apply[OptList]", applyTests[OptList].apply[Int, String, Long])
-    checkAll(s"$context.Apply[AndInt]", applyTests[AndInt].apply[Int, String, Long])
-    checkAll(s"$context.Apply[Interleaved]", applyTests[Interleaved].apply[Int, String, Long])
-    checkAll(s"$context.Apply[ListBox]", applyTests[ListBox].apply[Int, String, Long])
-    checkAll(s"$context.Apply is Serializable", SerializableTests.serializable(summonInline[Apply[Interleaved]]))
+  inline def validate(inline instance: String): Unit =
+    checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].apply[Int, String, Long])
+    checkAll(s"$instance[OptList]", tests[OptList].apply[Int, String, Long])
+    checkAll(s"$instance[AndInt]", tests[AndInt].apply[Int, String, Long])
+    checkAll(s"$instance[Interleaved]", tests[Interleaved].apply[Int, String, Long])
+    checkAll(s"$instance[ListBox]", tests[ListBox].apply[Int, String, Long])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Apply[Interleaved]]))
 
   locally {
     import auto.apply.given
-    testApply("auto")
+    validate("auto.apply")
   }
 
   locally {
-    import semiInstances.given
-    testApply("semiauto")
+    import semiApply.given
+    validate("semiauto.apply")
+  }
+
+  locally {
+    import derivedApply.*
+    val instance = "derived.apply"
+    // Copy pasted from `validate`
+    checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].apply[Int, String, Long])
+    checkAll(s"$instance[AndInt]", tests[AndInt].apply[Int, String, Long])
+    checkAll(s"$instance[Interleaved]", tests[Interleaved].apply[Int, String, Long])
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Apply[Interleaved]]))
   }
 
 end ApplySuite
@@ -58,12 +68,17 @@ object ApplySuite:
   type AndInt[A] = (A, Int)
   type ListBox[A] = List[Box[A]]
 
-  object semiInstances:
+  object semiApply:
     given Apply[Box] = semiauto.apply
     given Apply[CaseClassWOption] = semiauto.apply
     given Apply[OptList] = semiauto.apply
     given Apply[AndInt] = semiauto.apply
     given Apply[Interleaved] = semiauto.apply
     given Apply[ListBox] = semiauto.apply
+
+  object derivedApply:
+    case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives Apply
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Apply
+    case class AndInt[A](x: ApplySuite.AndInt[A]) derives Apply
 
 end ApplySuite

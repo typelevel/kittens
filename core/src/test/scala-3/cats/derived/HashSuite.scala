@@ -1,8 +1,7 @@
 package cats.derived
 
 import cats.Hash
-import cats.kernel.laws.discipline.{HashTests, SerializableTests}
-
+import cats.kernel.laws.discipline.*
 import scala.compiletime.*
 import scala.util.hashing.MurmurHash3
 
@@ -30,12 +29,12 @@ class HashSuite extends KittensSuite:
   }
 
   locally {
-    import semiHash.given
+    import semiInstances.given
     validate("semiauto.hash")
   }
 
   locally {
-    import derivedHash.*
+    import derivedInstances.*
     val instance = "derived.hash"
     checkAll(s"$instance[IList[Int]]", tests[IList[Int]].hash)
     checkAll(s"$instance[Inner]", tests[Inner].hash)
@@ -53,7 +52,7 @@ end HashSuite
 object HashSuite:
   import TestDefns.*
 
-  object semiHash:
+  object semiInstances:
     given Hash[IList[Int]] = semiauto.hash
     given Hash[Inner] = semiauto.hash
     given Hash[Outer] = semiauto.hash
@@ -62,7 +61,7 @@ object HashSuite:
     given Hash[Recursive] = semiauto.hash
     given Hash[EnumK0] = semiauto.hash
 
-  object derivedHash:
+  object derivedInstances:
     case class IList[A](x: TestDefns.IList[A]) derives Hash
     case class Inner(x: TestDefns.Inner) derives Hash
     case class Outer(x: TestDefns.Outer) derives Hash

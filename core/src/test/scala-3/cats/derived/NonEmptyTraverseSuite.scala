@@ -18,11 +18,9 @@ package cats.derived
 
 import cats.{Eq, NonEmptyTraverse}
 import cats.data.{NonEmptyList, NonEmptyVector, OneAnd}
+import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
-import cats.laws.discipline.{NonEmptyTraverseTests, SerializableTests}
 import cats.syntax.all.*
-import org.scalacheck.Arbitrary
-
 import scala.compiletime.*
 
 class NonEmptyTraverseSuite extends KittensSuite:
@@ -76,12 +74,12 @@ class NonEmptyTraverseSuite extends KittensSuite:
   }
 
   locally {
-    import semiNonEmptyTraverse.given
+    import semiInstances.given
     validate("semiauto.nonEmptyTraverse")
   }
 
   locally {
-    import derivedNonEmptyTraverse.*
+    import derivedInstances.*
     val instance = "derived.nonEmptyTraverse"
     checkAll(
       s"$instance[ICons]",
@@ -118,7 +116,7 @@ object NonEmptyTraverseSuite:
   type NelAndOne[A] = NonEmptyList[OneAnd[Vector, A]]
   type VecAndNel[A] = (Vector[A], NonEmptyList[A])
 
-  object semiNonEmptyTraverse:
+  object semiInstances:
     given NonEmptyTraverse[ICons] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[Tree] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[NelSCons] = semiauto.nonEmptyTraverse
@@ -128,7 +126,7 @@ object NonEmptyTraverseSuite:
     given NonEmptyTraverse[EnumK1] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[AtLeastOne] = semiauto.nonEmptyTraverse
 
-  object derivedNonEmptyTraverse:
+  object derivedInstances:
     case class ICons[A](x: TestDefns.ICons[A]) derives NonEmptyTraverse
     case class Tree[A](x: TestDefns.Tree[A]) derives NonEmptyTraverse
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives NonEmptyTraverse

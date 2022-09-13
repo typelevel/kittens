@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package cats
-package derived
+package cats.derived
 
+import cats.Functor
 import cats.laws.discipline.*
 import cats.laws.discipline.eq.*
 import scala.compiletime.*
@@ -52,12 +52,12 @@ class FunctorSuite extends KittensSuite:
   }
 
   locally {
-    import semiFunctor.given
+    import semiInstances.given
     validate("semiauto.functor")
   }
 
   locally {
-    import derivedFunctor.*
+    import derivedInstances.*
     val instance = "derived.functor"
     checkAll(s"$instance[IList]", tests[IList].functor[Int, String, Long])
     checkAll(s"$instance[Tree]", tests[Tree].functor[Int, String, Long])
@@ -82,7 +82,7 @@ object FunctorSuite:
   type Predicate[A] = A => Boolean
   type NestedPred[A] = Predicate[Predicate[A]]
 
-  object semiFunctor:
+  object semiInstances:
     given Functor[IList] = semiauto.functor
     given Functor[Tree] = semiauto.functor
     given Functor[GenericAdt] = semiauto.functor
@@ -96,7 +96,7 @@ object FunctorSuite:
     given Functor[AtMostOne] = semiauto.functor
     given Functor[AtLeastOne] = semiauto.functor
 
-  object derivedFunctor:
+  object derivedInstances:
     case class IList[A](x: TestDefns.IList[A]) derives Functor
     case class Tree[A](x: TestDefns.Tree[A]) derives Functor
     case class GenericAdt[A](x: TestDefns.GenericAdt[A]) derives Functor

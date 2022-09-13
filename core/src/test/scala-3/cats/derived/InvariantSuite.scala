@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package cats
-package derived
+package cats.derived
 
+import cats.Invariant
 import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
 import cats.laws.discipline.eq.*
-import cats.laws.discipline.*
-
 import scala.compiletime.*
 
 class InvariantSuite extends KittensSuite:
@@ -52,12 +50,12 @@ class InvariantSuite extends KittensSuite:
   }
 
   locally {
-    import semiInvariant.given
+    import semiInstances.given
     validate("semiauto.invariant")
   }
 
   locally {
-    import derivedInvariant.*
+    import derivedInstances.*
     val instance = "derived.invariant"
     checkAll(s"$instance[IList]", tests[IList].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[Bivariant]", tests[Bivariant].invariant[MiniInt, String, Boolean])
@@ -79,7 +77,7 @@ object InvariantSuite:
   type AndCharF[A] = (A => Boolean, Char)
   type TreeF[A] = Tree[A => Boolean]
 
-  object semiInvariant:
+  object semiInstances:
     given Invariant[GenericAdtF] = semiauto.invariant
     given Invariant[ListFToInt] = semiauto.invariant
     // TODO: https://github.com/typelevel/kittens/issues/473
@@ -95,7 +93,7 @@ object InvariantSuite:
     given Invariant[AtMostOne] = semiauto.invariant
     given Invariant[AtLeastOne] = semiauto.invariant
 
-  object derivedInvariant:
+  object derivedInstances:
     case class Bivariant[A](x: TestDefns.Bivariant[A]) derives Invariant
     case class IList[A](x: TestDefns.IList[A]) derives Invariant
     case class EnumK1Inv[A](x: TestDefns.EnumK1Inv[A]) derives Invariant

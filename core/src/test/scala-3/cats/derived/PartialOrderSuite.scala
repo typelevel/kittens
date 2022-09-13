@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package cats
-package derived
+package cats.derived
 
-import cats.kernel.laws.discipline.{PartialOrderTests, SerializableTests}
+import cats.PartialOrder
+import cats.kernel.laws.discipline.*
 import scala.compiletime.*
 
 class PartialOrderSuite extends KittensSuite:
@@ -52,12 +52,12 @@ class PartialOrderSuite extends KittensSuite:
   }
 
   locally {
-    import semiPartialOrder.given
+    import semiInstances.given
     validate("semiauto.partialOrder")
   }
 
   locally {
-    import derivedPartialOrder.*
+    import derivedInstances.*
     val instance = "derived.partialOrder"
     checkAll(s"$instance[IList[Int]]", tests[IList[Int]].partialOrder)
     checkAll(s"$instance[Inner]", tests[Inner].partialOrder)
@@ -75,7 +75,7 @@ end PartialOrderSuite
 object PartialOrderSuite:
   import TestDefns.*
 
-  object semiPartialOrder:
+  object semiInstances:
     given PartialOrder[IList[Int]] = semiauto.partialOrder
     given PartialOrder[Inner] = semiauto.partialOrder
     given PartialOrder[Outer] = semiauto.partialOrder
@@ -85,7 +85,7 @@ object PartialOrderSuite:
     given PartialOrder[Box[KeyValue]] = semiauto.partialOrder
     given PartialOrder[EnumK0] = semiauto.partialOrder
 
-  object derivedPartialOrder:
+  object derivedInstances:
     case class IList[A](x: TestDefns.IList[A]) derives PartialOrder
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives PartialOrder
     case class Tree[A](x: TestDefns.Tree[A]) derives PartialOrder

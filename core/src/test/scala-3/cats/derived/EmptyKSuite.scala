@@ -20,7 +20,6 @@ import alleycats.{EmptyK, Pure}
 import alleycats.std.all.*
 import cats.data.NonEmptyList
 import cats.laws.discipline.SerializableTests
-
 import scala.compiletime.summonInline
 
 class EmptyKSuite extends KittensSuite:
@@ -49,7 +48,7 @@ class EmptyKSuite extends KittensSuite:
   }
 
   locally {
-    import semiEmptyK.given
+    import semiInstances.given
     validate("semiauto.emptyK")
   }
 
@@ -71,7 +70,7 @@ object EmptyKSuite:
   type NelOption[A] = NonEmptyList[Option[A]]
   type BoxColor[A] = Box[Color[A]]
 
-  object semiEmptyK:
+  object semiInstances:
     given EmptyK[LOption] = semiauto.emptyK
     given EmptyK[PList] = semiauto.emptyK
     given EmptyK[CaseClassWOption] = semiauto.emptyK

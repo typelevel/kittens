@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package cats
-package derived
+package cats.derived
 
+import cats.Contravariant
 import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
 import cats.laws.discipline.eq.*
@@ -47,12 +47,12 @@ class ContravariantSuite extends KittensSuite:
   }
 
   locally {
-    import semiContravariant.given
+    import semiInstances.given
     validate("semiauto.contravariant")
   }
 
   locally {
-    import derivedContravariant.*
+    import derivedInstances.*
     val instance = "derived.contravariant"
     checkAll(s"$instance[EnumK1Contra]", tests[EnumK1Contra].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[Single]", tests[Single].contravariant[MiniInt, String, Boolean])
@@ -72,7 +72,7 @@ object ContravariantSuite:
   type AndCharPred[A] = (A => Boolean, Char)
   type TreePred[A] = Tree[A => Boolean]
 
-  object semiContravariant:
+  object semiInstances:
     given Contravariant[OptPred] = semiauto.contravariant
     given Contravariant[TreePred] = semiauto.contravariant
     given Contravariant[ListPred] = semiauto.contravariant
@@ -83,7 +83,7 @@ object ContravariantSuite:
     given Contravariant[ListSnocF] = semiauto.contravariant
     given Contravariant[EnumK1Contra] = semiauto.contravariant
 
-  object derivedContravariant:
+  object derivedInstances:
     case class EnumK1Contra[-A](x: TestDefns.EnumK1Contra[A]) derives Contravariant
     case class Single[-A](value: A => Unit) derives Contravariant
 

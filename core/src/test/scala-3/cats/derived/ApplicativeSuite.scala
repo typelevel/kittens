@@ -20,7 +20,6 @@ import cats.Applicative
 import cats.laws.discipline.*
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
 import org.scalacheck.Arbitrary
-
 import scala.compiletime.*
 
 class ApplicativeSuite extends KittensSuite:
@@ -47,12 +46,12 @@ class ApplicativeSuite extends KittensSuite:
   }
 
   locally {
-    import semiApplicative.given
+    import semiInstances.given
     validate("semiauto.applicative")
   }
 
   locally {
-    import derivedApplicative.*
+    import derivedInstances.*
     val instance = "derived.applicative"
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].applicative[Int, String, Long])
     checkAll(s"$instance[AndInt]", tests[AndInt].applicative[Int, String, Long])
@@ -69,7 +68,7 @@ object ApplicativeSuite:
   type AndInt[A] = (A, Int)
   type ListBox[A] = List[Box[A]]
 
-  object semiApplicative:
+  object semiInstances:
     given Applicative[Box] = semiauto.applicative
     given Applicative[CaseClassWOption] = semiauto.applicative
     given Applicative[OptList] = semiauto.applicative
@@ -77,7 +76,7 @@ object ApplicativeSuite:
     given Applicative[Interleaved] = semiauto.applicative
     given Applicative[ListBox] = semiauto.applicative
 
-  object derivedApplicative:
+  object derivedInstances:
     case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives Applicative
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Applicative
     case class AndInt[A](x: ApplicativeSuite.AndInt[A]) derives Applicative

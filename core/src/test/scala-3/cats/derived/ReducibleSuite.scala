@@ -18,8 +18,8 @@ package cats.derived
 
 import cats.{Eval, Reducible}
 import cats.data.{NonEmptyList, OneAnd}
+import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
-import cats.laws.discipline.{ReducibleTests, SerializableTests}
 import cats.syntax.all.*
 import scala.compiletime.*
 
@@ -47,12 +47,12 @@ class ReducibleSuite extends KittensSuite:
   }
 
   locally {
-    import semiReducible.given
+    import semiInstances.given
     validate("semiauto.reducible")
   }
 
   locally {
-    import derivedReducible.*
+    import derivedInstances.*
     val instance = "derived.reducible"
     checkAll(s"$instance[ICons]", tests[ICons].reducible[Option, Int, Long])
     checkAll(s"$instance[Tree]", tests[Tree].reducible[Option, Int, Long])
@@ -71,7 +71,7 @@ object ReducibleSuite:
   type VecAndNel[A] = (Vector[A], NonEmptyList[A])
   type BoxZipper[A] = Box[Zipper[A]]
 
-  object semiReducible:
+  object semiInstances:
     given Reducible[ICons] = semiauto.reducible
     given Reducible[Tree] = semiauto.reducible
     given Reducible[NelSCons] = semiauto.reducible
@@ -81,7 +81,7 @@ object ReducibleSuite:
     given Reducible[BoxZipper] = semiauto.reducible
     given Reducible[EnumK1] = semiauto.reducible
 
-  object derivedReducible:
+  object derivedInstances:
     case class ICons[A](x: TestDefns.ICons[A]) derives Reducible
     case class Tree[A](x: TestDefns.Tree[A]) derives Reducible
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Reducible

@@ -17,7 +17,7 @@
 package cats.derived
 
 import cats.Apply
-import cats.laws.discipline.{ApplyTests, SerializableTests}
+import cats.laws.discipline.*
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
 import scala.compiletime.*
 
@@ -45,12 +45,12 @@ class ApplySuite extends KittensSuite:
   }
 
   locally {
-    import semiApply.given
+    import semiInstances.given
     validate("semiauto.apply")
   }
 
   locally {
-    import derivedApply.*
+    import derivedInstances.*
     val instance = "derived.apply"
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].apply[Int, String, Long])
     checkAll(s"$instance[AndInt]", tests[AndInt].apply[Int, String, Long])
@@ -67,7 +67,7 @@ object ApplySuite:
   type AndInt[A] = (A, Int)
   type ListBox[A] = List[Box[A]]
 
-  object semiApply:
+  object semiInstances:
     given Apply[Box] = semiauto.apply
     given Apply[CaseClassWOption] = semiauto.apply
     given Apply[OptList] = semiauto.apply
@@ -75,7 +75,7 @@ object ApplySuite:
     given Apply[Interleaved] = semiauto.apply
     given Apply[ListBox] = semiauto.apply
 
-  object derivedApply:
+  object derivedInstances:
     case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives Apply
     case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Apply
     case class AndInt[A](x: ApplySuite.AndInt[A]) derives Apply

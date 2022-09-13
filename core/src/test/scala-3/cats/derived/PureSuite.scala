@@ -30,27 +30,39 @@ class PureSuite extends KittensSuite:
     inline def pure[F[_]] =
       summonInline[Pure[F]].pure(a)
 
-  inline def testPure(inline context: String): Unit =
-    test(s"$context.Pure[LOption]")(assert(42.pure[LOption] == Some(42) :: Nil))
-    test(s"$context.Pure[PList]")(assert("Scala".pure[PList] == ("Scala" :: Nil, "Scala" :: Nil)))
-    test(s"$context.Pure[CaseClassWOption]")(assert(3.14.pure[CaseClassWOption] == CaseClassWOption(Some(3.14))))
-    test(s"$context.Pure[NelOption]")(assert(42.pure[NelOption] == NonEmptyList.of(Some(42))))
-    test(s"$context.Pure[Interleaved]")(assert('x'.pure[Interleaved] == Interleaved(0, 'x', 0, Vector('x'), "")))
-    test(s"$context.Pure respects existing instances")(assert(().pure[BoxColor] == Box(Color(255, 255, 255))))
-    checkAll(s"$context.Pure is Serializable", SerializableTests.serializable(summonInline[Pure[Interleaved]]))
+  inline def validate(inline instance: String): Unit =
+    test(s"$instance[LOption]")(assert(42.pure[LOption] == Some(42) :: Nil))
+    test(s"$instance[PList]")(assert("Scala".pure[PList] == ("Scala" :: Nil, "Scala" :: Nil)))
+    test(s"$instance[CaseClassWOption]")(assert(3.14.pure[CaseClassWOption] == CaseClassWOption(Some(3.14))))
+    test(s"$instance[NelOption]")(assert(42.pure[NelOption] == NonEmptyList.of(Some(42))))
+    test(s"$instance[Interleaved]")(assert('x'.pure[Interleaved] == Interleaved(0, 'x', 0, Vector('x'), "")))
+    test(s"$instance respects existing instances")(assert(().pure[BoxColor] == Box(Color(255, 255, 255))))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Pure[Interleaved]]))
 
   locally {
     import auto.pure.given
-    testPure("auto")
+    validate("auto.pure")
     testNoAuto("Pure", "IList")
     testNoAuto("Pure", "Snoc")
   }
 
   locally {
-    import semiInstances.given
-    testPure("semiauto")
+    import semiPure.given
+    validate("semiauto.pure")
     testNoSemi("Pure", "IList")
     testNoSemi("Pure", "Snoc")
+  }
+
+  locally {
+    import derivedPure.*
+    val instance = "derived.pure"
+    test(s"$instance[CaseClassWOption]")(
+      assert(3.14.pure[CaseClassWOption].x == TestDefns.CaseClassWOption(Some(3.14)))
+    )
+    test(s"$instance[Interleaved]")(
+      assert('x'.pure[Interleaved].x == TestDefns.Interleaved(0, 'x', 0, Vector('x'), ""))
+    )
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Pure[Interleaved]]))
   }
 
 end PureSuite
@@ -63,13 +75,17 @@ object PureSuite:
   type NelOption[A] = NonEmptyList[Option[A]]
   type BoxColor[A] = Box[Color[A]]
 
-  object semiInstances:
+  object semiPure:
     given Pure[LOption] = semiauto.pure
     given Pure[PList] = semiauto.pure
     given Pure[CaseClassWOption] = semiauto.pure
     given Pure[NelOption] = semiauto.pure
     given Pure[Interleaved] = semiauto.pure
     given Pure[BoxColor] = semiauto.pure
+
+  object derivedPure:
+    case class CaseClassWOption[A](x: TestDefns.CaseClassWOption[A]) derives Pure
+    case class Interleaved[A](x: TestDefns.Interleaved[A]) derives Pure
 
   final case class Color[A](r: Int, g: Int, b: Int)
   object Color:

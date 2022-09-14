@@ -23,10 +23,6 @@ sealed trait Sequencer[L <: HList] extends Serializable {
 }
 
 sealed abstract private[sequence] class SequencerForRecord {
-  type Of[G[_], L <: HList] = Sequencer[L] {
-    type F[x] = G[x]
-  }
-
   type Aux[G[_], L <: HList, O <: HList] = Sequencer[L] {
     type F[x] = G[x]
     type LOut = O
@@ -139,10 +135,10 @@ trait SequenceOps {
   }
 
   object parSequence extends ProductArgs {
-    def applyProduct[F[_], L <: HList](hl: L)(implicit
-        seq: Sequencer.Of[F, L],
+    def applyProduct[F[_], L <: HList, O <: HList](hl: L)(implicit
+        seq: Sequencer.Aux[F, L, O],
         par: Parallel[F]
-    ): seq.Out = seq.parApply(hl)
+    ): F[O] = seq.parApply(hl)
   }
 
   object sequenceNamed extends RecordArgs {
@@ -150,10 +146,10 @@ trait SequenceOps {
   }
 
   object parSequenceNamed extends RecordArgs {
-    def applyRecord[F[_], L <: HList](hl: L)(implicit
-        seq: Sequencer.Of[F, L],
+    def applyRecord[F[_], L <: HList, O <: HList](hl: L)(implicit
+        seq: Sequencer.Aux[F, L, O],
         par: Parallel[F]
-    ): seq.Out = seq.parApply(hl)
+    ): F[O] = seq.parApply(hl)
   }
 
   def sequenceTo[A]: SequenceOps.SequenceTo[A] =
@@ -162,13 +158,13 @@ trait SequenceOps {
 
 object SequenceOps {
   class Syntax[L <: HList](private val hl: L) extends AnyVal {
-    def sequence[F[_]](implicit seq: Sequencer.Of[F, L]): seq.Out = seq(hl)
+    def sequence(implicit seq: Sequencer[L]): seq.Out = seq(hl)
     def sequenceTo[A](implicit seq: GenericSequencer[A, L]): seq.F[A] = seq(hl)
 
-    def parSequence[F[_]](implicit
-        seq: Sequencer.Of[F, L],
+    def parSequence[F[_], O <: HList](implicit
+        seq: Sequencer.Aux[F, L, O],
         par: Parallel[F]
-    ): seq.Out = seq.parApply(hl)
+    ): F[O] = seq.parApply(hl)
 
     def parSequenceTo[F[_], A](implicit
         seq: GenericSequencer.Aux[F, A, L],

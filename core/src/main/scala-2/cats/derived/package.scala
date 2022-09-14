@@ -24,12 +24,6 @@ object auto {
   }
 
   object emptyK {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkEmptyK[F[_]](
-        refute: Refute[EmptyK[F]],
-        F: Lazy[MkEmptyK[F]]
-    ): EmptyK[F] = F.value
-
     implicit def kittensMkEmptyK[F[_]](implicit
         refute: Refute[EmptyK[F]],
         F: MkEmptyK[F]
@@ -65,12 +59,6 @@ object auto {
   }
 
   object invariant {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkInvariant[F[_]](
-        refute: Refute[Invariant[F]],
-        F: Lazy[MkInvariant[F]]
-    ): Invariant[F] = F.value
-
     implicit def kittensMkInvariant[F[_]](implicit
         refute: Refute[Invariant[F]],
         F: MkInvariant[F]
@@ -78,12 +66,6 @@ object auto {
   }
 
   object contravariant {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkContravariant[F[_]](
-        refute: Refute[Contravariant[F]],
-        F: Lazy[MkContravariant[F]]
-    ): Contravariant[F] = F.value
-
     implicit def kittensMkContravariant[F[_]](implicit
         refute: Refute[Contravariant[F]],
         F: MkContravariant[F]
@@ -91,12 +73,6 @@ object auto {
   }
 
   object functor {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkFunctor[F[_]](
-        refute: Refute[Functor[F]],
-        F: Lazy[MkFunctor[F]]
-    ): Functor[F] = F.value
-
     implicit def kittensMkFunctor[F[_]](implicit
         refute: Refute[Functor[F]],
         F: MkFunctor[F]
@@ -104,12 +80,6 @@ object auto {
   }
 
   object apply {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkApply[F[_]](
-        refute: Refute[Apply[F]],
-        F: Lazy[MkApply[F]]
-    ): Apply[F] = F.value
-
     implicit def kittensMkApply[F[_]](implicit
         refute: Refute[Apply[F]],
         F: MkApply[F]
@@ -117,12 +87,6 @@ object auto {
   }
 
   object applicative {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkApplicative[F[_]](
-        refute: Refute[Applicative[F]],
-        F: Lazy[MkApplicative[F]]
-    ): Applicative[F] = F.value
-
     implicit def kittensMkApplicative[F[_]](implicit
         refute: Refute[Applicative[F]],
         F: MkApplicative[F]
@@ -172,12 +136,6 @@ object auto {
   }
 
   object semigroupK {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkSemigroupK[F[_]](
-        refute: Refute[SemigroupK[F]],
-        F: Lazy[MkSemigroupK[F]]
-    ): SemigroupK[F] = F.value
-
     implicit def kittensMkSemigroupK[F[_]](implicit
         refute: Refute[SemigroupK[F]],
         F: MkSemigroupK[F]
@@ -185,12 +143,6 @@ object auto {
   }
 
   object monoidK {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkMonoidK[F[_]](
-        refute: Refute[MonoidK[F]],
-        F: Lazy[MkMonoidK[F]]
-    ): MonoidK[F] = F.value
-
     implicit def kittensMkMonoidK[F[_]](implicit
         refute: Refute[MonoidK[F]],
         F: MkMonoidK[F]
@@ -198,12 +150,6 @@ object auto {
   }
 
   object foldable {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkFoldable[F[_]](
-        refute: Refute[Foldable[F]],
-        F: Lazy[MkFoldable[F]]
-    ): Foldable[F] = F.value
-
     implicit def kittensMkFoldable[F[_]](implicit
         refute: Refute[Foldable[F]],
         F: MkFoldable[F]
@@ -211,12 +157,6 @@ object auto {
   }
 
   object reducible {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkReducible[F[_]](
-        refute: Refute[Reducible[F]],
-        F: Lazy[MkReducible[F]]
-    ): Reducible[F] = F.value
-
     implicit def kittensMkReducible[F[_]](implicit
         refute: Refute[Reducible[F]],
         F: MkReducible[F]
@@ -224,12 +164,6 @@ object auto {
   }
 
   object traverse {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkTraverse[F[_]](
-        refute: Refute[Traverse[F]],
-        F: Lazy[MkTraverse[F]]
-    ): Traverse[F] = F.value
-
     implicit def kittensMkTraverse[F[_]](implicit
         refute: Refute[Traverse[F]],
         F: MkTraverse[F]
@@ -237,12 +171,6 @@ object auto {
   }
 
   object nonEmptyTraverse {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkNonEmptyTraverse[F[_]](
-        refute: Refute[NonEmptyTraverse[F]],
-        F: Lazy[MkNonEmptyTraverse[F]]
-    ): NonEmptyTraverse[F] = F.value
-
     implicit def kittensMkNonEmptyTraverse[F[_]](implicit
         refute: Refute[NonEmptyTraverse[F]],
         F: MkNonEmptyTraverse[F]
@@ -250,12 +178,6 @@ object auto {
   }
 
   object pure {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkPure[F[_]](
-        refute: Refute[Pure[F]],
-        F: Lazy[MkPure[F]]
-    ): Pure[F] = F.value
-
     implicit def kittensMkPure[F[_]](implicit
         refute: Refute[Pure[F]],
         F: MkPure[F]
@@ -263,12 +185,6 @@ object auto {
   }
 
   object consK {
-    @deprecated("Use overload without Lazy", "2.3.0")
-    private[derived] def kittensMkConsK[F[_]](
-        refute: Refute[ConsK[F]],
-        F: Lazy[MkConsK[F, F]]
-    ): ConsK[F] = MkConsK.consK(F.value)
-
     implicit def kittensMkConsK[F[_]](implicit
         refute: Refute[ConsK[F]],
         F: MkConsK[F, F]
@@ -456,73 +372,3 @@ object cached {
     ): ConsK[F] = MkConsK.consK(cached.value)
   }
 }
-
-abstract private[derived] class SemiAutoInstances {
-
-  def eq[A](implicit ev: Lazy[MkEq[A]]): Eq[A] = ev.value
-  def partialOrder[A](implicit ev: Lazy[MkPartialOrder[A]]): PartialOrder[A] = ev.value
-  def order[A](implicit ev: Lazy[MkOrder[A]]): Order[A] = ev.value
-  def hash[A](implicit ev: Lazy[MkHash[A]]): Hash[A] = ev.value
-
-  def show[A](implicit ev: Lazy[MkShow[A]]): Show[A] = ev.value
-  def showPretty[A](implicit ev: Lazy[MkShowPretty[A]]): ShowPretty[A] = ev.value
-
-  def empty[A](implicit ev: Lazy[MkEmpty[A]]): Empty[A] = ev.value
-  def emptyK[F[_]](implicit F: Lazy[MkEmptyK[F]]): EmptyK[F] = F.value
-
-  def semigroup[T](implicit ev: Lazy[MkSemigroup[T]]): Semigroup[T] = ev.value
-  def semigroupK[F[_]](implicit F: Lazy[MkSemigroupK[F]]): SemigroupK[F] = F.value
-  def commutativeSemigroup[T](implicit ev: Lazy[MkCommutativeSemigroup[T]]): CommutativeSemigroup[T] = ev.value
-
-  def monoid[A](implicit ev: Lazy[MkMonoid[A]]): Monoid[A] = ev.value
-  def monoidK[F[_]](implicit F: Lazy[MkMonoidK[F]]): MonoidK[F] = F.value
-  def commutativeMonoid[A](implicit ev: Lazy[MkCommutativeMonoid[A]]): CommutativeMonoid[A] = ev.value
-
-  def functor[F[_]](implicit F: Lazy[MkFunctor[F]]): Functor[F] = F.value
-  def contravariant[F[_]](implicit F: Lazy[MkContravariant[F]]): Contravariant[F] = F.value
-  def invariant[F[_]](implicit F: Lazy[MkInvariant[F]]): Invariant[F] = F.value
-  def pure[F[_]](implicit F: Lazy[MkPure[F]]): Pure[F] = F.value
-  def apply[F[_]](implicit F: Lazy[MkApply[F]]): Apply[F] = F.value
-  def applicative[F[_]](implicit F: Lazy[MkApplicative[F]]): Applicative[F] = F.value
-
-  def foldable[F[_]](implicit F: Lazy[MkFoldable[F]]): Foldable[F] = F.value
-  def reducible[F[_]](implicit F: Lazy[MkReducible[F]]): Reducible[F] = F.value
-  def traverse[F[_]](implicit F: Lazy[MkTraverse[F]]): Traverse[F] = F.value
-  def nonEmptyTraverse[F[_]](implicit F: Lazy[MkNonEmptyTraverse[F]]): NonEmptyTraverse[F] = F.value
-
-  def consK[F[_]](implicit F: Lazy[MkConsK[F, F]]): ConsK[F] = MkConsK.consK(F.value)
-  def iterable[F[_], A](fa: F[A])(implicit F: MkIterable[F]): Iterable[A] = F.iterable(fa)
-}
-
-/** allows semi automatically derive each instance. The derivation might need help when there are fields with a type
-  * constructor that comes with instances, e.g.
-  * {{{
-  * scala> case class Bar(a: String)
-  * scala> case class Foo(bars: List[Bar])
-  * scala> import cats.instances.all._
-  *
-  * scala> cats.derived.semi.show[Foo].show(Foo(List(Bar("a"))))
-  * res1: String = Foo(bars = \$colon\$colon(head = Bar(a = a), tl\$access\$1 = Nil.type()))
-  * }}}
-  * Note that semi.show didn't respect the native `Show[List]` instance
-  *
-  * You could either derive a Bar instance first
-  * {{{
-  * scala> implicit val barShow = cats.derived.semi.show[Bar]
-  *
-  * scala> cats.derived.semi.show[Foo].show(Foo(List(Bar("a"))))
-  * res2: String = Foo(bars = List(Bar(a = a)))
-  * }}}
-  *
-  * Or you can take advantage of a controlled auto derivation
-  * {{{
-  *   scala> implicit val fooShow: Show[Foo] = { |
-  *             import cats.derived.auto.show._  |
-  *             cats.derived.semi.show           |
-  *           }
-  *   scala> Foo(List(Bar("a"))).show
-  *   res3: String = Foo(bars = List(Bar(a = a)))
-  * }}}
-  */
-@deprecated(message = "Use semiauto instead.", since = "2.1.0")
-object semi extends SemiAutoInstances

@@ -58,17 +58,6 @@ sealed abstract private[derived] class MkShowPrettyDerivation extends MkShowPret
     case Inr(r) => R.showLines(r)
   }
 
-  @deprecated("Use mkShowPrettyProduct instead", "2.2.1")
-  def mkShowPrettyGenericProduct[A, R <: HList](implicit
-      A: LabelledGeneric.Aux[A, R],
-      T: Typeable[A],
-      R: Lazy[MkShowPretty[R]]
-  ): MkShowPretty[A] = { a =>
-    val name = T.describe.takeWhile(_ != '[')
-    val lines = R.value.showLines(A.to(a)).map("  " + _)
-    s"$name(" :: lines ::: ")" :: Nil
-  }
-
   implicit def mkShowPrettyProduct[A, R <: HList](implicit
       A: LabelledGeneric.Aux[A, R],
       T: ClassTag[A],
@@ -81,10 +70,6 @@ sealed abstract private[derived] class MkShowPrettyDerivation extends MkShowPret
 }
 
 sealed abstract private[derived] class MkShowPrettyGenericCoproduct {
-
-  @deprecated("Use SAM instead", "2.2.1")
-  protected def instance[A](f: A => List[String]): MkShowPretty[A] =
-    f(_)
 
   protected def mkShowLines[A](show: Show[A] OrElse MkShowPretty[A])(a: A): List[String] =
     show.fold(

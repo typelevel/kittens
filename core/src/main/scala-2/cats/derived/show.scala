@@ -49,17 +49,6 @@ sealed abstract private[derived] class MkShowDerivation extends MkShowGenericCop
     case Inr(r) => R.show(r)
   }
 
-  @deprecated("Use mkShowProduct instead", "2.2.1")
-  def mkShowGenericProduct[A, R <: HList](implicit
-      A: LabelledGeneric.Aux[A, R],
-      T: Typeable[A],
-      R: Lazy[MkShow[R]]
-  ): MkShow[A] = { a =>
-    val name = T.describe.takeWhile(_ != '[')
-    val fields = R.value.show(A.to(a))
-    s"$name($fields)"
-  }
-
   implicit def mkShowProduct[A, R <: HList](implicit
       A: LabelledGeneric.Aux[A, R],
       T: ClassTag[A],
@@ -79,8 +68,4 @@ sealed abstract private[derived] class MkShowGenericCoproduct {
   ): MkShow[A] = new MkShow[A] { // Using SAM here makes it not Serializable.
     override def show(t: A) = R.value.show(A.to(t))
   }
-
-  @deprecated("Use SAM instead", "2.2.1")
-  protected def instance[A](f: A => String): MkShow[A] =
-    f(_)
 }

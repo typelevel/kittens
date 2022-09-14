@@ -28,7 +28,7 @@ sealed abstract private[sequence] class TraverserFromSequencer {
   ): Aux[seq.F, L, P, seq.LOut] = new Traverser[seq.F, L, P] {
     type LOut = seq.LOut
     def apply(hl: L) = seq(map(hl))
-    def parApply(hl: L)(implicit par: Parallel[seq.F]) = seq.parApply(map(hl))
+    def parApply(hl: L)(implicit par: Parallel[seq.F]) = seq.parApply(map(hl))(par)
   }
 }
 

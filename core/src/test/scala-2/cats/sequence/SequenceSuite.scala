@@ -20,11 +20,12 @@ class SequenceSuite extends KittensSuite {
   type ShortErr[A] = Either[Int, A]
   type AccumErr[A] = Validated[Int, A]
 
+  // We can't simply use HNil.sequence, because F would be ambiguous.
+  // However, we can explicitly grab the Sequencer for Option and use it.
   test("sequencing HNil") {
-    val nil: HNil = HNil
-    assert(nil.sequence[Option].contains(HNil))
+    assert(implicitly[Sequencer.Aux[Option, HNil, HNil]].apply(HNil).contains(HNil))
     @nowarn("cat=deprecation")
-    val stream = nil.parSequence[Stream]
+    val stream = implicitly[Sequencer.Aux[Stream, HNil, HNil]].parApply(HNil)
     assertEquals(stream(42), HNil)
   }
 

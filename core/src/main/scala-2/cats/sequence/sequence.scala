@@ -5,234 +5,196 @@
  */
 package cats.sequence
 
-import cats.{Applicative, Apply, Functor, Invariant, InvariantMonoidal, InvariantSemigroupal, Parallel}
+import cats.{Apply, Invariant, InvariantMonoidal, InvariantSemigroupal, Parallel, Semigroupal}
 import shapeless._
-import shapeless.ops.hlist.{Align, ZipWithKeys}
-import shapeless.ops.record.{Keys, UnzipFields, Values}
+import shapeless.labelled.{FieldType, field}
+import shapeless.ops.hlist.Align
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("cannot construct sequencer, make sure that every item of your hlist ${L} is an Apply")
-trait Sequencer[L <: HList] extends Serializable {
+@implicitNotFound("Cannot infer Sequencer for ${L}, make sure that every item is wrapped in the same Applicative")
+sealed trait Sequencer[L <: HList] extends Serializable {
   type F[_]
   type LOut <: HList
   type Out = F[LOut]
 
   def apply(hl: L): Out
-
-  // Defined sequentially for binary compatibility, overridden by implementations.
-  protected[sequence] def par(hl: L)(implicit P: Parallel[F]): P.F[LOut] =
-    P.parallel(apply(hl))
-
-  final def parApply(hl: L)(implicit P: Parallel[F]): Out =
-    P.sequential(par(hl)(P))
+  def parApply(hl: L)(implicit par: Parallel[F]): Out
 }
 
-abstract private[sequence] class MkHConsSequencerLowPrio {
-  type Aux[L <: HList, F0[_], LOut0] = Sequencer[L] {
-    type F[X] = F0[X]
-    type LOut = LOut0
+sealed abstract private[sequence] class SequencerForRecord {
+  type Of[G[_], L <: HList] = Sequencer[L] {
+    type F[x] = G[x]
   }
 
-  implicit def mkHConsSequencerForInvariant[F0[_], H, FT <: HList, T <: HList](implicit
-      tailSequencer: Aux[FT, F0, T],
-      F: InvariantSemigroupal[F0]
-  ): Aux[F0[H] :: FT, F0, H :: T] = new Sequencer[F0[H] :: FT] {
-    type F[X] = F0[X]
+  type Aux[G[_], L <: HList, O <: HList] = Sequencer[L] {
+    type F[x] = G[x]
+    type LOut = O
+  }
+
+  implicit def consField[G[_], K, V, GT <: HList, T <: HList](implicit
+      isg: InvariantSemigroupal[G],
+      tail: Aux[G, GT, T]
+  ): Aux[G, FieldType[K, G[V]] :: GT, FieldType[K, V] :: T] = new Sequencer[FieldType[K, G[V]] :: GT] {
+    type F[x] = G[x]
+    type LOut = FieldType[K, V] :: T
+
+    private def cons(v: V, t: T) = field[K][V](v) :: t
+    private def tuple(ht: V :: T) = (field[K][V](ht.head), ht.tail)
+
+    def parApply(hl: FieldType[K, F[V]] :: GT)(implicit par: Parallel[F]) =
+      Parallel.parMap2(hl.head: F[V], tail.parApply(hl.tail))(cons)
+
+    def apply(hl: FieldType[K, F[V]] :: GT) = isg match {
+      case app: Apply[G] => app.map2(hl.head, tail(hl.tail))(cons)
+      case _ => Semigroupal.imap2(hl.head: F[V], tail(hl.tail))(cons)(tuple)
+    }
+  }
+}
+
+object Sequencer extends SequencerForRecord {
+  def apply[L <: HList](implicit seq: Sequencer[L]): seq.type = seq
+
+  implicit def nil[G[_]](implicit im: InvariantMonoidal[G]): Sequencer.Aux[G, HNil, HNil] =
+    new Sequencer[HNil] {
+      type F[x] = G[x]
+      type LOut = HNil
+
+      def apply(hl: HNil) = im.point(hl)
+      def parApply(hl: HNil)(implicit par: Parallel[F]) =
+        par.sequential(par.applicative.pure(hl))
+    }
+
+  implicit def cons[G[_], H, GT <: HList, T <: HList](implicit
+      isg: InvariantSemigroupal[G],
+      tail: Aux[G, GT, T]
+  ): Aux[G, G[H] :: GT, H :: T] = new Sequencer[G[H] :: GT] {
+    type F[x] = G[x]
     type LOut = H :: T
 
-    private def fromTuple(p: (H, T)) = p._1 :: p._2
-    private def toTuple(hl: H :: T) = (hl.head, hl.tail)
+    def parApply(hl: F[H] :: GT)(implicit par: Parallel[G]) =
+      Parallel.parMap2(hl.head, tail.parApply(hl.tail))(_ :: _)
 
-    def apply(hl: F[H] :: FT) =
-      F.imap(F.product(hl.head, tailSequencer(hl.tail)))(fromTuple)(toTuple)
-    override def par(hl: F[H] :: FT)(implicit P: Parallel[F0]) =
-      P.apply.imap(P.apply.product(P.parallel(hl.head), tailSequencer.par(hl.tail)))(fromTuple)(toTuple)
+    def apply(hl: F[H] :: GT) = isg match {
+      case app: Apply[F] => app.map2(hl.head, tail(hl.tail))(_ :: _)
+      case _ => Semigroupal.imap2(hl.head, tail(hl.tail))(_ :: _) { case h :: t => (h, t) }
+    }
   }
 }
 
-abstract private[sequence] class MkHNilSequencerLowPrio extends MkHConsSequencerLowPrio {
-  implicit def mkHNilSequencerForInvariant[F0[_]](implicit
-      F: InvariantMonoidal[F0]
-  ): Sequencer.Aux[HNil, F0, HNil] = new Sequencer[HNil] {
-    type F[X] = F0[X]
-    type LOut = HNil
+sealed trait GenericSequencer[A, L <: HList] extends Serializable {
+  type F[_]
 
-    def apply(nil: HNil) =
-      F.point(nil)
-    override def par(nil: HNil)(implicit P: Parallel[F0]) =
-      P.applicative.point(nil)
-  }
-
-  implicit def mkSingletonSequencerForInvariant[F0[_], H](implicit
-      F: Invariant[F0]
-  ): Sequencer.Aux[F0[H] :: HNil, F0, H :: HNil] = new Sequencer[F0[H] :: HNil] {
-    type F[X] = F0[X]
-    type LOut = H :: HNil
-
-    def apply(singleton: F[H] :: HNil) =
-      F.imap(singleton.head)(_ :: HNil)(_.head)
-    override def par(singleton: F[H] :: HNil)(implicit P: Parallel[F0]) =
-      P.parallel(apply(singleton))
-  }
+  def apply(hl: L): F[A]
+  def parApply(hl: L)(implicit par: Parallel[F]): F[A]
 }
 
-abstract private[sequence] class MkHConsSequencer extends MkHNilSequencerLowPrio {
-
-  implicit def mkHConsSequencer[F0[_], H, FT <: HList, T <: HList](implicit
-      tailSequencer: Aux[FT, F0, T],
-      F: Apply[F0]
-  ): Sequencer.Aux[F0[H] :: FT, F0, H :: T] = new Sequencer[F0[H] :: FT] {
-    type F[X] = F0[X]
-    type LOut = H :: T
-
-    def apply(hl: F[H] :: FT) =
-      F.map2(hl.head, tailSequencer(hl.tail))(_ :: _)
-    override def par(hl: F[H] :: FT)(implicit P: Parallel[F]): P.F[LOut] =
-      P.apply.map2(P.parallel(hl.head), tailSequencer.par(hl.tail))(_ :: _)
-  }
-}
-
-object Sequencer extends MkHConsSequencer {
-  implicit def mkHNilSequencer[F0[_]](implicit
-      F: Applicative[F0]
-  ): Sequencer.Aux[HNil, F0, HNil] = new Sequencer[HNil] {
-    type F[X] = F0[X]
-    type LOut = HNil
-
-    def apply(nil: HNil) =
-      F.pure(nil)
-    override def par(nil: HNil)(implicit P: Parallel[F]): P.F[HNil] =
-      P.applicative.pure(nil)
+sealed abstract private[sequence] class GenericSequencerForRecord {
+  type Aux[G[_], A, L <: HList] = GenericSequencer[A, L] {
+    type F[x] = G[x]
   }
 
-  implicit def mkSingletonSequencer[F0[_], H](implicit
-      F: Functor[F0]
-  ): Sequencer.Aux[F0[H] :: HNil, F0, H :: HNil] = new Sequencer[F0[H] :: HNil] {
-    type F[X] = F0[X]
-    type LOut = H :: HNil
+  implicit def forRecord[G[_], A, L <: HList, R <: HList, S <: HList](implicit
+      gen: LabelledGeneric.Aux[A, R],
+      seq: Sequencer.Aux[G, L, S],
+      inv: Invariant[G],
+      alignFrom: Align[S, R],
+      alignTo: Align[R, S]
+  ): GenericSequencer.Aux[G, A, L] = new GenericSequencer[A, L] {
+    type F[x] = G[x]
 
-    def apply(singleton: F[H] :: HNil) =
-      F.map(singleton.head)(_ :: HNil)
-    override def par(singleton: F[H] :: HNil)(implicit P: Parallel[F]): P.F[H :: HNil] =
-      P.parallel(apply(singleton))
-  }
-}
+    private def from(s: S) = gen.from(s.align)
+    private def to(a: A) = gen.to(a).align
 
-@implicitNotFound("cannot construct sequencer, make sure that every field value of you record ${L} is an Apply")
-trait RecordSequencer[L <: HList] extends Serializable {
-  type Out
-  def apply(record: L): Out
-}
-
-abstract private[sequence] class RecordSequencerInstanceLowPrio {
-  type Aux[L <: HList, Out0] = RecordSequencer[L] { type Out = Out0 }
-
-  implicit def mkRecordSequencerForInvariant[R <: HList, K <: HList, V <: HList, F[_], VOut <: HList, ZOut <: HList](
-      implicit
-      unzip: UnzipFields.Aux[R, K, V],
-      valueSequencer: Sequencer.Aux[V, F, VOut],
-      F: Invariant[F],
-      zip: ZipWithKeys.Aux[K, VOut, ZOut],
-      values: Values.Aux[ZOut, VOut]
-  ): RecordSequencer.Aux[R, F[ZOut]] = new RecordSequencer[R] {
-    type Out = F[zip.Out]
-    def apply(record: R) = F.imap(valueSequencer(unzip.values(record)))(zip(_))(values(_))
+    def apply(hl: L) = inv.imap(seq(hl))(from)(to)
+    def parApply(hl: L)(implicit par: Parallel[G]) =
+      par.monad.map(seq.parApply(hl))(from)
   }
 
 }
 
-object RecordSequencer extends RecordSequencerInstanceLowPrio {
-  implicit def mkRecordSequencer[R <: HList, K <: HList, V <: HList, F[_], VOut <: HList](implicit
-      unzip: UnzipFields.Aux[R, K, V],
-      valueSequencer: Sequencer.Aux[V, F, VOut],
-      F: Functor[F],
-      zip: ZipWithKeys[K, VOut]
-  ): RecordSequencer.Aux[R, F[zip.Out]] = new RecordSequencer[R] {
-    type Out = F[zip.Out]
-    def apply(record: R) = F.map(valueSequencer(unzip.values(record)))(zip(_))
+object GenericSequencer extends GenericSequencerForRecord {
+  def apply[A, L <: HList](implicit seq: GenericSequencer[A, L]): seq.type = seq
+
+  implicit def forProduct[G[_], A, L <: HList, R <: HList](implicit
+      gen: Generic.Aux[A, R],
+      seq: Sequencer.Aux[G, L, R],
+      inv: Invariant[G]
+  ): GenericSequencer.Aux[G, A, L] = new GenericSequencer[A, L] {
+    type F[x] = G[x]
+
+    def apply(hl: L) =
+      inv.imap(seq(hl))(gen.from(_))(gen.to(_))
+    def parApply(hl: L)(implicit par: Parallel[G]) =
+      par.monad.map(seq.parApply(hl))(gen.from(_))
   }
 }
 
-trait GenericSequencer[L <: HList, T] extends Serializable {
-  type Out
-  def apply(hl: L): Out
-}
-
-abstract private[sequence] class GenericSequencerInstanceLowPrio {
-  type Aux[L <: HList, T, Out0] = GenericSequencer[L, T] { type Out = Out0 }
-
-  implicit def mkGenericSequencerForInvariant[L <: HList, T, SOut <: HList, FOut, LOut <: HList, F[_]](implicit
-      recordSequencer: RecordSequencer.Aux[L, FOut],
-      eqv: FOut =:= F[SOut],
-      F: Invariant[F],
-      gen: LabelledGeneric.Aux[T, LOut],
-      align: Align[SOut, LOut],
-      unalign: Align[LOut, SOut]
-  ): GenericSequencer.Aux[L, T, F[T]] = new GenericSequencer[L, T] {
-    type Out = F[T]
-    def apply(hl: L) = F.imap(recordSequencer(hl))(so => gen.from(so.align))(lo => gen.to(lo).align)
-  }
-
-}
-
-object GenericSequencer extends GenericSequencerInstanceLowPrio {
-  implicit def mkGenericSequencer[L <: HList, T, SOut <: HList, FOut, LOut <: HList, F[_]](implicit
-      recordSequencer: RecordSequencer.Aux[L, FOut],
-      eqv: FOut =:= F[SOut],
-      F: Functor[F],
-      gen: LabelledGeneric.Aux[T, LOut],
-      align: Align[SOut, LOut]
-  ): GenericSequencer.Aux[L, T, F[T]] = new GenericSequencer[L, T] {
-    type Out = F[T]
-    def apply(hl: L) = F.map(recordSequencer(hl))(so => gen.from(so.align))
-  }
-
-}
-
-private[sequence] trait MkNonRecordOps {
-  import SequenceOps._
-
-  // fallback for non-records
-  implicit def mkNonRecordOps[L <: HList](hl: L): NonRecordOps[L] =
-    new NonRecordOps(hl)
-}
-
-trait SequenceOps extends MkNonRecordOps {
-  import SequenceOps._
-
-  implicit def mkRecordOps[L <: HList: Keys](hl: L): RecordOps[L] =
-    new RecordOps(hl)
+trait SequenceOps {
+  implicit def sequenceSyntax[L <: HList](hl: L): SequenceOps.Syntax[L] =
+    new SequenceOps.Syntax(hl)
 
   object sequence extends ProductArgs {
     def applyProduct[L <: HList](hl: L)(implicit seq: Sequencer[L]): seq.Out = seq(hl)
   }
 
-  object sequenceRecord extends RecordArgs {
-    def applyRecord[L <: HList](hl: L)(implicit seq: RecordSequencer[L]): seq.Out = seq(hl)
+  object parSequence extends ProductArgs {
+    def applyProduct[F[_], L <: HList](hl: L)(implicit
+        seq: Sequencer.Of[F, L],
+        par: Parallel[F]
+    ): seq.Out = seq.parApply(hl)
   }
 
-  class sequenceGen[T] extends RecordArgs {
-    def applyRecord[L <: HList](hl: L)(implicit seq: GenericSequencer[L, T]): seq.Out = seq(hl)
+  object sequenceNamed extends RecordArgs {
+    def applyRecord[L <: HList](hl: L)(implicit seq: Sequencer[L]): seq.Out = seq(hl)
   }
 
-  def sequenceGeneric[T] = new sequenceGen[T]
+  object parSequenceNamed extends RecordArgs {
+    def applyRecord[F[_], L <: HList](hl: L)(implicit
+        seq: Sequencer.Of[F, L],
+        par: Parallel[F]
+    ): seq.Out = seq.parApply(hl)
+  }
+
+  def sequenceTo[A]: SequenceOps.SequenceTo[A] =
+    new SequenceOps.SequenceTo[A]
 }
 
 object SequenceOps {
+  class Syntax[L <: HList](private val hl: L) extends AnyVal {
+    def sequence[F[_]](implicit seq: Sequencer.Of[F, L]): seq.Out = seq(hl)
+    def sequenceTo[A](implicit seq: GenericSequencer[A, L]): seq.F[A] = seq(hl)
 
-  // Syntax for non-records
-  class NonRecordOps[L <: HList](self: L) {
-    def sequence(implicit seq: Sequencer[L]): seq.Out = seq(self)
-
-    def parSequence[F[_], LOut](implicit
-        seq: Sequencer.Aux[L, F, LOut],
+    def parSequence[F[_]](implicit
+        seq: Sequencer.Of[F, L],
         par: Parallel[F]
-    ): F[LOut] = seq.parApply(self)
+    ): seq.Out = seq.parApply(hl)
+
+    def parSequenceTo[F[_], A](implicit
+        seq: GenericSequencer.Aux[F, A, L],
+        par: Parallel[F]
+    ): seq.F[A] = seq.parApply(hl)
   }
 
-  // Syntax for records
-  class RecordOps[L <: HList](self: L) {
-    def sequence(implicit seq: RecordSequencer[L]): seq.Out = seq(self)
+  class SequenceTo[A] extends ProductArgs {
+    def applyProduct[L <: HList](hl: L)(implicit seq: GenericSequencer[A, L]): seq.F[A] = seq(hl)
+
+    object par extends ProductArgs {
+      def applyProduct[F[_], L <: HList](hl: L)(implicit
+          seq: GenericSequencer.Aux[F, A, L],
+          par: Parallel[F]
+      ): seq.F[A] = seq.parApply(hl)
+    }
+
+    object named extends RecordArgs {
+      def applyRecord[L <: HList](hl: L)(implicit seq: GenericSequencer[A, L]): seq.F[A] = seq(hl)
+    }
+
+    object parNamed extends RecordArgs {
+      def applyRecord[F[_], L <: HList](hl: L)(implicit
+          seq: GenericSequencer.Aux[F, A, L],
+          par: Parallel[F]
+      ): seq.F[A] = seq.parApply(hl)
+    }
   }
 }

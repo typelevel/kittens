@@ -1,7 +1,6 @@
 package cats.derived
 
 import alleycats.Empty
-import cats.derived.util.Kinds
 import shapeless3.deriving.K0
 
 import scala.annotation.implicitNotFound
@@ -19,7 +18,7 @@ object DerivedEmpty:
     summonInline[DerivedEmpty[A]].instance
 
   given product[A](using inst: K0.ProductInstances[Or, A]): DerivedEmpty[A] =
-    Empty(inst.unify.construct([A] => (A: Empty[A]) => A.empty))
+    Empty(inst.unify.construct([a] => (_: Empty[a]).empty))
 
   inline given coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
-    Kinds.summonOne0[Or, gen.MirroredElemTypes, A].unify
+    Empty(gen.withOnly[Or, A]([a <: A] => (_: Or[a]).unify.empty))

@@ -1,7 +1,6 @@
 package cats.derived
 
 import alleycats.{Empty, EmptyK, Pure}
-import cats.derived.util.Kinds
 import shapeless3.deriving.{Const, K1}
 
 import scala.annotation.implicitNotFound
@@ -39,4 +38,4 @@ object DerivedEmptyK:
       def empty[A]: F[A] = inst.unify.construct([f[_]] => (E: EmptyK[f]) => E.empty[A])
 
   inline given coproduct[F[_]](using gen: K1.CoproductGeneric[F]): DerivedEmptyK[F] =
-    Kinds.summonOne1[Or, gen.MirroredElemTypes, F].unify
+    gen.withOnly[Or, EmptyK[F]]([f[x] <: F[x]] => (ek: Or[f]) => ek.unify.asInstanceOf[EmptyK[F]])

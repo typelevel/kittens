@@ -27,7 +27,7 @@ object DerivedReducible:
     new Product[Foldable, F](ev) {}
 
   inline given [F[_]](using gen: K1.ProductGeneric[F]): DerivedReducible[F] =
-    product(K1.summonFirst[Or, gen.MirroredElemTypes, Const[Any]].unify)
+    product(K1.summonFirst[Or, gen.MirroredElemTypes].unify)
 
   given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedReducible[F] =
     given K1.CoproductInstances[Reducible, F] = inst.unify

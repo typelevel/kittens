@@ -32,7 +32,7 @@ object DerivedNonEmptyTraverse:
       with DerivedFunctor.Generic[Traverse, F] {}
 
   inline given [F[_]](using gen: K1.ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
-    product(K1.summonFirst[Or, gen.MirroredElemTypes, Const[Any]].unify)
+    product(K1.summonFirst[Or, gen.MirroredElemTypes].unify)
 
   given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedNonEmptyTraverse[F] =
     given K1.CoproductInstances[NonEmptyTraverse, F] = inst.unify

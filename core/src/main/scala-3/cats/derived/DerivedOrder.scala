@@ -32,10 +32,9 @@ object DerivedOrder:
     def compare(x: A, y: A): Int =
       inst.foldLeft2(x, y)(0: Int)(
         [t] =>
-          (acc: Int, ord: T[t], t0: t, t1: t) => {
+          (acc: Int, ord: T[t], t0: t, t1: t) =>
             val cmp = ord.compare(t0, t1)
             Complete(cmp != 0)(cmp)(acc)
-        }
       )
 
   trait Coproduct[T[x] <: Order[x], A](using inst: K0.CoproductInstances[T, A]) extends Order[A]:

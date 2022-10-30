@@ -36,7 +36,7 @@ abstract class KittensSuite extends KittensSuite.WithoutEq, ADTs.EqInstances:
 object KittensSuite:
   def deCapitalizeMacro(str: Expr[String])(using Quotes) =
     val value = str.valueOrAbort
-    Expr(if (value.isEmpty) "" else value.head.toLower +: value.tail)
+    Expr(if value.isEmpty then "" else value.head.toLower +: value.tail)
 
   inline def deCapitalize(inline str: String): String =
     ${ deCapitalizeMacro('str) }
@@ -44,10 +44,10 @@ object KittensSuite:
   /** Used to test `Eq` derivation. */
   abstract class WithoutEq extends DisciplineSuite, AllSyntax:
     override val scalaCheckTestParameters: Parameters = super.scalaCheckTestParameters
-      .withMinSuccessfulTests(if (Platform.isJvm) 50 else 5)
-      .withMaxDiscardRatio(if (Platform.isJvm) 5 else 50)
-      .withWorkers(if (Platform.isJvm) 2 else 1)
-      .withMaxSize(if (Platform.isJvm) 10 else 5)
+      .withMinSuccessfulTests(if Platform.isJvm then 50 else 5)
+      .withMaxDiscardRatio(if Platform.isJvm then 5 else 50)
+      .withWorkers(if Platform.isJvm then 2 else 1)
+      .withMaxSize(if Platform.isJvm then 10 else 5)
       .withMinSize(0)
 
     given [A: Arbitrary]: Arbitrary[List[A]] =

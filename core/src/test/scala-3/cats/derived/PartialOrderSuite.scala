@@ -98,6 +98,6 @@ object PartialOrderSuite:
   final case class KeyValue(key: String, value: Int)
   object KeyValue:
     given PartialOrder[KeyValue] =
-      PartialOrder.from((x, y) => if (x.key == y.key) x.value.toDouble - y.value.toDouble else Double.NaN)
+      PartialOrder.from((x, y) => if x.key == y.key then x.value.toDouble - y.value.toDouble else Double.NaN)
 
 end PartialOrderSuite

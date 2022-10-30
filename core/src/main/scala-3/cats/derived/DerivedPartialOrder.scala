@@ -32,10 +32,9 @@ object DerivedPartialOrder:
     def partialCompare(x: A, y: A): Double =
       inst.foldLeft2(x, y)(0: Double)(
         [t] =>
-          (acc: Double, ord: T[t], t0: t, t1: t) => {
+          (acc: Double, ord: T[t], t0: t, t1: t) =>
             val cmp = ord.partialCompare(t0, t1)
             Complete(cmp != 0)(cmp)(acc)
-        }
       )
 
   trait Coproduct[T[x] <: PartialOrder[x], A](using inst: K0.CoproductInstances[T, A]) extends PartialOrder[A]:

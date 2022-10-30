@@ -111,7 +111,7 @@ object ADTs:
     given Arbitrary[Recursive] =
       def recursive(size: Int): Gen[Recursive] = for
         i <- Arbitrary.arbitrary[Int]
-        is <- if (size <= 0) Gen.const(None) else Gen.option(recursive(size / 2))
+        is <- if size <= 0 then Gen.const(None) else Gen.option(recursive(size / 2))
       yield Recursive(i, is)
       Arbitrary(Gen.sized(recursive))
 
@@ -193,7 +193,7 @@ object ADTs:
     given [A: Arbitrary]: Arbitrary[Tree[A]] =
       val leaf = Arbitrary.arbitrary[A].map(Leaf.apply)
       def tree(maxDepth: Int): Gen[Tree[A]] =
-        if (maxDepth <= 0) leaf
+        if maxDepth <= 0 then leaf
         else Gen.oneOf(leaf, node(maxDepth))
       def node(maxDepth: Int): Gen[Tree[A]] = for
         depthL <- Gen.choose(0, maxDepth - 1)

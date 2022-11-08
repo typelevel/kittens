@@ -41,17 +41,17 @@ class EmptySuite extends KittensSuite:
   locally {
     import auto.empty.given
     validate("auto.empty")
-    testNoAuto("Empty", "IList[Int]")
-    testNoAuto("Empty", "Snoc[Int]")
-    testNoAuto("Empty", "Rgb")
+    testNoInstance("Empty", "IList[Int]")
+    testNoInstance("Empty", "Snoc[Int]")
+    testNoInstance("Empty", "Rgb")
   }
 
   locally {
     import semiInstances.given
     validate("semiauto.empty")
-    testNoSemi("Empty", "IList[Int]")
-    testNoSemi("Empty", "Snoc[Int]")
-    testNoSemi("Empty", "Rgb")
+    testNoInstance("Empty", "IList[Int]")
+    testNoInstance("Empty", "Snoc[Int]")
+    testNoInstance("Empty", "Rgb")
   }
 
   locally {

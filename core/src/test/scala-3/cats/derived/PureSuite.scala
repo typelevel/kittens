@@ -41,15 +41,15 @@ class PureSuite extends KittensSuite:
   locally {
     import auto.pure.given
     validate("auto.pure")
-    testNoAuto("Pure", "IList")
-    testNoAuto("Pure", "Snoc")
+    testNoInstance("Pure", "IList")
+    testNoInstance("Pure", "Snoc")
   }
 
   locally {
     import semiInstances.given
     validate("semiauto.pure")
-    testNoSemi("Pure", "IList")
-    testNoSemi("Pure", "Snoc")
+    testNoInstance("Pure", "IList")
+    testNoInstance("Pure", "Snoc")
   }
 
   locally {

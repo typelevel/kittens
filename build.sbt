@@ -10,7 +10,7 @@ ThisBuild / tlBaseVersion := "3.0"
 ThisBuild / organization := "org.typelevel"
 
 val catsVersion = "2.9.0"
-val munitVersion = "1.0.0-M6"
+val munitVersion = "1.0.0-M7"
 val disciplineMunitVersion = "2.0.0-M3"
 val kindProjectorVersion = "0.13.2"
 val shapeless2Version = "2.3.10"

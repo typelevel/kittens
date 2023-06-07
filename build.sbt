@@ -1,7 +1,7 @@
-import sbt._
+import sbt.*
 
 val scala212 = "2.12.18"
-val scala213 = "2.13.10"
+val scala213 = "2.13.11"
 val scala3 = "3.3.0"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
@@ -59,7 +59,7 @@ lazy val root = tlCrossRootProject.aggregate(core)
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
-  .settings(commonSettings: _*)
+  .settings(commonSettings *)
   .jsSettings(tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.1.0").toMap)
   .nativeSettings(tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.2.2").toMap)
 

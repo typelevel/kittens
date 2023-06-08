@@ -17,15 +17,15 @@ class TraverseSuite extends KittensSuite {
     Validated.fromOption(opt, "Nothing Here")
 
   object headOption extends Poly1 {
-    implicit def caseSet[T] = at[Set[T]](_.headOption)
+    implicit def caseSet[T]: Case.Aux[Set[T], Option[T]] = at(_.headOption)
   }
 
   object optionToValidation extends Poly1 {
-    implicit def caseOption[T] = at(o2v[T])
+    implicit def caseOption[T]: Case.Aux[Option[T], Validated[String, T]] = at(o2v[T])
   }
 
   object optionToEither extends Poly1 {
-    implicit def caseOption[T] = at(o2e[T])
+    implicit def caseOption[T]: Case.Aux[Option[T], Either[String, T]] = at(o2e[T])
   }
 
   property("traversing Set with Set => Option") {

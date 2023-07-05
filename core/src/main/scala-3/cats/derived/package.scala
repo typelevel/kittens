@@ -104,13 +104,13 @@ object auto:
     inline given [F[_]](using NotGiven[Foldable[F]]): Foldable[F] = DerivedFoldable[F]
 
   object reducible:
-    inline given [F[_]](using NotGiven[Reducible[F]]): Reducible[F] = DerivedReducible[F]
+    transparent inline given [F[_]](using NotGiven[Reducible[F]]): Reducible[F] = DerivedReducible[F]
 
   object traverse:
     inline given [F[_]](using NotGiven[Traverse[F]]): Traverse[F] = DerivedTraverse[F]
 
   object nonEmptyTraverse:
-    inline given [F[_]](using NotGiven[NonEmptyTraverse[F]]): NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
+    transparent inline given [F[_]](using NotGiven[NonEmptyTraverse[F]]): NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
 
   object semigroupK:
     inline given [F[_]](using NotGiven[SemigroupK[F]]): SemigroupK[F] = DerivedSemigroupK[F]
@@ -128,4 +128,4 @@ object auto:
     inline given [A](using NotGiven[PartialOrder[A]]): PartialOrder[A] = DerivedPartialOrder[A]
 
   object showPretty:
-    inline given [A](using NotGiven[Show[A]]): ShowPretty[A] = DerivedShowPretty[A]
+    transparent inline given [A](using NotGiven[Show[A]]): ShowPretty[A] = DerivedShowPretty[A]

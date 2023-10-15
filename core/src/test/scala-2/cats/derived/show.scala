@@ -73,8 +73,8 @@ class ShowSuite extends KittensSuite {
     }
 
     test(s"$context.Show[Singletons[Int]]") {
-      val value = Singletons.wrap(313)
-      val shown = "Singletons(value = 313, str = Scala, sym = Symbol(fun), lng = 42, dbl = 3.14)"
+      val value = Singletons[Int](313)
+      val shown = "Singletons(value = 313, str = Scala, chr = +, lng = 42, dbl = 3.14)"
       assert(value.show == shown)
     }
 

@@ -282,26 +282,23 @@ object TestDefns {
 
   final case class Singletons[A](
       value: A,
-      str: Singletons.str.T,
-      sym: Singletons.sym.T,
-      lng: Singletons.lng.T,
-      dbl: Singletons.dbl.T
+      str: Singletons.str.T = Singletons.str.value,
+      chr: Singletons.chr.T = Singletons.chr.value,
+      lng: Singletons.lng.T = Singletons.lng.value,
+      dbl: Singletons.dbl.T = Singletons.dbl.value
   )
 
   object Singletons {
     val str = Witness("Scala")
-    val sym = Witness(Symbol("fun"))
+    val chr = Witness('+')
     val lng = Witness(42L)
     val dbl = Witness(3.14)
 
-    def wrap[A](value: A): Singletons[A] =
-      Singletons(value, "Scala", sym.value, 42, 3.14)
-
     implicit def arbitrary[A: Arbitrary]: Arbitrary[Singletons[A]] =
-      Arbitrary(Arbitrary.arbitrary[A].map(wrap))
+      Arbitrary(Arbitrary.arbitrary[A].map(Singletons(_)))
 
     implicit def cogen[A: Cogen]: Cogen[Singletons[A]] =
-      Cogen[Option[(A, String, Symbol, Long, Double)]].contramap(unapply)
+      Cogen[Option[(A, String, Char, Long, Double)]].contramap(unapply)
   }
 
   final case class Large(

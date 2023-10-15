@@ -154,12 +154,12 @@ class ShowPrettySuite extends KittensSuite {
     }
 
     test(s"$context.ShowPretty[Singletons[Int]]") {
-      val value = Singletons.wrap(313)
+      val value = Singletons[Int](313)
       val pretty = """
         |Singletons(
         |  value = 313,
         |  str = Scala,
-        |  sym = Symbol(fun),
+        |  chr = +,
         |  lng = 42,
         |  dbl = 3.14
         |)

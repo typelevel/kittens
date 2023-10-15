@@ -40,7 +40,7 @@ class PureSuite extends KittensSuite {
     test(s"$context.Pure[CaseClassWOption]")(assert(caseClassWOption.pure(3.14) == CaseClassWOption(Some(3.14))))
     test(s"$context.Pure[NelOption]")(assert(nelOption.pure(42) == NonEmptyList.of(Some(42))))
     test(s"$context.Pure[Interleaved]")(assert(interleaved.pure('x') == Interleaved(0, 'x', 0, 'x' :: Nil, "")))
-    test(s"$context.Pure[Singletons]")(assert(singletons.pure('x') == Singletons.wrap('x')))
+    test(s"$context.Pure[Singletons]")(assert(singletons.pure('x') == Singletons('x')))
     test(s"$context.Pure respects existing instances")(assert(boxColor.pure(()) == Box(Color(255, 255, 255))))
     checkAll(s"$context.Pure is Serializable", SerializableTests.serializable(Pure[Interleaved]))
   }

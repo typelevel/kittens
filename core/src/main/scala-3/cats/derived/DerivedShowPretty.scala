@@ -1,11 +1,10 @@
 package cats.derived
 
 import cats.Show
-import shapeless3.deriving.{Continue, K0, Labelling}
+import shapeless3.deriving.{K0, Labelling}
 
 import scala.annotation.implicitNotFound
 import scala.compiletime.*
-import scala.deriving.Mirror
 
 trait ShowPretty[A] extends Show[A]:
   def showLines(a: A): List[String]
@@ -23,14 +22,31 @@ object DerivedShowPretty:
   opaque type Or[A] = A => List[String]
   object Or:
     extension [A](or: Or[A]) def apply(a: A): List[String] = or(a)
-    inline given [A]: Or[A] = summonFrom {
-      case instance: Show[A] => instance.show(_).split(System.lineSeparator).toList
-      case derived: DerivedShowPretty[A] => derived.instance.showLines(_)
-    }
+    inline given [A]: Or[A] = summonFrom:
+      case instance: Show[A] => fromShow(instance)
+      case derived: DerivedShowPretty[A] => fromShow(derived.instance)
+    private def fromShow[A](instance: Show[A]): Or[A] = instance match
+      case pretty: ShowPretty[A] => pretty.showLines
+      case _ => instance.show(_).split(System.lineSeparator).toList
 
   inline def apply[A]: ShowPretty[A] =
     import DerivedShowPretty.given
     summonInline[DerivedShowPretty[A]].instance
+
+  private def fromToString[A]: ShowPretty[A] =
+    _.toString :: Nil
+
+  // These instances support singleton types unlike the instances in Cats' core.
+  given boolean[A <: Boolean]: DerivedShowPretty[A] = fromToString
+  given byte[A <: Byte]: DerivedShowPretty[A] = fromToString
+  given short[A <: Short]: DerivedShowPretty[A] = fromToString
+  given int[A <: Int]: DerivedShowPretty[A] = fromToString
+  given long[A <: Long]: DerivedShowPretty[A] = fromToString
+  given float[A <: Float]: DerivedShowPretty[A] = fromToString
+  given double[A <: Double]: DerivedShowPretty[A] = fromToString
+  given char[A <: Char]: DerivedShowPretty[A] = fromToString
+  given string[A <: String]: DerivedShowPretty[A] = fromToString
+  given symbol[A <: Symbol]: DerivedShowPretty[A] = fromToString
 
   given [A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]): DerivedShowPretty[A] =
     new Product[A] {}

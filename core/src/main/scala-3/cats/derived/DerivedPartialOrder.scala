@@ -1,11 +1,10 @@
 package cats.derived
 
-import cats.{PartialOrder, Show}
-import shapeless3.deriving.{Complete, Continue, K0, Labelling}
+import cats.{Order, PartialOrder}
+import shapeless3.deriving.{Complete, K0}
 
 import scala.annotation.implicitNotFound
 import scala.compiletime.*
-import scala.deriving.Mirror
 
 @implicitNotFound("""Could not derive an instance of PartialOrder[A] where A = ${A}.
 Make sure that A satisfies one of the following conditions:
@@ -19,6 +18,9 @@ object DerivedPartialOrder:
     import DerivedPartialOrder.given
     summonInline[DerivedPartialOrder[A]].instance
 
+  given singleton[A <: Singleton: ValueOf]: DerivedPartialOrder[A] =
+    Order.allEqual
+
   given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedPartialOrder[A] =
     given K0.ProductInstances[PartialOrder, A] = inst.unify
     new Product[PartialOrder, A] {}
@@ -28,18 +30,14 @@ object DerivedPartialOrder:
     new Coproduct[PartialOrder, A] {}
 
   trait Product[T[x] <: PartialOrder[x], A](using inst: K0.ProductInstances[T, A]) extends PartialOrder[A]:
-
     def partialCompare(x: A, y: A): Double =
-      inst.foldLeft2(x, y)(0: Double)(
+      inst.foldLeft2(x, y)(0: Double):
         [t] =>
           (acc: Double, ord: T[t], t0: t, t1: t) =>
             val cmp = ord.partialCompare(t0, t1)
             Complete(cmp != 0)(cmp)(acc)
-      )
 
   trait Coproduct[T[x] <: PartialOrder[x], A](using inst: K0.CoproductInstances[T, A]) extends PartialOrder[A]:
-
     def partialCompare(x: A, y: A): Double =
-      inst.fold2(x, y)(Double.NaN: Double)(
+      inst.fold2(x, y)(Double.NaN: Double):
         [t] => (ord: T[t], t0: t, t1: t) => ord.partialCompare(t0, t1)
-      )

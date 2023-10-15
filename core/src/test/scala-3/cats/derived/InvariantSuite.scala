@@ -42,19 +42,18 @@ class InvariantSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[Singletons]", tests[Singletons].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Invariant[TreeF]]))
 
-  locally {
+  locally:
     import auto.invariant.given
     validate("auto.invariant")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.invariant")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.invariant"
     checkAll(s"$instance[IList]", tests[IList].invariant[MiniInt, String, Boolean])
@@ -63,8 +62,8 @@ class InvariantSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[Singletons]", tests[Singletons].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Invariant[AtMostOne]))
-  }
 
 end InvariantSuite
 
@@ -93,6 +92,7 @@ object InvariantSuite:
     given Invariant[Many] = semiauto.invariant
     given Invariant[AtMostOne] = semiauto.invariant
     given Invariant[AtLeastOne] = semiauto.invariant
+    given Invariant[Singletons] = semiauto.invariant
 
   object derivedInstances:
     case class Bivariant[A](x: ADTs.Bivariant[A]) derives Invariant
@@ -101,5 +101,6 @@ object InvariantSuite:
     case class Many[A](x: ADTs.Many[A]) derives Invariant
     case class AtMostOne[A](x: ADTs.AtMostOne[A]) derives Invariant
     case class AtLeastOne[A](x: ADTs.AtLeastOne[A]) derives Invariant
+    case class Singletons[A](x: ADTs.Singletons[A]) derives Invariant
 
 end InvariantSuite

@@ -35,34 +35,28 @@ class PureSuite extends KittensSuite:
     test(s"$instance[CaseClassWOption]")(assert(3.14.pure[CaseClassWOption] == CaseClassWOption(Some(3.14))))
     test(s"$instance[NelOption]")(assert(42.pure[NelOption] == NonEmptyList.of(Some(42))))
     test(s"$instance[Interleaved]")(assert('x'.pure[Interleaved] == Interleaved(0, 'x', 0, Vector('x'), "")))
+    test(s"$instance[Singletons]")(assert('x'.pure[Singletons] == Singletons('x')))
     test(s"$instance respects existing instances")(assert(().pure[BoxColor] == Box(Color(255, 255, 255))))
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Pure[Interleaved]]))
 
-  locally {
+  locally:
     import auto.pure.given
     validate("auto.pure")
     testNoInstance("Pure", "IList")
     testNoInstance("Pure", "Snoc")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.pure")
     testNoInstance("Pure", "IList")
     testNoInstance("Pure", "Snoc")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.pure"
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Pure[Interleaved]))
-    test(s"$instance[CaseClassWOption]")(
-      assert(3.14.pure[CaseClassWOption].x == ADTs.CaseClassWOption(Some(3.14)))
-    )
-    test(s"$instance[Interleaved]")(
-      assert('x'.pure[Interleaved].x == ADTs.Interleaved(0, 'x', 0, Vector('x'), ""))
-    )
-  }
+    test(s"$instance[CaseClassWOption]")(assert(3.14.pure[CaseClassWOption].x == ADTs.CaseClassWOption(Some(3.14))))
+    test(s"$instance[Interleaved]")(assert('x'.pure[Interleaved].x == ADTs.Interleaved(0, 'x', 0, Vector('x'), "")))
 
 end PureSuite
 
@@ -80,6 +74,7 @@ object PureSuite:
     given Pure[CaseClassWOption] = semiauto.pure
     given Pure[NelOption] = semiauto.pure
     given Pure[Interleaved] = semiauto.pure
+    given Pure[Singletons] = semiauto.pure
     given Pure[BoxColor] = semiauto.pure
 
   object derivedInstances:

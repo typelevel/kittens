@@ -102,9 +102,6 @@ object ADTs:
     yield ComplexProduct(lbl, set, fns, Eval.now(opt)))
 
   final case class Box[+A](content: A)
-  object Box:
-    given [A: Arbitrary]: Arbitrary[Box[A]] = Arbitrary(Arbitrary.arbitrary[A].map(apply))
-    given [A: Cogen]: Cogen[Box[A]] = Cogen[A].contramap(_.content)
 
   final case class Recursive(i: Int, is: Option[Recursive])
   object Recursive extends ((Int, Option[Recursive]) => Recursive):
@@ -127,18 +124,8 @@ object ADTs:
   object Interleaved:
     def empty[T](t: T): Interleaved[T] =
       Interleaved(0, t, 0, Vector.empty, "")
-    given [T: Arbitrary]: Arbitrary[Interleaved[T]] =
-      Arbitrary(Arbitrary.arbitrary[(Int, T, Long, Vector[T], String)].map(apply))
-    given [T: Cogen]: Cogen[Interleaved[T]] =
-      Cogen[(Int, T, Long, Vector[T], String)].contramap(x => (x.i, x.t, x.l, x.tt, x.s))
 
   case class Bivariant[A](run: A => Boolean, store: A)
-  object Bivariant:
-    given [A: Arbitrary]: Arbitrary[Bivariant[A]] = Arbitrary(for
-      a <- Arbitrary.arbitrary[A]
-      f <- Arbitrary.arbitrary[Boolean].map(Function.const[Boolean, A])
-    yield Bivariant[A](f, a))
-
   case class Pred[A](run: A => Boolean)
 
   sealed trait IList[A]
@@ -213,32 +200,10 @@ object ADTs:
       cogen
 
   final case class Foo(i: Int, b: Option[String])
-  object Foo:
-    given Cogen[Foo] = Cogen[Int].contramap(_.i)
-    given Arbitrary[Foo] = Arbitrary(for
-      i <- Arbitrary.arbitrary[Int]
-      b <- Arbitrary.arbitrary[Option[String]]
-    yield Foo(i, b))
-
   final case class CommutativeFoo(i: Int, b: Option[Long])
-  object CommutativeFoo:
-    given Cogen[CommutativeFoo] =
-      Cogen[(Int, Option[Long])].contramap(x => (x.i, x.b))
-    given Arbitrary[CommutativeFoo] = Arbitrary(for
-      i <- Arbitrary.arbitrary[Int]
-      b <- Arbitrary.arbitrary[Option[Long]]
-    yield CommutativeFoo(i, b))
 
   case class Inner(i: Int)
   case class Outer(in: Inner)
-
-  object Inner:
-    given Arbitrary[Inner] = Arbitrary(Arbitrary.arbitrary[Int].map(apply))
-    given Cogen[Inner] = Cogen[Int].contramap(_.i)
-
-  object Outer:
-    given Arbitrary[Outer] = Arbitrary(Arbitrary.arbitrary[Inner].map(apply))
-    given Cogen[Outer] = Cogen[Inner].contramap(_.in)
 
   sealed trait IntTree
   final case class IntLeaf(t: Int) extends IntTree
@@ -256,9 +221,6 @@ object ADTs:
       Cogen[Option[A]].contramap { case GenericAdtCase(value) => value }
 
   final case class CaseClassWOption[A](value: Option[A])
-  object CaseClassWOption:
-    given [A: Arbitrary]: Arbitrary[CaseClassWOption[A]] =
-      Arbitrary(Arbitrary.arbitrary[Option[A]].map(apply))
 
   final case class First(value: String)
   final case class Second(value: String)
@@ -271,6 +233,8 @@ object ADTs:
 
   final case class ListField(a: String, b: List[ListFieldChild])
   final case class ListFieldChild(c: Int)
+
+  final case class Singletons[A](value: A, str: "Scala" = "Scala", lng: 42L = 42L, dbl: 3.14 = 3.14)
 
   enum Many[+A] derives Eq:
     case Naught
@@ -311,12 +275,10 @@ object ADTs:
   trait EqInstances:
     import ADTs.*
 
-    given [T: Eq]: Eq[ComplexProduct[T]] = (x, y) =>
-      x.lbl == y.lbl && x.set === y.set && x.fns.map(_()) === y.fns.map(_()) && x.opt === y.opt
-
-    given [A: Eq]: Eq[Box[A]] = Eq.by(_.content)
     given Eq[Recursive] = Eq.fromUniversalEquals
-    given [T: Eq]: Eq[Interleaved[T]] = Eq.by(i => (i.i, i.t, i.l, i.tt, i.s))
+    given [A: Eq]: Eq[ICons[A]] = Eq.by(identity[IList[A]])
+    given [A: Eq]: Eq[SCons[A]] = Eq.by(identity[Snoc[A]])
+    given [A: Eq]: Eq[GenericAdt[A]] = Eq.by { case GenericAdtCase(v) => v }
 
     given [A: Eq]: Eq[IList[A]] with
       @tailrec final def eqv(x: IList[A], y: IList[A]): Boolean = (x, y) match
@@ -330,49 +292,35 @@ object ADTs:
         case (SNil(), SNil()) => true
         case _ => false
 
-    given [A: Eq]: Eq[ICons[A]] = Eq.by(identity[IList[A]])
-    given [A: Eq]: Eq[SCons[A]] = Eq.by(identity[Snoc[A]])
-
     given [A: Eq]: Eq[Tree[A]] with
       def eqv(x: Tree[A], y: Tree[A]): Boolean = (x, y) match
         case (Leaf(vx), Leaf(vy)) => vx === vy
         case (Node(lx, rx), Node(ly, ry)) => eqv(lx, ly) && eqv(rx, ry)
         case _ => false
 
-    given [A: Eq]: Eq[Bivariant[A]] = { case (Bivariant(runX, storeX), Bivariant(runY, storeY)) =>
-      storeX === storeY && runX(storeX) == runY(storeY)
-    }
+    given [A: Eq]: Eq[Bivariant[A]] =
+      case (Bivariant(runX, storeX), Bivariant(runY, storeY)) =>
+        storeX === storeY && runX(storeX) == runY(storeY)
 
-    given Eq[Foo] = Eq.fromUniversalEquals
-    given Eq[CommutativeFoo] = Eq.fromUniversalEquals
-    given [A: Eq]: Eq[GenericAdt[A]] = Eq.by { case GenericAdtCase(v) => v }
-    given [A: Eq]: Eq[CaseClassWOption[A]] = Eq.by(_.value)
-    given Eq[Inner] = Eq.fromUniversalEquals
-    given Eq[Outer] = Eq.fromUniversalEquals
-
-    given Eq[EnumK0] = {
+    given Eq[EnumK0] =
       case (EnumK0.LeafS(s1), EnumK0.LeafS(s2)) => s1 === s2
       case (EnumK0.LeafI(i1), EnumK0.LeafI(i2)) => i1 === i2
       case _ => false
-    }
 
-    given [A: Eq]: Eq[EnumK1[A]] = {
+    given [A: Eq]: Eq[EnumK1[A]] =
       case (EnumK1.Leaf(v1), EnumK1.Leaf(v2)) => v1 === v2
       case (EnumK1.Rec(l1, r1), EnumK1.Rec(l2, r2)) => l1 === l2 && r1 === r2
       case _ => false
-    }
 
-    given [A](using Eq[A => Unit]): Eq[EnumK1Contra[A]] = {
+    given [A](using Eq[A => Unit]): Eq[EnumK1Contra[A]] =
       case (EnumK1Contra.Leaf(v1), EnumK1Contra.Leaf(v2)) => v1 === v2
       case (EnumK1Contra.Rec(l1, r1), EnumK1Contra.Rec(l2, r2)) => l1 === l2 && r1 === r2
       case _ => false
-    }
 
-    given [A: Eq](using Eq[A => Unit]): Eq[EnumK1Inv[A]] = {
+    given [A: Eq](using Eq[A => Unit]): Eq[EnumK1Inv[A]] =
       case (EnumK1Inv.Leaf(cov1, contra1), EnumK1Inv.Leaf(cov2, contra2)) => cov1 === cov2 && contra1 === contra2
       case (EnumK1Inv.Rec(l1, r1), EnumK1Inv.Rec(l2, r2)) => l1 === l2 && r1 === r2
       case _ => false
-    }
 
   end EqInstances
 end ADTs

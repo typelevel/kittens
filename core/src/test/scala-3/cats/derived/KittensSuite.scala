@@ -20,7 +20,7 @@ import cats.Eq
 import cats.platform.Platform
 import cats.syntax.AllSyntax
 import munit.DisciplineSuite
-import org.scalacheck.{Arbitrary, Cogen}
+import org.scalacheck.{Arbitrary, Cogen, Gen}
 import org.scalacheck.Test.Parameters
 
 import scala.deriving.Mirror
@@ -30,6 +30,7 @@ import scala.quoted.*
   * corresponding CatsSuite in the Cat project, this trait does not mix in any instances.
   */
 abstract class KittensSuite extends KittensSuite.WithoutEq, ADTs.EqInstances:
+  given [A <: Singleton: ValueOf]: Eq[A] = Eq.allEqual
   given [A <: Product](using mirror: Mirror.ProductOf[A], via: Eq[mirror.MirroredElemTypes]): Eq[A] =
     Eq.by(Tuple.fromProductTyped)
 
@@ -50,8 +51,9 @@ object KittensSuite:
       .withMaxSize(if Platform.isJvm then 10 else 5)
       .withMinSize(0)
 
-    given [A: Arbitrary]: Arbitrary[List[A]] =
-      Arbitrary.arbContainer
+    given [A: Arbitrary]: Arbitrary[List[A]] = Arbitrary.arbContainer
+    given [A <: Singleton: ValueOf]: Arbitrary[A] = Arbitrary(Gen.const(valueOf[A]))
+    given [A <: Singleton: ValueOf]: Cogen[A] = Cogen((seed, _) => seed)
 
     given [A <: Product](using mirror: Mirror.ProductOf[A], via: Arbitrary[mirror.MirroredElemTypes]): Arbitrary[A] =
       Arbitrary(via.arbitrary.map(mirror.fromTuple))

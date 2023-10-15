@@ -35,19 +35,18 @@ class EqSuite extends KittensSuite.WithoutEq:
     checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].eqv)
     checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].eqv)
     checkAll(s"$instance[Recursive]", tests[Recursive].eqv)
+    checkAll(s"$instance[Singletons[Int]]", tests[Singletons[Int]].eqv)
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Eq[Foo]]))
 
-  locally {
+  locally:
     import auto.eq.given
     validate("auto.eq")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.eq")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.eq"
     checkAll(s"$instance[Foo]]", tests[Foo].eqv)
@@ -57,8 +56,8 @@ class EqSuite extends KittensSuite.WithoutEq:
     checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].eqv)
     checkAll(s"$instance[Tree[Int]]", tests[Tree[Int]].eqv)
     checkAll(s"$instance[Recursive]", tests[Recursive].eqv)
+    checkAll(s"$instance[Singletons[Int]]", tests[Singletons[Int]].eqv)
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Eq[Foo]))
-  }
 
 end EqSuite
 
@@ -73,6 +72,7 @@ object EqSuite:
     given Eq[Interleaved[Int]] = semiauto.eq
     given Eq[Tree[Int]] = semiauto.eq
     given Eq[Recursive] = semiauto.eq
+    given Eq[Singletons[Int]] = semiauto.eq
 
   object derivedInstances:
     case class Foo(x: ADTs.Foo) derives Eq
@@ -82,5 +82,6 @@ object EqSuite:
     case class Interleaved[A](x: ADTs.Interleaved[A]) derives Eq
     case class Tree[A](x: ADTs.Tree[A]) derives Eq
     case class Recursive(x: ADTs.Recursive) derives Eq
+    case class Singletons[A](x: ADTs.Singletons[A]) derives Eq
 
 end EqSuite

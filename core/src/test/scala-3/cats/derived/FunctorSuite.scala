@@ -44,19 +44,18 @@ class FunctorSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].functor[Boolean, Int, Boolean])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].functor[Boolean, Int, Boolean])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance[Singletons]", tests[Singletons].functor[Boolean, Int, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Functor[Tree]]))
 
-  locally {
+  locally:
     import auto.functor.given
     validate("auto.functor")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.functor")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.functor"
     checkAll(s"$instance[IList]", tests[IList].functor[Int, String, Long])
@@ -68,8 +67,8 @@ class FunctorSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].functor[Boolean, Int, Boolean])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].functor[Boolean, Int, Boolean])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance[Singletons]", tests[Singletons].functor[Boolean, Int, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Functor[Tree]))
-  }
 
 end FunctorSuite
 
@@ -95,6 +94,7 @@ object FunctorSuite:
     given Functor[Many] = semiauto.functor
     given Functor[AtMostOne] = semiauto.functor
     given Functor[AtLeastOne] = semiauto.functor
+    given Functor[Singletons] = semiauto.functor
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Functor
@@ -106,5 +106,6 @@ object FunctorSuite:
     case class Many[+A](x: ADTs.Many[A]) derives Functor
     case class AtMostOne[+A](x: ADTs.AtMostOne[A]) derives Functor
     case class AtLeastOne[+A](x: ADTs.AtLeastOne[A]) derives Functor
+    case class Singletons[A](x: ADTs.Singletons[A]) derives Functor
 
 end FunctorSuite

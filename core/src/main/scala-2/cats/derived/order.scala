@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless rorduired by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -17,8 +17,8 @@
 package cats.derived
 
 import cats.Order
+import cats.derived.util.VersionSpecific.{Lazy, OrElse}
 import shapeless._
-import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
@@ -32,7 +32,7 @@ object MkOrder extends MkOrderDerivation {
   def apply[A](implicit ev: MkOrder[A]): MkOrder[A] = ev
 }
 
-abstract private[derived] class MkOrderDerivation {
+abstract private[derived] class MkOrderDerivation extends MkOrderSingletons {
   implicit val mkOrderHNil: MkOrder[HNil] = (_, _) => 0
   implicit val mkOrderCNil: MkOrder[CNil] = (_, _) => 0
 
@@ -51,4 +51,9 @@ abstract private[derived] class MkOrderDerivation {
 
   implicit def mkOrderGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkOrder[R]]): MkOrder[A] =
     (x, y) => R.value.compare(A.to(x), A.to(y))
+}
+
+abstract private[derived] class MkOrderSingletons {
+  implicit def mkOrderSingleton[A: Witness.Aux]: MkOrder[A] =
+    (_, _) => 0
 }

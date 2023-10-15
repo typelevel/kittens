@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless rorduired by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -17,8 +17,8 @@
 package cats.derived
 
 import cats.PartialOrder
+import cats.derived.util.VersionSpecific.{Lazy, OrElse}
 import shapeless._
-import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
@@ -32,7 +32,7 @@ object MkPartialOrder extends MkPartialOrderDerivation {
   def apply[A](implicit ev: MkPartialOrder[A]): MkPartialOrder[A] = ev
 }
 
-abstract private[derived] class MkPartialOrderDerivation {
+abstract private[derived] class MkPartialOrderDerivation extends MkPartialOrderSingletons {
   implicit val mkPartialOrderHNil: MkPartialOrder[HNil] = (_, _) => 0
   implicit val mkPartialOrderCNil: MkPartialOrder[CNil] = (_, _) => 0
 
@@ -57,4 +57,9 @@ abstract private[derived] class MkPartialOrderDerivation {
       A: Generic.Aux[A, R],
       R: Lazy[MkPartialOrder[R]]
   ): MkPartialOrder[A] = (x, y) => R.value.partialCompare(A.to(x), A.to(y))
+}
+
+abstract private[derived] class MkPartialOrderSingletons {
+  implicit def mkPartialOrderSingleton[A: Witness.Aux]: MkPartialOrder[A] =
+    (_, _) => 0
 }

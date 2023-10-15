@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.Show
+import cats.Show.ContravariantShow
 import cats.derived.util.VersionSpecific.{Lazy, OrElse}
 import shapeless._
 import shapeless.labelled._
@@ -33,7 +34,7 @@ sealed abstract private[derived] class MkShowPrettyDerivation extends MkShowPret
 
   implicit def mkShowPrettyLabelledHCons[K <: Symbol, V, T <: HList](implicit
       K: Witness.Aux[K],
-      V: Show[V] OrElse MkShowPretty[V],
+      V: ContravariantShow[V] OrElse MkShowPretty[V],
       T: MkShowPretty[T]
   ): MkShowPretty[FieldType[K, V] :: T] = { case v :: t =>
     val name = K.value.name
@@ -71,7 +72,7 @@ sealed abstract private[derived] class MkShowPrettyDerivation extends MkShowPret
 
 sealed abstract private[derived] class MkShowPrettyGenericCoproduct {
 
-  protected def mkShowLines[A](show: Show[A] OrElse MkShowPretty[A])(a: A): List[String] =
+  protected def mkShowLines[A](show: ContravariantShow[A] OrElse MkShowPretty[A])(a: A): List[String] =
     show.fold(
       {
         case pretty: ShowPretty[A] => pretty.showLines(a)

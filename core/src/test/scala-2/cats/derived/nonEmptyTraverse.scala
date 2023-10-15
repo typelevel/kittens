@@ -32,7 +32,8 @@ class NonEmptyTraverseSuite extends KittensSuite {
       nelSCons: NonEmptyTraverse[NelSCons],
       nelAndOne: NonEmptyTraverse[NelAndOne],
       listAndNel: NonEmptyTraverse[ListAndNel],
-      interleaved: NonEmptyTraverse[Interleaved]
+      interleaved: NonEmptyTraverse[Interleaved],
+      singletons: NonEmptyTraverse[Singletons]
   ): Unit = {
 
     checkAll(
@@ -63,6 +64,11 @@ class NonEmptyTraverseSuite extends KittensSuite {
     checkAll(
       s"$context.NonEmptyTraverse[Interleaved]",
       NonEmptyTraverseTests[Interleaved].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+
+    checkAll(
+      s"$context.NonEmptyTraverse[Singletons]",
+      NonEmptyTraverseTests[Singletons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
 
     checkAll(
@@ -112,5 +118,6 @@ object NonEmptyTraverseSuite {
     implicit val nelAndOne: NonEmptyTraverse[NelAndOne] = semiauto.nonEmptyTraverse
     implicit val listAndNel: NonEmptyTraverse[ListAndNel] = semiauto.nonEmptyTraverse
     implicit val interleaved: NonEmptyTraverse[Interleaved] = semiauto.nonEmptyTraverse
+    implicit val singletons: NonEmptyTraverse[Singletons] = semiauto.nonEmptyTraverse
   }
 }

@@ -28,12 +28,14 @@ class OrderSuite extends KittensSuite {
       outer: Order[Outer],
       interleaved: Order[Interleaved[Int]],
       recursive: Order[Recursive],
+      singletons: Order[Singletons[Int]],
       genericAdt: Order[GenericAdt[Int]]
   ): Unit = {
     checkAll(s"$context.Order[Inner]", OrderTests[Inner].order)
     checkAll(s"$context.Order[Outer]", OrderTests[Outer].order)
     checkAll(s"$context.Order[Interleaved[Int]]", OrderTests[Interleaved[Int]].order)
     checkAll(s"$context.Order[Recursive]", OrderTests[Recursive].order)
+    checkAll(s"$context.Order[Singletons[Int]]", OrderTests[Singletons[Int]].order)
     checkAll(s"$context.Order[GenericAdt[Int]]", OrderTests[GenericAdt[Int]].order)
     checkAll(s"$context.Order is Serializable", SerializableTests.serializable(Order[Interleaved[Int]]))
   }
@@ -62,6 +64,7 @@ object OrderSuite {
     implicit val outer: Order[Outer] = semiauto.order
     implicit val interleaved: Order[Interleaved[Int]] = semiauto.order
     implicit val recursive: Order[Recursive] = semiauto.order
+    implicit val singletons: Order[Singletons[Int]] = semiauto.order
     implicit val genericAdt: Order[GenericAdt[Int]] = semiauto.order
   }
 }

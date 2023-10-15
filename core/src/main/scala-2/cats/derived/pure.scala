@@ -17,8 +17,8 @@
 package cats.derived
 
 import alleycats.{Empty, Pure}
+import cats.derived.util.VersionSpecific.OrElse
 import shapeless._
-import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
@@ -49,6 +49,11 @@ abstract private[derived] class MkPureDerivation extends MkPureNested {
 }
 
 abstract private[derived] class MkPureNested extends MkPureCons {
+
+  implicit def mkPureSingleton[T](implicit T: Witness.Aux[T]): MkPure[Const[T]#λ] =
+    new MkPure[Const[T]#λ] {
+      def pure[A](a: A) = T.value
+    }
 
   implicit def mkPureNested[F[_]](implicit F: Split1[F, PureOrMk, PureOrMk]): MkPure[F] =
     new MkPure[F] {

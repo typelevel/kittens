@@ -32,6 +32,7 @@ class PureSuite extends KittensSuite {
       caseClassWOption: Pure[CaseClassWOption],
       nelOption: Pure[NelOption],
       interleaved: Pure[Interleaved],
+      singletons: Pure[Singletons],
       boxColor: Pure[BoxColor]
   ): Unit = {
     test(s"$context.Pure[LOption]")(assert(lOption.pure(42) == Some(42) :: Nil))
@@ -39,6 +40,7 @@ class PureSuite extends KittensSuite {
     test(s"$context.Pure[CaseClassWOption]")(assert(caseClassWOption.pure(3.14) == CaseClassWOption(Some(3.14))))
     test(s"$context.Pure[NelOption]")(assert(nelOption.pure(42) == NonEmptyList.of(Some(42))))
     test(s"$context.Pure[Interleaved]")(assert(interleaved.pure('x') == Interleaved(0, 'x', 0, 'x' :: Nil, "")))
+    test(s"$context.Pure[Singletons]")(assert(singletons.pure('x') == Singletons('x')))
     test(s"$context.Pure respects existing instances")(assert(boxColor.pure(()) == Box(Color(255, 255, 255))))
     checkAll(s"$context.Pure is Serializable", SerializableTests.serializable(Pure[Interleaved]))
   }
@@ -79,6 +81,7 @@ object PureSuite {
     implicit val caseClassWOption: Pure[CaseClassWOption] = semiauto.pure
     implicit val nelOption: Pure[NelOption] = semiauto.pure
     implicit val interleaved: Pure[Interleaved] = semiauto.pure
+    implicit val singletons: Pure[Singletons] = semiauto.pure
     implicit val boxColor: Pure[BoxColor] = semiauto.pure
   }
 

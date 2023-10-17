@@ -34,6 +34,7 @@ class ReducibleSuite extends KittensSuite {
       nelAndOne: Reducible[NelAndOne],
       listAndNel: Reducible[ListAndNel],
       interleaved: Reducible[Interleaved],
+      singletons: Reducible[Singletons],
       boxZipper: Reducible[BoxZipper]
   ): Unit = {
     checkAll(s"$context.Reducible[ICons]", ReducibleTests[ICons].reducible[Option, Int, Long])
@@ -42,6 +43,7 @@ class ReducibleSuite extends KittensSuite {
     checkAll(s"$context.Reducible[NelAndOne]", ReducibleTests[NelAndOne].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[ListAndNel]", ReducibleTests[ListAndNel].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[Interleaved]", ReducibleTests[Interleaved].reducible[Option, Int, Long])
+    checkAll(s"$context.Reducible[Singletons]", ReducibleTests[Singletons].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible[BoxZipper]", ReducibleTests[BoxZipper].reducible[Option, Int, Long])
     checkAll(s"$context.Reducible is Serializable", SerializableTests.serializable(Reducible[Tree]))
 
@@ -103,6 +105,7 @@ object ReducibleSuite {
     implicit val nelAndOne: Reducible[NelAndOne] = semiauto.reducible
     implicit val listAndNel: Reducible[ListAndNel] = semiauto.reducible
     implicit val interleaved: Reducible[Interleaved] = semiauto.reducible
+    implicit val singletons: Reducible[Singletons] = semiauto.reducible
     implicit val boxZipper: Reducible[BoxZipper] = semiauto.reducible
   }
 

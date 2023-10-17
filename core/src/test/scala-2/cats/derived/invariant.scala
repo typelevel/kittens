@@ -16,10 +16,10 @@
 
 package cats
 package derived
+
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.eq._
-import cats.laws.discipline._
 
 class InvariantSuite extends KittensSuite {
   import InvariantSuite._
@@ -28,21 +28,23 @@ class InvariantSuite extends KittensSuite {
 
   def testInvariant(context: String)(implicit
       tree: Invariant[TreeF],
-      genadt: Invariant[GenericAdtF],
-      ListFToInt: Invariant[ListFToInt],
+      genericAdtF: Invariant[GenericAdtF],
+      listSnocF: Invariant[ListSnocF],
       listSnoc: Invariant[ListSnoc],
-      interleaved: Invariant[InterleavedF],
+      interleavedF: Invariant[InterleavedF],
       andCharF: Invariant[AndCharF],
       bivariant: Invariant[Bivariant],
-      ilist: Invariant[IList]
+      ilist: Invariant[IList],
+      singletons: Invariant[Singletons]
   ): Unit = {
     checkAll(s"$context.Invariant[TreeF]", InvariantTests[TreeF].invariant[MiniInt, String, Boolean])
-    checkAll(s"$context.Invariant[GenAdtF]", InvariantTests[GenericAdtF].invariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Invariant[GenericAdtF]", InvariantTests[GenericAdtF].invariant[MiniInt, String, Boolean])
+    checkAll(s"$context.Invariant[ListSnocF]", InvariantTests[ListSnocF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[InterleavedF]", InvariantTests[InterleavedF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[AndCharF]", InvariantTests[AndCharF].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[ListSnoc", InvariantTests[ListSnoc].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant[Bivariant]", InvariantTests[Bivariant].invariant[MiniInt, String, Boolean])
-
+    checkAll(s"$context.Invariant[Singletons]", InvariantTests[Singletons].invariant[MiniInt, String, Boolean])
     checkAll(s"$context.Invariant is Serializable", SerializableTests.serializable(Invariant[TreeF]))
 
     test(s"$context.Invariant.imap is stack safe") {
@@ -78,20 +80,21 @@ object InvariantSuite {
 
   type ListSnoc[A] = List[Snoc[A]]
   type GenericAdtF[A] = GenericAdt[A => Boolean]
-  type ListFToInt[A] = List[Snoc[A => Int]]
+  type ListSnocF[A] = List[Snoc[A => Int]]
   type InterleavedF[A] = Interleaved[A => Boolean]
   type AndCharF[A] = (A => Boolean, Char)
   type TreeF[A] = Tree[A => Boolean]
 
   object semiInstances {
-    implicit val gadt: Invariant[GenericAdtF] = semiauto.invariant[GenericAdtF]
-    implicit val listSnocendo: Invariant[ListFToInt] = semiauto.invariant[ListFToInt]
-    implicit val interleaveF: Invariant[InterleavedF] = semiauto.invariant[InterleavedF]
-    implicit val andCharF: Invariant[AndCharF] = semiauto.invariant[AndCharF]
-    implicit val treeF: Invariant[TreeF] = semiauto.invariant[TreeF]
-    implicit val pred: Invariant[Pred] = semiauto.invariant[Pred]
-    implicit val snoc: Invariant[ListSnoc] = semiauto.invariant[ListSnoc]
-    implicit val bivariant: Invariant[Bivariant] = semiauto.invariant[Bivariant]
-    implicit val ilist: Invariant[IList] = semiauto.invariant[IList]
+    implicit val genericAdtF: Invariant[GenericAdtF] = semiauto.invariant
+    implicit val listSnocF: Invariant[ListSnocF] = semiauto.invariant
+    implicit val interleavedF: Invariant[InterleavedF] = semiauto.invariant
+    implicit val andCharF: Invariant[AndCharF] = semiauto.invariant
+    implicit val treeF: Invariant[TreeF] = semiauto.invariant
+    implicit val pred: Invariant[Pred] = semiauto.invariant
+    implicit val snoc: Invariant[ListSnoc] = semiauto.invariant
+    implicit val bivariant: Invariant[Bivariant] = semiauto.invariant
+    implicit val ilist: Invariant[IList] = semiauto.invariant
+    implicit val singletons: Invariant[Singletons] = semiauto.invariant
   }
 }

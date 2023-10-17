@@ -23,19 +23,18 @@ class TraverseSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[Singletons]", tests[Singletons].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Traverse[Tree]]))
 
-  locally {
+  locally:
     import auto.traverse.given
     validate("auto.traverse")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.traverse")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.traverse"
     checkAll(s"$instance[IList]", tests[IList].traverse[Int, Double, String, Long, Option, Option])
@@ -46,8 +45,8 @@ class TraverseSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[Singletons]", tests[Singletons].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Traverse[Tree]))
-  }
 
 end TraverseSuite
 
@@ -70,6 +69,7 @@ object TraverseSuite:
     given Traverse[Many] = semiauto.traverse
     given Traverse[AtLeastOne] = semiauto.traverse
     given Traverse[AtMostOne] = semiauto.traverse
+    given Traverse[Singletons] = semiauto.traverse
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Traverse
@@ -80,5 +80,6 @@ object TraverseSuite:
     case class Many[A](x: ADTs.Many[A]) derives Traverse
     case class AtMostOne[A](x: ADTs.AtMostOne[A]) derives Traverse
     case class AtLeastOne[A](x: ADTs.AtLeastOne[A]) derives Traverse
+    case class Singletons[A](x: ADTs.Singletons[A]) derives Traverse
 
 end TraverseSuite

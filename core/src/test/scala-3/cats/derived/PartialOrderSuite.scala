@@ -36,27 +36,25 @@ class PartialOrderSuite extends KittensSuite:
     checkAll(s"$instance[Recursive]", tests[Recursive].partialOrder)
     checkAll(s"$instance[Box[KeyValue]]", tests[Box[KeyValue]].partialOrder)
     checkAll(s"$instance[EnumK0]", tests[EnumK0].partialOrder)
-    checkAll(s"$instance is Serialiable", SerializableTests.serializable(summonInline[PartialOrder[Tree[Int]]]))
-    test(s"$instance respects existing instances") {
+    checkAll(s"$instance[Singletons[Int]]", tests[Singletons[Int]].partialOrder)
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[PartialOrder[Tree[Int]]]))
+    test(s"$instance respects existing instances"):
       val boxKeyValue = summonInline[PartialOrder[Box[KeyValue]]]
       val x = Box(KeyValue("red", 1))
       val y = Box(KeyValue("red", 2))
       val z = Box(KeyValue("blue", 1))
       assert(boxKeyValue.partialCompare(x, y) < 0)
       assert(boxKeyValue.partialCompare(y, z).isNaN)
-    }
 
-  locally {
+  locally:
     import auto.partialOrder.given
     validate("auto.partialOrder")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.partialOrder")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.partialOrder"
     checkAll(s"$instance[IList[Int]]", tests[IList[Int]].partialOrder)
@@ -67,8 +65,8 @@ class PartialOrderSuite extends KittensSuite:
     checkAll(s"$instance[Recursive]", tests[Recursive].partialOrder)
     checkAll(s"$instance[BoxKV]", tests[BoxKV].partialOrder)
     checkAll(s"$instance[EnumK0]", tests[EnumK0].partialOrder)
+    checkAll(s"$instance[Singletons[Int]]", tests[Singletons[Int]].partialOrder)
     checkAll(s"$instance is Serialiable", SerializableTests.serializable(PartialOrder[Tree[Int]]))
-  }
 
 end PartialOrderSuite
 
@@ -84,6 +82,7 @@ object PartialOrderSuite:
     given PartialOrder[Recursive] = semiauto.partialOrder
     given PartialOrder[Box[KeyValue]] = semiauto.partialOrder
     given PartialOrder[EnumK0] = semiauto.partialOrder
+    given PartialOrder[Singletons[Int]] = semiauto.partialOrder
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives PartialOrder
@@ -93,6 +92,7 @@ object PartialOrderSuite:
     case class Outer(x: ADTs.Outer) derives PartialOrder
     case class Recursive(x: ADTs.Recursive) derives PartialOrder
     case class EnumK0(x: ADTs.EnumK0) derives PartialOrder
+    case class Singletons[A](x: ADTs.Singletons[A]) derives PartialOrder
     case class BoxKV(x: Box[KeyValue]) derives PartialOrder
 
   final case class KeyValue(key: String, value: Int)

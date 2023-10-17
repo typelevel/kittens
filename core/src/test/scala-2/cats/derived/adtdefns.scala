@@ -19,6 +19,7 @@ package cats.derived
 import cats.{Eq, Eval}
 import org.scalacheck.rng.Seed
 import org.scalacheck.{Arbitrary, Cogen, Gen}
+import shapeless.Witness
 
 import scala.annotation.tailrec
 
@@ -279,6 +280,27 @@ object TestDefns {
   final case class ListField(a: String, b: List[ListFieldChild])
   final case class ListFieldChild(c: Int)
 
+  final case class Singletons[A](
+      value: A,
+      str: Singletons.str.T = Singletons.str.value,
+      chr: Singletons.chr.T = Singletons.chr.value,
+      lng: Singletons.lng.T = Singletons.lng.value,
+      dbl: Singletons.dbl.T = Singletons.dbl.value
+  )
+
+  object Singletons {
+    val str = Witness("Scala")
+    val chr = Witness('+')
+    val lng = Witness(42L)
+    val dbl = Witness(3.14)
+
+    implicit def arbitrary[A: Arbitrary]: Arbitrary[Singletons[A]] =
+      Arbitrary(Arbitrary.arbitrary[A].map(Singletons(_)))
+
+    implicit def cogen[A: Cogen]: Cogen[Singletons[A]] =
+      Cogen[Option[(A, String, Char, Long, Double)]].contramap(unapply)
+  }
+
   final case class Large(
       bar1: String,
       bar2: Int,
@@ -469,5 +491,8 @@ object TestEqInstances {
   }
 
   implicit def eqCaseClassWOption[A: Eq]: Eq[CaseClassWOption[A]] =
+    Eq.by(_.value)
+
+  implicit def eqSingletons[A: Eq]: Eq[Singletons[A]] =
     Eq.by(_.value)
 }

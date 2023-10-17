@@ -19,7 +19,6 @@ package cats.derived
 import cats.{Eval, Reducible}
 import cats.data.{NonEmptyList, OneAnd}
 import cats.laws.discipline.*
-import cats.laws.discipline.arbitrary.*
 import cats.syntax.all.given
 import scala.compiletime.*
 
@@ -40,19 +39,18 @@ class ReducibleSuite extends KittensSuite:
     checkAll(s"$instance[BoxZipper]", tests[BoxZipper].reducible[Option, Int, Long])
     checkAll(s"$instance[EnumK1]", tests[EnumK1].reducible[Option, Int, Long])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].reducible[Option, Int, Long])
+    checkAll(s"$instance[Singletons]", tests[Singletons].reducible[Option, Int, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Reducible[Tree]]))
 
-  locally {
+  locally:
     import auto.reducible.given
     validate("auto.reducible")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.reducible")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.reducible"
     checkAll(s"$instance[ICons]", tests[ICons].reducible[Option, Int, Long])
@@ -60,8 +58,8 @@ class ReducibleSuite extends KittensSuite:
     checkAll(s"$instance[Interleaved]", tests[Interleaved].reducible[Option, Int, Long])
     checkAll(s"$instance[EnumK1]", tests[EnumK1].reducible[Option, Int, Long])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].reducible[Option, Int, Long])
+    checkAll(s"$instance[Singletons]", tests[Singletons].reducible[Option, Int, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Reducible[Tree]))
-  }
 
 end ReducibleSuite
 
@@ -83,6 +81,7 @@ object ReducibleSuite:
     given Reducible[BoxZipper] = semiauto.reducible
     given Reducible[EnumK1] = semiauto.reducible
     given Reducible[AtLeastOne] = semiauto.reducible
+    given Reducible[Singletons] = semiauto.reducible
 
   object derivedInstances:
     case class ICons[A](x: ADTs.ICons[A]) derives Reducible
@@ -90,6 +89,7 @@ object ReducibleSuite:
     case class Interleaved[A](x: ADTs.Interleaved[A]) derives Reducible
     case class EnumK1[A](x: ADTs.EnumK1[A]) derives Reducible
     case class AtLeastOne[A](x: ADTs.AtLeastOne[A]) derives Reducible
+    case class Singletons[A](x: ADTs.Singletons[A]) derives Reducible
 
   final case class Zipper[+A](left: List[A], focus: A, right: List[A])
   object Zipper:

@@ -16,6 +16,7 @@
 
 package cats
 package derived
+
 import cats.laws.discipline.{FoldableTests, SerializableTests}
 import org.scalacheck.Arbitrary
 
@@ -32,6 +33,7 @@ class FoldableSuite extends KittensSuite {
       listSnoc: Foldable[ListSnoc],
       andChar: Foldable[AndChar],
       interleaved: Foldable[Interleaved],
+      singletons: Foldable[Singletons],
       boxNel: Foldable[BoxNel]
   ): Unit = {
     checkAll(s"$context.Foldable[IList]", FoldableTests[IList].foldable[Int, Long])
@@ -41,6 +43,7 @@ class FoldableSuite extends KittensSuite {
     checkAll(s"$context.Foldable[ListSnoc]", FoldableTests[ListSnoc].foldable[Int, Long])
     checkAll(s"$context.Foldable[AndChar]", FoldableTests[AndChar].foldable[Int, Long])
     checkAll(s"$context.Foldable[Interleaved]", FoldableTests[Interleaved].foldable[Int, Long])
+    checkAll(s"$context.Foldable[Singletons]", FoldableTests[Singletons].foldable[Int, Long])
     checkAll(s"$context.Foldable[BoxNel]", FoldableTests[BoxNel].foldable[Int, Long])
     checkAll(s"$context.Foldable is Serializable", SerializableTests.serializable(Foldable[Tree]))
 
@@ -103,6 +106,7 @@ object FoldableSuite {
     implicit val listSnoc: Foldable[ListSnoc] = semiauto.foldable
     implicit val andChar: Foldable[AndChar] = semiauto.foldable
     implicit val interleaved: Foldable[Interleaved] = semiauto.foldable
+    implicit val singletons: Foldable[Singletons] = semiauto.foldable
     implicit val boxNel: Foldable[BoxNel] = semiauto.foldable
   }
 

@@ -18,6 +18,18 @@ object DerivedHash:
     import DerivedHash.given
     summonInline[DerivedHash[A]].instance
 
+  // These instances support singleton types unlike the instances in Cats' kernel.
+  given boolean[A <: Boolean]: DerivedHash[A] = Hash.fromUniversalHashCode
+  given byte[A <: Byte]: DerivedHash[A] = Hash.fromUniversalHashCode
+  given short[A <: Short]: DerivedHash[A] = Hash.fromUniversalHashCode
+  given int[A <: Int]: DerivedHash[A] = Hash.fromUniversalHashCode
+  given long[A <: Long]: DerivedHash[A] = Hash.fromUniversalHashCode
+  given float[A <: Float]: DerivedHash[A] = Hash.fromUniversalHashCode
+  given double[A <: Double]: DerivedHash[A] = Hash.fromUniversalHashCode
+  given char[A <: Char]: DerivedHash[A] = Hash.fromUniversalHashCode
+  given string[A <: String]: DerivedHash[A] = Hash.fromUniversalHashCode
+  given symbol[A <: Symbol]: DerivedHash[A] = Hash.fromUniversalHashCode
+
   given product[A <: scala.Product](using inst: => K0.ProductInstances[Or, A]): DerivedHash[A] =
     given K0.ProductInstances[Hash, A] = inst.unify
     new Product[Hash, A] {}
@@ -35,12 +47,9 @@ object DerivedHash:
       val prefix = x.productPrefix.hashCode
       if arity <= 0 then prefix
       else
-        MurmurHash3.finalizeHash(
-          inst.foldLeft[Int](x)(MurmurHash3.mix(MurmurHash3.productSeed, prefix))(
-            [t] => (acc: Int, h: F[t], x: t) => Continue(MurmurHash3.mix(acc, h.hash(x)))
-          ),
-          arity
-        )
+        val hash = inst.foldLeft[Int](x)(MurmurHash3.mix(MurmurHash3.productSeed, prefix)):
+          [t] => (acc: Int, h: F[t], x: t) => Continue(MurmurHash3.mix(acc, h.hash(x)))
+        MurmurHash3.finalizeHash(hash, arity)
 
   trait Coproduct[F[x] <: Hash[x], A](using inst: K0.CoproductInstances[F, A])
       extends DerivedEq.Coproduct[F, A],

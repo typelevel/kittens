@@ -35,7 +35,8 @@ class FunctorSuite extends KittensSuite {
       listSnoc: Functor[ListSnoc],
       andChar: Functor[AndChar],
       interleaved: Functor[Interleaved],
-      nestedPred: Functor[NestedPred]
+      nestedPred: Functor[NestedPred],
+      singletons: Functor[Singletons]
   ): Unit = {
     checkAll(s"$context.Functor[IList]", FunctorTests[IList].functor[Int, String, Long])
     checkAll(s"$context.Functor[Tree]", FunctorTests[Tree].functor[Int, String, Long])
@@ -45,6 +46,7 @@ class FunctorSuite extends KittensSuite {
     checkAll(s"$context.Functor[AndChar]", FunctorTests[AndChar].functor[Int, String, Long])
     checkAll(s"$context.Functor[Interleaved]", FunctorTests[Interleaved].functor[Int, String, Long])
     checkAll(s"$context.Functor[NestedPred]", FunctorTests[NestedPred].functor[Boolean, Int, Boolean])
+    checkAll(s"$context.Functor[Singletons]", FunctorTests[Singletons].functor[Boolean, Int, Boolean])
     checkAll(s"$context.Functor is Serializable", SerializableTests.serializable(Functor[Tree]))
 
     test(s"$context.Functor.map is stack safe") {
@@ -93,5 +95,6 @@ object FunctorSuite {
     implicit val andChar: Functor[AndChar] = semiauto.functor
     implicit val interleaved: Functor[Interleaved] = semiauto.functor
     implicit val nestedPred: Functor[NestedPred] = semiauto.functor
+    implicit val singletons: Functor[Singletons] = semiauto.functor
   }
 }

@@ -1,11 +1,10 @@
 package cats.derived
 
 import cats.Show
-import shapeless3.deriving.{Continue, K0, Labelling}
+import shapeless3.deriving.{K0, Labelling}
 
 import scala.annotation.implicitNotFound
 import scala.compiletime.*
-import scala.deriving.Mirror
 
 @implicitNotFound("""Could not derive an instance of Show[A] where A = ${A}.
 Make sure that A satisfies one of the following conditions:
@@ -18,6 +17,18 @@ object DerivedShow:
   inline def apply[A]: Show[A] =
     import DerivedShow.given
     summonInline[DerivedShow[A]].instance
+
+  // These instances support singleton types unlike the instances in Cats' core.
+  given boolean[A <: Boolean]: DerivedShow[A] = Show.fromToString
+  given byte[A <: Byte]: DerivedShow[A] = Show.fromToString
+  given short[A <: Short]: DerivedShow[A] = Show.fromToString
+  given int[A <: Int]: DerivedShow[A] = Show.fromToString
+  given long[A <: Long]: DerivedShow[A] = Show.fromToString
+  given float[A <: Float]: DerivedShow[A] = Show.fromToString
+  given double[A <: Double]: DerivedShow[A] = Show.fromToString
+  given char[A <: Char]: DerivedShow[A] = Show.fromToString
+  given string[A <: String]: DerivedShow[A] = Show.fromToString
+  given symbol[A <: Symbol]: DerivedShow[A] = Show.fromToString
 
   given [A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]): DerivedShow[A] =
     given K0.ProductInstances[Show, A] = inst.unify

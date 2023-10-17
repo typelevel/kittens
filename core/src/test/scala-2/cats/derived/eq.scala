@@ -30,7 +30,8 @@ class EqSuite extends KittensSuite {
       outer: Eq[Outer],
       interleaved: Eq[Interleaved[Int]],
       tree: Eq[Tree[Int]],
-      recursive: Eq[Recursive]
+      recursive: Eq[Recursive],
+      singletons: Eq[Singletons[Int]]
   ): Unit = {
     checkAll(s"$context.Eq[Foo]]", EqTests[Foo].eqv)
     checkAll(s"$context.Eq[IList[Int]]", EqTests[IList[Int]].eqv)
@@ -39,6 +40,7 @@ class EqSuite extends KittensSuite {
     checkAll(s"$context.Eq[Interleaved[Int]]", EqTests[Interleaved[Int]].eqv)
     checkAll(s"$context.Eq[Tree[Int]]", EqTests[Tree[Int]].eqv)
     checkAll(s"$context.Eq[Recursive]", EqTests[Recursive].eqv)
+    checkAll(s"$context.Eq[Singletons[Int]]", EqTests[Singletons[Int]].eqv)
     checkAll(s"$context.Eq is Serializable", SerializableTests.serializable(Eq[Tree[Int]]))
   }
 
@@ -69,5 +71,6 @@ object EqSuite {
     implicit val interleaved: Eq[Interleaved[Int]] = semiauto.eq
     implicit val tree: Eq[Tree[Int]] = semiauto.eq
     implicit val recursive: Eq[Recursive] = semiauto.eq
+    implicit val singletons: Eq[Singletons[Int]] = semiauto.eq
   }
 }

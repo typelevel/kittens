@@ -28,8 +28,8 @@ private[derived] trait HashBuilder[A] extends Serializable {
   }
 }
 
+import cats.derived.util.VersionSpecific.{Lazy, OrElse}
 import shapeless._
-import util.VersionSpecific.{OrElse, Lazy}
 
 private[derived] object HashBuilder {
 
@@ -52,6 +52,17 @@ private[derived] object HashBuilder {
 }
 
 abstract private[derived] class MkHashDerivation extends MkHashGenericProduct {
+  // These instances support singleton types unlike the instances in Cats' kernel.
+  implicit def mkHashBoolean[A <: Boolean]: MkHash[A] = universal
+  implicit def mkHashByte[A <: Byte]: MkHash[A] = universal
+  implicit def mkHashShort[A <: Short]: MkHash[A] = universal
+  implicit def mkHashInt[A <: Int]: MkHash[A] = universal
+  implicit def mkHashLong[A <: Long]: MkHash[A] = universal
+  implicit def mkHashFloat[A <: Float]: MkHash[A] = universal
+  implicit def mkHashDouble[A <: Double]: MkHash[A] = universal
+  implicit def mkHashChar[A <: Char]: MkHash[A] = universal
+  implicit def mkHashString[A <: String]: MkHash[A] = universal
+  implicit def mkHashSymbol[A <: Symbol]: MkHash[A] = universal
 
   implicit val mkHashCNil: MkHash[CNil] =
     instance(_ => 0, (_, _) => true)
@@ -99,6 +110,7 @@ abstract private[derived] class MkHashGenericHList extends MkHashGenericCoproduc
 }
 
 abstract private[derived] class MkHashGenericCoproduct {
+  private[this] val universalInstance = instance[Any](_.hashCode, _ == _)
 
   implicit def mkHashGenericCoproduct[A, R <: Coproduct](implicit
       A: Generic.Aux[A, R],
@@ -107,6 +119,9 @@ abstract private[derived] class MkHashGenericCoproduct {
     x => R.value.hash(A.to(x)),
     (x, y) => R.value.eqv(A.to(x), A.to(y))
   )
+
+  protected def universal[A]: MkHash[A] =
+    universalInstance.asInstanceOf[MkHash[A]]
 
   protected def instance[A](f: A => Int, g: (A, A) => Boolean): MkHash[A] =
     new MkHash[A] {

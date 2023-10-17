@@ -17,10 +17,8 @@
 package cats.derived
 
 import cats.{Eq, NonEmptyTraverse}
-import cats.data.{NonEmptyList, NonEmptyVector, OneAnd}
+import cats.data.{NonEmptyList, OneAnd}
 import cats.laws.discipline.*
-import cats.laws.discipline.arbitrary.*
-import cats.syntax.all.given
 import scala.compiletime.*
 
 class NonEmptyTraverseSuite extends KittensSuite:
@@ -64,21 +62,23 @@ class NonEmptyTraverseSuite extends KittensSuite:
       tests[AtLeastOne].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
+      s"$instance[Singletons]",
+      tests[Singletons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
       s"$instance is Serializable",
       SerializableTests.serializable(summonInline[NonEmptyTraverse[Tree]])
     )
 
-  locally {
+  locally:
     import auto.nonEmptyTraverse.given
     validate("auto.nonEmptyTraverse")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.nonEmptyTraverse")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.nonEmptyTraverse"
     checkAll(
@@ -101,8 +101,11 @@ class NonEmptyTraverseSuite extends KittensSuite:
       s"$instance[AtLeastOne]",
       tests[AtLeastOne].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
+    checkAll(
+      s"$instance[Singletons]",
+      tests[Singletons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
     checkAll(s"$instance is Serializable", SerializableTests.serializable(NonEmptyTraverse[Tree]))
-  }
 
 end NonEmptyTraverseSuite
 
@@ -122,6 +125,7 @@ object NonEmptyTraverseSuite:
     given NonEmptyTraverse[Interleaved] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[EnumK1] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[AtLeastOne] = semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[Singletons] = semiauto.nonEmptyTraverse
 
   object derivedInstances:
     case class ICons[A](x: ADTs.ICons[A]) derives NonEmptyTraverse
@@ -129,5 +133,6 @@ object NonEmptyTraverseSuite:
     case class Interleaved[A](x: ADTs.Interleaved[A]) derives NonEmptyTraverse
     case class EnumK1[A](x: ADTs.EnumK1[A]) derives NonEmptyTraverse
     case class AtLeastOne[A](x: ADTs.AtLeastOne[A]) derives NonEmptyTraverse
+    case class Singletons[A](x: ADTs.Singletons[A]) derives NonEmptyTraverse
 
 end NonEmptyTraverseSuite

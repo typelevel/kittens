@@ -41,19 +41,18 @@ class FoldableSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].foldable[Int, Long])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].foldable[Int, Long])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].foldable[Int, Long])
+    checkAll(s"$instance[Singletons]", tests[Singletons].foldable[Int, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Foldable[Tree]]))
 
-  locally {
+  locally:
     import auto.foldable.given
     validate("auto.foldable")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.foldable")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.foldable"
     checkAll(s"$instance[IList]", tests[IList].foldable[Int, Long])
@@ -65,8 +64,8 @@ class FoldableSuite extends KittensSuite:
     checkAll(s"$instance[Many]", tests[Many].foldable[Int, Long])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].foldable[Int, Long])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].foldable[Int, Long])
+    checkAll(s"$instance[Singletons]", tests[Singletons].foldable[Int, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Foldable[Tree]))
-  }
 
 end FoldableSuite
 
@@ -91,6 +90,7 @@ object FoldableSuite:
     given Foldable[Many] = semiauto.foldable
     given Foldable[AtMostOne] = semiauto.foldable
     given Foldable[AtLeastOne] = semiauto.foldable
+    given Foldable[Singletons] = semiauto.foldable
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Foldable
@@ -102,6 +102,7 @@ object FoldableSuite:
     case class Many[+A](x: ADTs.Many[A]) derives Foldable
     case class AtMostOne[+A](x: ADTs.AtMostOne[A]) derives Foldable
     case class AtLeastOne[+A](x: ADTs.AtLeastOne[A]) derives Foldable
+    case class Singletons[A](x: ADTs.Singletons[A]) derives Foldable
 
   final case class Nel[+A](head: A, tail: List[A])
   object Nel:

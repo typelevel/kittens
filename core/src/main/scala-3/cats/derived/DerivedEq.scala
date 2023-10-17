@@ -17,6 +17,9 @@ object DerivedEq:
     import DerivedEq.given
     summonInline[DerivedEq[A]].instance
 
+  given singleton[A <: Singleton: ValueOf]: DerivedEq[A] =
+    Eq.allEqual
+
   given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedEq[A] =
     given K0.ProductInstances[Eq, A] = inst.unify
     new Product[Eq, A] {}
@@ -26,11 +29,9 @@ object DerivedEq:
     new Coproduct[Eq, A] {}
 
   trait Product[F[x] <: Eq[x], A](using inst: K0.ProductInstances[F, A]) extends Eq[A]:
-    final override def eqv(x: A, y: A): Boolean = inst.foldLeft2(x, y)(true: Boolean)(
+    final override def eqv(x: A, y: A): Boolean = inst.foldLeft2(x, y)(true: Boolean):
       [t] => (acc: Boolean, eqt: F[t], x: t, y: t) => Complete(!eqt.eqv(x, y))(false)(true)
-    )
 
   trait Coproduct[F[x] <: Eq[x], A](using inst: K0.CoproductInstances[F, A]) extends Eq[A]:
-    final override def eqv(x: A, y: A): Boolean = inst.fold2(x, y)(false)(
+    final override def eqv(x: A, y: A): Boolean = inst.fold2(x, y)(false):
       [t] => (eqt: F[t], x: t, y: t) => eqt.eqv(x, y)
-    )

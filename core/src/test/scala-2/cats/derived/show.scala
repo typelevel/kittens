@@ -16,6 +16,7 @@ class ShowSuite extends KittensSuite {
       listField: Show[ListField],
       interleaved: Show[Interleaved[Int]],
       tree: Show[Tree[Int]],
+      singletons: Show[Singletons[Int]],
       boxBogus: Show[Box[Bogus]]
   ): Unit = {
     checkAll(s"$context.Show is Serializable", SerializableTests.serializable(Show[IntTree]))
@@ -71,6 +72,12 @@ class ShowSuite extends KittensSuite {
       assert(value.show == shown)
     }
 
+    test(s"$context.Show[Singletons[Int]]") {
+      val value = Singletons[Int](313)
+      val shown = "Singletons(value = 313, str = Scala, chr = +, lng = 42, dbl = 3.14)"
+      assert(value.show == shown)
+    }
+
     test(s"$context.Show respects existing instances") {
       val value = Box(Bogus(42))
       val shown = "Box(content = Blah)"
@@ -116,6 +123,7 @@ object ShowSuite {
     implicit val listField: Show[ListField] = semiauto.show
     implicit val interleaved: Show[Interleaved[Int]] = semiauto.show
     implicit val tree: Show[Tree[Int]] = semiauto.show
+    implicit val singletons: Show[Singletons[Int]] = semiauto.show
     implicit val boxBogus: Show[Box[Bogus]] = semiauto.show
   }
 }

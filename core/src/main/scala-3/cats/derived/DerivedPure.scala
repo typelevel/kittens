@@ -23,6 +23,10 @@ object DerivedPure:
     new Pure[Const[T]]:
       def pure[A](a: A) = T.empty
 
+  given [T <: Singleton: ValueOf]: DerivedPure[Const[T]] =
+    new Pure[Const[T]]:
+      def pure[A](a: A) = valueOf[T]
+
   given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedPure[[x] =>> F[G[x]]] =
     new Pure[[x] =>> F[G[x]]]:
       def pure[A](a: A) = F.unify.pure(G.unify.pure(a))

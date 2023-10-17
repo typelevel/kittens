@@ -34,19 +34,18 @@ class OrderSuite extends KittensSuite:
     checkAll(s"$instance[Recursive]", tests[Recursive].order)
     checkAll(s"$instance[GenericAdt[Int]]", tests[GenericAdt[Int]].order)
     checkAll(s"$instance[EnumK0]", tests[EnumK0].order)
+    checkAll(s"$instance[Singletons[Int]]", tests[Singletons[Int]].order)
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Order[Interleaved[Int]]]))
 
-  locally {
+  locally:
     import auto.order.given
     validate("auto.order")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.order")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.order"
     checkAll(s"$instance[Inner]", tests[Inner].order)
@@ -55,8 +54,8 @@ class OrderSuite extends KittensSuite:
     checkAll(s"$instance[Recursive]", tests[Recursive].order)
     checkAll(s"$instance[GenericAdt[Int]]", tests[GenericAdt[Int]].order)
     checkAll(s"$instance[EnumK0]", tests[EnumK0].order)
+    checkAll(s"$instance[Singletons[Int]]", tests[Singletons[Int]].order)
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Order[Interleaved[Int]]))
-  }
 
 end OrderSuite
 
@@ -70,6 +69,7 @@ object OrderSuite:
     given Order[Recursive] = semiauto.order
     given Order[GenericAdt[Int]] = semiauto.order
     given Order[EnumK0] = semiauto.order
+    given Order[Singletons[Int]] = semiauto.order
 
   object derivedInstances:
     case class Inner(x: ADTs.Inner) derives Order
@@ -78,5 +78,6 @@ object OrderSuite:
     case class Recursive(x: ADTs.Recursive) derives Order
     case class GenericAdt[A](x: ADTs.GenericAdt[A]) derives Order
     case class EnumK0(x: ADTs.EnumK0) derives Order
+    case class Singletons[A](x: ADTs.Singletons[A]) derives Order
 
 end OrderSuite

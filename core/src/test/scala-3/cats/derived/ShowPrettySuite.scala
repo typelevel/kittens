@@ -15,7 +15,7 @@ class ShowPrettySuite extends KittensSuite:
   inline def validate(instance: String): Unit =
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[ShowPretty[IntTree]]))
 
-    test(s"$instance[Foo]") {
+    test(s"$instance[Foo]"):
       val value = Foo(42, Option("Hello"))
       val pretty = """
         |Foo(
@@ -23,11 +23,9 @@ class ShowPrettySuite extends KittensSuite:
         |  b = Some(Hello)
         |)
       """.stripMargin.trim
-
       assertEquals(show(value), pretty)
-    }
 
-    test(s"$instance[Outer]") {
+    test(s"$instance[Outer]"):
       val value = Outer(Inner(3))
       val pretty = """
         |Outer(
@@ -36,11 +34,9 @@ class ShowPrettySuite extends KittensSuite:
         |  )
         |)
       """.stripMargin.trim
-
       assertEquals(show(value), pretty)
-    }
 
-    test(s"$instance[IntTree]") {
+    test(s"$instance[IntTree]"):
       val value: IntTree = IntNode(IntLeaf(1), IntNode(IntNode(IntLeaf(2), IntLeaf(3)), IntLeaf(4)))
       val pretty = """
         |IntNode(
@@ -62,22 +58,18 @@ class ShowPrettySuite extends KittensSuite:
         |  )
         |)
       """.stripMargin.trim
-
       assertEquals(show(value), pretty)
-    }
 
-    test(s"$instance[GenericAdt[Int]]") {
+    test(s"$instance[GenericAdt[Int]]"):
       val value: GenericAdt[Int] = GenericAdtCase(Some(1))
       val pretty = """
         |GenericAdtCase(
         |  value = Some(1)
         |)
       """.stripMargin.trim
-
       assertEquals(show(value), pretty)
-    }
 
-    test(s"$instance[People]") {
+    test(s"$instance[People]"):
       val value = People("Kai", ContactInfo("303-123-4567", Address("123 1st St", "New York", "NY")))
       val pretty = """
         |People(
@@ -88,11 +80,9 @@ class ShowPrettySuite extends KittensSuite:
         |  )
         |)
       """.stripMargin.trim
-
       assertEquals(show(value), pretty)
-    }
 
-    test(s"$instance[ListField]") {
+    test(s"$instance[ListField]"):
       val value = ListField("a", List(ListFieldChild(1)))
       val pretty = """
         |ListField(
@@ -102,11 +92,9 @@ class ShowPrettySuite extends KittensSuite:
         |  ))
         |)
       """.stripMargin.trim
-
       assertEquals(show(value), pretty)
-    }
 
-    test(s"$instance[Interleaved[Int]]") {
+    test(s"$instance[Interleaved[Int]]"):
       val value = Interleaved(1, 2, 3, Vector(4, 5, 6), "789")
       val pretty = """
         |Interleaved(
@@ -117,11 +105,9 @@ class ShowPrettySuite extends KittensSuite:
         |  s = 789
         |)
       """.stripMargin.trim
-
       assertEquals(show(value), pretty)
-    }
 
-    test(s"$instance[Tree[Int]]") {
+    test(s"$instance[Tree[Int]]"):
       val value: Tree[Int] = Node(Leaf(1), Node(Node(Leaf(2), Leaf(3)), Leaf(4)))
       val pretty = """
         |Node(
@@ -143,32 +129,38 @@ class ShowPrettySuite extends KittensSuite:
         |  )
         |)
       """.stripMargin.trim
-
       assertEquals(show(value), pretty)
-    }
 
-    test(s"$instance respects existing instances") {
+    test(s"$instance[Singletons[Int]]"):
+      val value = Singletons(313)
+      val pretty = """
+        |Singletons(
+        |  value = 313,
+        |  str = Scala,
+        |  lng = 42,
+        |  dbl = 3.14
+        |)
+      """.stripMargin.trim
+      assertEquals(show(value), pretty)
+
+    test(s"$instance respects existing instances"):
       val value = Box(Bogus(42))
       val pretty = """
         |Box(
         |  content = Blah
         |)
       """.stripMargin.trim
-
       assertEquals(show(value), pretty)
-    }
 
   end validate
 
-  locally {
+  locally:
     import auto.showPretty.given
     validate("auto.showPretty")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.showPretty")
-  }
 
 end ShowPrettySuite
 
@@ -192,6 +184,7 @@ object ShowPrettySuite:
     given ShowPretty[ListField] = semiauto.showPretty
     given ShowPretty[Interleaved[Int]] = semiauto.showPretty
     given ShowPretty[Tree[Int]] = semiauto.showPretty
+    given ShowPretty[Singletons[Int]] = semiauto.showPretty
     given ShowPretty[Box[Bogus]] = semiauto.showPretty
 
   object derivedInstances:
@@ -204,6 +197,7 @@ object ShowPrettySuite:
     case class GenericAdt[A](x: ADTs.GenericAdt[A]) derives ShowPretty
     case class Interleaved[A](x: ADTs.Interleaved[A]) derives ShowPretty
     case class Tree[A](x: ADTs.Tree[A]) derives ShowPretty
+    case class Singletons[A](x: ADTs.Singletons[A]) derives ShowPretty
     case class BoxBogus(x: Box[Bogus]) derives ShowPretty
 
 end ShowPrettySuite

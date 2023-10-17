@@ -1,9 +1,10 @@
 package cats
 package derived
 
+import cats.Show.ContravariantShow
+import cats.derived.util.VersionSpecific.{Lazy, OrElse}
 import shapeless._
 import shapeless.labelled._
-import util.VersionSpecific.{Lazy, OrElse}
 
 import scala.annotation.implicitNotFound
 import scala.reflect.ClassTag
@@ -31,7 +32,7 @@ sealed abstract private[derived] class MkShowDerivation extends MkShowGenericCop
 
   implicit def mkShowLabelledHCons[K <: Symbol, V, T <: HList](implicit
       K: Witness.Aux[K],
-      V: Show[V] OrElse MkShow[V],
+      V: ContravariantShow[V] OrElse MkShow[V],
       T: MkShow[T]
   ): MkShow[FieldType[K, V] :: T] = { case v :: t =>
     val name = K.value.name

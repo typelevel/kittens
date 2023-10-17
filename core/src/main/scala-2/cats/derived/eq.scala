@@ -17,8 +17,8 @@
 package cats.derived
 
 import cats.Eq
+import cats.derived.util.VersionSpecific.{Lazy, OrElse}
 import shapeless._
-import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
@@ -32,7 +32,7 @@ object MkEq extends MkEqDerivation {
   def apply[A](implicit ev: MkEq[A]): MkEq[A] = ev
 }
 
-abstract private[derived] class MkEqDerivation {
+abstract private[derived] class MkEqDerivation extends MkEqSingletons {
   implicit val mkEqHNil: MkEq[HNil] = (_, _) => true
   implicit val mkEqCNil: MkEq[CNil] = (_, _) => true
 
@@ -48,4 +48,9 @@ abstract private[derived] class MkEqDerivation {
 
   implicit def mkEqGeneric[A, R](implicit A: Generic.Aux[A, R], R: Lazy[MkEq[R]]): MkEq[A] =
     (x, y) => R.value.eqv(A.to(x), A.to(y))
+}
+
+abstract private[derived] class MkEqSingletons {
+  implicit def mkEqSingleton[A: Witness.Aux]: MkEq[A] =
+    (_, _) => true
 }

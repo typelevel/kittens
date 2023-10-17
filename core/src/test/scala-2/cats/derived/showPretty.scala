@@ -16,6 +16,7 @@ class ShowPrettySuite extends KittensSuite {
       listField: ShowPretty[ListField],
       interleaved: ShowPretty[Interleaved[Int]],
       tree: ShowPretty[Tree[Int]],
+      singletons: ShowPretty[Singletons[Int]],
       boxBogus: ShowPretty[Box[Bogus]]
   ): Unit = {
     checkAll(s"$context.ShowPretty is Serializable", SerializableTests.serializable(ShowPretty[IntTree]))
@@ -152,6 +153,21 @@ class ShowPrettySuite extends KittensSuite {
       assert(value.show == pretty)
     }
 
+    test(s"$context.ShowPretty[Singletons[Int]]") {
+      val value = Singletons[Int](313)
+      val pretty = """
+        |Singletons(
+        |  value = 313,
+        |  str = Scala,
+        |  chr = +,
+        |  lng = 42,
+        |  dbl = 3.14
+        |)
+      """.stripMargin.trim
+
+      assert(value.show == pretty)
+    }
+
     test(s"$context.ShowPretty respects existing instances") {
       val value = Box(Bogus(42))
       val pretty = """
@@ -202,6 +218,7 @@ object ShowPrettySuite {
     implicit val listField: ShowPretty[ListField] = semiauto.showPretty
     implicit val interleaved: ShowPretty[Interleaved[Int]] = semiauto.showPretty
     implicit val tree: ShowPretty[Tree[Int]] = semiauto.showPretty
+    implicit val singletons: ShowPretty[Singletons[Int]] = semiauto.showPretty
     implicit val boxBogus: ShowPretty[Box[Bogus]] = semiauto.showPretty
   }
 }

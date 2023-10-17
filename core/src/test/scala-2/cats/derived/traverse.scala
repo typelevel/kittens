@@ -1,5 +1,6 @@
 package cats
 package derived
+
 import cats.laws.discipline.{SerializableTests, TraverseTests}
 
 class TraverseSuite extends KittensSuite {
@@ -14,7 +15,8 @@ class TraverseSuite extends KittensSuite {
       optList: Traverse[OptList],
       listSnoc: Traverse[ListSnoc],
       andChar: Traverse[AndChar],
-      interleaved: Traverse[Interleaved]
+      interleaved: Traverse[Interleaved],
+      singletons: Traverse[Singletons]
   ): Unit = {
     checkAll(s"$context.Traverse[IList]", TraverseTests[IList].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$context.Traverse[Tree]", TraverseTests[Tree].traverse[Int, Double, String, Long, Option, Option])
@@ -31,6 +33,10 @@ class TraverseSuite extends KittensSuite {
     checkAll(
       s"$context.Traverse[Interleaved]",
       TraverseTests[Interleaved].traverse[Int, Double, String, Long, Option, Option]
+    )
+    checkAll(
+      s"$context.Traverse[Singletons]",
+      TraverseTests[Singletons].traverse[Int, Double, String, Long, Option, Option]
     )
     checkAll(s"$context.Traverse is Serializable", SerializableTests.serializable(Traverse[Tree]))
 
@@ -94,5 +100,6 @@ object TraverseSuite {
     implicit val listSnoc: Traverse[ListSnoc] = semiauto.traverse
     implicit val andChar: Traverse[AndChar] = semiauto.traverse
     implicit val interleaved: Traverse[Interleaved] = semiauto.traverse
+    implicit val singletons: Traverse[Singletons] = semiauto.traverse
   }
 }

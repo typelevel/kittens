@@ -14,7 +14,8 @@ class HashSuite extends KittensSuite {
       interleaved: Hash[Interleaved[Int]],
       tree: Hash[Tree[Int]],
       recursive: Hash[Recursive],
-      singletons: Hash[Singletons[Int]]
+      singletons: Hash[Singletons[Int]],
+      anyVal: Hash[AnyValStr]
   ): Unit = {
     checkAll(s"$context.Hash[IList[Int]]", HashTests[IList[Int]].hash)
     checkAll(s"$context.Hash[Inner]", HashTests[Inner].hash)
@@ -22,7 +23,8 @@ class HashSuite extends KittensSuite {
     checkAll(s"$context.Hash[Interleaved[Int]]", HashTests[Interleaved[Int]].hash)
     checkAll(s"$context.Hash[Tree[Int]]", HashTests[Tree[Int]].hash)
     checkAll(s"$context.Hash[Recursive]", HashTests[Recursive].hash)
-    checkAll(s"$context.Hash[Singletons[Int]", HashTests[Singletons[Int]].hash)
+    checkAll(s"$context.Hash[Singletons[Int]]", HashTests[Singletons[Int]].hash)
+    checkAll(s"$context.Hash[AnyValStr]", HashTests[AnyValStr].hash)
     checkAll(s"$context.Hash is Serializable", SerializableTests.serializable(Hash[Tree[Int]]))
   }
 
@@ -53,5 +55,6 @@ object HashSuite {
     implicit val tree: Hash[Tree[Int]] = semiauto.hash
     implicit val recursive: Hash[Recursive] = semiauto.hash
     implicit val singletons: Hash[Singletons[Int]] = semiauto.hash
+    implicit val anyVal: Hash[AnyValStr] = semiauto.hash
   }
 }

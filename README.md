@@ -222,7 +222,7 @@ We also offer 3 methods of derivation for Scala 3. All of them have the same beh
 
 Kittens for scala 3 supports Scala 3's [derivation syntax](https://docs.scala-lang.org/scala3/reference/contextual/derivation.html). 
 
-``` scala
+```scala 3
 import cats.derived.*
 
 // No instances declared for Name
@@ -234,11 +234,25 @@ enum CList[+A] derives Functor:
   case CCons(head: A, tail: CList[A])
 ```
 
+Note that the `derives` clause has a fundamental limitation:
+it generates an instance that requires the type class for all type parameters, even if not necessary.
+The following example shows a rough equivalent of how a `derives Monoid` clause is desugared:
+
+```scala 3
+case class Concat[+A](left: Vector[A], right: Vector[A])
+object Concat:
+  // Note that the `Monoid[A]` requirement is not needed,
+  // because `Monoid[Vector[A]]` is defined for any `A`.
+  given [A: Monoid]: Monoid[Concat[A]] = Monoid.derived
+```
+
+In such cases it is recommended to use semiauto derivation, described below.
+
 ### semiauto derivation
 
 This looks similar to `semiauto` for Scala 2.
 
-``` scala
+```scala 3
 import cats.derived.semiauto
 
 // No instances declared for Name
@@ -259,7 +273,7 @@ object CList:
 
 As with Scala 2, you can combine `auto` and `semiauto` to avoid the type constructor field limitation:
 
-``` scala
+```scala 3
 import cats.derived.*
 
 case class Name(value: String)
@@ -273,13 +287,11 @@ object People:
     semiauto.show
 ```
 
-`
-
 ### auto derivation
 
 This looks similar to `auto` for Scala 2.
 
-``` scala
+```scala 3
 import cats.derived.auto.eq.given
 import cats.derived.auto.show.given
 import cats.derived.auto.functor.given

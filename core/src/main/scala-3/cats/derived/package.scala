@@ -59,9 +59,11 @@ object semiauto:
 
 object strict:
   extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq.strict[A]
+  extension (x: Hash.type) inline def derived[A]: Hash[A] = DerivedHash.strict[A]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
+    inline def hash[A]: Hash[A] = DerivedHash.strict[A]
 
 object auto:
   object eq:

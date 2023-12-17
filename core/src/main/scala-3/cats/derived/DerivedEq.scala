@@ -19,6 +19,7 @@ object DerivedEq:
     import DerivedEq.given
     summonInline[DerivedEq[A]].instance
 
+  @nowarn("msg=unused import")
   inline def strict[A]: Eq[A] =
     import DerivedEq.given
     import Strict.product
@@ -44,5 +45,5 @@ object DerivedEq:
       [t] => (eqt: F[t], x: t, y: t) => eqt.eqv(x, y)
 
   object Strict:
-    given product[A](using inst: => K0.ProductInstances[Eq, A]): DerivedEq[A] =
+    given product[A](using => K0.ProductInstances[Eq, A]): DerivedEq[A] =
       new Product[Eq, A] {}

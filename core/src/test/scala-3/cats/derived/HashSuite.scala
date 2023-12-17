@@ -31,6 +31,11 @@ class HashSuite extends KittensSuite:
     validate("semiauto.hash")
 
   locally:
+    import strictInstances.given
+    validate("strict.semiauto.hash")
+    testNoInstance("strict.semiauto.hash", "Top")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.hash"
     checkAll(s"$instance[IList[Int]]", tests[IList[Int]].hash)
@@ -57,6 +62,18 @@ object HashSuite:
     given Hash[Recursive] = semiauto.hash
     given Hash[EnumK0] = semiauto.hash
     given Hash[Singletons[Int]] = semiauto.hash
+
+  object strictInstances:
+    given Hash[IList[Int]] = strict.semiauto.hash
+    given Hash[Inner] = strict.semiauto.hash
+    given Hash[Outer] = strict.semiauto.hash
+    given Hash[Interleaved[Int]] = strict.semiauto.hash
+    given Hash[Tree[Int]] = strict.semiauto.hash
+    given Hash[Recursive] = strict.semiauto.hash
+    given Hash[EnumK0] = strict.semiauto.hash
+    given Hash[Singletons[Int]] =
+      given [A <: Singleton: ValueOf]: Hash[A] = Hash.fromUniversalHashCode
+      strict.semiauto.hash
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Hash

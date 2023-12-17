@@ -29,8 +29,7 @@ object DerivedEq:
     Eq.allEqual
 
   given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedEq[A] =
-    given K0.ProductInstances[Eq, A] = inst.unify
-    new Product[Eq, A] {}
+    Strict.product(using inst.unify)
 
   given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedEq[A] =
     given K0.CoproductInstances[Eq, A] = inst.unify

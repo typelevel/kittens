@@ -39,8 +39,7 @@ object DerivedHash:
   given symbol[A <: Symbol]: DerivedHash[A] = Hash.fromUniversalHashCode
 
   given product[A <: scala.Product](using inst: => K0.ProductInstances[Or, A]): DerivedHash[A] =
-    given K0.ProductInstances[Hash, A] = inst.unify
-    new Product[Hash, A] {}
+    Strict.product(using inst.unify)
 
   given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedHash[A] =
     given K0.CoproductInstances[Hash, A] = inst.unify

@@ -19,8 +19,18 @@ object DerivedEmpty:
     import DerivedEmpty.given
     summonInline[DerivedEmpty[A]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[A]: Empty[A] =
+    import DerivedEmpty.given
+    import Strict.product
+    summonInline[DerivedEmpty[A]].instance
+
   given product[A](using inst: K0.ProductInstances[Or, A]): DerivedEmpty[A] =
-    Empty(inst.unify.construct([a] => (_: Empty[a]).empty))
+    Strict.product(using inst.unify)
 
   inline given coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
-    Empty(gen.withOnly[Or, A]([a <: A] => (_: Or[a]).unify.empty))
+    Empty(gen.withOnly[Or, A]([a <: A] => (A: Or[a]) => A.unify.empty))
+
+  object Strict:
+    given product[A](using inst: K0.ProductInstances[Empty, A]): DerivedEmpty[A] =
+      Empty(inst.construct([a] => (A: Empty[a]) => A.empty))

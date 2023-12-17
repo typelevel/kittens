@@ -16,8 +16,10 @@
 
 package cats
 package derived
-import cats.laws.discipline.{ApplicativeTests, SerializableTests}
+
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
+import cats.laws.discipline.{ApplicativeTests, SerializableTests}
+import shapeless._
 
 class ApplicativeSuite extends KittensSuite {
   import ApplicativeSuite._
@@ -29,11 +31,13 @@ class ApplicativeSuite extends KittensSuite {
       optList: Applicative[OptList],
       andInt: Applicative[AndInt],
       interleaved: Applicative[Interleaved],
-      listBox: Applicative[ListBox]
+      listBox: Applicative[ListBox],
+      record: Applicative[Record]
   ): Unit = {
     implicit val isoOptList: Isomorphisms[OptList] = Isomorphisms.invariant(optList)
     implicit val isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)
     implicit val isoListBox: Isomorphisms[ListBox] = Isomorphisms.invariant(listBox)
+    implicit val isoRecord: Isomorphisms[Record] = Isomorphisms.invariant(record)
     checkAll(
       s"$context.Applicative[CaseClassWOption]",
       ApplicativeTests[CaseClassWOption].applicative[Int, String, Long]
@@ -42,6 +46,7 @@ class ApplicativeSuite extends KittensSuite {
     checkAll(s"$context.Applicative[AndInt]", ApplicativeTests[AndInt].applicative[Int, String, Long])
     checkAll(s"$context.Applicative[Interleaved]", ApplicativeTests[Interleaved].applicative[Int, String, Long])
     checkAll(s"$context.Applicative[ListBox]", ApplicativeTests[ListBox].applicative[Int, String, Long])
+    checkAll(s"$context.Applicative[Record]", ApplicativeTests[Record].applicative[Int, String, Long])
     checkAll(s"$context.Applicative is Serializable", SerializableTests.serializable(Applicative[Interleaved]))
   }
 
@@ -67,6 +72,7 @@ object ApplicativeSuite {
   type OptList[A] = Option[List[A]]
   type AndInt[A] = (A, Int)
   type ListBox[A] = List[Box[A]]
+  type Record[A] = (Mon ->> Option[A]) :: (Sun ->> List[A]) :: HNil
 
   object semiInstances {
     implicit val caseClassWOption: Applicative[CaseClassWOption] = semiauto.applicative
@@ -74,5 +80,6 @@ object ApplicativeSuite {
     implicit val andInt: Applicative[AndInt] = semiauto.applicative
     implicit val interleaved: Applicative[Interleaved] = semiauto.applicative
     implicit val listBox: Applicative[ListBox] = semiauto.applicative
+    implicit val record: Applicative[Record] = semiauto.applicative
   }
 }

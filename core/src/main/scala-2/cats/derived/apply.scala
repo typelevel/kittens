@@ -17,8 +17,9 @@
 package cats
 package derived
 
+import cats.derived.util.VersionSpecific.OrElse
 import shapeless._
-import util.VersionSpecific.OrElse
+import shapeless.labelled._
 
 import scala.annotation.implicitNotFound
 
@@ -46,6 +47,13 @@ abstract private[derived] class MkApplyDerivation extends MkApplyNested {
     new MkApply[Const[T]#λ] {
       def ap[A, B](ff: T)(fa: T) = T.combine(ff, fa)
       def map[A, B](fa: T)(f: A => B) = fa
+    }
+
+  implicit def mkApplyFieldType[K, V[_]](implicit V: Strict[ApplyOrMk[V]]): MkApply[λ[a => FieldType[K, V[a]]]] =
+    new MkApply[λ[a => FieldType[K, V[a]]]] {
+      private val v = V.value.unify
+      def ap[A, B](ff: FieldType[K, V[A => B]])(fa: FieldType[K, V[A]]) = field[K][V[B]](v.ap(ff)(fa))
+      def map[A, B](fa: FieldType[K, V[A]])(f: A => B) = field[K][V[B]](v.map(fa)(f))
     }
 }
 

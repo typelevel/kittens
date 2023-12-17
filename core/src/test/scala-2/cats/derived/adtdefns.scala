@@ -20,10 +20,21 @@ import cats.{Eq, Eval}
 import org.scalacheck.rng.Seed
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 import shapeless.Witness
+import shapeless.labelled.FieldType
 
 import scala.annotation.tailrec
 
 object TestDefns {
+  type ->>[K, V] = FieldType[K, V]
+
+  sealed trait WeekDay
+  sealed trait Mon extends WeekDay
+  sealed trait Tue extends WeekDay
+  sealed trait Wed extends WeekDay
+  sealed trait Thu extends WeekDay
+  sealed trait Fri extends WeekDay
+  sealed trait Sat extends WeekDay
+  sealed trait Sun extends WeekDay
 
   sealed trait Rgb
   case object Red extends Rgb

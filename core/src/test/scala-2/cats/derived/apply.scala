@@ -16,8 +16,10 @@
 
 package cats
 package derived
-import cats.laws.discipline.{ApplyTests, SerializableTests}
+
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
+import cats.laws.discipline.{ApplyTests, SerializableTests}
+import shapeless._
 
 class ApplySuite extends KittensSuite {
   import ApplySuite._
@@ -29,16 +31,19 @@ class ApplySuite extends KittensSuite {
       optList: Apply[OptList],
       andInt: Apply[AndInt],
       interleaved: Apply[Interleaved],
-      listBox: Apply[ListBox]
+      listBox: Apply[ListBox],
+      record: Apply[Record]
   ): Unit = {
     implicit val isoOptList: Isomorphisms[OptList] = Isomorphisms.invariant(optList)
     implicit val isoAndInt: Isomorphisms[AndInt] = Isomorphisms.invariant(andInt)
     implicit val isoListBox: Isomorphisms[ListBox] = Isomorphisms.invariant(listBox)
+    implicit val isoRecord: Isomorphisms[Record] = Isomorphisms.invariant(record)
     checkAll(s"$context.Apply[CaseClassWOption]", ApplyTests[CaseClassWOption].apply[Int, String, Long])
     checkAll(s"$context.Apply[OptList]", ApplyTests[OptList].apply[Int, String, Long])
     checkAll(s"$context.Apply[AndInt]", ApplyTests[AndInt].apply[Int, String, Long])
     checkAll(s"$context.Apply[Interleaved]", ApplyTests[Interleaved].apply[Int, String, Long])
     checkAll(s"$context.Apply[ListBox]", ApplyTests[ListBox].apply[Int, String, Long])
+    checkAll(s"$context.Apply[Record]", ApplyTests[Record].apply[Int, String, Long])
     checkAll(s"$context.Apply is Serializable", SerializableTests.serializable(Apply[Interleaved]))
   }
 
@@ -64,6 +69,7 @@ object ApplySuite {
   type OptList[A] = Option[List[A]]
   type AndInt[A] = (A, Int)
   type ListBox[A] = List[Box[A]]
+  type Record[A] = (Mon ->> Option[A]) :: (Sun ->> List[A]) :: HNil
 
   object semiInstances {
     implicit val caseClassWOption: Apply[CaseClassWOption] = semiauto.apply
@@ -71,5 +77,6 @@ object ApplySuite {
     implicit val andInt: Apply[AndInt] = semiauto.apply
     implicit val interleaved: Apply[Interleaved] = semiauto.apply
     implicit val listBox: Apply[ListBox] = semiauto.apply
+    implicit val record: Apply[Record] = semiauto.apply
   }
 }

@@ -17,8 +17,9 @@
 package cats
 package derived
 
+import cats.derived.util.VersionSpecific.OrElse
 import shapeless._
-import util.VersionSpecific.OrElse
+import shapeless.labelled._
 
 import scala.annotation.implicitNotFound
 
@@ -48,6 +49,16 @@ abstract private[derived] class MkApplicativeDerivation extends MkApplicativeNes
       def pure[A](x: A) = T.empty
       def ap[A, B](ff: T)(fa: T) = T.combine(ff, fa)
       override def map[A, B](fa: T)(f: A => B) = fa
+    }
+
+  implicit def mkApplicativeFieldType[K, V[_]](implicit
+      V: Strict[ApplicativeOrMk[V]]
+  ): MkApplicative[λ[a => FieldType[K, V[a]]]] =
+    new MkApplicative[λ[a => FieldType[K, V[a]]]] {
+      private val v = V.value.unify
+      def pure[A](x: A) = field[K][V[A]](v.pure(x))
+      def ap[A, B](ff: FieldType[K, V[A => B]])(fa: FieldType[K, V[A]]) = field[K][V[B]](v.ap(ff)(fa))
+      override def map[A, B](fa: FieldType[K, V[A]])(f: A => B) = field[K][V[B]](v.map(fa)(f))
     }
 }
 

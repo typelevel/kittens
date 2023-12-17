@@ -17,10 +17,18 @@ object DerivedSemigroup:
     import DerivedSemigroup.given
     summonInline[DerivedSemigroup[A]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[A]: Semigroup[A] =
+    import Strict.given
+    summonInline[DerivedSemigroup[A]].instance
+
   given [A](using inst: => K0.ProductInstances[Or, A]): DerivedSemigroup[A] =
-    given K0.ProductInstances[Semigroup, A] = inst.unify
-    new Product[Semigroup, A] {}
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: Semigroup[x], A](using inst: K0.ProductInstances[F, A]) extends Semigroup[A]:
     final override def combine(x: A, y: A): A =
       inst.map2(x, y)([A] => (F: F[A], x: A, y: A) => F.combine(x, y))
+
+  object Strict:
+    given product[A](using => K0.ProductInstances[Semigroup, A]): DerivedSemigroup[A] =
+      new Product[Semigroup, A] {}

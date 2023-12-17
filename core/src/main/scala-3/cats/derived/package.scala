@@ -61,11 +61,13 @@ object strict:
   extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq.strict[A]
   extension (x: Hash.type) inline def derived[A]: Hash[A] = DerivedHash.strict[A]
   extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty.strict[A]
+  extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup.strict[A]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
     inline def hash[A]: Hash[A] = DerivedHash.strict[A]
     inline def empty[A]: Empty[A] = DerivedEmpty.strict[A]
+    inline def semigroup[A]: Semigroup[A] = DerivedSemigroup.strict[A]
 
 object auto:
   object eq:

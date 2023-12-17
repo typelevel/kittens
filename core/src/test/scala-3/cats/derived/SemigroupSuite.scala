@@ -35,29 +35,30 @@ class SemigroupSuite extends KittensSuite:
     checkAll(s"$instances[Box[Mul]]", tests[Box[Mul]].semigroup)
     checkAll(s"$instances[Recursive]", tests[Recursive].semigroup)
     checkAll(s"$instances is Serializable", SerializableTests.serializable(summonInline[Semigroup[Foo]]))
-    test(s"$instances respects existing instances") {
+    test(s"$instances respects existing instances"):
       val box = summonInline[Semigroup[Box[Mul]]]
       assert(box.combine(Box(Mul(5)), Box(Mul(5))).content.value == 25)
-    }
 
-  locally {
+  locally:
     import auto.semigroup.given
     validate("auto.semigroup")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.semigroup")
-  }
 
-  locally {
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.semigroup")
+    testNoInstance("strict.semiauto.semigroup", "Top")
+
+  locally:
     import derivedInstances.*
     val instances = "derived.semigroup"
     checkAll(s"$instances[Foo]", tests[Foo].semigroup)
     checkAll(s"$instances[Interleaved[Int]]", tests[Interleaved[Int]].semigroup)
     checkAll(s"$instances[BoxMul]", tests[BoxMul].semigroup)
     checkAll(s"$instances is Serializable", SerializableTests.serializable(Semigroup[Foo]))
-  }
 
 end SemigroupSuite
 
@@ -69,6 +70,12 @@ object SemigroupSuite:
     given Semigroup[Recursive] = semiauto.semigroup
     given Semigroup[Interleaved[Int]] = semiauto.semigroup
     given Semigroup[Box[Mul]] = semiauto.semigroup
+
+  object strictInstances:
+    given Semigroup[Foo] = strict.semiauto.semigroup
+    given Semigroup[Recursive] = strict.semiauto.semigroup
+    given Semigroup[Interleaved[Int]] = strict.semiauto.semigroup
+    given Semigroup[Box[Mul]] = strict.semiauto.semigroup
 
   object derivedInstances:
     case class Foo(x: ADTs.Foo) derives Semigroup

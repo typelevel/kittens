@@ -41,6 +41,14 @@ object TestDefns {
   case object Green extends Rgb
   case object Blue extends Rgb
 
+  final case class AnyValStr(name: String) extends AnyVal
+  object AnyValStr {
+    implicit val arbitrary: Arbitrary[AnyValStr] =
+      Arbitrary(Arbitrary.arbitrary[String].map(apply))
+    implicit val cogen: Cogen[AnyValStr] =
+      Cogen[String].contramap(_.name)
+  }
+
   final case class ComplexProduct[T](lbl: String, set: Set[T], fns: Vector[() => T], opt: Eval[Option[T]])
   object ComplexProduct {
 

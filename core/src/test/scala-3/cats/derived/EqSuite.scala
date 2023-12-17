@@ -47,6 +47,11 @@ class EqSuite extends KittensSuite.WithoutEq:
     validate("semiauto.eq")
 
   locally:
+    import strictInstances.given
+    validate("strict.semiauto.eq")
+    testNoInstance("strict.semiauto.eq", "Top")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.eq"
     checkAll(s"$instance[Foo]]", tests[Foo].eqv)
@@ -73,6 +78,18 @@ object EqSuite:
     given Eq[Tree[Int]] = semiauto.eq
     given Eq[Recursive] = semiauto.eq
     given Eq[Singletons[Int]] = semiauto.eq
+
+  object strictInstances:
+    given Eq[Foo] = strict.semiauto.eq
+    given Eq[IList[Int]] = strict.semiauto.eq
+    given Eq[Inner] = strict.semiauto.eq
+    given Eq[Outer] = strict.semiauto.eq
+    given Eq[Interleaved[Int]] = strict.semiauto.eq
+    given Eq[Tree[Int]] = strict.semiauto.eq
+    given Eq[Recursive] = strict.semiauto.eq
+    given Eq[Singletons[Int]] =
+      given [A <: Singleton: ValueOf]: Eq[A] = Eq.allEqual
+      strict.semiauto.eq
 
   object derivedInstances:
     case class Foo(x: ADTs.Foo) derives Eq

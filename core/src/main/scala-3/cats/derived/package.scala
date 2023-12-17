@@ -57,6 +57,12 @@ object semiauto:
   inline def partialOrder[A]: PartialOrder[A] = DerivedPartialOrder[A]
   inline def showPretty[A]: ShowPretty[A] = DerivedShowPretty[A]
 
+object strict:
+  extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq.strict[A]
+
+  object semiauto:
+    inline def eq[A]: Eq[A] = DerivedEq.strict[A]
+
 object auto:
   object eq:
     inline given [A](using NotGiven[Eq[A]]): Eq[A] = DerivedEq[A]

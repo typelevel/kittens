@@ -19,6 +19,7 @@ object DerivedOrder:
     import DerivedOrder.given
     summonInline[DerivedOrder[A]].instance
 
+  @nowarn("msg=unused import")
   inline def strict[A]: Order[A] =
     import DerivedOrder.given
     import Strict.product

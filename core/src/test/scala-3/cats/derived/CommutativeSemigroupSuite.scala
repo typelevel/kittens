@@ -35,28 +35,29 @@ class CommutativeSemigroupSuite extends KittensSuite:
       s"$instance is Serializable",
       SerializableTests.serializable(summonInline[CommutativeSemigroup[CommutativeFoo]])
     )
-    test(s"$instance respects existing instances") {
+    test(s"$instance respects existing instances"):
       val box = summonInline[CommutativeSemigroup[BoxMul]]
       assert(box.combine(Box(Mul(5)), Box(Mul(5))).content.value == 25)
-    }
 
-  locally {
+  locally:
     import auto.commutativeSemigroup.given
     validate("auto.commutativeSemigroup")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.commutativeSemigroup")
-  }
 
-  locally {
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.commutativeSemigroup")
+    testNoInstance("strict.semiauto.commutativeSemigroup", "Top")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.commutativeSemigroup"
     checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeSemigroup)
     checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeSemigroup)
     checkAll(s"$instance is Serializable", SerializableTests.serializable(CommutativeSemigroup[CommutativeFoo]))
-  }
 
 end CommutativeSemigroupSuite
 
@@ -69,6 +70,11 @@ object CommutativeSemigroupSuite:
     given CommutativeSemigroup[CommutativeFoo] = semiauto.commutativeSemigroup
     given CommutativeSemigroup[Recursive] = semiauto.commutativeSemigroup
     given CommutativeSemigroup[BoxMul] = semiauto.commutativeSemigroup
+
+  object strictInstances:
+    given CommutativeSemigroup[CommutativeFoo] = strict.semiauto.commutativeSemigroup
+    given CommutativeSemigroup[Recursive] = strict.semiauto.commutativeSemigroup
+    given CommutativeSemigroup[BoxMul] = strict.semiauto.commutativeSemigroup
 
   object derivedInstances:
     case class CommutativeFoo(x: ADTs.CommutativeFoo) derives CommutativeSemigroup

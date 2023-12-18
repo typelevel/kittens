@@ -64,6 +64,8 @@ object strict:
   extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup.strict[A]
   extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid.strict[A]
   extension (x: Order.type) inline def derived[A]: Order[A] = DerivedOrder.strict[A]
+  extension (x: CommutativeSemigroup.type)
+    inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
@@ -72,6 +74,7 @@ object strict:
     inline def semigroup[A]: Semigroup[A] = DerivedSemigroup.strict[A]
     inline def monoid[A]: Monoid[A] = DerivedMonoid.strict[A]
     inline def order[A]: Order[A] = DerivedOrder.strict[A]
+    inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
 
 object auto:
   object eq:

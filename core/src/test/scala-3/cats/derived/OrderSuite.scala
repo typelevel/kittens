@@ -46,6 +46,11 @@ class OrderSuite extends KittensSuite:
     validate("semiauto.order")
 
   locally:
+    import strictInstances.given
+    validate("strict.semiauto.order")
+    testNoInstance("strict.semiauto.order", "Top")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.order"
     checkAll(s"$instance[Inner]", tests[Inner].order)
@@ -70,6 +75,17 @@ object OrderSuite:
     given Order[GenericAdt[Int]] = semiauto.order
     given Order[EnumK0] = semiauto.order
     given Order[Singletons[Int]] = semiauto.order
+
+  object strictInstances:
+    given Order[Inner] = strict.semiauto.order
+    given Order[Outer] = strict.semiauto.order
+    given Order[Interleaved[Int]] = strict.semiauto.order
+    given Order[Recursive] = strict.semiauto.order
+    given Order[GenericAdt[Int]] = strict.semiauto.order
+    given Order[EnumK0] = strict.semiauto.order
+    given Order[Singletons[Int]] =
+      given [A <: Singleton: ValueOf]: Order[A] = Order.allEqual
+      strict.semiauto.order
 
   object derivedInstances:
     case class Inner(x: ADTs.Inner) derives Order

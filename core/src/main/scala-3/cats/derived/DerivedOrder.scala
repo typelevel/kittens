@@ -19,12 +19,16 @@ object DerivedOrder:
     import DerivedOrder.given
     summonInline[DerivedOrder[A]].instance
 
+  inline def strict[A]: Order[A] =
+    import DerivedOrder.given
+    import Strict.product
+    summonInline[DerivedOrder[A]].instance
+
   given singleton[A <: Singleton: ValueOf]: DerivedOrder[A] =
     Order.allEqual
 
   given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedOrder[A] =
-    given K0.ProductInstances[Order, A] = inst.unify
-    new Product[Order, A] {}
+    Strict.product(using inst.unify)
 
   given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedOrder[A] =
     given K0.CoproductInstances[Order, A] = inst.unify
@@ -42,3 +46,7 @@ object DerivedOrder:
     def compare(x: A, y: A): Int =
       inst.fold2(x, y)((x: Int, y: Int) => x - y):
         [t] => (ord: T[t], t0: t, t1: t) => ord.compare(t0, t1)
+
+  object Strict:
+    given product[A](using => K0.ProductInstances[Order, A]): DerivedOrder[A] =
+      new Product[Order, A] {}

@@ -77,15 +77,14 @@ object OrderSuite:
     given Order[Singletons[Int]] = semiauto.order
 
   object strictInstances:
+    given [A <: Singleton: ValueOf]: Order[A] = Order.allEqual
     given Order[Inner] = strict.semiauto.order
     given Order[Outer] = strict.semiauto.order
     given Order[Interleaved[Int]] = strict.semiauto.order
     given Order[Recursive] = strict.semiauto.order
     given Order[GenericAdt[Int]] = strict.semiauto.order
     given Order[EnumK0] = strict.semiauto.order
-    given Order[Singletons[Int]] =
-      given [A <: Singleton: ValueOf]: Order[A] = Order.allEqual
-      strict.semiauto.order
+    given Order[Singletons[Int]] = strict.semiauto.order
 
   object derivedInstances:
     case class Inner(x: ADTs.Inner) derives Order

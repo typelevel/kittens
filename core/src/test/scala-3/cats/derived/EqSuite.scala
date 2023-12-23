@@ -80,6 +80,7 @@ object EqSuite:
     given Eq[Singletons[Int]] = semiauto.eq
 
   object strictInstances:
+    given [A <: Singleton: ValueOf]: Eq[A] = Eq.allEqual
     given Eq[Foo] = strict.semiauto.eq
     given Eq[IList[Int]] = strict.semiauto.eq
     given Eq[Inner] = strict.semiauto.eq
@@ -87,9 +88,7 @@ object EqSuite:
     given Eq[Interleaved[Int]] = strict.semiauto.eq
     given Eq[Tree[Int]] = strict.semiauto.eq
     given Eq[Recursive] = strict.semiauto.eq
-    given Eq[Singletons[Int]] =
-      given [A <: Singleton: ValueOf]: Eq[A] = Eq.allEqual
-      strict.semiauto.eq
+    given Eq[Singletons[Int]] = strict.semiauto.eq
 
   object derivedInstances:
     case class Foo(x: ADTs.Foo) derives Eq

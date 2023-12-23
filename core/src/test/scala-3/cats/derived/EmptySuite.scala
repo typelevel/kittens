@@ -93,9 +93,8 @@ object EmptySuite:
 
   object strictInstances:
     given Empty[Foo] = strict.semiauto.empty
-    given Empty[Outer] =
-      given Empty[Inner] = strict.semiauto.empty
-      strict.semiauto.empty
+    given Empty[Inner] = strict.semiauto.empty
+    given Empty[Outer] = strict.semiauto.empty
     given Empty[Interleaved[String]] = strict.semiauto.empty
     given Empty[Recursive] = strict.semiauto.empty
     given Empty[IList[Dummy]] = strict.semiauto.empty

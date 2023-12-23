@@ -19,6 +19,12 @@ object DerivedShow:
     import DerivedShow.given
     summonInline[DerivedShow[A]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[A]: Show[A] =
+    import DerivedShow.given
+    import Strict.product
+    summonInline[DerivedShow[A]].instance
+
   // These instances support singleton types unlike the instances in Cats' core.
   given boolean[A <: Boolean]: DerivedShow[A] = Show.fromToString
   given byte[A <: Byte]: DerivedShow[A] = Show.fromToString
@@ -31,13 +37,23 @@ object DerivedShow:
   given string[A <: String]: DerivedShow[A] = Show.fromToString
   given symbol[A <: Symbol]: DerivedShow[A] = Show.fromToString
 
-  given [A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]): DerivedShow[A] =
+  given product[A: Labelling](using inst: K0.ProductInstances[Or, A]): DerivedShow[A] =
     given K0.ProductInstances[Show, A] = inst.unify
-    new Product[Show, A] {}
+    Strict.product
 
-  given [A](using inst: => K0.CoproductInstances[Or, A]): DerivedShow[A] =
+  given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedShow[A] =
     given K0.CoproductInstances[Show, A] = inst.unify
     new Coproduct[Show, A] {}
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedShow_A[A](using
+      inst: K0.ProductInstances[Or, A],
+      labelling: Labelling[A]
+  ): DerivedShow[A] = product
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedShow_A[A](using => K0.CoproductInstances[Or, A]): DerivedShow[A] =
+    coproduct
 
   trait Product[F[x] <: Show[x], A](using inst: K0.ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
     def show(a: A): String =
@@ -64,3 +80,7 @@ object DerivedShow:
   trait Coproduct[F[x] <: Show[x], A](using inst: K0.CoproductInstances[F, A]) extends Show[A]:
     def show(a: A): String =
       inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))
+
+  object Strict:
+    given product[A: Labelling](using K0.ProductInstances[Show, A]): DerivedShow[A] =
+      new Product[Show, A] {}

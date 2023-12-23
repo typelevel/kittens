@@ -64,6 +64,7 @@ object HashSuite:
     given Hash[Singletons[Int]] = semiauto.hash
 
   object strictInstances:
+    given [A <: Singleton: ValueOf]: Hash[A] = Hash.fromUniversalHashCode
     given Hash[IList[Int]] = strict.semiauto.hash
     given Hash[Inner] = strict.semiauto.hash
     given Hash[Outer] = strict.semiauto.hash
@@ -71,9 +72,7 @@ object HashSuite:
     given Hash[Tree[Int]] = strict.semiauto.hash
     given Hash[Recursive] = strict.semiauto.hash
     given Hash[EnumK0] = strict.semiauto.hash
-    given Hash[Singletons[Int]] =
-      given [A <: Singleton: ValueOf]: Hash[A] = Hash.fromUniversalHashCode
-      strict.semiauto.hash
+    given Hash[Singletons[Int]] = strict.semiauto.hash
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Hash

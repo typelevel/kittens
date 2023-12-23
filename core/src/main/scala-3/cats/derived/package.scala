@@ -60,25 +60,27 @@ object semiauto:
 object strict:
   extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq.strict[A]
   extension (x: Hash.type) inline def derived[A]: Hash[A] = DerivedHash.strict[A]
+  extension (x: PartialOrder.type) inline def derived[A]: PartialOrder[A] = DerivedPartialOrder.strict[A]
+  extension (x: Order.type) inline def derived[A]: Order[A] = DerivedOrder.strict[A]
+  extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow.strict[A]
   extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty.strict[A]
   extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup.strict[A]
   extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid.strict[A]
-  extension (x: Order.type) inline def derived[A]: Order[A] = DerivedOrder.strict[A]
   extension (x: CommutativeSemigroup.type)
     inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
   extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
-  extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow.strict[A]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
     inline def hash[A]: Hash[A] = DerivedHash.strict[A]
+    inline def partialOrder[A]: PartialOrder[A] = DerivedPartialOrder.strict[A]
+    inline def order[A]: Order[A] = DerivedOrder.strict[A]
+    inline def show[A]: Show[A] = DerivedShow.strict[A]
     inline def empty[A]: Empty[A] = DerivedEmpty.strict[A]
     inline def semigroup[A]: Semigroup[A] = DerivedSemigroup.strict[A]
     inline def monoid[A]: Monoid[A] = DerivedMonoid.strict[A]
-    inline def order[A]: Order[A] = DerivedOrder.strict[A]
     inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
     inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
-    inline def show[A]: Show[A] = DerivedShow.strict[A]
 
 object auto:
   object eq:

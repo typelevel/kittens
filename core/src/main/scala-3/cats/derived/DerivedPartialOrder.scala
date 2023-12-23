@@ -19,12 +19,16 @@ object DerivedPartialOrder:
     import DerivedPartialOrder.given
     summonInline[DerivedPartialOrder[A]].instance
 
+  inline def strict[A]: PartialOrder[A] =
+    import DerivedPartialOrder.given
+    import Strict.product
+    summonInline[DerivedPartialOrder[A]].instance
+
   given singleton[A <: Singleton: ValueOf]: DerivedPartialOrder[A] =
     Order.allEqual
 
   given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedPartialOrder[A] =
-    given K0.ProductInstances[PartialOrder, A] = inst.unify
-    new Product[PartialOrder, A] {}
+    Strict.product(using inst.unify)
 
   given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedPartialOrder[A] =
     given K0.CoproductInstances[PartialOrder, A] = inst.unify
@@ -42,3 +46,7 @@ object DerivedPartialOrder:
     def partialCompare(x: A, y: A): Double =
       inst.fold2(x, y)(Double.NaN: Double):
         [t] => (ord: T[t], t0: t, t1: t) => ord.partialCompare(t0, t1)
+
+  object Strict:
+    given product[A](using => K0.ProductInstances[PartialOrder, A]): DerivedPartialOrder[A] =
+      new Product[PartialOrder, A] {}

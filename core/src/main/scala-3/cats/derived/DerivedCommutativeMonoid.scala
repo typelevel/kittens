@@ -17,10 +17,18 @@ object DerivedCommutativeMonoid:
     import DerivedCommutativeMonoid.given
     summonInline[DerivedCommutativeMonoid[A]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[A]: CommutativeMonoid[A] =
+    import Strict.given
+    summonInline[DerivedCommutativeMonoid[A]].instance
+
   given [A](using inst: => K0.ProductInstances[Or, A]): DerivedCommutativeMonoid[A] =
-    given K0.ProductInstances[CommutativeMonoid, A] = inst.unify
-    new Product[CommutativeMonoid, A] {}
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: CommutativeMonoid[x], A](using @unused inst: K0.ProductInstances[F, A])
       extends DerivedMonoid.Product[F, A],
         CommutativeMonoid[A]
+
+  object Strict:
+    given product[A](using => K0.ProductInstances[CommutativeMonoid, A]): DerivedCommutativeMonoid[A] =
+      new Product[CommutativeMonoid, A] {}

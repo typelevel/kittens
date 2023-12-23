@@ -34,7 +34,6 @@ object Derived:
     final protected lazy val delegate: A = f()
 
 sealed abstract class OrInstances:
-  inline given [A]: Derived.Or[A] = summonFrom {
+  inline given [A]: Derived.Or[A] = summonFrom:
     case instance: A => Derived.Or(instance)
     case derived: Derived[A] => Derived.Or(derived.instance)
-  }

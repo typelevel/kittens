@@ -12,6 +12,7 @@ trait ShowPretty[A] extends Show[A]:
 
 object ShowPretty:
   inline def apply[A](using A: ShowPretty[A]): A.type = A
+  def fromToString[A]: ShowPretty[A] = _.toString :: Nil
 
 @implicitNotFound("""Could not derive an instance of ShowPretty[A] where A = ${A}.
 Make sure that A satisfies one of the following conditions:
@@ -25,7 +26,7 @@ object DerivedShowPretty:
     inline given [A]: Or[A] = summonFrom:
       case instance: Show[A] => fromShow(instance)
       case derived: DerivedShowPretty[A] => fromShow(derived.instance)
-    private def fromShow[A](instance: Show[A]): Or[A] = instance match
+    private[derived] def fromShow[A](instance: Show[A]): Or[A] = instance match
       case pretty: ShowPretty[A] => pretty.showLines
       case _ => instance.show(_).split(System.lineSeparator).toList
 
@@ -34,26 +35,38 @@ object DerivedShowPretty:
     import DerivedShowPretty.given
     summonInline[DerivedShowPretty[A]].instance
 
-  private def fromToString[A]: ShowPretty[A] =
-    _.toString :: Nil
+  inline def strict[A]: ShowPretty[A] =
+    import DerivedShowPretty.given
+    import Strict.product
+    summonInline[DerivedShowPretty[A]].instance
 
   // These instances support singleton types unlike the instances in Cats' core.
-  given boolean[A <: Boolean]: DerivedShowPretty[A] = fromToString
-  given byte[A <: Byte]: DerivedShowPretty[A] = fromToString
-  given short[A <: Short]: DerivedShowPretty[A] = fromToString
-  given int[A <: Int]: DerivedShowPretty[A] = fromToString
-  given long[A <: Long]: DerivedShowPretty[A] = fromToString
-  given float[A <: Float]: DerivedShowPretty[A] = fromToString
-  given double[A <: Double]: DerivedShowPretty[A] = fromToString
-  given char[A <: Char]: DerivedShowPretty[A] = fromToString
-  given string[A <: String]: DerivedShowPretty[A] = fromToString
-  given symbol[A <: Symbol]: DerivedShowPretty[A] = fromToString
+  given boolean[A <: Boolean]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given byte[A <: Byte]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given short[A <: Short]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given int[A <: Int]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given long[A <: Long]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given float[A <: Float]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given double[A <: Double]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given char[A <: Char]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given string[A <: String]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given symbol[A <: Symbol]: DerivedShowPretty[A] = ShowPretty.fromToString
 
-  given [A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]): DerivedShowPretty[A] =
+  given product[A: Labelling](using K0.ProductInstances[Or, A]): DerivedShowPretty[A] =
     new Product[A] {}
 
-  given [A](using inst: => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] =
+  given coproduct[A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] =
     new Coproduct[A] {}
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedShowPretty_A[A](using
+      K0.ProductInstances[Or, A],
+      Labelling[A]
+  ): DerivedShowPretty[A] = product
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedShowPretty_A[A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] =
+    coproduct
 
   trait Product[A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =
@@ -78,3 +91,8 @@ object DerivedShowPretty:
   trait Coproduct[A](using inst: K0.CoproductInstances[Or, A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =
       inst.fold(a)([t] => (st: Or[t], t: t) => st.apply(t))
+
+  object Strict:
+    given product[A: Labelling](using inst: K0.ProductInstances[Show, A]): DerivedShowPretty[A] =
+      given K0.ProductInstances[Or, A] = inst.mapK([t] => (show: Show[t]) => Or.fromShow(show))
+      DerivedShowPretty.product

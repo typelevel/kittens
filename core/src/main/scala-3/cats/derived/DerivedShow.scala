@@ -46,10 +46,8 @@ object DerivedShow:
     new Coproduct[Show, A] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedShow_A[A](using
-      inst: K0.ProductInstances[Or, A],
-      labelling: Labelling[A]
-  ): DerivedShow[A] = product
+  private[derived] def given_DerivedShow_A[A](using K0.ProductInstances[Or, A], Labelling[A]): DerivedShow[A] =
+    product
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   private[derived] def given_DerivedShow_A[A](using => K0.CoproductInstances[Or, A]): DerivedShow[A] =

@@ -162,6 +162,11 @@ class ShowPrettySuite extends KittensSuite:
     import semiInstances.given
     validate("semiauto.showPretty")
 
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.showPretty")
+    testNoInstance("strict.semiauto.showPretty", "Top")
+
 end ShowPrettySuite
 
 object ShowPrettySuite:
@@ -186,6 +191,22 @@ object ShowPrettySuite:
     given ShowPretty[Tree[Int]] = semiauto.showPretty
     given ShowPretty[Singletons[Int]] = semiauto.showPretty
     given ShowPretty[Box[Bogus]] = semiauto.showPretty
+
+  object strictInstances:
+    given [A <: Singleton: ValueOf]: ShowPretty[A] = ShowPretty.fromToString
+    given ShowPretty[Foo] = strict.semiauto.showPretty
+    given ShowPretty[Inner] = strict.semiauto.showPretty
+    given ShowPretty[Outer] = strict.semiauto.showPretty
+    given ShowPretty[IntTree] = strict.semiauto.showPretty
+    given ShowPretty[GenericAdt[Int]] = strict.semiauto.showPretty
+    given ShowPretty[ContactInfo] = strict.semiauto.showPretty
+    given ShowPretty[People] = strict.semiauto.showPretty
+    given ShowPretty[ListFieldChild] = strict.semiauto.showPretty
+    given ShowPretty[ListField] = strict.semiauto.showPretty
+    given ShowPretty[Interleaved[Int]] = strict.semiauto.showPretty
+    given ShowPretty[Tree[Int]] = strict.semiauto.showPretty
+    given ShowPretty[Singletons[Int]] = strict.semiauto.showPretty
+    given ShowPretty[Box[Bogus]] = strict.semiauto.showPretty
 
   object derivedInstances:
     case class Foo(x: ADTs.Foo) derives ShowPretty

@@ -35,6 +35,7 @@ object DerivedShowPretty:
     import DerivedShowPretty.given
     summonInline[DerivedShowPretty[A]].instance
 
+  @nowarn("msg=unused import")
   inline def strict[A]: ShowPretty[A] =
     import DerivedShowPretty.given
     import Strict.product

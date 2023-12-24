@@ -19,6 +19,7 @@ object DerivedPartialOrder:
     import DerivedPartialOrder.given
     summonInline[DerivedPartialOrder[A]].instance
 
+  @nowarn("msg=unused import")
   inline def strict[A]: PartialOrder[A] =
     import DerivedPartialOrder.given
     import Strict.product

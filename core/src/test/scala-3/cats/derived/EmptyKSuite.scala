@@ -42,24 +42,26 @@ class EmptyKSuite extends KittensSuite:
     test(s"$instance respects existing instances")(assert(emptyK[BoxColor] == Box(Color(255, 255, 255))))
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[EmptyK[LOption]]))
 
-  locally {
+  locally:
     import auto.emptyK.given
     validate("auto.emptyK")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.emptyK")
-  }
 
-  locally {
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.emptyK")
+    testNoInstance("strict.semiauto.emptyK", "TopK")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.emptyK"
     test(s"$instance[CaseClassWOption]")(assert(emptyK[CaseClassWOption].x.value.isEmpty))
     test(s"$instance[IList]")(assert(emptyK[IList].x == INil()))
     test(s"$instance[Snoc]")(assert(emptyK[Snoc].x == SNil()))
     checkAll(s"$instance is Serializable", SerializableTests.serializable(EmptyK[Snoc]))
-  }
 
 end EmptyKSuite
 
@@ -79,6 +81,15 @@ object EmptyKSuite:
     given EmptyK[IList] = semiauto.emptyK
     given EmptyK[Snoc] = semiauto.emptyK
     given EmptyK[BoxColor] = semiauto.emptyK
+
+  object strictInstances:
+    given EmptyK[LOption] = strict.semiauto.emptyK
+    given EmptyK[PList] = strict.semiauto.emptyK
+    given EmptyK[CaseClassWOption] = strict.semiauto.emptyK
+    given EmptyK[NelOption] = strict.semiauto.emptyK
+    given EmptyK[IList] = strict.semiauto.emptyK
+    given EmptyK[Snoc] = strict.semiauto.emptyK
+    given EmptyK[BoxColor] = strict.semiauto.emptyK
 
   object derivedInstances:
     case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives EmptyK

@@ -69,7 +69,7 @@ abstract private[derived] class MkContravariantCons extends MkContravariantGener
           for {
             fhb <- mkContraSafe(F.fh)(fha)(f)
             ftb <- F.ft.safeContramap(fta)(f)
-          } yield F.pack(fhb, ftb)
+          } yield F.pack((fhb, ftb))
         }
     }
 

@@ -36,7 +36,7 @@ class PureSuite extends KittensSuite {
       boxColor: Pure[BoxColor]
   ): Unit = {
     test(s"$context.Pure[LOption]")(assert(lOption.pure(42) == Some(42) :: Nil))
-    test(s"$context.Pure[PList]")(assert(pList.pure("Scala") == ("Scala" :: Nil, "Scala" :: Nil)))
+    test(s"$context.Pure[PList]")(assert(pList.pure("Scala") == (("Scala" :: Nil, "Scala" :: Nil))))
     test(s"$context.Pure[CaseClassWOption]")(assert(caseClassWOption.pure(3.14) == CaseClassWOption(Some(3.14))))
     test(s"$context.Pure[NelOption]")(assert(nelOption.pure(42) == NonEmptyList.of(Some(42))))
     test(s"$context.Pure[Interleaved]")(assert(interleaved.pure('x') == Interleaved(0, 'x', 0, 'x' :: Nil, "")))

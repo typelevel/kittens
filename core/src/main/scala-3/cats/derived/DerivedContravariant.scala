@@ -3,7 +3,7 @@ package cats.derived
 import cats.Contravariant
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Contravariant[F] where F = ${F}.
@@ -15,6 +15,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedContravariant[F[_]] = Derived[Contravariant[F]]
 object DerivedContravariant:
   type Or[F[_]] = Derived.Or[Contravariant[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: Contravariant[F] =
     import DerivedContravariant.given
     summonInline[DerivedContravariant[F]].instance

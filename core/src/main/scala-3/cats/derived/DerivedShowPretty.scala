@@ -3,7 +3,7 @@ package cats.derived
 import cats.Show
 import shapeless3.deriving.{K0, Labelling}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 trait ShowPretty[A] extends Show[A]:
@@ -29,6 +29,7 @@ object DerivedShowPretty:
       case pretty: ShowPretty[A] => pretty.showLines
       case _ => instance.show(_).split(System.lineSeparator).toList
 
+  @nowarn("msg=unused import")
   inline def apply[A]: ShowPretty[A] =
     import DerivedShowPretty.given
     summonInline[DerivedShowPretty[A]].instance

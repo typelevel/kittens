@@ -16,7 +16,7 @@
 
 package cats.derived
 
-import cats.kernel.{CommutativeMonoid, CommutativeSemigroup}
+import cats.kernel.CommutativeMonoid
 import cats.kernel.laws.discipline.*
 import scala.compiletime.*
 

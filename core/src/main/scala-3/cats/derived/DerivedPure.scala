@@ -3,7 +3,7 @@ package cats.derived
 import alleycats.{Empty, Pure}
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.summonInline
 
 @implicitNotFound("""Could not derive an instance of Pure[F] where F = ${F}.
@@ -14,6 +14,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedPure[F[_]] = Derived[Pure[F]]
 object DerivedPure:
   type Or[F[_]] = Derived.Or[Pure[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: Pure[F] =
     import DerivedPure.given
     summonInline[DerivedPure[F]].instance

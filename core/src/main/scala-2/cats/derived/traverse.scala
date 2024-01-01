@@ -66,7 +66,7 @@ abstract private[derived] class MkTraverseCons extends MkTraverseGeneric {
           for {
             gfhb <- mkSafeTraverse(F.fh)(fha)(f)
             gftb <- F.ft.safeTraverse(fta)(f)
-          } yield G.map2(gfhb, gftb)(F.pack(_, _))
+          } yield G.map2(gfhb, gftb)(Function.untupled(F.pack))
         }
 
       def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]) =

@@ -12,8 +12,6 @@ import org.scalacheck.Prop.forAll
 import shapeless._
 import shapeless.record.Record
 
-import scala.annotation.nowarn
-
 class SequenceSuite extends KittensSuite {
   import SequenceSuite._
 
@@ -24,7 +22,6 @@ class SequenceSuite extends KittensSuite {
   // However, we can explicitly grab the Sequencer for Option and use it.
   test("sequencing HNil") {
     assert(implicitly[Sequencer.Aux[Option, HNil, HNil]].apply(HNil).contains(HNil))
-    @nowarn("cat=deprecation")
     val stream = implicitly[Sequencer.Aux[Stream, HNil, HNil]].parApply(HNil)
     assertEquals(stream(42), HNil)
   }
@@ -51,13 +48,10 @@ class SequenceSuite extends KittensSuite {
   }
 
   property("parallel sequencing Stream") {
-    @nowarn("cat=deprecation")
-    val prop = forAll { (x: Stream[Int], y: Stream[String], z: Stream[Float]) =>
+    forAll { (x: Stream[Int], y: Stream[String], z: Stream[Float]) =>
       val expected = (x, y, z).parMapN(_ :: _ :: _ :: HNil)
       parSequence(x, y, z) == expected && (x :: y :: z :: HNil).parSequence == expected
     }
-
-    prop
   }
 
   property("sequencing Validated") {
@@ -125,14 +119,11 @@ class SequenceSuite extends KittensSuite {
   }
 
   property("parallel sequencing record of Stream") {
-    @nowarn("cat=deprecation")
-    val prop = forAll { (x: Stream[Int], y: Stream[String], z: Stream[Float]) =>
+    forAll { (x: Stream[Int], y: Stream[String], z: Stream[Float]) =>
       val expected = (x, y, z).parMapN((a, b, c) => Record(a = a, b = b, c = c))
       parSequenceNamed(a = x, b = y, c = z) == expected &&
       Record(a = x, b = y, c = z).parSequence == expected
     }
-
-    prop
   }
 
   property("sequencing record of Validated") {
@@ -215,16 +206,13 @@ class SequenceSuite extends KittensSuite {
   }
 
   property("parallel sequencing to case class of Stream") {
-    @nowarn("cat=deprecation")
-    val prop = forAll { (x: Stream[Int], y: Stream[String], z: Stream[Float]) =>
+    forAll { (x: Stream[Int], y: Stream[String], z: Stream[Float]) =>
       val expected = (x, y, z).parMapN(MyCase)
       sequenceTo[MyCase].par(x, y, z) == expected &&
       sequenceTo[MyCase].parNamed(a = x, b = y, c = z) == expected &&
       (x :: y :: z :: HNil).parSequenceTo[Stream, MyCase] == expected &&
       Record(a = x, b = y, c = z).parSequenceTo[Stream, MyCase] == expected
     }
-
-    prop
   }
 
   property("sequencing to case class of Validated") {

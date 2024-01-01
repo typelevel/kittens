@@ -74,12 +74,12 @@ abstract private[derived] class MkMonoidKGeneric {
 
   implicit def mkMonoidKHcons[F[_]](implicit F: IsHCons1[F, MonoidKOrMk, MkMonoidK]): MkMonoidK[F] =
     new MkMonoidK[F] {
-      def empty[A] = F.pack(F.fh.unify.empty, F.ft.empty)
+      def empty[A] = F.pack((F.fh.unify.empty, F.ft.empty))
 
       def combineK[A](x: F[A], y: F[A]) = {
         val (fhx, ftx) = F.unpack(x)
         val (fhy, fty) = F.unpack(y)
-        F.pack(F.fh.unify.combineK(fhx, fhy), F.ft.combineK(ftx, fty))
+        F.pack((F.fh.unify.combineK(fhx, fhy), F.ft.combineK(ftx, fty)))
       }
     }
 

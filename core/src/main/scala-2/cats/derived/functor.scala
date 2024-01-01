@@ -90,7 +90,7 @@ abstract private[derived] class MkFunctorCons extends MkFunctorGeneric {
           for {
             fhb <- mkSafeMap(F.fh)(fha)(f)
             ftb <- F.ft.safeMap(fta)(f)
-          } yield F.pack(fhb, ftb)
+          } yield F.pack((fhb, ftb))
         }
     }
 

@@ -1,9 +1,9 @@
 package cats.derived
 
 import cats.{Eval, Foldable, Reducible}
-import shapeless3.deriving.{Continue, Const, K1}
+import shapeless3.deriving.{Continue, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Reducible[F] where F = ${F}.
@@ -14,6 +14,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedReducible[F[_]] = Derived[Reducible[F]]
 object DerivedReducible:
   type Or[F[_]] = Derived.Or[Reducible[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: Reducible[F] =
     import DerivedFoldable.given
     import DerivedReducible.given
@@ -37,7 +39,7 @@ object DerivedReducible:
   @deprecated("Kept for binary compatibility", "3.2.0")
   private[derived] def given_DerivedReducible_F[F[_]: Or, G[_]: Or]: DerivedReducible[[x] =>> F[G[x]]] = summon
 
-  trait Product[T[f[_]] <: Foldable[f], F[_]](ev: Reducible[?])(using inst: K1.ProductInstances[T, F])
+  trait Product[T[f[_]] <: Foldable[f], F[_]](@unused ev: Reducible[?])(using inst: K1.ProductInstances[T, F])
       extends DerivedFoldable.Product[T, F],
         Reducible[F]:
 

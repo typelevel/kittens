@@ -1,9 +1,9 @@
 package cats.derived
 
-import cats.{Applicative, Apply, Eval, NonEmptyTraverse, Traverse}
+import cats.{Applicative, Apply, NonEmptyTraverse, Traverse}
 import shapeless3.deriving.K1
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of NonEmptyTraverse[F] where F = ${F}.
@@ -14,6 +14,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedNonEmptyTraverse[F[_]] = Derived[NonEmptyTraverse[F]]
 object DerivedNonEmptyTraverse:
   type Or[F[_]] = Derived.Or[NonEmptyTraverse[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: NonEmptyTraverse[F] =
     import DerivedTraverse.given
     import DerivedNonEmptyTraverse.given
@@ -46,8 +48,8 @@ object DerivedNonEmptyTraverse:
   private[derived] def given_DerivedNonEmptyTraverse_F[F[_]: Or, G[_]: Or]: DerivedNonEmptyTraverse[[x] =>> F[G[x]]] =
     summon
 
-  trait Product[T[x[_]] <: Traverse[x], F[_]](ev: NonEmptyTraverse[?])(using
-      inst: K1.ProductInstances[T, F]
+  trait Product[T[x[_]] <: Traverse[x], F[_]](@unused ev: NonEmptyTraverse[?])(using
+      @unused inst: K1.ProductInstances[T, F]
   ) extends NonEmptyTraverse[F],
         DerivedReducible.Product[T, F],
         DerivedTraverse.Product[T, F]:

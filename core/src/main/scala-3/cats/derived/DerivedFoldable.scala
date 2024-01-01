@@ -3,7 +3,7 @@ package cats.derived
 import cats.{Eval, Foldable}
 import shapeless3.deriving.{Const, Continue, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Foldable[F] where F = ${F}.
@@ -15,6 +15,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedFoldable[F[_]] = Derived[Foldable[F]]
 object DerivedFoldable:
   type Or[F[_]] = Derived.Or[Foldable[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: Foldable[F] =
     import DerivedFoldable.given
     summonInline[DerivedFoldable[F]].instance

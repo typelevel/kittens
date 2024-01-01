@@ -73,7 +73,7 @@ abstract private[derived] class MkNonEmptyTraverseBase extends MkNonEmptyTravers
           gfhb <- mkSafeNonEmptyTraverse(F.fh)(fha)(f)
           gftb <- F.ft.safeTraverse(fta)(f(_).map[G OrPure B](Left.apply))
         } yield gftb match {
-          case Left(gftb) => G.map2(gfhb, gftb)(F.pack(_, _))
+          case Left(gftb) => G.map2(gfhb, gftb)(Function.untupled(F.pack))
           case Right(ftb) => G.map(gfhb)(fhb => F.pack(fhb -> ftb))
         }
       }
@@ -99,7 +99,7 @@ abstract private[derived] class MkNonEmptyTraverseCons extends MkNonEmptyTravers
           gfhb <- MkTraverse.mkSafeTraverse(F.fh)(fha)(f(_).map[G OrPure B](Left.apply))
           gftb <- F.ft.safeNonEmptyTraverse(fta)(f)
         } yield gfhb match {
-          case Left(gfhb) => G.map2(gfhb, gftb)(F.pack(_, _))
+          case Left(gfhb) => G.map2(gfhb, gftb)(Function.untupled(F.pack))
           case Right(fhb) => G.map(gftb)(ftb => F.pack(fhb -> ftb))
         }
       }

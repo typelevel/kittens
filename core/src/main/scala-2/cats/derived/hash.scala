@@ -1,7 +1,7 @@
 package cats
 package derived
 
-import scala.annotation.{implicitNotFound, tailrec}
+import scala.annotation._
 import scala.util.hashing.MurmurHash3
 
 @implicitNotFound("""Could not derive an instance of Hash[A] where A = ${A}.
@@ -82,7 +82,7 @@ abstract private[derived] class MkHashDerivation extends MkHashGenericProduct {
     }
   )
 
-  implicit def mkHashCaseObject[A](implicit A: Generic.Aux[A, HNil]): MkHash[A] =
+  implicit def mkHashCaseObject[A](implicit @nowarn("cat=unused") A: Generic.Aux[A, HNil]): MkHash[A] =
     instance(_.hashCode, (_, _) => true)
 }
 

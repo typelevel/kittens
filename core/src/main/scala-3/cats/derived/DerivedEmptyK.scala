@@ -1,6 +1,6 @@
 package cats.derived
 
-import alleycats.{Empty, EmptyK, Pure}
+import alleycats.{Empty, EmptyK}
 import shapeless3.deriving.{Const, K1}
 
 import scala.annotation.implicitNotFound
@@ -21,21 +21,32 @@ object DerivedEmptyK:
     import DerivedEmptyK.given
     summonInline[DerivedEmptyK[F]].instance
 
-  given [T](using T: Empty[T]): DerivedEmptyK[Const[T]] =
-    new EmptyK[Const[T]]:
-      def empty[A] = T.empty
+  given [T](using T: Empty[T]): DerivedEmptyK[Const[T]] = new EmptyK[Const[T]]:
+    def empty[A]: T = T.empty
 
-  given [F[_], G[_]](using F: Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
-    new EmptyK[[x] =>> F[G[x]]]:
-      def empty[A] = F.unify.empty
+  given nested[F[_], G[_]](using F: => Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] = new EmptyK[[x] =>> F[G[x]]]:
+    lazy val f = F.unify
+    def empty[A]: F[G[A]] = f.empty
 
-  given [F[_], G[_]](using NotGiven[Or[F]])(using F: DerivedPure.Or[F], G: Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] =
-    new EmptyK[[x] =>> F[G[x]]]:
-      def empty[A] = F.unify.pure(G.unify.empty)
+  given nested[F[_], G[_]](using NotGiven[Or[F]])(using
+      F: DerivedPure.Or[F],
+      G: => Or[G]
+  ): DerivedEmptyK[[x] =>> F[G[x]]] = new EmptyK[[x] =>> F[G[x]]]:
+    val f = F.unify
+    lazy val g = G.unify
+    def empty[A]: F[G[A]] = f.pure(g.empty)
 
-  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedEmptyK[F] =
-    new EmptyK[F]:
-      def empty[A]: F[A] = inst.unify.construct([f[_]] => (E: EmptyK[f]) => E.empty[A])
+  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedEmptyK[F] = new EmptyK[F]:
+    lazy val f = inst.unify
+    def empty[A]: F[A] = f.construct([f[_]] => (F: EmptyK[f]) => F.empty[A])
 
   inline given coproduct[F[_]](using gen: K1.CoproductGeneric[F]): DerivedEmptyK[F] =
-    gen.withOnly[Or, EmptyK[F]]([f[x] <: F[x]] => (ek: Or[f]) => ek.unify.asInstanceOf[EmptyK[F]])
+    gen.withOnly[Or, EmptyK[F]]([f[x] <: F[x]] => (F: Or[f]) => F.unify.asInstanceOf[EmptyK[F]])
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedEmptyK_F[F[_]: Or, G[_]]: DerivedEmptyK[[x] =>> F[G[x]]] = summon
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedEmptyK_F[F[_]: DerivedPure.Or, G[_]: Or](
+      ev: NotGiven[Or[F]]
+  ): DerivedEmptyK[[x] =>> F[G[x]]] = nested(using ev)

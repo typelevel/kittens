@@ -1,13 +1,10 @@
 package cats.derived
 
-import shapeless3.deriving.{Const, K1}
 import cats.{Applicative, Monoid}
-
-import scala.compiletime.*
-import shapeless3.deriving.{Continue, K0, Labelling}
+import shapeless3.deriving.{Const, K1}
 
 import scala.annotation.implicitNotFound
-import scala.deriving.Mirror
+import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Applicative[F] where F = ${F}.
 Make sure that F[_] satisfies one of the following conditions:
@@ -23,17 +20,21 @@ object DerivedApplicative:
     summonInline[DerivedApplicative[F]].instance
 
   given [T](using T: Monoid[T]): DerivedApplicative[Const[T]] = new Applicative[Const[T]]:
-    def pure[A](x: A): Const[T][A] = T.empty
-    def ap[A, B](ff: T)(fa: T): Const[T][B] = T.combine(ff, fa)
+    def pure[A](x: A): T = T.empty
+    def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
 
-  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedApplicative[[x] =>> F[G[x]]] =
-    F.unify.compose(G.unify)
+  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedApplicative[[x] =>> F[G[x]]] =
+    new Derived.Lazy(() => F.unify.compose(G.unify)) with Applicative[[x] =>> F[G[x]]]:
+      export delegate.*
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApplicative[F] =
     given K1.ProductInstances[Applicative, F] = inst.unify
     new Product[Applicative, F] with DerivedApply.Product[Applicative, F] {}
 
-  trait Product[T[x[_]] <: Applicative[x], F[_]](using inst: K1.ProductInstances[T, F])
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedApplicative_F[F[_]: Or, G[_]: Or]: DerivedApplicative[[x] =>> F[G[x]]] = summon
+
+  trait Product[T[f[_]] <: Applicative[f], F[_]](using inst: K1.ProductInstances[T, F])
       extends Applicative[F],
         DerivedApply.Product[T, F]:
-    override def pure[A](x: A): F[A] = inst.construct([t[_]] => (apl: T[t]) => apl.pure[A](x))
+    final override def pure[A](x: A): F[A] = inst.construct([f[_]] => (F: T[f]) => F.pure[A](x))

@@ -23,8 +23,9 @@ object DerivedFoldable:
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
-  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFoldable[[x] =>> F[G[x]]] =
-    F.unify.compose(G.unify)
+  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedFoldable[[x] =>> F[G[x]]] =
+    new Derived.Lazy(() => F.unify.compose(G.unify)) with Foldable[[x] =>> F[G[x]]]:
+      export delegate.*
 
   given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedFoldable[F] =
     given K1.ProductInstances[Foldable, F] = inst.unify
@@ -34,18 +35,20 @@ object DerivedFoldable:
     given K1.CoproductInstances[Foldable, F] = inst.unify
     new Coproduct[Foldable, F] {}
 
-  trait Product[T[x[_]] <: Foldable[x], F[_]](using inst: K1.ProductInstances[T, F]) extends Foldable[F]:
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedFoldable_F[F[_]: Or, G[_]: Or]: DerivedFoldable[[x] =>> F[G[x]]] = summon
+
+  trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: K1.ProductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-      inst.foldLeft[A, B](fa)(b)([f[_]] => (acc: B, tf: T[f], fa: f[A]) => Continue(tf.foldLeft(fa, acc)(f)))
+      inst.foldLeft(fa)(b)([f[_]] => (b: B, F: T[f], fa: f[A]) => Continue(F.foldLeft(fa, b)(f)))
 
     final override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-      inst.foldRight[A, Eval[B]](fa)(lb)(
-        [f[_]] => (tf: T[f], fa: f[A], acc: Eval[B]) => Continue(Eval.defer(tf.foldRight(fa, acc)(f)))
-      )
+      inst.foldRight(fa)(lb):
+        [f[_]] => (F: T[f], fa: f[A], lb: Eval[B]) => Continue(Eval.defer(F.foldRight(fa, lb)(f)))
 
-  trait Coproduct[T[x[_]] <: Foldable[x], F[_]](using inst: K1.CoproductInstances[T, F]) extends Foldable[F]:
+  trait Coproduct[T[f[_]] <: Foldable[f], F[_]](using inst: K1.CoproductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-      inst.fold[A, B](fa)([f[_]] => (tf: T[f], fa: f[A]) => tf.foldLeft(fa, b)(f))
+      inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => F.foldLeft(fa, b)(f))
 
     final override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-      inst.fold[A, Eval[B]](fa)([f[_]] => (tf: T[f], fa: f[A]) => Eval.defer(tf.foldRight(fa, lb)(f)))
+      inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => Eval.defer(F.foldRight(fa, lb)(f)))

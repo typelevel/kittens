@@ -1,8 +1,9 @@
 package cats.derived
 
 import shapeless3.deriving.*
+
 import scala.annotation.*
-import scala.compiletime.*
+import scala.compiletime.summonFrom
 
 @implicitNotFound("Could not derive an instance of ${A}")
 opaque type Derived[A] = A
@@ -28,6 +29,9 @@ object Derived:
       @targetName("unifyK11") def unify: I[F, T] = inst
     extension [I[f[_[_, _]], t[_, _]] <: K2.Instances[f, t], F[_[_, _]], T[_, _]](inst: I[Or2[F], T])
       @targetName("unifyK2") def unify: I[F, T] = inst
+
+  abstract private[derived] class Lazy[A](f: () => A) extends Serializable:
+    final protected lazy val delegate: A = f()
 
 sealed abstract class OrInstances:
   inline given [A]: Derived.Or[A] = summonFrom {

@@ -24,6 +24,7 @@ class TraverseSuite extends KittensSuite:
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$instance[Singletons]", tests[Singletons].traverse[Int, Double, String, Long, Option, Option])
+    checkAll(s"$instance[Search]", tests[Search].traverse[Int, Double, String, Long, Option, Option])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Traverse[Tree]]))
 
   locally:
@@ -70,6 +71,7 @@ object TraverseSuite:
     given Traverse[AtLeastOne] = semiauto.traverse
     given Traverse[AtMostOne] = semiauto.traverse
     given Traverse[Singletons] = semiauto.traverse
+    given Traverse[Search] = semiauto.traverse
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Traverse

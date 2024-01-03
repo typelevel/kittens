@@ -1,13 +1,10 @@
 package cats.derived
 
-import shapeless3.deriving.{Const, K1}
 import cats.{Apply, Semigroup}
-
-import scala.compiletime.*
-import shapeless3.deriving.{Continue, K0, Labelling}
+import shapeless3.deriving.{Const, K1}
 
 import scala.annotation.implicitNotFound
-import scala.deriving.Mirror
+import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Apply[F] where F = ${F}.
 Make sure that F[_] satisfies one of the following conditions:
@@ -23,18 +20,22 @@ object DerivedApply:
     summonInline[DerivedApply[F]].instance
 
   given [T](using T: Semigroup[T]): DerivedApply[Const[T]] = new Apply[Const[T]]:
-    def ap[A, B](ff: T)(fa: T) = T.combine(ff, fa)
-    def map[A, B](fa: T)(f: A => B) = fa
+    def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
+    def map[A, B](fa: T)(f: A => B): T = fa
 
-  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedApply[[x] =>> F[G[x]]] =
-    F.unify.compose(G.unify)
+  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedApply[[x] =>> F[G[x]]] =
+    new Derived.Lazy(() => F.unify.compose(G.unify)) with Apply[[x] =>> F[G[x]]]:
+      export delegate.*
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApply[F] =
     given K1.ProductInstances[Apply, F] = inst.unify
     new Product[Apply, F] {}
 
-  trait Product[T[x[_]] <: Apply[x], F[_]](using inst: K1.ProductInstances[T, F]) extends Apply[F]:
-    override def ap[A, B](ff: F[A => B])(fa: F[A]): F[B] =
-      inst.map2(ff, fa)([t[_]] => (apl: T[t], tt: t[A => B], ta: t[A]) => apl.ap(tt)(ta))
-    override def map[A, B](fa: F[A])(f: A => B): F[B] =
-      inst.map(fa: F[A])([f[_]] => (tf: T[f], fa: f[A]) => tf.map(fa)(f))
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedApply_F[F[_]: Or, G[_]: Or]: DerivedApply[[x] =>> F[G[x]]] = summon
+
+  trait Product[T[f[_]] <: Apply[f], F[_]](using inst: K1.ProductInstances[T, F]) extends Apply[F]:
+    private lazy val F = new DerivedFunctor.Generic[T, F] {}
+    final override def map[A, B](fa: F[A])(f: A => B): F[B] = F.map(fa)(f)
+    final override def ap[A, B](ff: F[A => B])(fa: F[A]): F[B] =
+      inst.map2(ff, fa)([f[_]] => (F: T[f], ff: f[A => B], fa: f[A]) => F.ap(ff)(fa))

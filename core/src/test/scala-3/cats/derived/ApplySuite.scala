@@ -37,26 +37,24 @@ class ApplySuite extends KittensSuite:
     checkAll(s"$instance[AndInt]", tests[AndInt].apply[Int, String, Long])
     checkAll(s"$instance[Interleaved]", tests[Interleaved].apply[Int, String, Long])
     checkAll(s"$instance[ListBox]", tests[ListBox].apply[Int, String, Long])
+    checkAll(s"$instance[Search]", tests[Search].apply[Int, String, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Apply[Interleaved]]))
 
-  locally {
+  locally:
     import auto.apply.given
     validate("auto.apply")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.apply")
-  }
 
-  locally {
+  locally:
     import derivedInstances.*
     val instance = "derived.apply"
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].apply[Int, String, Long])
     checkAll(s"$instance[AndInt]", tests[AndInt].apply[Int, String, Long])
     checkAll(s"$instance[Interleaved]", tests[Interleaved].apply[Int, String, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Apply[Interleaved]))
-  }
 
 end ApplySuite
 
@@ -74,6 +72,7 @@ object ApplySuite:
     given Apply[AndInt] = semiauto.apply
     given Apply[Interleaved] = semiauto.apply
     given Apply[ListBox] = semiauto.apply
+    given Apply[Search] = semiauto.apply
 
   object derivedInstances:
     case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives Apply

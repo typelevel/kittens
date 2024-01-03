@@ -66,6 +66,10 @@ class NonEmptyTraverseSuite extends KittensSuite:
       tests[Singletons].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
     )
     checkAll(
+      s"$instance[Search]",
+      tests[Search].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+    )
+    checkAll(
       s"$instance is Serializable",
       SerializableTests.serializable(summonInline[NonEmptyTraverse[Tree]])
     )
@@ -126,6 +130,7 @@ object NonEmptyTraverseSuite:
     given NonEmptyTraverse[EnumK1] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[AtLeastOne] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[Singletons] = semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[Search] = semiauto.nonEmptyTraverse
 
   object derivedInstances:
     case class ICons[A](x: ADTs.ICons[A]) derives NonEmptyTraverse

@@ -1,11 +1,10 @@
 package cats.derived
 
-import cats.{Contravariant, Functor, Invariant}
+import cats.Invariant
 import shapeless3.deriving.{Const, K1}
 
 import scala.annotation.implicitNotFound
 import scala.compiletime.*
-import scala.util.NotGiven
 
 @implicitNotFound("""Could not derive an instance of Invariant[F] where F = ${F}.
 Make sure that F[_] satisfies one of the following conditions:
@@ -23,15 +22,17 @@ object DerivedInvariant:
   given [T]: DerivedInvariant[Const[T]] = new Invariant[Const[T]]:
     def imap[A, B](fa: T)(f: A => B)(g: B => A): T = fa
 
-  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedInvariant[[x] =>> F[G[x]]] =
-    given Invariant[G] = G.unify
-    F.unify.compose[G]
+  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedInvariant[[x] =>> F[G[x]]] =
+    new Derived.Lazy(() => F.unify.compose(G.unify)) with Invariant[[x] =>> F[G[x]]]:
+      export delegate.*
 
   given [F[_]](using inst: => K1.Instances[Or, F]): DerivedInvariant[F] =
     given K1.Instances[Invariant, F] = inst.unify
     new Generic[Invariant, F] {}
 
-  trait Generic[T[x[_]] <: Invariant[x], F[_]](using inst: K1.Instances[T, F]) extends Invariant[F]:
-    def imap[A, B](fa: F[A])(f: A => B)(g: B => A): F[B] = inst.map(fa)(
-      [t[_]] => (inv: T[t], t0: t[A]) => inv.imap(t0)(f)(g)
-    )
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedInvariant_F[F[_]: Or, G[_]: Or]: DerivedInvariant[[x] =>> F[G[x]]] = summon
+
+  trait Generic[T[f[_]] <: Invariant[f], F[_]](using inst: K1.Instances[T, F]) extends Invariant[F]:
+    final override def imap[A, B](fa: F[A])(f: A => B)(g: B => A): F[B] =
+      inst.map(fa)([f[_]] => (F: T[f], fa: f[A]) => F.imap(fa)(f)(g))

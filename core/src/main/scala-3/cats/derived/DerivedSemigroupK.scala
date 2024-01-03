@@ -21,19 +21,32 @@ object DerivedSemigroupK:
     summonInline[DerivedSemigroupK[F]].instance
 
   given [T](using T: Semigroup[T]): DerivedSemigroupK[Const[T]] = new SemigroupK[Const[T]]:
-    final override def combineK[A](x: Const[T][A], y: Const[T][A]) = T.combine(x, y)
+    def combineK[A](x: T, y: T): T = T.combine(x, y)
 
-  given [F[_], G[_]](using F: Or[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
-    F.unify.compose[G]
+  given nested[F[_], G[_]](using F: => Or[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
+    new Derived.Lazy(() => F.unify.compose[G]) with SemigroupK[[x] =>> F[G[x]]]:
+      export delegate.*
 
-  given [F[_], G[_]](using N: NotGiven[Or[F]], F: DerivedApply.Or[F], G: Or[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
-    new SemigroupK[[x] =>> F[G[x]]]:
-      final override def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = F.unify.map2(x, y)(G.unify.combineK(_, _))
+  given nested[F[_], G[_]](using NotGiven[Or[F]])(using
+      F: DerivedApply.Or[F],
+      G: => Or[G]
+  ): DerivedSemigroupK[[x] =>> F[G[x]]] = new SemigroupK[[x] =>> F[G[x]]]:
+    val f = F.unify
+    lazy val g = G.unify
+    def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = f.map2(x, y)(g.combineK)
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedSemigroupK[F] =
     given K1.ProductInstances[SemigroupK, F] = inst.unify
     new Product[SemigroupK, F] {}
 
-  trait Product[T[x[_]] <: SemigroupK[x], F[_]](using inst: K1.ProductInstances[T, F]) extends SemigroupK[F]:
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedSemigroupK_F[F[_]: Or, G[_]]: DerivedSemigroupK[[x] =>> F[G[x]]] = summon
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedSemigroupK_F[F[_]: DerivedApply.Or, G[_]: Or](
+      ev: NotGiven[Or[F]]
+  ): DerivedSemigroupK[[x] =>> F[G[x]]] = nested(using ev)
+
+  trait Product[T[f[_]] <: SemigroupK[f], F[_]](using inst: K1.ProductInstances[T, F]) extends SemigroupK[F]:
     final override def combineK[A](x: F[A], y: F[A]): F[A] =
-      inst.map2[A, A, A](x, y)([t[_]] => (smgrpk: T[t], x: t[A], y: t[A]) => smgrpk.combineK(x, y))
+      inst.map2(x, y)([f[_]] => (F: T[f], x: f[A], y: f[A]) => F.combineK(x, y))

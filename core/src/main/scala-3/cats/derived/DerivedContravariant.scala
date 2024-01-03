@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.{Contravariant, Functor}
+import cats.Contravariant
 import shapeless3.deriving.{Const, K1}
 
 import scala.annotation.implicitNotFound
@@ -22,14 +22,18 @@ object DerivedContravariant:
   given [T]: DerivedContravariant[Const[T]] = new Contravariant[Const[T]]:
     def contramap[A, B](fa: T)(f: B => A): T = fa
 
-  given [F[_], G[_]](using F: DerivedFunctor.Or[F], G: Or[G]): DerivedContravariant[[x] =>> F[G[x]]] =
-    given Contravariant[G] = G.unify
-    F.unify.composeContravariant[G]
+  given nested[F[_], G[_]](using F: DerivedFunctor.Or[F], G: => Or[G]): DerivedContravariant[[x] =>> F[G[x]]] =
+    new Derived.Lazy(() => F.unify.composeContravariant(G.unify)) with Contravariant[[x] =>> F[G[x]]]:
+      export delegate.*
 
   given [F[_]](using inst: => K1.Instances[Or, F]): DerivedContravariant[F] =
     given K1.Instances[Contravariant, F] = inst.unify
     new Generic[Contravariant, F] {}
 
-  trait Generic[T[x[_]] <: Contravariant[x], F[_]](using inst: K1.Instances[T, F]) extends Contravariant[F]:
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedContravariant_F[F[_]: DerivedFunctor.Or, G[_]: Or]
+      : DerivedContravariant[[x] =>> F[G[x]]] = summon
+
+  trait Generic[T[f[_]] <: Contravariant[f], F[_]](using inst: K1.Instances[T, F]) extends Contravariant[F]:
     final override def contramap[A, B](fa: F[A])(f: B => A): F[B] =
-      inst.map(fa: F[A])([f[_]] => (tf: T[f], fa: f[A]) => tf.contramap(fa)(f))
+      inst.map(fa)([f[_]] => (T: T[f], fa: f[A]) => T.contramap(fa)(f))

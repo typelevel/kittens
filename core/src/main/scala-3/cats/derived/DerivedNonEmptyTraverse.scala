@@ -1,7 +1,7 @@
 package cats.derived
 
-import cats.{Applicative, Apply, NonEmptyTraverse, Traverse}
-import shapeless3.deriving.{Const, K1}
+import cats.{Applicative, Apply, Eval, NonEmptyTraverse, Traverse}
+import shapeless3.deriving.K1
 
 import scala.annotation.implicitNotFound
 import scala.compiletime.*
@@ -19,8 +19,9 @@ object DerivedNonEmptyTraverse:
     import DerivedNonEmptyTraverse.given
     summonInline[DerivedNonEmptyTraverse[F]].instance
 
-  given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedNonEmptyTraverse[[x] =>> F[G[x]]] =
-    F.unify.compose(G.unify)
+  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedNonEmptyTraverse[[x] =>> F[G[x]]] =
+    new Derived.Lazy(() => F.unify.compose(G.unify)) with NonEmptyTraverse[[x] =>> F[G[x]]]:
+      export delegate.*
 
   def product[F[_]](ev: NonEmptyTraverse[?])(using
       inst: K1.ProductInstances[DerivedTraverse.Or, F]
@@ -41,6 +42,10 @@ object DerivedNonEmptyTraverse:
       with DerivedTraverse.Coproduct[NonEmptyTraverse, F]
       with DerivedFunctor.Generic[NonEmptyTraverse, F] {}
 
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  private[derived] def given_DerivedNonEmptyTraverse_F[F[_]: Or, G[_]: Or]: DerivedNonEmptyTraverse[[x] =>> F[G[x]]] =
+    summon
+
   trait Product[T[x[_]] <: Traverse[x], F[_]](ev: NonEmptyTraverse[?])(using
       inst: K1.ProductInstances[T, F]
   ) extends NonEmptyTraverse[F],
@@ -59,7 +64,7 @@ object DerivedNonEmptyTraverse:
         DerivedTraverse.Coproduct[T, F]:
 
     final override def nonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
-      inst.fold(fa)([f[_]] => (tf: T[f], fa: f[A]) => tf.nonEmptyTraverse(fa)(f).asInstanceOf[G[F[B]]])
+      inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => F.nonEmptyTraverse(fa)(f).asInstanceOf[G[F[B]]])
 
   private type Alt[F[_]] = [A] =>> Either[F[A], A]
   private given [F[_]](using F: Apply[F]): Applicative[Alt[F]] with

@@ -43,6 +43,7 @@ class InvariantSuite extends KittensSuite:
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[Singletons]", tests[Singletons].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[Search]", tests[Search].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Invariant[TreeF]]))
 
   locally:
@@ -93,6 +94,7 @@ object InvariantSuite:
     given Invariant[AtMostOne] = semiauto.invariant
     given Invariant[AtLeastOne] = semiauto.invariant
     given Invariant[Singletons] = semiauto.invariant
+    given Invariant[Search] = semiauto.invariant
 
   object derivedInstances:
     case class Bivariant[A](x: ADTs.Bivariant[A]) derives Invariant

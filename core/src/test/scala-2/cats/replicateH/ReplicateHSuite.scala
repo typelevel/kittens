@@ -44,12 +44,12 @@ class ReplicateHSuite extends KittensSuite {
 
   property("replicate 0 state") {
     val replicated: State[Int, HNil] = getAndInc.replicateH(0)
-    forAll((initial: Int) => replicated.run(initial).value ?= (initial, HNil))
+    forAll((initial: Int) => replicated.run(initial).value ?= ((initial, HNil)))
   }
 
   property("replicate 1 state") {
     val replicated: State[Int, Int :: HNil] = getAndInc.replicateH(1)
-    forAll((initial: Int) => replicated.run(initial).value ?= (initial + 1, initial :: HNil))
+    forAll((initial: Int) => replicated.run(initial).value ?= ((initial + 1, initial :: HNil)))
   }
 
   property("parReplicate Either") {

@@ -3,7 +3,7 @@ package cats.derived
 import cats.Invariant
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Invariant[F] where F = ${F}.
@@ -15,6 +15,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedInvariant[F[_]] = Derived[Invariant[F]]
 object DerivedInvariant:
   type Or[F[_]] = Derived.Or[Invariant[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: Invariant[F] =
     import DerivedInvariant.given
     summonInline[DerivedInvariant[F]].instance

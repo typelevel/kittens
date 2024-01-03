@@ -17,7 +17,7 @@
 package cats.derived
 
 import cats.NonEmptyTraverse
-import cats.data.{NonEmptyList, NonEmptyVector, OneAnd}
+import cats.data.{NonEmptyList, OneAnd}
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.{NonEmptyTraverseTests, SerializableTests}
 

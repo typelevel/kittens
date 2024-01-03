@@ -3,7 +3,7 @@ package cats.derived
 import alleycats.Empty
 import shapeless3.deriving.K0
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Empty[A] where A = ${A}.
@@ -13,6 +13,8 @@ Make sure that A satisfies one of the following conditions:
 type DerivedEmpty[A] = Derived[Empty[A]]
 object DerivedEmpty:
   type Or[A] = Derived.Or[Empty[A]]
+
+  @nowarn("msg=unused import")
   inline def apply[A]: Empty[A] =
     import DerivedEmpty.given
     summonInline[DerivedEmpty[A]].instance

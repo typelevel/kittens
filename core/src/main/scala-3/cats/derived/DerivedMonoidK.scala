@@ -3,7 +3,7 @@ package cats.derived
 import cats.*
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 import scala.util.NotGiven
 
@@ -16,6 +16,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedMonoidK[F[_]] = Derived[MonoidK[F]]
 object DerivedMonoidK:
   type Or[F[_]] = Derived.Or[MonoidK[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: MonoidK[F] =
     import DerivedMonoidK.given
     summonInline[DerivedMonoidK[F]].instance

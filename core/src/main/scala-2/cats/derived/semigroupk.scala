@@ -78,7 +78,7 @@ abstract private[derived] class MkSemigroupKGeneric {
       def combineK[A](x: F[A], y: F[A]) = {
         val (fhx, ftx) = F.unpack(x)
         val (fhy, fty) = F.unpack(y)
-        F.pack(F.fh.unify.combineK(fhx, fhy), F.ft.combineK(ftx, fty))
+        F.pack((F.fh.unify.combineK(fhx, fhy), F.ft.combineK(ftx, fty)))
       }
     }
 

@@ -3,7 +3,7 @@ package cats.derived
 import cats.Functor
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Functor[F] where F = ${F}.
@@ -16,6 +16,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedFunctor[F[_]] = Derived[Functor[F]]
 object DerivedFunctor:
   type Or[F[_]] = Derived.Or[Functor[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: Functor[F] =
     import DerivedFunctor.given
     summonInline[DerivedFunctor[F]].instance

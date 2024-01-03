@@ -3,7 +3,7 @@ package cats.derived
 import cats.Eq
 import shapeless3.deriving.{Complete, K0}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Eq[A] where A = ${A}.
@@ -13,6 +13,8 @@ Make sure that A satisfies one of the following conditions:
 type DerivedEq[A] = Derived[Eq[A]]
 object DerivedEq:
   type Or[A] = Derived.Or[Eq[A]]
+
+  @nowarn("msg=unused import")
   inline def apply[A]: Eq[A] =
     import DerivedEq.given
     summonInline[DerivedEq[A]].instance

@@ -66,7 +66,7 @@ abstract private[derived] class MkInvariantCons extends MkInvariantGeneric {
           for {
             fhb <- mkImapSafe(F.fh)(fha)(g)(f)
             ftb <- F.ft.safeImap(fta)(g)(f)
-          } yield F.pack(fhb, ftb)
+          } yield F.pack((fhb, ftb))
         }
     }
 

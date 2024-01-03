@@ -3,7 +3,7 @@ package cats.derived
 import cats.{Applicative, Eval, Traverse}
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Traverse[F] where F = ${F}.
@@ -15,6 +15,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedTraverse[F[_]] = Derived[Traverse[F]]
 object DerivedTraverse:
   type Or[F[_]] = Derived.Or[Traverse[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: Traverse[F] =
     import DerivedTraverse.given
     summonInline[DerivedTraverse[F]].instance

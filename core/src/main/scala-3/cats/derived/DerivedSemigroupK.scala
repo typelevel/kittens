@@ -3,7 +3,7 @@ package cats.derived
 import cats.{Semigroup, SemigroupK}
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 import scala.util.NotGiven
 
@@ -16,6 +16,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedSemigroupK[F[_]] = Derived[SemigroupK[F]]
 object DerivedSemigroupK:
   type Or[F[_]] = Derived.Or[SemigroupK[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: SemigroupK[F] =
     import DerivedSemigroupK.given
     summonInline[DerivedSemigroupK[F]].instance

@@ -3,7 +3,7 @@ package cats.derived
 import cats.{Applicative, Monoid}
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Applicative[F] where F = ${F}.
@@ -15,6 +15,7 @@ type DerivedApplicative[F[_]] = Derived[Applicative[F]]
 object DerivedApplicative:
   type Or[F[_]] = Derived.Or[Applicative[F]]
 
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: Applicative[F] =
     import DerivedApplicative.given
     summonInline[DerivedApplicative[F]].instance

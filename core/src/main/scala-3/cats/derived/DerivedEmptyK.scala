@@ -3,7 +3,7 @@ package cats.derived
 import alleycats.{Empty, EmptyK}
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.summonInline
 import scala.util.NotGiven
 
@@ -17,6 +17,8 @@ Make sure that F[_] satisfies one of the following conditions:
 type DerivedEmptyK[F[_]] = Derived[EmptyK[F]]
 object DerivedEmptyK:
   type Or[F[_]] = Derived.Or[EmptyK[F]]
+
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: EmptyK[F] =
     import DerivedEmptyK.given
     summonInline[DerivedEmptyK[F]].instance

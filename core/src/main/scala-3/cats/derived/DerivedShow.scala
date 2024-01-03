@@ -3,7 +3,7 @@ package cats.derived
 import cats.Show
 import shapeless3.deriving.{K0, Labelling}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Show[A] where A = ${A}.
@@ -14,6 +14,7 @@ type DerivedShow[A] = Derived[Show[A]]
 object DerivedShow:
   type Or[A] = Derived.Or[Show[A]]
 
+  @nowarn("msg=unused import")
   inline def apply[A]: Show[A] =
     import DerivedShow.given
     summonInline[DerivedShow[A]].instance

@@ -21,6 +21,8 @@ import alleycats.Empty
 import cats.laws.discipline.SerializableTests
 import shapeless.test.illTyped
 
+import scala.annotation.nowarn
+
 class EmptySuite extends KittensSuite {
   import EmptySuite._
   import TestDefns._
@@ -33,14 +35,14 @@ class EmptySuite extends KittensSuite {
       iList: Empty[IList[Dummy]],
       snoc: Empty[Snoc[Dummy]],
       box: Empty[Box[Mask]],
-      chain: Empty[Chain]
+      @nowarn("cat=unused") chain: Empty[Chain]
   ): Unit = {
     test(s"$context.Empty[Foo]")(assert(foo.empty == Foo(0, None)))
     test(s"$context.Empty[Outer]")(assert(outer.empty == Outer(Inner(0))))
     test(s"$context.Empty[Interleaved[String]]")(assert(interleaved.empty == Interleaved(0, "", 0, Nil, "")))
     test(s"$context.Empty[Recursive]")(assert(recursive.empty == Recursive(0, None)))
-    test(s"$context.Empty[IList[Dummy]]")(assert(iList.empty == INil()))
-    test(s"$context.Empty[Snoc[Dummy]]")(assert(snoc.empty == SNil()))
+    test(s"$context.Empty[IList[Dummy]]")(assert(iList.empty == INil[Dummy]()))
+    test(s"$context.Empty[Snoc[Dummy]]")(assert(snoc.empty == SNil[Dummy]()))
     test(s"$context.Empty respects existing instances")(assert(box.empty == Box(Mask(0xffffffff))))
     checkAll(s"$context.Empty is Serializable", SerializableTests.serializable(Empty[Interleaved[String]]))
   }

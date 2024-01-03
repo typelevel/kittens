@@ -3,7 +3,7 @@ package cats.derived
 import cats.{Order, PartialOrder}
 import shapeless3.deriving.{Complete, K0}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of PartialOrder[A] where A = ${A}.
@@ -14,6 +14,7 @@ type DerivedPartialOrder[A] = Derived[PartialOrder[A]]
 object DerivedPartialOrder:
   type Or[A] = Derived.Or[PartialOrder[A]]
 
+  @nowarn("msg=unused import")
   inline def apply[A]: PartialOrder[A] =
     import DerivedPartialOrder.given
     summonInline[DerivedPartialOrder[A]].instance

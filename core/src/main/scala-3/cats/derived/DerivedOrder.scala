@@ -3,7 +3,7 @@ package cats.derived
 import cats.Order
 import shapeless3.deriving.{Complete, K0}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Order[A] where A = ${A}.
@@ -14,6 +14,7 @@ type DerivedOrder[A] = Derived[Order[A]]
 object DerivedOrder:
   type Or[A] = Derived.Or[Order[A]]
 
+  @nowarn("msg=unused import")
   inline def apply[A]: Order[A] =
     import DerivedOrder.given
     summonInline[DerivedOrder[A]].instance

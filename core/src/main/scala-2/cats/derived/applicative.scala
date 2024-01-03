@@ -87,17 +87,17 @@ abstract private[derived] class MkApplicativeGeneric {
     new MkApplicative[F] {
 
       def pure[A](x: A) =
-        F.pack(F.fh.unify.pure(x), F.ft.pure(x))
+        F.pack((F.fh.unify.pure(x), F.ft.pure(x)))
 
       def ap[A, B](ff: F[A => B])(fa: F[A]) = {
         val (fhf, ftf) = F.unpack(ff)
         val (fha, fta) = F.unpack(fa)
-        F.pack(F.fh.unify.ap(fhf)(fha), F.ft.ap(ftf)(fta))
+        F.pack((F.fh.unify.ap(fhf)(fha), F.ft.ap(ftf)(fta)))
       }
 
       override def map[A, B](fa: F[A])(f: A => B) = {
         val (fha, fta) = F.unpack(fa)
-        F.pack(F.fh.unify.map(fha)(f), F.ft.map(fta)(f))
+        F.pack((F.fh.unify.map(fha)(f), F.ft.map(fta)(f)))
       }
     }
 

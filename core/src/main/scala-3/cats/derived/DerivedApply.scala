@@ -3,7 +3,7 @@ package cats.derived
 import cats.{Apply, Semigroup}
 import shapeless3.deriving.{Const, K1}
 
-import scala.annotation.implicitNotFound
+import scala.annotation.*
 import scala.compiletime.*
 
 @implicitNotFound("""Could not derive an instance of Apply[F] where F = ${F}.
@@ -15,6 +15,7 @@ type DerivedApply[F[_]] = Derived[Apply[F]]
 object DerivedApply:
   type Or[F[_]] = Derived.Or[Apply[F]]
 
+  @nowarn("msg=unused import")
   inline def apply[F[_]]: Apply[F] =
     import DerivedApply.given
     summonInline[DerivedApply[F]].instance

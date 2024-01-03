@@ -34,7 +34,7 @@ class EmptyKSuite extends KittensSuite {
       boxColor: EmptyK[BoxColor]
   ): Unit = {
     test(s"$context.EmptyK[LOption]")(assert(lOption.empty == Nil))
-    test(s"$context.EmptyK[PList]")(assert(pList.empty == (Nil, Nil)))
+    test(s"$context.EmptyK[PList]")(assert(pList.empty == ((Nil, Nil))))
     test(s"$context.EmptyK[CaseClassWOption]")(assert(caseClassWOption.empty == CaseClassWOption(None)))
     test(s"$context.EmptyK[NelOption]")(assert(nelOption.empty == NonEmptyList.of(None)))
     test(s"$context.EmptyK respects existing instances")(assert(boxColor.empty == Box(Color(255, 255, 255))))

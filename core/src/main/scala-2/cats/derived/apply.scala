@@ -81,12 +81,12 @@ abstract private[derived] class MkApplyGeneric {
       def ap[A, B](ff: F[A => B])(fa: F[A]) = {
         val (fhf, ftf) = F.unpack(ff)
         val (fha, fta) = F.unpack(fa)
-        F.pack(F.fh.unify.ap(fhf)(fha), F.ft.ap(ftf)(fta))
+        F.pack((F.fh.unify.ap(fhf)(fha), F.ft.ap(ftf)(fta)))
       }
 
       def map[A, B](fa: F[A])(f: A => B) = {
         val (fha, fta) = F.unpack(fa)
-        F.pack(F.fh.unify.map(fha)(f), F.ft.map(fta)(f))
+        F.pack((F.fh.unify.map(fha)(f), F.ft.map(fta)(f)))
       }
     }
 

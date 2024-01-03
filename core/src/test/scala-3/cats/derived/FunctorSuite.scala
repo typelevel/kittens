@@ -45,6 +45,7 @@ class FunctorSuite extends KittensSuite:
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].functor[Boolean, Int, Boolean])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].functor[Boolean, Int, Boolean])
     checkAll(s"$instance[Singletons]", tests[Singletons].functor[Boolean, Int, Boolean])
+    checkAll(s"$instance[Search]", tests[Search].functor[Boolean, Int, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Functor[Tree]]))
 
   locally:
@@ -95,6 +96,7 @@ object FunctorSuite:
     given Functor[AtMostOne] = semiauto.functor
     given Functor[AtLeastOne] = semiauto.functor
     given Functor[Singletons] = semiauto.functor
+    given Functor[Search] = semiauto.functor
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Functor

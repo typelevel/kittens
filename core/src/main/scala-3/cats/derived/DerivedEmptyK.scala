@@ -37,7 +37,7 @@ object DerivedEmptyK:
     def empty[A]: F[G[A]] = f.pure(g.empty)
 
   given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedEmptyK[F] = new EmptyK[F]:
-    lazy val f = inst.unify
+    val f = inst.unify
     def empty[A]: F[A] = f.construct([f[_]] => (F: EmptyK[f]) => F.empty[A])
 
   inline given coproduct[F[_]](using gen: K1.CoproductGeneric[F]): DerivedEmptyK[F] =

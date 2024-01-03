@@ -42,6 +42,7 @@ class FoldableSuite extends KittensSuite:
     checkAll(s"$instance[AtMostOne]", tests[AtMostOne].foldable[Int, Long])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].foldable[Int, Long])
     checkAll(s"$instance[Singletons]", tests[Singletons].foldable[Int, Long])
+    checkAll(s"$instance[Search]", tests[Search].foldable[Int, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Foldable[Tree]]))
 
   locally:
@@ -91,6 +92,7 @@ object FoldableSuite:
     given Foldable[AtMostOne] = semiauto.foldable
     given Foldable[AtLeastOne] = semiauto.foldable
     given Foldable[Singletons] = semiauto.foldable
+    given Foldable[Search] = semiauto.foldable
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Foldable

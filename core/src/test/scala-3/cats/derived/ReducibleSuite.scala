@@ -40,6 +40,7 @@ class ReducibleSuite extends KittensSuite:
     checkAll(s"$instance[EnumK1]", tests[EnumK1].reducible[Option, Int, Long])
     checkAll(s"$instance[AtLeastOne]", tests[AtLeastOne].reducible[Option, Int, Long])
     checkAll(s"$instance[Singletons]", tests[Singletons].reducible[Option, Int, Long])
+    checkAll(s"$instance[Search]", tests[Search].reducible[Option, Int, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Reducible[Tree]]))
 
   locally:
@@ -82,6 +83,7 @@ object ReducibleSuite:
     given Reducible[EnumK1] = semiauto.reducible
     given Reducible[AtLeastOne] = semiauto.reducible
     given Reducible[Singletons] = semiauto.reducible
+    given Reducible[Search] = semiauto.reducible
 
   object derivedInstances:
     case class ICons[A](x: ADTs.ICons[A]) derives Reducible

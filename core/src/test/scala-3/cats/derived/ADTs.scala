@@ -272,6 +272,15 @@ object ADTs:
       )
     )
 
+  final case class Search[+A](move: A, child: Option[Search[A]], variations: List[Search[A]])
+  object Search:
+    given [A: Arbitrary]: Arbitrary[Search[A]] = Arbitrary(Gen.sized: n =>
+      for
+        move <- Arbitrary.arbitrary[A]
+        child <- Gen.resize(n / 2, Arbitrary.arbitrary[Option[Search[A]]])
+        variations <- Gen.resize(n / 2, Arbitrary.arbitrary[List[Search[A]]])
+      yield Search(move, child, variations))
+
   trait EqInstances:
     import ADTs.*
 
@@ -321,6 +330,9 @@ object ADTs:
       case (EnumK1Inv.Leaf(cov1, contra1), EnumK1Inv.Leaf(cov2, contra2)) => cov1 === cov2 && contra1 === contra2
       case (EnumK1Inv.Rec(l1, r1), EnumK1Inv.Rec(l2, r2)) => l1 === l2 && r1 === r2
       case _ => false
+
+    given [A: Eq]: Eq[Search[A]] =
+      (x, y) => x.move === y.move && x.child === y.child && x.variations === y.variations
 
   end EqInstances
 end ADTs

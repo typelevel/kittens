@@ -30,7 +30,7 @@ object DerivedPure:
     def pure[A](a: A): F[G[A]] = f.pure(g.pure(a))
 
   given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedPure[F] = new Pure[F]:
-    lazy val f = inst.unify
+    val f = inst.unify
     def pure[A](a: A): F[A] = f.construct([f[_]] => (F: Pure[f]) => F.pure(a))
 
   @deprecated("Kept for binary compatibility", "3.2.0")

@@ -72,6 +72,7 @@ object strict:
   extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
   extension (x: EmptyK.type) inline def derived[F[_]]: EmptyK[F] = DerivedEmptyK.strict[F]
   extension (x: SemigroupK.type) inline def derived[F[_]]: SemigroupK[F] = DerivedSemigroupK.strict[F]
+  extension (x: MonoidK.type) inline def derived[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
@@ -87,6 +88,7 @@ object strict:
     inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
     inline def emptyK[F[_]]: EmptyK[F] = DerivedEmptyK.strict[F]
     inline def semigroupK[F[_]]: SemigroupK[F] = DerivedSemigroupK.strict[F]
+    inline def monoidK[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
 
 object auto:
   object eq:

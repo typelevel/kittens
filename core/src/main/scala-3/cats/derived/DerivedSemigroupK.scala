@@ -70,5 +70,5 @@ object DerivedSemigroupK:
     ): DerivedSemigroupK[[x] =>> F[G[x]]] = new SemigroupK[[x] =>> F[G[x]]]:
       def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = F.map2(x, y)(G.combineK)
 
-    given product[F[_]](using inst: => K1.ProductInstances[SemigroupK, F]): DerivedSemigroupK[F] =
+    given product[F[_]](using => K1.ProductInstances[SemigroupK, F]): DerivedSemigroupK[F] =
       new Product[SemigroupK, F] {}

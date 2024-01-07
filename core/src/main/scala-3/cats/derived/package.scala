@@ -73,6 +73,7 @@ object strict:
   extension (x: EmptyK.type) inline def derived[F[_]]: EmptyK[F] = DerivedEmptyK.strict[F]
   extension (x: SemigroupK.type) inline def derived[F[_]]: SemigroupK[F] = DerivedSemigroupK.strict[F]
   extension (x: MonoidK.type) inline def derived[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
+  extension (x: Pure.type) inline def derived[F[_]]: Pure[F] = DerivedPure.strict[F]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
@@ -89,6 +90,7 @@ object strict:
     inline def emptyK[F[_]]: EmptyK[F] = DerivedEmptyK.strict[F]
     inline def semigroupK[F[_]]: SemigroupK[F] = DerivedSemigroupK.strict[F]
     inline def monoidK[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
+    inline def pure[F[_]]: Pure[F] = DerivedPure.strict[F]
 
 object auto:
   object eq:

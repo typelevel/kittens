@@ -16,9 +16,11 @@
 
 package cats.derived
 
-import alleycats.Pure
+import alleycats.{Empty, Pure}
 import cats.data.NonEmptyList
 import cats.laws.discipline.SerializableTests
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class PureSuite extends KittensSuite:
@@ -48,8 +50,15 @@ class PureSuite extends KittensSuite:
   locally:
     import semiInstances.given
     validate("semiauto.pure")
-    testNoInstance("Pure", "IList")
-    testNoInstance("Pure", "Snoc")
+    testNoInstance("semiauto.pure", "IList")
+    testNoInstance("semiauto.pure", "Snoc")
+
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.pure")
+    testNoInstance("strict.semiauto.pure", "IList")
+    testNoInstance("strict.semiauto.pure", "Snoc")
+    testNoInstance("strict.semiauto.pure", "TopK")
 
   locally:
     import derivedInstances.*
@@ -76,6 +85,17 @@ object PureSuite:
     given Pure[Interleaved] = semiauto.pure
     given Pure[Singletons] = semiauto.pure
     given Pure[BoxColor] = semiauto.pure
+
+  object strictInstances:
+    given [T: Empty]: Pure[Const[T]] = semiauto.pure
+    given [T <: Singleton: ValueOf]: Pure[Const[T]] = semiauto.pure
+    given Pure[LOption] = strict.semiauto.pure
+    given Pure[PList] = strict.semiauto.pure
+    given Pure[CaseClassWOption] = strict.semiauto.pure
+    given Pure[NelOption] = strict.semiauto.pure
+    given Pure[Interleaved] = strict.semiauto.pure
+    given Pure[Singletons] = strict.semiauto.pure
+    given Pure[BoxColor] = strict.semiauto.pure
 
   object derivedInstances:
     case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives Pure

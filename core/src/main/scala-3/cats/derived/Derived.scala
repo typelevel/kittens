@@ -30,7 +30,7 @@ object Derived:
     extension [I[f[_[_, _]], t[_, _]] <: K2.Instances[f, t], F[_[_, _]], T[_, _]](inst: I[Or2[F], T])
       @targetName("unifyK2") def unify: I[F, T] = inst
 
-  abstract private[derived] class Lazy[A](f: () => A) extends Serializable:
+  private[derived] class Lazy[A](f: () => A) extends Serializable:
     final protected lazy val delegate: A = f()
 
 sealed abstract class OrInstances:

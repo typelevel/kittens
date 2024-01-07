@@ -16,10 +16,12 @@
 
 package cats.derived
 
-import cats.{Eval, Reducible}
+import cats.{Eval, Foldable, Reducible}
 import cats.data.{NonEmptyList, OneAnd}
 import cats.laws.discipline.*
 import cats.syntax.all.given
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class ReducibleSuite extends KittensSuite:
@@ -50,6 +52,11 @@ class ReducibleSuite extends KittensSuite:
   locally:
     import semiInstances.given
     validate("semiauto.reducible")
+
+  locally:
+    import semiInstances.given
+    validate("strict.semiauto.reducible")
+    testNoInstance("strict.semiauto.reducible", "TopK")
 
   locally:
     import derivedInstances.*
@@ -84,6 +91,24 @@ object ReducibleSuite:
     given Reducible[AtLeastOne] = semiauto.reducible
     given Reducible[Singletons] = semiauto.reducible
     given Reducible[Search] = semiauto.reducible
+
+  object strictInstances:
+    given [T]: Foldable[Const[T]] = strict.semiauto.foldable
+    given [F[_]: Foldable, G[_]: Foldable]: Foldable[[x] =>> F[G[x]]] = strict.semiauto.foldable
+    given Foldable[IList] = strict.semiauto.foldable
+    given Foldable[Snoc] = strict.semiauto.foldable
+    given Reducible[ICons] = strict.semiauto.reducible
+    given Reducible[SCons] = strict.semiauto.reducible
+    given Reducible[Tree] = strict.semiauto.reducible
+    given Reducible[NelSCons] = strict.semiauto.reducible
+    given Reducible[NelAndOne] = strict.semiauto.reducible
+    given Reducible[VecAndNel] = strict.semiauto.reducible
+    given Reducible[Interleaved] = strict.semiauto.reducible
+    given Reducible[BoxZipper] = strict.semiauto.reducible
+    given Reducible[EnumK1] = strict.semiauto.reducible
+    given Reducible[AtLeastOne] = strict.semiauto.reducible
+    given Reducible[Singletons] = strict.semiauto.reducible
+    given Reducible[Search] = strict.semiauto.reducible
 
   object derivedInstances:
     case class ICons[A](x: ADTs.ICons[A]) derives Reducible

@@ -21,15 +21,21 @@ object DerivedReducible:
     import DerivedReducible.given
     summonInline[DerivedReducible[F]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[F[_]]: Reducible[F] =
+    import DerivedFoldable.given
+    import DerivedReducible.given
+    import DerivedFoldable.Strict.{nested, product}
+    import DerivedReducible.Strict.{nested, product}
+    summonInline[DerivedReducible[F]].instance
+
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedReducible[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(G.unify)) with Reducible[[x] =>> F[G[x]]]:
-      export delegate.*
+    Strict.nested(using F.unify, G.unify)
 
   def product[F[_]](ev: Reducible[?])(using inst: K1.ProductInstances[DerivedFoldable.Or, F]): DerivedReducible[F] =
-    given K1.ProductInstances[Foldable, F] = inst.unify
-    new Product[Foldable, F](ev) {}
+    Strict.product(ev)(using inst.unify)
 
-  inline given [F[_]](using gen: K1.ProductGeneric[F]): DerivedReducible[F] =
+  inline given product[F[_]](using gen: K1.ProductGeneric[F]): DerivedReducible[F] =
     product(K1.summonFirst[Or, gen.MirroredElemTypes].unify)
 
   given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedReducible[F] =
@@ -75,3 +81,14 @@ object DerivedReducible:
 
     final override def reduceRightTo[A, B](fa: F[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] =
       inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => Eval.defer(F.reduceRightTo(fa)(f)(g)))
+
+  object Strict:
+    given nested[F[_], G[_]](using F: => Reducible[F], G: => Reducible[G]): DerivedReducible[[x] =>> F[G[x]]] =
+      new Derived.Lazy(() => F.compose(G)) with Reducible[[x] =>> F[G[x]]]:
+        export delegate.*
+
+    def product[F[_]](ev: Reducible[?])(using K1.ProductInstances[Foldable, F]): DerivedReducible[F] =
+      new Product[Foldable, F](ev) {}
+
+    inline given product[F[_]](using gen: K1.ProductGeneric[F]): DerivedReducible[F] =
+      product(K1.summonFirst[Reducible, gen.MirroredElemTypes])

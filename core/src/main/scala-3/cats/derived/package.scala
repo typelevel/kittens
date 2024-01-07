@@ -80,6 +80,7 @@ object strict:
   extension (x: Apply.type) inline def derived[F[_]]: Apply[F] = DerivedApply.strict[F]
   extension (x: Applicative.type) inline def derived[F[_]]: Applicative[F] = DerivedApplicative.strict[F]
   extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
+  extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible.strict[F]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
@@ -103,6 +104,7 @@ object strict:
     inline def apply[F[_]]: Apply[F] = DerivedApply.strict[F]
     inline def applicative[F[_]]: Applicative[F] = DerivedApplicative.strict[F]
     inline def foldable[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
+    inline def reducible[F[_]]: Reducible[F] = DerivedReducible.strict[F]
 
 object auto:
   object eq:

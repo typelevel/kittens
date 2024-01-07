@@ -21,8 +21,7 @@ object DerivedOrder:
 
   @nowarn("msg=unused import")
   inline def strict[A]: Order[A] =
-    import DerivedOrder.given
-    import Strict.product
+    import Strict.given
     summonInline[DerivedOrder[A]].instance
 
   given singleton[A <: Singleton: ValueOf]: DerivedOrder[A] =
@@ -49,5 +48,6 @@ object DerivedOrder:
         [t] => (ord: T[t], t0: t, t1: t) => ord.compare(t0, t1)
 
   object Strict:
+    export DerivedOrder.coproduct
     given product[A](using K0.ProductInstances[Order, A]): DerivedOrder[A] =
       new Product[Order, A] {}

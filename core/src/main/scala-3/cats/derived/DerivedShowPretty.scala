@@ -12,7 +12,6 @@ trait ShowPretty[A] extends Show[A]:
 
 object ShowPretty:
   inline def apply[A](using A: ShowPretty[A]): A.type = A
-  def fromToString[A]: ShowPretty[A] = _.toString :: Nil
 
 @implicitNotFound("""Could not derive an instance of ShowPretty[A] where A = ${A}.
 Make sure that A satisfies one of the following conditions:
@@ -37,30 +36,32 @@ object DerivedShowPretty:
 
   @nowarn("msg=unused import")
   inline def strict[A]: ShowPretty[A] =
-    import DerivedShowPretty.given
-    import Strict.product
+    import Strict.given
     summonInline[DerivedShowPretty[A]].instance
 
+  private def fromToString[A]: ShowPretty[A] =
+    _.toString :: Nil
+
   // These instances support singleton types unlike the instances in Cats' core.
-  given boolean[A <: Boolean]: DerivedShowPretty[A] = ShowPretty.fromToString
-  given byte[A <: Byte]: DerivedShowPretty[A] = ShowPretty.fromToString
-  given short[A <: Short]: DerivedShowPretty[A] = ShowPretty.fromToString
-  given int[A <: Int]: DerivedShowPretty[A] = ShowPretty.fromToString
-  given long[A <: Long]: DerivedShowPretty[A] = ShowPretty.fromToString
-  given float[A <: Float]: DerivedShowPretty[A] = ShowPretty.fromToString
-  given double[A <: Double]: DerivedShowPretty[A] = ShowPretty.fromToString
-  given char[A <: Char]: DerivedShowPretty[A] = ShowPretty.fromToString
-  given string[A <: String]: DerivedShowPretty[A] = ShowPretty.fromToString
-  given symbol[A <: Symbol]: DerivedShowPretty[A] = ShowPretty.fromToString
+  given boolean[A <: Boolean]: DerivedShowPretty[A] = fromToString
+  given byte[A <: Byte]: DerivedShowPretty[A] = fromToString
+  given short[A <: Short]: DerivedShowPretty[A] = fromToString
+  given int[A <: Int]: DerivedShowPretty[A] = fromToString
+  given long[A <: Long]: DerivedShowPretty[A] = fromToString
+  given float[A <: Float]: DerivedShowPretty[A] = fromToString
+  given double[A <: Double]: DerivedShowPretty[A] = fromToString
+  given char[A <: Char]: DerivedShowPretty[A] = fromToString
+  given string[A <: String]: DerivedShowPretty[A] = fromToString
+  given symbol[A <: Symbol]: DerivedShowPretty[A] = fromToString
 
-  given product[A: Labelling](using => K0.ProductInstances[Or, A]): DerivedShowPretty[A] =
-    new Product[A] {}
-
-  given [A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] =
-    new Coproduct[A] {}
+  given product[A: Labelling](using => K0.ProductInstances[Or, A]): DerivedShowPretty[A] = new Product[A] {}
+  given coproduct[A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] = new Coproduct[A] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [A](using K0.ProductInstances[Or, A], Labelling[A]): DerivedShowPretty[A] = product
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  protected given [A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] = coproduct
 
   trait Product[A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =
@@ -87,6 +88,7 @@ object DerivedShowPretty:
       inst.fold(a)([a] => (show: Or[a], x: a) => show(x))
 
   object Strict:
-    given product[A: Labelling](using inst: K0.ProductInstances[Show, A]): DerivedShowPretty[A] =
+    export DerivedShowPretty.coproduct
+    given product[A: Labelling](using inst: => K0.ProductInstances[Show, A]): DerivedShowPretty[A] =
       given K0.ProductInstances[Or, A] = inst.mapK([a] => (show: Show[a]) => Or.fromShow(show))
       DerivedShowPretty.product

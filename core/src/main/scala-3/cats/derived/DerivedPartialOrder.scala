@@ -21,8 +21,7 @@ object DerivedPartialOrder:
 
   @nowarn("msg=unused import")
   inline def strict[A]: PartialOrder[A] =
-    import DerivedPartialOrder.given
-    import Strict.product
+    import Strict.given
     summonInline[DerivedPartialOrder[A]].instance
 
   given singleton[A <: Singleton: ValueOf]: DerivedPartialOrder[A] =
@@ -49,5 +48,6 @@ object DerivedPartialOrder:
         [t] => (ord: T[t], t0: t, t1: t) => ord.partialCompare(t0, t1)
 
   object Strict:
+    export DerivedPartialOrder.coproduct
     given product[A](using K0.ProductInstances[PartialOrder, A]): DerivedPartialOrder[A] =
       new Product[PartialOrder, A] {}

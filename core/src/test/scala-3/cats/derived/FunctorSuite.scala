@@ -16,7 +16,7 @@
 
 package cats.derived
 
-import cats.Functor
+import cats.{Contravariant, Functor}
 import cats.laws.discipline.*
 import cats.laws.discipline.eq.*
 import shapeless3.deriving.Const
@@ -106,8 +106,9 @@ object FunctorSuite:
     given Functor[Search] = semiauto.functor
 
   object strictInstances:
-    given [T]: Functor[Const[T]] = strict.semiauto.functor
+    given [T]: Functor[Const[T]] = semiauto.functor
     given [F[_]: Functor, G[_]: Functor]: Functor[[x] =>> F[G[x]]] = Functor[F].compose[G]
+    given [F[_]: Contravariant, G[_]: Contravariant]: Functor[[x] =>> F[G[x]]] = Contravariant[F].compose[G]
     given Functor[Snoc] = strict.semiauto.functor
     given Functor[IList] = strict.semiauto.functor
     given Functor[Tree] = strict.semiauto.functor
@@ -116,7 +117,6 @@ object FunctorSuite:
     given Functor[ListSnoc] = strict.semiauto.functor
     given Functor[AndChar] = strict.semiauto.functor
     given Functor[Interleaved] = strict.semiauto.functor
-    given Functor[NestedPred] = strict.semiauto.functor
     given Functor[EnumK1] = strict.semiauto.functor
     given Functor[Many] = strict.semiauto.functor
     given Functor[AtMostOne] = strict.semiauto.functor

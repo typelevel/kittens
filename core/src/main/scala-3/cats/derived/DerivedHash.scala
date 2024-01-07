@@ -22,8 +22,7 @@ object DerivedHash:
 
   @nowarn("msg=unused import")
   inline def strict[A]: Hash[A] =
-    import DerivedHash.given
-    import Strict.product
+    import Strict.given
     summonInline[DerivedHash[A]].instance
 
   // These instances support singleton types unlike the instances in Cats' kernel.
@@ -66,5 +65,6 @@ object DerivedHash:
       inst.fold[Int](x)([t] => (h: F[t], x: t) => h.hash(x))
 
   object Strict:
+    export DerivedHash.coproduct
     given product[A <: scala.Product](using K0.ProductInstances[Hash, A]): DerivedHash[A] =
       new Product[Hash, A] {}

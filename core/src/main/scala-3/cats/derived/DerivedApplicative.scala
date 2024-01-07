@@ -22,7 +22,6 @@ object DerivedApplicative:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: Applicative[F] =
-    import DerivedApplicative.given_DerivedApplicative_Const
     import Strict.given
     summonInline[DerivedApplicative[F]].instance
 
@@ -31,7 +30,8 @@ object DerivedApplicative:
     def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedApplicative[[x] =>> F[G[x]]] =
-    Strict.nested(using F.unify, G.unify)
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Applicative[[x] =>> F[G[x]]]:
+      export delegate.*
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApplicative[F] =
     Strict.product(using inst.unify)
@@ -47,9 +47,5 @@ object DerivedApplicative:
       inst.construct([f[_]] => (F: T[f]) => F.pure[A](x))
 
   object Strict:
-    given nested[F[_], G[_]](using F: => Applicative[F], G: => Applicative[G]): DerivedApplicative[[x] =>> F[G[x]]] =
-      new Derived.Lazy(() => F.compose(G)) with Applicative[[x] =>> F[G[x]]]:
-        export delegate.*
-
     given product[F[_]](using K1.ProductInstances[Applicative, F]): DerivedApplicative[F] =
       new Product[Applicative, F] with DerivedApply.Product[Applicative, F] {}

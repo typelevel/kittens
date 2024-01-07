@@ -87,12 +87,12 @@ object PureSuite:
     given Pure[BoxColor] = semiauto.pure
 
   object strictInstances:
-    given [T: Empty]: Pure[Const[T]] = strict.semiauto.pure
-    given [T <: Singleton: ValueOf]: Pure[Const[T]] = strict.semiauto.pure
-    given Pure[LOption] = strict.semiauto.pure
+    given [T: Empty]: Pure[Const[T]] = semiauto.pure
+    given [T <: Singleton: ValueOf]: Pure[Const[T]] = semiauto.pure
+    given Pure[LOption] = semiauto.pure
     given Pure[PList] = strict.semiauto.pure
     given Pure[CaseClassWOption] = strict.semiauto.pure
-    given Pure[NelOption] = strict.semiauto.pure
+    given Pure[NelOption] = semiauto.pure
     given Pure[Interleaved] = strict.semiauto.pure
     given Pure[Singletons] = strict.semiauto.pure
     given Pure[BoxColor] = strict.semiauto.pure

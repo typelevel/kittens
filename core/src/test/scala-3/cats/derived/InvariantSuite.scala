@@ -104,7 +104,7 @@ object InvariantSuite:
     given Invariant[Search] = semiauto.invariant
 
   object strictInstances:
-    given [T]: Invariant[Const[T]] = strict.semiauto.invariant
+    given [T]: Invariant[Const[T]] = semiauto.invariant
     given [F[_]: Invariant, G[_]: Invariant]: Invariant[[x] =>> F[G[x]]] = Invariant[F].compose[G]
     given [F[_]: Invariant, R]: Invariant[[x] =>> F[x => R]] = Invariant[F].compose[[x] =>> x => R]
     given Invariant[Snoc] = strict.semiauto.invariant

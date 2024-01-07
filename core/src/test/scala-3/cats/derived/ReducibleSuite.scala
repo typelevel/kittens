@@ -93,7 +93,7 @@ object ReducibleSuite:
     given Reducible[Search] = semiauto.reducible
 
   object strictInstances:
-    given [T]: Foldable[Const[T]] = strict.semiauto.foldable
+    given [T]: Foldable[Const[T]] = semiauto.foldable
     given [F[_]: Foldable, G[_]: Foldable]: Foldable[[x] =>> F[G[x]]] = Foldable[F].compose[G]
     given Foldable[IList] = strict.semiauto.foldable
     given Foldable[Snoc] = strict.semiauto.foldable

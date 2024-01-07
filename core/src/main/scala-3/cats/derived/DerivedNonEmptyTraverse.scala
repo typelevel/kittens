@@ -23,14 +23,13 @@ object DerivedNonEmptyTraverse:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: NonEmptyTraverse[F] =
-    import DerivedTraverse.given
-    import DerivedNonEmptyTraverse.given
-    import DerivedTraverse.Strict.{nested, product}
-    import DerivedNonEmptyTraverse.Strict.{nested, product}
+    import DerivedTraverse.Strict.given
+    import DerivedNonEmptyTraverse.Strict.given
     summonInline[DerivedNonEmptyTraverse[F]].instance
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedNonEmptyTraverse[[x] =>> F[G[x]]] =
-    Strict.nested(using F.unify, G.unify)
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with NonEmptyTraverse[[x] =>> F[G[x]]]:
+      export delegate.*
 
   def product[F[_]](ev: NonEmptyTraverse[?])(using
       inst: K1.ProductInstances[DerivedTraverse.Or, F]
@@ -40,12 +39,8 @@ object DerivedNonEmptyTraverse:
   inline given product[F[_]](using gen: K1.ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
     product(K1.summonFirst[Or, gen.MirroredElemTypes].unify)
 
-  given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedNonEmptyTraverse[F] =
-    given K1.CoproductInstances[NonEmptyTraverse, F] = inst.unify
-    new Coproduct[NonEmptyTraverse, F]
-      with DerivedReducible.Coproduct[NonEmptyTraverse, F]
-      with DerivedTraverse.Coproduct[NonEmptyTraverse, F]
-      with DerivedFunctor.Generic[NonEmptyTraverse, F] {}
+  given [F[_]](using => K1.CoproductInstances[Or, F]): DerivedNonEmptyTraverse[F] =
+    Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Or, G[_]: Or]: DerivedNonEmptyTraverse[[x] =>> F[G[x]]] = nested
@@ -83,13 +78,6 @@ object DerivedNonEmptyTraverse:
       case (Right(f), Right(a)) => Right(f(a))
 
   object Strict:
-    given nested[F[_], G[_]](using
-        F: => NonEmptyTraverse[F],
-        G: => NonEmptyTraverse[G]
-    ): DerivedNonEmptyTraverse[[x] =>> F[G[x]]] =
-      new Derived.Lazy(() => F.compose(G)) with NonEmptyTraverse[[x] =>> F[G[x]]]:
-        export delegate.*
-
     def product[F[_]](ev: NonEmptyTraverse[?])(using K1.ProductInstances[Traverse, F]): DerivedNonEmptyTraverse[F] =
       new Product[Traverse, F](ev)
         with DerivedReducible.Product[Traverse, F](ev)
@@ -98,3 +86,10 @@ object DerivedNonEmptyTraverse:
 
     inline given product[F[_]](using gen: K1.ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
       product(K1.summonFirst[NonEmptyTraverse, gen.MirroredElemTypes])
+
+    given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedNonEmptyTraverse[F] =
+      given K1.CoproductInstances[NonEmptyTraverse, F] = inst.unify
+      new Coproduct[NonEmptyTraverse, F]
+        with DerivedReducible.Coproduct[NonEmptyTraverse, F]
+        with DerivedTraverse.Coproduct[NonEmptyTraverse, F]
+        with DerivedFunctor.Generic[NonEmptyTraverse, F] {}

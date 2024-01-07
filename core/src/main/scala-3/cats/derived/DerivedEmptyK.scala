@@ -1,6 +1,6 @@
 package cats.derived
 
-import alleycats.{Empty, EmptyK, Pure}
+import alleycats.{Empty, EmptyK}
 import shapeless3.deriving.{Const, K1}
 
 import scala.annotation.*
@@ -25,30 +25,31 @@ object DerivedEmptyK:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: EmptyK[F] =
-    import DerivedEmptyK.given
-    import Strict.product
+    import Strict.given
     summonInline[DerivedEmptyK[F]].instance
 
   given [T](using T: Empty[T]): DerivedEmptyK[Const[T]] = new EmptyK[Const[T]]:
     def empty[A]: T = T.empty
 
   given nested[F[_], G[_]](using F: => Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
-    Strict.nested(using F.unify)
+    new EmptyK[[x] =>> F[G[x]]]:
+      lazy val f = F.unify
+      def empty[A]: F[G[A]] = f.empty
 
   given nested[F[_], G[_]](using
-      ev: NotGiven[Or[F]]
+      NotGiven[Or[F]]
   )(using F: DerivedPure.Or[F], G: => Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] =
-    Strict.nested(using ev.asInstanceOf)(using F.unify, G.unify)
+    new EmptyK[[x] =>> F[G[x]]]:
+      val f = F.unify
+      lazy val g = G.unify
+      def empty[A]: F[G[A]] = f.pure(g.empty)
 
-  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedEmptyK[F] =
-    Strict.product(using inst.unify)
-
-  inline given coproduct[F[_]](using gen: K1.CoproductGeneric[F]): DerivedEmptyK[F] =
-    gen.withOnly[Or, EmptyK[F]]([f[x] <: F[x]] => (F: Or[f]) => F.unify.asInstanceOf[EmptyK[F]])
+  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedEmptyK[F] = Strict.product(using inst.unify)
+  inline given coproduct[F[_]](using K1.CoproductGeneric[F]): DerivedEmptyK[F] = Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using F: Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
-    Strict.nested(using F.unify)
+    nested(using F)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
@@ -57,13 +58,8 @@ object DerivedEmptyK:
     nested(using ev)
 
   object Strict:
-    given nested[F[_], G[_]](using F: => EmptyK[F]): DerivedEmptyK[[x] =>> F[G[x]]] = new EmptyK[[x] =>> F[G[x]]]:
-      def empty[A]: F[G[A]] = F.empty
-
-    given nested[F[_], G[_]](using
-        NotGiven[EmptyK[F]]
-    )(using F: Pure[F], G: => EmptyK[G]): DerivedEmptyK[[x] =>> F[G[x]]] = new EmptyK[[x] =>> F[G[x]]]:
-      def empty[A]: F[G[A]] = F.pure(G.empty)
-
     given product[F[_]](using inst: K1.ProductInstances[EmptyK, F]): DerivedEmptyK[F] = new EmptyK[F]:
       def empty[A]: F[A] = inst.construct([f[_]] => (F: EmptyK[f]) => F.empty[A])
+
+    inline given coproduct[F[_]](using gen: K1.CoproductGeneric[F]): DerivedEmptyK[F] =
+      gen.withOnly[Or, EmptyK[F]]([f[x] <: F[x]] => (F: Or[f]) => F.unify.asInstanceOf[EmptyK[F]])

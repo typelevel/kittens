@@ -23,7 +23,6 @@ object DerivedInvariant:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: Invariant[F] =
-    import DerivedInvariant.given_DerivedInvariant_Const
     import Strict.given
     summonInline[DerivedInvariant[F]].instance
 
@@ -31,7 +30,8 @@ object DerivedInvariant:
     def imap[A, B](fa: T)(f: A => B)(g: B => A): T = fa
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedInvariant[[x] =>> F[G[x]]] =
-    Strict.nested(using F.unify, G.unify)
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Invariant[[x] =>> F[G[x]]]:
+      export delegate.*
 
   given [F[_]](using inst: => K1.Instances[Or, F]): DerivedInvariant[F] =
     generic(using inst.unify)
@@ -47,12 +47,5 @@ object DerivedInvariant:
       inst.map(fa)([f[_]] => (F: T[f], fa: f[A]) => F.imap(fa)(f)(g))
 
   object Strict:
-    given nested[F[_], G[_]](using F: => Invariant[F], G: => Invariant[G]): DerivedInvariant[[x] =>> F[G[x]]] =
-      new Derived.Lazy(() => F.compose(G)) with Invariant[[x] =>> F[G[x]]]:
-        export delegate.*
-
-    given product[F[_]](using K1.ProductInstances[Invariant, F]): DerivedInvariant[F] =
-      generic
-
-    given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedInvariant[F] =
-      generic(using inst.unify)
+    given product[F[_]](using K1.ProductInstances[Invariant, F]): DerivedInvariant[F] = generic
+    given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedInvariant[F] = generic(using inst.unify)

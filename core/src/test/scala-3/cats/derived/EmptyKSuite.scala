@@ -83,10 +83,10 @@ object EmptyKSuite:
     given EmptyK[BoxColor] = semiauto.emptyK
 
   object strictInstances:
-    given EmptyK[LOption] = strict.semiauto.emptyK
+    given EmptyK[LOption] = semiauto.emptyK
     given EmptyK[PList] = strict.semiauto.emptyK
     given EmptyK[CaseClassWOption] = strict.semiauto.emptyK
-    given EmptyK[NelOption] = strict.semiauto.emptyK
+    given EmptyK[NelOption] = semiauto.emptyK
     given EmptyK[IList] = strict.semiauto.emptyK
     given EmptyK[Snoc] = strict.semiauto.emptyK
     given EmptyK[BoxColor] = strict.semiauto.emptyK

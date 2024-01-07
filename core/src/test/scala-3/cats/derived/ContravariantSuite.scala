@@ -88,7 +88,7 @@ object ContravariantSuite:
     given Contravariant[EnumK1Contra] = semiauto.contravariant
 
   object strictInstances:
-    given [T]: Contravariant[Const[T]] = strict.semiauto.contravariant
+    given [T]: Contravariant[Const[T]] = semiauto.contravariant
     given [F[_]: Functor, R]: Contravariant[[x] =>> F[x => R]] = Functor[F].composeContravariant[[x] =>> x => R]
     given Functor[Snoc] = strict.semiauto.functor
     given Contravariant[OptPred] = strict.semiauto.contravariant

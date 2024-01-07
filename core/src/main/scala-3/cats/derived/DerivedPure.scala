@@ -22,7 +22,6 @@ object DerivedPure:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: Pure[F] =
-    import DerivedPure.given_DerivedPure_Const
     import Strict.given
     summonInline[DerivedPure[F]].instance
 
@@ -33,7 +32,10 @@ object DerivedPure:
     def pure[A](a: A): T = valueOf[T]
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedPure[[x] =>> F[G[x]]] =
-    Strict.nested(using F.unify, G.unify)
+    new Pure[[x] =>> F[G[x]]]:
+      lazy val f = F.unify
+      lazy val g = G.unify
+      def pure[A](a: A): F[G[A]] = f.pure(g.pure(a))
 
   given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedPure[F] =
     Strict.product(using inst.unify)
@@ -42,9 +44,5 @@ object DerivedPure:
   protected given [F[_]: Or, G[_]: Or]: DerivedPure[[x] =>> F[G[x]]] = nested
 
   object Strict:
-    given nested[F[_], G[_]](using F: => Pure[F], G: => Pure[G]): DerivedPure[[x] =>> F[G[x]]] =
-      new Pure[[x] =>> F[G[x]]]:
-        def pure[A](a: A): F[G[A]] = F.pure(G.pure(a))
-
     given product[F[_]](using inst: K1.ProductInstances[Pure, F]): DerivedPure[F] = new Pure[F]:
       def pure[A](a: A): F[A] = inst.construct([f[_]] => (F: Pure[f]) => F.pure(a))

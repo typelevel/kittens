@@ -81,7 +81,7 @@ object TraverseSuite:
     given Traverse[Search] = semiauto.traverse
 
   object strictInstances:
-    given [T]: Traverse[Const[T]] = strict.semiauto.traverse
+    given [T]: Traverse[Const[T]] = semiauto.traverse
     given [F[_]: Traverse, G[_]: Traverse]: Traverse[[x] =>> F[G[x]]] = Traverse[F].compose[G]
     given Traverse[Snoc] = strict.semiauto.traverse
     given Traverse[IList] = strict.semiauto.traverse

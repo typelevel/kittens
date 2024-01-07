@@ -22,7 +22,6 @@ object DerivedApply:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: Apply[F] =
-    import DerivedApply.given_DerivedApply_Const
     import Strict.given
     summonInline[DerivedApply[F]].instance
 
@@ -31,7 +30,8 @@ object DerivedApply:
     def map[A, B](fa: T)(f: A => B): T = fa
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedApply[[x] =>> F[G[x]]] =
-    Strict.nested(using F.unify, G.unify)
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Apply[[x] =>> F[G[x]]]:
+      export delegate.*
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApply[F] =
     Strict.product(using inst.unify)
@@ -46,9 +46,5 @@ object DerivedApply:
       inst.map2(ff, fa)([f[_]] => (F: T[f], ff: f[A => B], fa: f[A]) => F.ap(ff)(fa))
 
   object Strict:
-    given nested[F[_], G[_]](using F: => Apply[F], G: => Apply[G]): DerivedApply[[x] =>> F[G[x]]] =
-      new Derived.Lazy(() => F.compose(G)) with Apply[[x] =>> F[G[x]]]:
-        export delegate.*
-
     given product[F[_]](using K1.ProductInstances[Apply, F]): DerivedApply[F] =
       new Product[Apply, F] {}

@@ -21,16 +21,15 @@ object DerivedEmpty:
 
   @nowarn("msg=unused import")
   inline def strict[A]: Empty[A] =
-    import DerivedEmpty.given
-    import Strict.product
+    import Strict.given
     summonInline[DerivedEmpty[A]].instance
 
-  given product[A](using inst: K0.ProductInstances[Or, A]): DerivedEmpty[A] =
-    Strict.product(using inst.unify)
-
-  inline given coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
-    Empty(gen.withOnly[Or, A]([a <: A] => (A: Or[a]) => A.unify.empty))
+  given product[A](using inst: K0.ProductInstances[Or, A]): DerivedEmpty[A] = Strict.product(using inst.unify)
+  inline given coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] = Strict.coproduct
 
   object Strict:
     given product[A](using inst: K0.ProductInstances[Empty, A]): DerivedEmpty[A] =
       Empty(inst.construct([a] => (A: Empty[a]) => A.empty))
+
+    inline given coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
+      Empty(gen.withOnly[Or, A]([a <: A] => (A: Or[a]) => A.unify.empty))

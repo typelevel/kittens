@@ -81,13 +81,12 @@ object ApplicativeSuite:
     given Applicative[ListBox] = semiauto.applicative
 
   object strictInstances:
-    given [T: Monoid]: Applicative[Const[T]] = strict.semiauto.applicative
+    given [T: Monoid]: Applicative[Const[T]] = semiauto.applicative
+    given [F[_]: Applicative, G[_]: Applicative]: Applicative[[x] =>> F[G[x]]] = Applicative[F].compose[G]
     given Applicative[Box] = strict.semiauto.applicative
     given Applicative[CaseClassWOption] = strict.semiauto.applicative
-    given Applicative[OptList] = strict.semiauto.applicative
     given Applicative[AndInt] = strict.semiauto.applicative
     given Applicative[Interleaved] = strict.semiauto.applicative
-    given Applicative[ListBox] = strict.semiauto.applicative
 
   object derivedInstances:
     case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives Applicative

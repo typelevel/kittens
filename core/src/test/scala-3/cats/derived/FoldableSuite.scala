@@ -102,7 +102,7 @@ object FoldableSuite:
     given Foldable[Search] = semiauto.foldable
 
   object strictInstances:
-    given [T]: Foldable[Const[T]] = strict.semiauto.foldable
+    given [T]: Foldable[Const[T]] = semiauto.foldable
     given [F[_]: Foldable, G[_]: Foldable]: Foldable[[x] =>> F[G[x]]] = Foldable[F].compose[G]
     given Foldable[Snoc] = strict.semiauto.foldable
     given Foldable[IList] = strict.semiauto.foldable

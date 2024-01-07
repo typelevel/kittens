@@ -82,14 +82,12 @@ object ApplySuite:
     given Apply[Search] = semiauto.apply
 
   object strictInstances:
-    given [T: Semigroup]: Apply[Const[T]] = strict.semiauto.apply
+    given [T: Semigroup]: Apply[Const[T]] = semiauto.apply
     given [F[_]: Apply, G[_]: Apply]: Apply[[x] =>> F[G[x]]] = Apply[F].compose[G]
     given Apply[Box] = strict.semiauto.apply
     given Apply[CaseClassWOption] = strict.semiauto.apply
-    given Apply[OptList] = strict.semiauto.apply
     given Apply[AndInt] = strict.semiauto.apply
     given Apply[Interleaved] = strict.semiauto.apply
-    given Apply[ListBox] = strict.semiauto.apply
     given Apply[Search] = strict.semiauto.apply
 
   object derivedInstances:

@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.{Apply, Semigroup, SemigroupK}
+import cats.{Semigroup, SemigroupK}
 import shapeless3.deriving.{Const, K1}
 
 import scala.annotation.*
@@ -24,7 +24,6 @@ object DerivedSemigroupK:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: SemigroupK[F] =
-    import DerivedSemigroupK.given_DerivedSemigroupK_Const
     import Strict.given
     summonInline[DerivedSemigroupK[F]].instance
 
@@ -32,19 +31,23 @@ object DerivedSemigroupK:
     def combineK[A](x: T, y: T): T = T.combine(x, y)
 
   given nested[F[_], G[_]](using F: => Or[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
-    Strict.nested(using F.unify)
+    new Derived.Lazy(() => F.unify.compose[G]) with SemigroupK[[x] =>> F[G[x]]]:
+      export delegate.*
 
   given nested[F[_], G[_]](using
-      ev: NotGiven[Or[F]]
+      NotGiven[Or[F]]
   )(using F: DerivedApply.Or[F], G: => Or[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
-    Strict.nested(using ev.asInstanceOf)(using F.unify, G.unify)
+    new SemigroupK[[x] =>> F[G[x]]]:
+      val f = F.unify
+      lazy val g = G.unify
+      def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = f.map2(x, y)(g.combineK)
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedSemigroupK[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using F: Or[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
-    Strict.nested(using F.unify)
+    nested(using F)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
@@ -57,14 +60,5 @@ object DerivedSemigroupK:
       inst.map2(x, y)([f[_]] => (F: T[f], x: f[A], y: f[A]) => F.combineK(x, y))
 
   object Strict:
-    given nested[F[_], G[_]](using F: => SemigroupK[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
-      new Derived.Lazy(() => F.compose[G]) with SemigroupK[[x] =>> F[G[x]]]:
-        export delegate.*
-
-    given nested[F[_], G[_]](using
-        NotGiven[SemigroupK[F]]
-    )(using F: Apply[F], G: => SemigroupK[G]): DerivedSemigroupK[[x] =>> F[G[x]]] = new SemigroupK[[x] =>> F[G[x]]]:
-      def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = F.map2(x, y)(G.combineK)
-
     given product[F[_]](using K1.ProductInstances[SemigroupK, F]): DerivedSemigroupK[F] =
       new Product[SemigroupK, F] {}

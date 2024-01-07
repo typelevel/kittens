@@ -193,7 +193,7 @@ object ShowPrettySuite:
     given ShowPretty[Box[Bogus]] = semiauto.showPretty
 
   object strictInstances:
-    given [A <: Singleton: ValueOf]: ShowPretty[A] = ShowPretty.fromToString
+    given [A <: Singleton: ValueOf]: Show[A] = Show.fromToString
     given ShowPretty[Foo] = strict.semiauto.showPretty
     given ShowPretty[Inner] = strict.semiauto.showPretty
     given ShowPretty[Outer] = strict.semiauto.showPretty

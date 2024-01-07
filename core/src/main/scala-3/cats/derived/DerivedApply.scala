@@ -20,17 +20,21 @@ object DerivedApply:
     import DerivedApply.given
     summonInline[DerivedApply[F]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[F[_]]: Apply[F] =
+    import DerivedApply.given_DerivedApply_Const
+    import Strict.given
+    summonInline[DerivedApply[F]].instance
+
   given [T](using T: Semigroup[T]): DerivedApply[Const[T]] = new Apply[Const[T]]:
     def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
     def map[A, B](fa: T)(f: A => B): T = fa
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedApply[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(G.unify)) with Apply[[x] =>> F[G[x]]]:
-      export delegate.*
+    Strict.nested(using F.unify, G.unify)
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApply[F] =
-    given K1.ProductInstances[Apply, F] = inst.unify
-    new Product[Apply, F] {}
+    Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Or, G[_]: Or]: DerivedApply[[x] =>> F[G[x]]] = nested
@@ -40,3 +44,11 @@ object DerivedApply:
     final override def map[A, B](fa: F[A])(f: A => B): F[B] = F.map(fa)(f)
     final override def ap[A, B](ff: F[A => B])(fa: F[A]): F[B] =
       inst.map2(ff, fa)([f[_]] => (F: T[f], ff: f[A => B], fa: f[A]) => F.ap(ff)(fa))
+
+  object Strict:
+    given nested[F[_], G[_]](using F: => Apply[F], G: => Apply[G]): DerivedApply[[x] =>> F[G[x]]] =
+      new Derived.Lazy(() => F.compose(G)) with Apply[[x] =>> F[G[x]]]:
+        export delegate.*
+
+    given product[F[_]](using K1.ProductInstances[Apply, F]): DerivedApply[F] =
+      new Product[Apply, F] {}

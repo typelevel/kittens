@@ -49,5 +49,5 @@ object DerivedPartialOrder:
         [t] => (ord: T[t], t0: t, t1: t) => ord.partialCompare(t0, t1)
 
   object Strict:
-    given product[A](using => K0.ProductInstances[PartialOrder, A]): DerivedPartialOrder[A] =
+    given product[A](using K0.ProductInstances[PartialOrder, A]): DerivedPartialOrder[A] =
       new Product[PartialOrder, A] {}

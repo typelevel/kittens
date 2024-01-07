@@ -30,8 +30,8 @@ object DerivedSemigroup:
 
   trait Product[F[x] <: Semigroup[x], A](using inst: K0.ProductInstances[F, A]) extends Semigroup[A]:
     final override def combine(x: A, y: A): A =
-      inst.map2(x, y)([A] => (F: F[A], x: A, y: A) => F.combine(x, y))
+      inst.map2(x, y)([a] => (F: F[a], x: a, y: a) => F.combine(x, y))
 
   object Strict:
-    given product[A](using => K0.ProductInstances[Semigroup, A]): DerivedSemigroup[A] =
+    given product[A](using K0.ProductInstances[Semigroup, A]): DerivedSemigroup[A] =
       new Product[Semigroup, A] {}

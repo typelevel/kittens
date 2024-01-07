@@ -44,5 +44,5 @@ object DerivedEq:
       [t] => (eqt: F[t], x: t, y: t) => eqt.eqv(x, y)
 
   object Strict:
-    given product[A](using => K0.ProductInstances[Eq, A]): DerivedEq[A] =
+    given product[A](using K0.ProductInstances[Eq, A]): DerivedEq[A] =
       new Product[Eq, A] {}

@@ -49,5 +49,5 @@ object DerivedOrder:
         [t] => (ord: T[t], t0: t, t1: t) => ord.compare(t0, t1)
 
   object Strict:
-    given product[A](using => K0.ProductInstances[Order, A]): DerivedOrder[A] =
+    given product[A](using K0.ProductInstances[Order, A]): DerivedOrder[A] =
       new Product[Order, A] {}

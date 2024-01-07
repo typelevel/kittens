@@ -41,7 +41,7 @@ object DerivedMonoidK:
   ): DerivedMonoidK[[x] =>> F[G[x]]] =
     Strict.nested(using ev.asInstanceOf)(using F.unify, G.unify)
 
-  given product[F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedMonoidK[F] =
+  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedMonoidK[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
@@ -72,5 +72,5 @@ object DerivedMonoidK:
       def empty[A]: F[G[A]] = F.pure(G.empty[A])
       def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = F.map2(x, y)(G.combineK)
 
-    given product[F[_]](using => K1.ProductInstances[MonoidK, F]): DerivedMonoidK[F] =
+    given product[F[_]](using K1.ProductInstances[MonoidK, F]): DerivedMonoidK[F] =
       new Product[MonoidK, F] {}

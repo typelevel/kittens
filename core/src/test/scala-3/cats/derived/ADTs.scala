@@ -226,7 +226,7 @@ object ADTs:
   final case class Second(value: String)
   final case class Middle(first: First, second: Option[Second])
   final case class Top(middle: Middle)
-  final case class TopK[A](middle: Middle, k: Option[A])
+  final case class TopK[A](middle: Middle, k: CaseClassWOption[A])
 
   final case class Address(street: String, city: String, state: String)
   final case class ContactInfo(phoneNumber: String, address: Address)

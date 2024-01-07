@@ -66,5 +66,5 @@ object DerivedHash:
       inst.fold[Int](x)([t] => (h: F[t], x: t) => h.hash(x))
 
   object Strict:
-    given product[A <: scala.Product](using => K0.ProductInstances[Hash, A]): DerivedHash[A] =
+    given product[A <: scala.Product](using K0.ProductInstances[Hash, A]): DerivedHash[A] =
       new Product[Hash, A] {}

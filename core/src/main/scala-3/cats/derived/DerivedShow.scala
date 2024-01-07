@@ -37,7 +37,7 @@ object DerivedShow:
   given string[A <: String]: DerivedShow[A] = Show.fromToString
   given symbol[A <: Symbol]: DerivedShow[A] = Show.fromToString
 
-  given product[A: Labelling](using inst: K0.ProductInstances[Or, A]): DerivedShow[A] =
+  given product[A: Labelling](using inst: => K0.ProductInstances[Or, A]): DerivedShow[A] =
     given K0.ProductInstances[Show, A] = inst.unify
     Strict.product
 
@@ -80,5 +80,5 @@ object DerivedShow:
       inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))
 
   object Strict:
-    given product[A: Labelling](using K0.ProductInstances[Show, A]): DerivedShow[A] =
+    given product[A: Labelling](using => K0.ProductInstances[Show, A]): DerivedShow[A] =
       new Product[Show, A] {}

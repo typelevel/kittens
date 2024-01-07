@@ -35,5 +35,5 @@ object DerivedCommutativeSemigroup:
         CommutativeSemigroup[A]
 
   object Strict:
-    given product[A](using => K0.ProductInstances[CommutativeSemigroup, A]): DerivedCommutativeSemigroup[A] =
+    given product[A](using K0.ProductInstances[CommutativeSemigroup, A]): DerivedCommutativeSemigroup[A] =
       new Product[CommutativeSemigroup, A] {}

@@ -35,5 +35,5 @@ object DerivedCommutativeMonoid:
         CommutativeMonoid[A]
 
   object Strict:
-    given product[A](using => K0.ProductInstances[CommutativeMonoid, A]): DerivedCommutativeMonoid[A] =
+    given product[A](using K0.ProductInstances[CommutativeMonoid, A]): DerivedCommutativeMonoid[A] =
       new Product[CommutativeMonoid, A] {}

@@ -20,18 +20,20 @@ import cats.Invariant
 import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
 import cats.laws.discipline.eq.*
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class InvariantSuite extends KittensSuite:
-  import InvariantSuite.*
   import ADTs.*
+  import InvariantSuite.*
 
   inline def tests[F[_]]: InvariantTests[F] =
     InvariantTests[F](summonInline)
 
   inline def validate(instance: String): Unit =
     checkAll(s"$instance[TreeF]", tests[TreeF].invariant[MiniInt, String, Boolean])
-    checkAll(s"$instance[GenAdtF]", tests[GenericAdtF].invariant[MiniInt, String, Boolean])
+    checkAll(s"$instance[GenericAdtF]", tests[GenericAdtF].invariant[MiniInt, String, Boolean])
     // TODO: https://github.com/typelevel/kittens/issues/473
     // checkAll(s"$instance[InterleavedF]", tests[InterleavedF].invariant[MiniInt, String, Boolean])
     checkAll(s"$instance[AndCharF]", tests[AndCharF].invariant[MiniInt, String, Boolean])
@@ -53,6 +55,11 @@ class InvariantSuite extends KittensSuite:
   locally:
     import semiInstances.given
     validate("semiauto.invariant")
+
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.invariant")
+    testNoInstance("strict.semiauto.invariant", "TopK")
 
   locally:
     import derivedInstances.*
@@ -95,6 +102,28 @@ object InvariantSuite:
     given Invariant[AtLeastOne] = semiauto.invariant
     given Invariant[Singletons] = semiauto.invariant
     given Invariant[Search] = semiauto.invariant
+
+  object strictInstances:
+    given [T]: Invariant[Const[T]] = strict.semiauto.invariant
+    given [F[_]: Invariant, G[_]: Invariant]: Invariant[[x] =>> F[G[x]]] = Invariant[F].compose[G]
+    given [F[_]: Invariant, R]: Invariant[[x] =>> F[x => R]] = Invariant[F].compose[[x] =>> x => R]
+    given Invariant[Snoc] = strict.semiauto.invariant
+    given Invariant[GenericAdtF] = strict.semiauto.invariant
+    given Invariant[ListFToInt] = strict.semiauto.invariant
+    // TODO: https://github.com/typelevel/kittens/issues/473
+    // given Invariant[InterleavedF] = strict.semiauto.invariant
+    given Invariant[AndCharF] = strict.semiauto.invariant
+    given Invariant[TreeF] = strict.semiauto.invariant
+    given Invariant[Pred] = strict.semiauto.invariant
+    given Invariant[ListSnoc] = strict.semiauto.invariant
+    given Invariant[Bivariant] = strict.semiauto.invariant
+    given Invariant[IList] = strict.semiauto.invariant
+    given Invariant[EnumK1Inv] = strict.semiauto.invariant
+    given Invariant[Many] = strict.semiauto.invariant
+    given Invariant[AtMostOne] = strict.semiauto.invariant
+    given Invariant[AtLeastOne] = strict.semiauto.invariant
+    given Invariant[Singletons] = strict.semiauto.invariant
+    given Invariant[Search] = strict.semiauto.invariant
 
   object derivedInstances:
     case class Bivariant[A](x: ADTs.Bivariant[A]) derives Invariant

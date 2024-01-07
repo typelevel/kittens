@@ -35,5 +35,5 @@ object DerivedMonoid:
       inst.construct([A] => (F: F[A]) => F.empty)
 
   object Strict:
-    given product[A](using => K0.ProductInstances[Monoid, A]): DerivedMonoid[A] =
+    given product[A](using K0.ProductInstances[Monoid, A]): DerivedMonoid[A] =
       new Product[Monoid, A] {}

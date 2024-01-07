@@ -78,6 +78,7 @@ object strict:
   extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor.strict[F]
   extension (x: Contravariant.type) inline def derived[F[_]]: Contravariant[F] = DerivedContravariant.strict[F]
   extension (x: Apply.type) inline def derived[F[_]]: Apply[F] = DerivedApply.strict[F]
+  extension (x: Applicative.type) inline def derived[F[_]]: Applicative[F] = DerivedApplicative.strict[F]
   extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
 
   object semiauto:
@@ -100,6 +101,7 @@ object strict:
     inline def functor[F[_]]: Functor[F] = DerivedFunctor.strict[F]
     inline def contravariant[F[_]]: Contravariant[F] = DerivedContravariant.strict[F]
     inline def apply[F[_]]: Apply[F] = DerivedApply.strict[F]
+    inline def applicative[F[_]]: Applicative[F] = DerivedApplicative.strict[F]
     inline def foldable[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
 
 object auto:

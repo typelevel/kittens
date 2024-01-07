@@ -16,10 +16,12 @@
 
 package cats.derived
 
-import cats.Applicative
+import cats.{Applicative, Monoid}
 import cats.laws.discipline.*
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
 import org.scalacheck.Arbitrary
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class ApplicativeSuite extends KittensSuite:
@@ -40,24 +42,26 @@ class ApplicativeSuite extends KittensSuite:
     checkAll(s"$instance[ListBox]", tests[ListBox].applicative[Int, String, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Applicative[Interleaved]]))
 
-  locally {
+  locally:
     import auto.applicative.given
     validate("auto.applicative")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.applicative")
-  }
 
-  locally {
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.applicative")
+    testNoInstance("strict.semiauto.applicative", "TopK")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.applicative"
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].applicative[Int, String, Long])
     checkAll(s"$instance[AndInt]", tests[AndInt].applicative[Int, String, Long])
     checkAll(s"$instance[Interleaved]", tests[Interleaved].applicative[Int, String, Long])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Applicative[Interleaved]))
-  }
 
 end ApplicativeSuite
 
@@ -75,6 +79,15 @@ object ApplicativeSuite:
     given Applicative[AndInt] = semiauto.applicative
     given Applicative[Interleaved] = semiauto.applicative
     given Applicative[ListBox] = semiauto.applicative
+
+  object strictInstances:
+    given [T: Monoid]: Applicative[Const[T]] = strict.semiauto.applicative
+    given Applicative[Box] = strict.semiauto.applicative
+    given Applicative[CaseClassWOption] = strict.semiauto.applicative
+    given Applicative[OptList] = strict.semiauto.applicative
+    given Applicative[AndInt] = strict.semiauto.applicative
+    given Applicative[Interleaved] = strict.semiauto.applicative
+    given Applicative[ListBox] = strict.semiauto.applicative
 
   object derivedInstances:
     case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives Applicative

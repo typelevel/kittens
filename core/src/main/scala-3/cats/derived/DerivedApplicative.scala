@@ -20,17 +20,21 @@ object DerivedApplicative:
     import DerivedApplicative.given
     summonInline[DerivedApplicative[F]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[F[_]]: Applicative[F] =
+    import DerivedApplicative.given_DerivedApplicative_Const
+    import Strict.given
+    summonInline[DerivedApplicative[F]].instance
+
   given [T](using T: Monoid[T]): DerivedApplicative[Const[T]] = new Applicative[Const[T]]:
     def pure[A](x: A): T = T.empty
     def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedApplicative[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(G.unify)) with Applicative[[x] =>> F[G[x]]]:
-      export delegate.*
+    Strict.nested(using F.unify, G.unify)
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApplicative[F] =
-    given K1.ProductInstances[Applicative, F] = inst.unify
-    new Product[Applicative, F] with DerivedApply.Product[Applicative, F] {}
+    Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Or, G[_]: Or]: DerivedApplicative[[x] =>> F[G[x]]] = nested
@@ -41,3 +45,11 @@ object DerivedApplicative:
 
     final override def pure[A](x: A): F[A] =
       inst.construct([f[_]] => (F: T[f]) => F.pure[A](x))
+
+  object Strict:
+    given nested[F[_], G[_]](using F: => Applicative[F], G: => Applicative[G]): DerivedApplicative[[x] =>> F[G[x]]] =
+      new Derived.Lazy(() => F.compose(G)) with Applicative[[x] =>> F[G[x]]]:
+        export delegate.*
+
+    given product[F[_]](using K1.ProductInstances[Applicative, F]): DerivedApplicative[F] =
+      new Product[Applicative, F] with DerivedApply.Product[Applicative, F] {}

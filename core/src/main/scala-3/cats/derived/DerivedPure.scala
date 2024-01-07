@@ -22,8 +22,8 @@ object DerivedPure:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: Pure[F] =
-    import DerivedPure.given
-    import Strict.{nested, product}
+    import DerivedPure.given_DerivedPure_Const
+    import Strict.given
     summonInline[DerivedPure[F]].instance
 
   given [T](using T: Empty[T]): DerivedPure[Const[T]] = new Pure[Const[T]]:
@@ -35,14 +35,11 @@ object DerivedPure:
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedPure[[x] =>> F[G[x]]] =
     Strict.nested(using F.unify, G.unify)
 
-  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedPure[F] =
+  given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedPure[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedPure_F[F[_]: Or, G[_]: Or]: DerivedPure[[x] =>> F[G[x]]] = summon
-
-  @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedPure_F[F[_]](using K1.ProductInstances[Or, F]): DerivedPure[F] = summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedPure[[x] =>> F[G[x]]] = nested
 
   object Strict:
     given nested[F[_], G[_]](using F: => Pure[F], G: => Pure[G]): DerivedPure[[x] =>> F[G[x]]] =

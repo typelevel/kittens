@@ -24,8 +24,8 @@ object DerivedMonoidK:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: MonoidK[F] =
-    import DerivedMonoidK.given
-    import Strict.{nested, product}
+    import DerivedMonoidK.given_DerivedMonoidK_Const
+    import Strict.given
     summonInline[DerivedMonoidK[F]].instance
 
   given [T](using T: Monoid[T]): DerivedMonoidK[Const[T]] = new MonoidK[Const[T]]:
@@ -35,40 +35,39 @@ object DerivedMonoidK:
   given nested[F[_], G[_]](using F: => Or[F]): DerivedMonoidK[[x] =>> F[G[x]]] =
     Strict.nested(using F.unify)
 
-  given nested[F[_], G[_]](using ev: NotGiven[Or[F]])(using
-      F: DerivedApplicative.Or[F],
-      G: => Or[G]
-  ): DerivedMonoidK[[x] =>> F[G[x]]] =
+  given nested[F[_], G[_]](using
+      ev: NotGiven[Or[F]]
+  )(using F: DerivedApplicative.Or[F], G: => Or[G]): DerivedMonoidK[[x] =>> F[G[x]]] =
     Strict.nested(using ev.asInstanceOf)(using F.unify, G.unify)
 
-  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedMonoidK[F] =
+  given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedMonoidK[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedMonoidK_F[F[_]: Or, G[_]]: DerivedMonoidK[[x] =>> F[G[x]]] = summon
+  protected given [F[_], G[_]](using F: Or[F]): DerivedMonoidK[[x] =>> F[G[x]]] =
+    Strict.nested(using F.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedMonoidK_F[F[_]: DerivedApplicative.Or, G[_]: Or](
+  protected given [F[_], G[_]](using
       ev: NotGiven[Or[F]]
-  ): DerivedMonoidK[[x] =>> F[G[x]]] = nested(using ev)
-
-  @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedMonoidK_F[F[_]](using => K1.ProductInstances[Or, F]): DerivedMonoidK[F] = summon
+  )(using F: DerivedApplicative.Or[F], G: Or[G]): DerivedMonoidK[[x] =>> F[G[x]]] =
+    nested(using ev)
 
   trait Product[T[f[_]] <: MonoidK[f], F[_]](using inst: K1.ProductInstances[T, F])
       extends MonoidK[F],
         DerivedSemigroupK.Product[T, F]:
-    final override def empty[A]: F[A] = inst.construct([f[_]] => (F: T[f]) => F.empty[A])
+
+    final override def empty[A]: F[A] =
+      inst.construct([f[_]] => (F: T[f]) => F.empty[A])
 
   object Strict:
     given nested[F[_], G[_]](using F: => MonoidK[F]): DerivedMonoidK[[x] =>> F[G[x]]] =
       new Derived.Lazy(() => F.compose[G]) with MonoidK[[x] =>> F[G[x]]]:
         export delegate.*
 
-    given nested[F[_], G[_]](using NotGiven[MonoidK[F]])(using
-        F: Applicative[F],
-        G: => MonoidK[G]
-    ): DerivedMonoidK[[x] =>> F[G[x]]] = new MonoidK[[x] =>> F[G[x]]]:
+    given nested[F[_], G[_]](using
+        NotGiven[MonoidK[F]]
+    )(using F: Applicative[F], G: => MonoidK[G]): DerivedMonoidK[[x] =>> F[G[x]]] = new MonoidK[[x] =>> F[G[x]]]:
       def empty[A]: F[G[A]] = F.pure(G.empty[A])
       def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = F.map2(x, y)(G.combineK)
 

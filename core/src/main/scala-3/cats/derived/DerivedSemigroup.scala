@@ -22,11 +22,8 @@ object DerivedSemigroup:
     import Strict.given
     summonInline[DerivedSemigroup[A]].instance
 
-  given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedSemigroup[A] =
+  given [A](using inst: => K0.ProductInstances[Or, A]): DerivedSemigroup[A] =
     Strict.product(using inst.unify)
-
-  @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedSemigroup_A[A](using => K0.ProductInstances[Or, A]): DerivedSemigroup[A] = product
 
   trait Product[F[x] <: Semigroup[x], A](using inst: K0.ProductInstances[F, A]) extends Semigroup[A]:
     final override def combine(x: A, y: A): A =

@@ -22,13 +22,8 @@ object DerivedCommutativeSemigroup:
     import Strict.given
     summonInline[DerivedCommutativeSemigroup[A]].instance
 
-  given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedCommutativeSemigroup[A] =
+  given [A](using inst: => K0.ProductInstances[Or, A]): DerivedCommutativeSemigroup[A] =
     Strict.product(using inst.unify)
-
-  @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedCommutativeSemigroup_A[A](using
-      => K0.ProductInstances[Or, A]
-  ): DerivedCommutativeSemigroup[A] = summon
 
   trait Product[F[x] <: CommutativeSemigroup[x], A](using @unused inst: K0.ProductInstances[F, A])
       extends DerivedSemigroup.Product[F, A],

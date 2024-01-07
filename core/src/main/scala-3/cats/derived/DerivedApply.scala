@@ -33,7 +33,7 @@ object DerivedApply:
     new Product[Apply, F] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedApply_F[F[_]: Or, G[_]: Or]: DerivedApply[[x] =>> F[G[x]]] = summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedApply[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Apply[f], F[_]](using inst: K1.ProductInstances[T, F]) extends Apply[F]:
     private lazy val F = new DerivedFunctor.Generic[T, F] {}

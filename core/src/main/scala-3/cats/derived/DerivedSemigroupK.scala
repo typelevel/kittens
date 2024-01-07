@@ -24,8 +24,8 @@ object DerivedSemigroupK:
 
   @nowarn("msg=unused import")
   inline def strict[F[_]]: SemigroupK[F] =
-    import DerivedSemigroupK.given
-    import Strict.{nested, product}
+    import DerivedSemigroupK.given_DerivedSemigroupK_Const
+    import Strict.given
     summonInline[DerivedSemigroupK[F]].instance
 
   given [T](using T: Semigroup[T]): DerivedSemigroupK[Const[T]] = new SemigroupK[Const[T]]:
@@ -34,26 +34,23 @@ object DerivedSemigroupK:
   given nested[F[_], G[_]](using F: => Or[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
     Strict.nested(using F.unify)
 
-  given nested[F[_], G[_]](using ev: NotGiven[Or[F]])(using
-      F: DerivedApply.Or[F],
-      G: => Or[G]
-  ): DerivedSemigroupK[[x] =>> F[G[x]]] =
+  given nested[F[_], G[_]](using
+      ev: NotGiven[Or[F]]
+  )(using F: DerivedApply.Or[F], G: => Or[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
     Strict.nested(using ev.asInstanceOf)(using F.unify, G.unify)
 
-  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedSemigroupK[F] =
+  given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedSemigroupK[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedSemigroupK_F[F[_]: Or, G[_]]: DerivedSemigroupK[[x] =>> F[G[x]]] = summon
+  protected given [F[_], G[_]](using F: Or[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
+    Strict.nested(using F.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedSemigroupK_F[F[_]: DerivedApply.Or, G[_]: Or](
+  protected given [F[_], G[_]](using
       ev: NotGiven[Or[F]]
-  ): DerivedSemigroupK[[x] =>> F[G[x]]] = nested(using ev)
-
-  @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedSemigroupK_F[F[_]](using => K1.ProductInstances[Or, F]): DerivedSemigroupK[F] =
-    summon
+  )(using F: DerivedApply.Or[F], G: Or[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
+    nested(using ev)
 
   trait Product[T[f[_]] <: SemigroupK[f], F[_]](using inst: K1.ProductInstances[T, F]) extends SemigroupK[F]:
     final override def combineK[A](x: F[A], y: F[A]): F[A] =
@@ -64,10 +61,9 @@ object DerivedSemigroupK:
       new Derived.Lazy(() => F.compose[G]) with SemigroupK[[x] =>> F[G[x]]]:
         export delegate.*
 
-    given nested[F[_], G[_]](using NotGiven[SemigroupK[F]])(using
-        F: Apply[F],
-        G: => SemigroupK[G]
-    ): DerivedSemigroupK[[x] =>> F[G[x]]] = new SemigroupK[[x] =>> F[G[x]]]:
+    given nested[F[_], G[_]](using
+        NotGiven[SemigroupK[F]]
+    )(using F: Apply[F], G: => SemigroupK[G]): DerivedSemigroupK[[x] =>> F[G[x]]] = new SemigroupK[[x] =>> F[G[x]]]:
       def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = F.map2(x, y)(G.combineK)
 
     given product[F[_]](using K1.ProductInstances[SemigroupK, F]): DerivedSemigroupK[F] =

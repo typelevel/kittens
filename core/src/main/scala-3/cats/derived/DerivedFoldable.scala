@@ -38,7 +38,7 @@ object DerivedFoldable:
     new Coproduct[Foldable, F] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedFoldable_F[F[_]: Or, G[_]: Or]: DerivedFoldable[[x] =>> F[G[x]]] = summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedFoldable[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: K1.ProductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =

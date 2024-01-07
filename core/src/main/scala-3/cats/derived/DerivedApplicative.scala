@@ -33,9 +33,11 @@ object DerivedApplicative:
     new Product[Applicative, F] with DerivedApply.Product[Applicative, F] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedApplicative_F[F[_]: Or, G[_]: Or]: DerivedApplicative[[x] =>> F[G[x]]] = summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedApplicative[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Applicative[f], F[_]](using inst: K1.ProductInstances[T, F])
       extends Applicative[F],
         DerivedApply.Product[T, F]:
-    final override def pure[A](x: A): F[A] = inst.construct([f[_]] => (F: T[f]) => F.pure[A](x))
+
+    final override def pure[A](x: A): F[A] =
+      inst.construct([f[_]] => (F: T[f]) => F.pure[A](x))

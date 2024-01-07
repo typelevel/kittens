@@ -22,11 +22,8 @@ object DerivedMonoid:
     import Strict.given
     summonInline[DerivedMonoid[A]].instance
 
-  given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedMonoid[A] =
+  given [A](using inst: => K0.ProductInstances[Or, A]): DerivedMonoid[A] =
     Strict.product(using inst.unify)
-
-  @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedMonoid_A[A](using => K0.ProductInstances[Or, A]): DerivedMonoid[A] = product
 
   trait Product[F[x] <: Monoid[x], A](using inst: K0.ProductInstances[F, A])
       extends DerivedSemigroup.Product[F, A],

@@ -26,7 +26,7 @@ object DerivedEmptyK:
   @nowarn("msg=unused import")
   inline def strict[F[_]]: EmptyK[F] =
     import DerivedEmptyK.given
-    import Strict.{nested, product}
+    import Strict.product
     summonInline[DerivedEmptyK[F]].instance
 
   given [T](using T: Empty[T]): DerivedEmptyK[Const[T]] = new EmptyK[Const[T]]:
@@ -35,10 +35,9 @@ object DerivedEmptyK:
   given nested[F[_], G[_]](using F: => Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
     Strict.nested(using F.unify)
 
-  given nested[F[_], G[_]](using ev: NotGiven[Or[F]])(using
-      F: DerivedPure.Or[F],
-      G: => Or[G]
-  ): DerivedEmptyK[[x] =>> F[G[x]]] =
+  given nested[F[_], G[_]](using
+      ev: NotGiven[Or[F]]
+  )(using F: DerivedPure.Or[F], G: => Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] =
     Strict.nested(using ev.asInstanceOf)(using F.unify, G.unify)
 
   given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedEmptyK[F] =
@@ -48,21 +47,22 @@ object DerivedEmptyK:
     gen.withOnly[Or, EmptyK[F]]([f[x] <: F[x]] => (F: Or[f]) => F.unify.asInstanceOf[EmptyK[F]])
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedEmptyK_F[F[_]: Or, G[_]]: DerivedEmptyK[[x] =>> F[G[x]]] = summon
+  protected given [F[_], G[_]](using F: Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
+    Strict.nested(using F.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedEmptyK_F[F[_]: DerivedPure.Or, G[_]: Or](
+  protected given [F[_], G[_]](using
       ev: NotGiven[Or[F]]
-  ): DerivedEmptyK[[x] =>> F[G[x]]] = nested(using ev)
+  )(using DerivedPure.Or[F], Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] =
+    nested(using ev)
 
   object Strict:
     given nested[F[_], G[_]](using F: => EmptyK[F]): DerivedEmptyK[[x] =>> F[G[x]]] = new EmptyK[[x] =>> F[G[x]]]:
       def empty[A]: F[G[A]] = F.empty
 
-    given nested[F[_], G[_]](using NotGiven[EmptyK[F]])(using
-        F: Pure[F],
-        G: => EmptyK[G]
-    ): DerivedEmptyK[[x] =>> F[G[x]]] = new EmptyK[[x] =>> F[G[x]]]:
+    given nested[F[_], G[_]](using
+        NotGiven[EmptyK[F]]
+    )(using F: Pure[F], G: => EmptyK[G]): DerivedEmptyK[[x] =>> F[G[x]]] = new EmptyK[[x] =>> F[G[x]]]:
       def empty[A]: F[G[A]] = F.pure(G.empty)
 
     given product[F[_]](using inst: K1.ProductInstances[EmptyK, F]): DerivedEmptyK[F] = new EmptyK[F]:

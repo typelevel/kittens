@@ -56,18 +56,11 @@ object DerivedShowPretty:
   given product[A: Labelling](using => K0.ProductInstances[Or, A]): DerivedShowPretty[A] =
     new Product[A] {}
 
-  given coproduct[A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] =
+  given [A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] =
     new Coproduct[A] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedShowPretty_A[A](using
-      K0.ProductInstances[Or, A],
-      Labelling[A]
-  ): DerivedShowPretty[A] = summon
-
-  @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedShowPretty_A[A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] =
-    summon
+  protected given [A](using K0.ProductInstances[Or, A], Labelling[A]): DerivedShowPretty[A] = product
 
   trait Product[A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =

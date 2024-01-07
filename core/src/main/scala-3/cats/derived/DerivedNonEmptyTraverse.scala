@@ -45,8 +45,7 @@ object DerivedNonEmptyTraverse:
       with DerivedFunctor.Generic[NonEmptyTraverse, F] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedNonEmptyTraverse_F[F[_]: Or, G[_]: Or]: DerivedNonEmptyTraverse[[x] =>> F[G[x]]] =
-    summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedNonEmptyTraverse[[x] =>> F[G[x]]] = nested
 
   trait Product[T[x[_]] <: Traverse[x], F[_]](@unused ev: NonEmptyTraverse[?])(using
       @unused inst: K1.ProductInstances[T, F]

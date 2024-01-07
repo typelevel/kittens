@@ -33,8 +33,7 @@ object DerivedContravariant:
     new Generic[Contravariant, F] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedContravariant_F[F[_]: DerivedFunctor.Or, G[_]: Or]
-      : DerivedContravariant[[x] =>> F[G[x]]] = summon
+  protected given [F[_]: DerivedFunctor.Or, G[_]: Or]: DerivedContravariant[[x] =>> F[G[x]]] = nested
 
   trait Generic[T[f[_]] <: Contravariant[f], F[_]](using inst: K1.Instances[T, F]) extends Contravariant[F]:
     final override def contramap[A, B](fa: F[A])(f: B => A): F[B] =

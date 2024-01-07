@@ -40,14 +40,15 @@ object DerivedFunctor:
     new Generic[Functor, F] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedFunctor_F[F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFunctor[[x] =>> F[G[x]]] =
+  protected given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFunctor[[x] =>> F[G[x]]] =
     nested(using F, G)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedFunctor_F[F[_], G[_]](using
+  protected given [F[_], G[_]](using
       F: DerivedContravariant.Or[F],
       G: DerivedContravariant.Or[G]
-  ): DerivedFunctor[[x] =>> F[G[x]]] = nested(using F, G)
+  ): DerivedFunctor[[x] =>> F[G[x]]] =
+    nested(using F, G)
 
   trait Generic[T[f[_]] <: Functor[f], F[_]](using inst: K1.Instances[T, F]) extends Functor[F]:
     final override def map[A, B](fa: F[A])(f: A => B): F[B] =

@@ -37,7 +37,7 @@ object DerivedInvariant:
     generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedInvariant_F[F[_]: Or, G[_]: Or]: DerivedInvariant[[x] =>> F[G[x]]] = summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedInvariant[[x] =>> F[G[x]]] = nested
 
   private def generic[F[_]](using K1.Instances[Invariant, F]): DerivedInvariant[F] =
     new Generic[Invariant, F] {}

@@ -37,7 +37,7 @@ object DerivedReducible:
     new Coproduct[Reducible, F] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedReducible_F[F[_]: Or, G[_]: Or]: DerivedReducible[[x] =>> F[G[x]]] = summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedReducible[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](@unused ev: Reducible[?])(using inst: K1.ProductInstances[T, F])
       extends DerivedFoldable.Product[T, F],

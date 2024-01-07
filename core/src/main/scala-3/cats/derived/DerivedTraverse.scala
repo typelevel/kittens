@@ -40,7 +40,7 @@ object DerivedTraverse:
     new Coproduct[Traverse, F] with DerivedFunctor.Generic[Traverse, F] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedTraverse_F[F[_]: Or, G[_]: Or]: DerivedTraverse[[x] =>> F[G[x]]] = summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedTraverse[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Traverse[f], F[_]](using inst: K1.ProductInstances[T, F])
       extends Traverse[F],

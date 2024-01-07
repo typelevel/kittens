@@ -41,17 +41,12 @@ object DerivedShow:
     given K0.ProductInstances[Show, A] = inst.unify
     Strict.product
 
-  given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedShow[A] =
+  given [A](using inst: => K0.CoproductInstances[Or, A]): DerivedShow[A] =
     given K0.CoproductInstances[Show, A] = inst.unify
     new Coproduct[Show, A] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedShow_A[A](using K0.ProductInstances[Or, A], Labelling[A]): DerivedShow[A] =
-    product
-
-  @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedShow_A[A](using => K0.CoproductInstances[Or, A]): DerivedShow[A] =
-    coproduct
+  protected given [A](using K0.ProductInstances[Or, A], Labelling[A]): DerivedShow[A] = product
 
   trait Product[F[x] <: Show[x], A](using inst: K0.ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
     def show(a: A): String =

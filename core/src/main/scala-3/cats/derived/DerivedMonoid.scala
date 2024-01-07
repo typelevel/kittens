@@ -17,12 +17,20 @@ object DerivedMonoid:
     import DerivedMonoid.given
     summonInline[DerivedMonoid[A]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[A]: Monoid[A] =
+    import Strict.given
+    summonInline[DerivedMonoid[A]].instance
+
   given [A](using inst: => K0.ProductInstances[Or, A]): DerivedMonoid[A] =
-    given K0.ProductInstances[Monoid, A] = inst.unify
-    new Product[Monoid, A] {}
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: Monoid[x], A](using inst: K0.ProductInstances[F, A])
       extends DerivedSemigroup.Product[F, A],
         Monoid[A]:
     final override lazy val empty: A =
       inst.construct([A] => (F: F[A]) => F.empty)
+
+  object Strict:
+    given product[A](using K0.ProductInstances[Monoid, A]): DerivedMonoid[A] =
+      new Product[Monoid, A] {}

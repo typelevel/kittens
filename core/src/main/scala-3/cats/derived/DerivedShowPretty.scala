@@ -25,13 +25,18 @@ object DerivedShowPretty:
     inline given [A]: Or[A] = summonFrom:
       case instance: Show[A] => fromShow(instance)
       case derived: DerivedShowPretty[A] => fromShow(derived.instance)
-    private def fromShow[A](instance: Show[A]): Or[A] = instance match
+    private[derived] def fromShow[A](instance: Show[A]): Or[A] = instance match
       case pretty: ShowPretty[A] => pretty.showLines
       case _ => instance.show(_).split(System.lineSeparator).toList
 
   @nowarn("msg=unused import")
   inline def apply[A]: ShowPretty[A] =
     import DerivedShowPretty.given
+    summonInline[DerivedShowPretty[A]].instance
+
+  @nowarn("msg=unused import")
+  inline def strict[A]: ShowPretty[A] =
+    import Strict.given
     summonInline[DerivedShowPretty[A]].instance
 
   private def fromToString[A]: ShowPretty[A] =
@@ -49,11 +54,14 @@ object DerivedShowPretty:
   given string[A <: String]: DerivedShowPretty[A] = fromToString
   given symbol[A <: Symbol]: DerivedShowPretty[A] = fromToString
 
-  given [A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]): DerivedShowPretty[A] =
-    new Product[A] {}
+  given product[A: Labelling](using => K0.ProductInstances[Or, A]): DerivedShowPretty[A] = new Product[A] {}
+  given coproduct[A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] = new Coproduct[A] {}
 
-  given [A](using inst: => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] =
-    new Coproduct[A] {}
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  protected given [A](using K0.ProductInstances[Or, A], Labelling[A]): DerivedShowPretty[A] = product
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  protected given [A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] = coproduct
 
   trait Product[A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =
@@ -63,12 +71,12 @@ object DerivedShowPretty:
       if n <= 0 then List(s"$prefix()")
       else
         var lines = List(")")
-        inst.project(a)(n - 1)([t] => (show: Or[t], x: t) => show.apply(x)) match
+        inst.project(a)(n - 1)([a] => (show: Or[a], x: a) => show(x)) match
           case Nil => lines ::= s"  ${labels(n - 1)} = \"\","
           case h :: t => lines :::= s"  ${labels(n - 1)} = $h" :: t.map(s => "  " + s)
         var i = n - 2
         while i >= 0 do
-          inst.project(a)(i)([t] => (show: Or[t], x: t) => show.apply(x)) match
+          inst.project(a)(i)([a] => (show: Or[a], x: a) => show(x)) match
             case Nil => lines ::= s"  ${labels(i)} = \"\","
             case v :: Nil => lines ::= s"  ${labels(i)} = $v,"
             case h :: t => lines = s"  ${labels(i)} = $h" :: t.init.map(s => "  " + s) ::: s"  ${t.last}," :: lines
@@ -77,4 +85,10 @@ object DerivedShowPretty:
 
   trait Coproduct[A](using inst: K0.CoproductInstances[Or, A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =
-      inst.fold(a)([t] => (st: Or[t], t: t) => st.apply(t))
+      inst.fold(a)([a] => (show: Or[a], x: a) => show(x))
+
+  object Strict:
+    export DerivedShowPretty.coproduct
+    given product[A: Labelling](using inst: => K0.ProductInstances[Show, A]): DerivedShowPretty[A] =
+      given K0.ProductInstances[Or, A] = inst.mapK([a] => (show: Show[a]) => Or.fromShow(show))
+      DerivedShowPretty.product

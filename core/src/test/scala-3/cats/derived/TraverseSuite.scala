@@ -2,6 +2,8 @@ package cats.derived
 
 import cats.{Eq, Traverse}
 import cats.laws.discipline.*
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class TraverseSuite extends KittensSuite:
@@ -34,6 +36,11 @@ class TraverseSuite extends KittensSuite:
   locally:
     import semiInstances.given
     validate("semiauto.traverse")
+
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.traverse")
+    testNoInstance("strict.semiauto.traverse", "TopK")
 
   locally:
     import derivedInstances.*
@@ -72,6 +79,24 @@ object TraverseSuite:
     given Traverse[AtMostOne] = semiauto.traverse
     given Traverse[Singletons] = semiauto.traverse
     given Traverse[Search] = semiauto.traverse
+
+  object strictInstances:
+    given [T]: Traverse[Const[T]] = semiauto.traverse
+    given [F[_]: Traverse, G[_]: Traverse]: Traverse[[x] =>> F[G[x]]] = Traverse[F].compose[G]
+    given Traverse[Snoc] = strict.semiauto.traverse
+    given Traverse[IList] = strict.semiauto.traverse
+    given Traverse[Tree] = strict.semiauto.traverse
+    given Traverse[GenericAdt] = strict.semiauto.traverse
+    given Traverse[OptList] = strict.semiauto.traverse
+    given Traverse[ListSnoc] = strict.semiauto.traverse
+    given Traverse[AndChar] = strict.semiauto.traverse
+    given Traverse[Interleaved] = strict.semiauto.traverse
+    given Traverse[EnumK1] = strict.semiauto.traverse
+    given Traverse[Many] = strict.semiauto.traverse
+    given Traverse[AtLeastOne] = strict.semiauto.traverse
+    given Traverse[AtMostOne] = strict.semiauto.traverse
+    given Traverse[Singletons] = strict.semiauto.traverse
+    given Traverse[Search] = strict.semiauto.traverse
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Traverse

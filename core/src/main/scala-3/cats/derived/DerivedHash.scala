@@ -20,6 +20,11 @@ object DerivedHash:
     import DerivedHash.given
     summonInline[DerivedHash[A]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[A]: Hash[A] =
+    import Strict.given
+    summonInline[DerivedHash[A]].instance
+
   // These instances support singleton types unlike the instances in Cats' kernel.
   given boolean[A <: Boolean]: DerivedHash[A] = Hash.fromUniversalHashCode
   given byte[A <: Byte]: DerivedHash[A] = Hash.fromUniversalHashCode
@@ -33,8 +38,7 @@ object DerivedHash:
   given symbol[A <: Symbol]: DerivedHash[A] = Hash.fromUniversalHashCode
 
   given product[A <: scala.Product](using inst: => K0.ProductInstances[Or, A]): DerivedHash[A] =
-    given K0.ProductInstances[Hash, A] = inst.unify
-    new Product[Hash, A] {}
+    Strict.product(using inst.unify)
 
   given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedHash[A] =
     given K0.CoproductInstances[Hash, A] = inst.unify
@@ -59,3 +63,8 @@ object DerivedHash:
 
     final override def hash(x: A): Int =
       inst.fold[Int](x)([t] => (h: F[t], x: t) => h.hash(x))
+
+  object Strict:
+    export DerivedHash.coproduct
+    given product[A <: scala.Product](using K0.ProductInstances[Hash, A]): DerivedHash[A] =
+      new Product[Hash, A] {}

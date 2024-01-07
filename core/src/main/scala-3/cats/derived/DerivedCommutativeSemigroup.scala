@@ -17,10 +17,18 @@ object DerivedCommutativeSemigroup:
     import DerivedCommutativeSemigroup.given
     summonInline[DerivedCommutativeSemigroup[A]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[A]: CommutativeSemigroup[A] =
+    import Strict.given
+    summonInline[DerivedCommutativeSemigroup[A]].instance
+
   given [A](using inst: => K0.ProductInstances[Or, A]): DerivedCommutativeSemigroup[A] =
-    given K0.ProductInstances[CommutativeSemigroup, A] = inst.unify
-    new Product[CommutativeSemigroup, A] {}
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: CommutativeSemigroup[x], A](using @unused inst: K0.ProductInstances[F, A])
       extends DerivedSemigroup.Product[F, A],
         CommutativeSemigroup[A]
+
+  object Strict:
+    given product[A](using K0.ProductInstances[CommutativeSemigroup, A]): DerivedCommutativeSemigroup[A] =
+      new Product[CommutativeSemigroup, A] {}

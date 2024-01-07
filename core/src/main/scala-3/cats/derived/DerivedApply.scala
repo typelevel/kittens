@@ -20,23 +20,31 @@ object DerivedApply:
     import DerivedApply.given
     summonInline[DerivedApply[F]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[F[_]]: Apply[F] =
+    import Strict.given
+    summonInline[DerivedApply[F]].instance
+
   given [T](using T: Semigroup[T]): DerivedApply[Const[T]] = new Apply[Const[T]]:
     def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
     def map[A, B](fa: T)(f: A => B): T = fa
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedApply[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(G.unify)) with Apply[[x] =>> F[G[x]]]:
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Apply[[x] =>> F[G[x]]]:
       export delegate.*
 
   given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApply[F] =
-    given K1.ProductInstances[Apply, F] = inst.unify
-    new Product[Apply, F] {}
+    Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedApply_F[F[_]: Or, G[_]: Or]: DerivedApply[[x] =>> F[G[x]]] = summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedApply[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Apply[f], F[_]](using inst: K1.ProductInstances[T, F]) extends Apply[F]:
     private lazy val F = new DerivedFunctor.Generic[T, F] {}
     final override def map[A, B](fa: F[A])(f: A => B): F[B] = F.map(fa)(f)
     final override def ap[A, B](ff: F[A => B])(fa: F[A]): F[B] =
       inst.map2(ff, fa)([f[_]] => (F: T[f], ff: f[A => B], fa: f[A]) => F.ap(ff)(fa))
+
+  object Strict:
+    given product[F[_]](using K1.ProductInstances[Apply, F]): DerivedApply[F] =
+      new Product[Apply, F] {}

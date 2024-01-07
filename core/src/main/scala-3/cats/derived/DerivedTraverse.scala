@@ -21,6 +21,11 @@ object DerivedTraverse:
     import DerivedTraverse.given
     summonInline[DerivedTraverse[F]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[F[_]]: Traverse[F] =
+    import Strict.given
+    summonInline[DerivedTraverse[F]].instance
+
   given [T]: DerivedTraverse[Const[T]] = new Traverse[Const[T]]:
     override def map[A, B](fa: T)(f: A => B): T = fa
     override def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
@@ -28,19 +33,14 @@ object DerivedTraverse:
     override def traverse[G[_], A, B](fa: T)(f: A => G[B])(using G: Applicative[G]): G[T] = G.pure(fa)
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedTraverse[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(G.unify)) with Traverse[[x] =>> F[G[x]]]:
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Traverse[[x] =>> F[G[x]]]:
       export delegate.*
 
-  given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedTraverse[F] =
-    given K1.ProductInstances[Traverse, F] = inst.unify
-    new Product[Traverse, F] with DerivedFunctor.Generic[Traverse, F] {}
-
-  given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedTraverse[F] =
-    given K1.CoproductInstances[Traverse, F] = inst.unify
-    new Coproduct[Traverse, F] with DerivedFunctor.Generic[Traverse, F] {}
+  given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedTraverse[F] = Strict.product(using inst.unify)
+  given [F[_]](using => K1.CoproductInstances[Or, F]): DerivedTraverse[F] = Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedTraverse_F[F[_]: Or, G[_]: Or]: DerivedTraverse[[x] =>> F[G[x]]] = summon
+  protected given [F[_]: Or, G[_]: Or]: DerivedTraverse[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Traverse[f], F[_]](using inst: K1.ProductInstances[T, F])
       extends Traverse[F],
@@ -60,3 +60,11 @@ object DerivedTraverse:
 
     final override def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
       inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => F.traverse(fa)(f).asInstanceOf[G[F[B]]])
+
+  object Strict:
+    given product[F[_]](using K1.ProductInstances[Traverse, F]): DerivedTraverse[F] =
+      new Product[Traverse, F] with DerivedFunctor.Generic[Traverse, F] {}
+
+    given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedTraverse[F] =
+      given K1.CoproductInstances[Traverse, F] = inst.unify
+      new Coproduct[Traverse, F] with DerivedFunctor.Generic[Traverse, F] {}

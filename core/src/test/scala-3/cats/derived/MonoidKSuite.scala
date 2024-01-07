@@ -1,7 +1,9 @@
 package cats.derived
 
-import cats.MonoidK
+import cats.{Applicative, Eval, Monoid, MonoidK}
 import cats.laws.discipline.{MonoidKTests, SerializableTests}
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class MonoidKSuite extends KittensSuite:
@@ -16,30 +18,31 @@ class MonoidKSuite extends KittensSuite:
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].monoidK[Char])
     checkAll(s"$instance[BoxMul]", tests[BoxMul].monoidK[Char])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[MonoidK[ComplexProduct]]))
-    test(s"$instance respects existing instances") {
+    test(s"$instance respects existing instances"):
       val M = summonInline[MonoidK[BoxMul]]
       assert(M.empty[Char] == Box(Mul[Char](1)))
       assert(M.combineK(Box(Mul[Char](5)), Box(Mul[Char](5))) == Box(Mul[Char](25)))
-    }
 
-  locally {
+  locally:
     import auto.monoidK.given
     validate("auto.monoidK")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.monoidK")
-  }
 
-  locally {
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.monoidK")
+    testNoInstance("strict.semiauto.monoidK", "TopK")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.monoidK"
     checkAll(s"$instance[ComplexProduct]", tests[ComplexProduct].monoidK[Char])
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].monoidK[Char])
     checkAll(s"$instance[Simple]", tests[Simple].monoidK[Char])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(MonoidK[ComplexProduct]))
-  }
 
 end MonoidKSuite
 
@@ -52,6 +55,14 @@ object MonoidKSuite:
     given MonoidK[ComplexProduct] = semiauto.monoidK
     given MonoidK[CaseClassWOption] = semiauto.monoidK
     given MonoidK[BoxMul] = semiauto.monoidK
+
+  object strictInstances:
+    given [T: Monoid]: MonoidK[Const[T]] = semiauto.monoidK
+    given [F[_]: MonoidK, G[_]]: MonoidK[[x] =>> F[G[x]]] = MonoidK[F].compose[G]
+    given [F[_]: Applicative, G[_]: MonoidK]: MonoidK[[x] =>> F[G[x]]] = semiauto.monoidK
+    given MonoidK[ComplexProduct] = strict.semiauto.monoidK
+    given MonoidK[CaseClassWOption] = strict.semiauto.monoidK
+    given MonoidK[BoxMul] = strict.semiauto.monoidK
 
   object derivedInstances:
     case class ComplexProduct[A](x: ADTs.ComplexProduct[A]) derives MonoidK

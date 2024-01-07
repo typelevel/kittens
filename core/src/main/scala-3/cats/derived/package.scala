@@ -2,7 +2,7 @@ package cats.derived
 
 import alleycats.*
 import cats.*
-import cats.kernel.{CommutativeSemigroup, CommutativeMonoid}
+import cats.kernel.{CommutativeMonoid, CommutativeSemigroup}
 
 import scala.util.NotGiven
 
@@ -56,6 +56,59 @@ object semiauto:
   inline def invariant[F[_]]: Invariant[F] = DerivedInvariant[F]
   inline def partialOrder[A]: PartialOrder[A] = DerivedPartialOrder[A]
   inline def showPretty[A]: ShowPretty[A] = DerivedShowPretty[A]
+
+object strict:
+  extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq.strict[A]
+  extension (x: Hash.type) inline def derived[A]: Hash[A] = DerivedHash.strict[A]
+  extension (x: PartialOrder.type) inline def derived[A]: PartialOrder[A] = DerivedPartialOrder.strict[A]
+  extension (x: Order.type) inline def derived[A]: Order[A] = DerivedOrder.strict[A]
+  extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow.strict[A]
+  extension (x: ShowPretty.type) inline def derived[A]: ShowPretty[A] = DerivedShowPretty.strict[A]
+  extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty.strict[A]
+  extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup.strict[A]
+  extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid.strict[A]
+  extension (x: CommutativeSemigroup.type)
+    inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
+  extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
+  extension (x: EmptyK.type) inline def derived[F[_]]: EmptyK[F] = DerivedEmptyK.strict[F]
+  extension (x: SemigroupK.type) inline def derived[F[_]]: SemigroupK[F] = DerivedSemigroupK.strict[F]
+  extension (x: MonoidK.type) inline def derived[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
+  extension (x: Pure.type) inline def derived[F[_]]: Pure[F] = DerivedPure.strict[F]
+  extension (x: Invariant.type) inline def derived[F[_]]: Invariant[F] = DerivedInvariant.strict[F]
+  extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor.strict[F]
+  extension (x: Contravariant.type) inline def derived[F[_]]: Contravariant[F] = DerivedContravariant.strict[F]
+  extension (x: Apply.type) inline def derived[F[_]]: Apply[F] = DerivedApply.strict[F]
+  extension (x: Applicative.type) inline def derived[F[_]]: Applicative[F] = DerivedApplicative.strict[F]
+  extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
+  extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible.strict[F]
+  extension (x: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTraverse.strict[F]
+  extension (x: NonEmptyTraverse.type) inline def derived[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.strict[F]
+
+  object semiauto:
+    inline def eq[A]: Eq[A] = DerivedEq.strict[A]
+    inline def hash[A]: Hash[A] = DerivedHash.strict[A]
+    inline def partialOrder[A]: PartialOrder[A] = DerivedPartialOrder.strict[A]
+    inline def order[A]: Order[A] = DerivedOrder.strict[A]
+    inline def show[A]: Show[A] = DerivedShow.strict[A]
+    inline def showPretty[A]: ShowPretty[A] = DerivedShowPretty.strict[A]
+    inline def empty[A]: Empty[A] = DerivedEmpty.strict[A]
+    inline def semigroup[A]: Semigroup[A] = DerivedSemigroup.strict[A]
+    inline def monoid[A]: Monoid[A] = DerivedMonoid.strict[A]
+    inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
+    inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
+    inline def emptyK[F[_]]: EmptyK[F] = DerivedEmptyK.strict[F]
+    inline def semigroupK[F[_]]: SemigroupK[F] = DerivedSemigroupK.strict[F]
+    inline def monoidK[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
+    inline def pure[F[_]]: Pure[F] = DerivedPure.strict[F]
+    inline def invariant[F[_]]: Invariant[F] = DerivedInvariant.strict[F]
+    inline def functor[F[_]]: Functor[F] = DerivedFunctor.strict[F]
+    inline def contravariant[F[_]]: Contravariant[F] = DerivedContravariant.strict[F]
+    inline def apply[F[_]]: Apply[F] = DerivedApply.strict[F]
+    inline def applicative[F[_]]: Applicative[F] = DerivedApplicative.strict[F]
+    inline def foldable[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
+    inline def reducible[F[_]]: Reducible[F] = DerivedReducible.strict[F]
+    inline def traverse[F[_]]: Traverse[F] = DerivedTraverse.strict[F]
+    inline def nonEmptyTraverse[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.strict[F]
 
 object auto:
   object eq:

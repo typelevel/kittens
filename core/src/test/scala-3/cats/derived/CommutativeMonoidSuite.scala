@@ -35,29 +35,30 @@ class CommutativeMonoidSuite extends KittensSuite:
       s"$instance is Serializable",
       SerializableTests.serializable(summonInline[CommutativeMonoid[CommutativeFoo]])
     )
-    test(s"$instance respects existing instances") {
+    test(s"$instance respects existing instances"):
       val box = summonInline[CommutativeMonoid[BoxMul]]
       assert(box.empty == Box(Mul(1)))
       assert(box.combine(Box(Mul(5)), Box(Mul(5))) == Box(Mul(25)))
-    }
 
-  locally {
+  locally:
     import auto.commutativeMonoid.given
     validate("auto.commutativeMonoid")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.commutativeMonoid")
-  }
 
-  locally {
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.commutativeMonoid")
+    testNoInstance("strict.semiauto.commutativeMonoid", "Top")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.commutativeMonoid"
     checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeMonoid)
     checkAll(s"$instance[BoxMul]", tests[BoxMul].commutativeMonoid)
     checkAll(s"$instance is Serializable", SerializableTests.serializable(CommutativeMonoid[CommutativeFoo]))
-  }
 
 end CommutativeMonoidSuite
 
@@ -70,6 +71,11 @@ object CommutativeMonoidSuite:
     given CommutativeMonoid[CommutativeFoo] = semiauto.commutativeMonoid
     given CommutativeMonoid[Recursive] = semiauto.commutativeMonoid
     given CommutativeMonoid[Box[Mul]] = semiauto.commutativeMonoid
+
+  object strictInstances:
+    given CommutativeMonoid[CommutativeFoo] = strict.semiauto.commutativeMonoid
+    given CommutativeMonoid[Recursive] = strict.semiauto.commutativeMonoid
+    given CommutativeMonoid[Box[Mul]] = strict.semiauto.commutativeMonoid
 
   object derivedInstances:
     case class CommutativeFoo(x: ADTs.CommutativeFoo) derives CommutativeMonoid

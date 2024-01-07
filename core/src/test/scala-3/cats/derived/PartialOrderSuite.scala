@@ -16,8 +16,9 @@
 
 package cats.derived
 
-import cats.PartialOrder
+import cats.{Order, PartialOrder}
 import cats.kernel.laws.discipline.*
+
 import scala.compiletime.*
 
 class PartialOrderSuite extends KittensSuite:
@@ -55,6 +56,11 @@ class PartialOrderSuite extends KittensSuite:
     validate("semiauto.partialOrder")
 
   locally:
+    import strictInstances.given
+    validate("strict.semiauto.partialOrder")
+    testNoInstance("strict.semiauto.partialOrder", "Top")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.partialOrder"
     checkAll(s"$instance[IList[Int]]", tests[IList[Int]].partialOrder)
@@ -66,7 +72,7 @@ class PartialOrderSuite extends KittensSuite:
     checkAll(s"$instance[BoxKV]", tests[BoxKV].partialOrder)
     checkAll(s"$instance[EnumK0]", tests[EnumK0].partialOrder)
     checkAll(s"$instance[Singletons[Int]]", tests[Singletons[Int]].partialOrder)
-    checkAll(s"$instance is Serialiable", SerializableTests.serializable(PartialOrder[Tree[Int]]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(PartialOrder[Tree[Int]]))
 
 end PartialOrderSuite
 
@@ -83,6 +89,18 @@ object PartialOrderSuite:
     given PartialOrder[Box[KeyValue]] = semiauto.partialOrder
     given PartialOrder[EnumK0] = semiauto.partialOrder
     given PartialOrder[Singletons[Int]] = semiauto.partialOrder
+
+  object strictInstances:
+    given [A <: Singleton: ValueOf]: PartialOrder[A] = Order.allEqual
+    given PartialOrder[IList[Int]] = strict.semiauto.partialOrder
+    given PartialOrder[Inner] = strict.semiauto.partialOrder
+    given PartialOrder[Outer] = strict.semiauto.partialOrder
+    given PartialOrder[Interleaved[Int]] = strict.semiauto.partialOrder
+    given PartialOrder[Tree[Int]] = strict.semiauto.partialOrder
+    given PartialOrder[Recursive] = strict.semiauto.partialOrder
+    given PartialOrder[Box[KeyValue]] = strict.semiauto.partialOrder
+    given PartialOrder[EnumK0] = strict.semiauto.partialOrder
+    given PartialOrder[Singletons[Int]] = strict.semiauto.partialOrder
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives PartialOrder

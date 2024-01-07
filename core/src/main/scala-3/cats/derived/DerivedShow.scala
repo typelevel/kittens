@@ -19,6 +19,11 @@ object DerivedShow:
     import DerivedShow.given
     summonInline[DerivedShow[A]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[A]: Show[A] =
+    import Strict.given
+    summonInline[DerivedShow[A]].instance
+
   // These instances support singleton types unlike the instances in Cats' core.
   given boolean[A <: Boolean]: DerivedShow[A] = Show.fromToString
   given byte[A <: Byte]: DerivedShow[A] = Show.fromToString
@@ -32,12 +37,10 @@ object DerivedShow:
   given symbol[A <: Symbol]: DerivedShow[A] = Show.fromToString
 
   given [A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]): DerivedShow[A] =
-    given K0.ProductInstances[Show, A] = inst.unify
-    new Product[Show, A] {}
+    Strict.product(using labelling, inst.unify)
 
-  given [A](using inst: => K0.CoproductInstances[Or, A]): DerivedShow[A] =
-    given K0.CoproductInstances[Show, A] = inst.unify
-    new Coproduct[Show, A] {}
+  given [A](using => K0.CoproductInstances[Or, A]): DerivedShow[A] =
+    Strict.coproduct
 
   trait Product[F[x] <: Show[x], A](using inst: K0.ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
     def show(a: A): String =
@@ -64,3 +67,11 @@ object DerivedShow:
   trait Coproduct[F[x] <: Show[x], A](using inst: K0.CoproductInstances[F, A]) extends Show[A]:
     def show(a: A): String =
       inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))
+
+  object Strict:
+    given product[A: Labelling](using => K0.ProductInstances[Show, A]): DerivedShow[A] =
+      new Product[Show, A] {}
+
+    given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedShow[A] =
+      given K0.CoproductInstances[Show, A] = inst.unify
+      new Coproduct[Show, A] {}

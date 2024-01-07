@@ -22,33 +22,45 @@ object DerivedFunctor:
     import DerivedFunctor.given
     summonInline[DerivedFunctor[F]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[F[_]]: Functor[F] =
+    import Strict.given
+    summonInline[DerivedFunctor[F]].instance
+
   given [T]: DerivedFunctor[Const[T]] = new Functor[Const[T]]:
     def map[A, B](fa: T)(f: A => B): T = fa
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedFunctor[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(G.unify)) with Functor[[x] =>> F[G[x]]]:
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Functor[[x] =>> F[G[x]]]:
       export delegate.*
 
   given nested[F[_], G[_]](using
       F: DerivedContravariant.Or[F],
       G: DerivedContravariant.Or[G]
   ): DerivedFunctor[[x] =>> F[G[x]]] =
-    F.unify.compose(G.unify)
+    F.unify.compose(using G.unify)
 
   given [F[_]](using inst: => K1.Instances[Or, F]): DerivedFunctor[F] =
-    given K1.Instances[Functor, F] = inst.unify
-    new Generic[Functor, F] {}
+    generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedFunctor_F[F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFunctor[[x] =>> F[G[x]]] =
+  protected given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFunctor[[x] =>> F[G[x]]] =
     nested(using F, G)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  private[derived] def given_DerivedFunctor_F[F[_], G[_]](using
+  protected given [F[_], G[_]](using
       F: DerivedContravariant.Or[F],
       G: DerivedContravariant.Or[G]
-  ): DerivedFunctor[[x] =>> F[G[x]]] = nested(using F, G)
+  ): DerivedFunctor[[x] =>> F[G[x]]] =
+    nested(using F, G)
+
+  private def generic[F[_]](using K1.Instances[Functor, F]): DerivedFunctor[F] =
+    new Generic[Functor, F] {}
 
   trait Generic[T[f[_]] <: Functor[f], F[_]](using inst: K1.Instances[T, F]) extends Functor[F]:
     final override def map[A, B](fa: F[A])(f: A => B): F[B] =
       inst.map(fa)([f[_]] => (F: T[f], fa: f[A]) => F.map(fa)(f))
+
+  object Strict:
+    given product[F[_]](using K1.ProductInstances[Functor, F]): DerivedFunctor[F] = generic
+    given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedFunctor[F] = generic(using inst.unify)

@@ -33,30 +33,31 @@ class MonoidSuite extends KittensSuite:
     checkAll(s"$instance[Box[Mul]]", tests[Box[Mul]].monoid)
     checkAll(s"$instance[Recursive]", tests[Recursive].monoid)
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Monoid[Foo]]))
-    test(s"$instance respects existing instances") {
+    test(s"$instance respects existing instances"):
       val box = summonInline[Monoid[Box[Mul]]]
       assert(box.empty == Box(Mul(1)))
       assert(box.combine(Box(Mul(5)), Box(Mul(5))) == Box(Mul(25)))
-    }
 
-  locally {
+  locally:
     import auto.monoid.given
     validate("auto.monoid")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.monoid")
-  }
 
-  locally {
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.monoid")
+    testNoInstance("strict.semiauto.monoid", "Top")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.monoid"
     checkAll(s"$instance[Foo]", tests[Foo].monoid)
     checkAll(s"$instance[Interleaved[Int]]", tests[Interleaved[Int]].monoid)
     checkAll(s"$instance[BoxMul]", tests[BoxMul].monoid)
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Monoid[Foo]))
-  }
 
 end MonoidSuite
 
@@ -68,6 +69,12 @@ object MonoidSuite:
     given Monoid[Recursive] = semiauto.monoid
     given Monoid[Interleaved[Int]] = semiauto.monoid
     given Monoid[Box[Mul]] = semiauto.monoid
+
+  object strictInstances:
+    given Monoid[Foo] = strict.semiauto.monoid
+    given Monoid[Recursive] = strict.semiauto.monoid
+    given Monoid[Interleaved[Int]] = strict.semiauto.monoid
+    given Monoid[Box[Mul]] = strict.semiauto.monoid
 
   object derivedInstances:
     case class Foo(x: ADTs.Foo) derives Monoid

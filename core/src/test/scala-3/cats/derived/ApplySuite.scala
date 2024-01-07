@@ -16,9 +16,11 @@
 
 package cats.derived
 
-import cats.Apply
+import cats.{Apply, Semigroup}
 import cats.laws.discipline.*
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class ApplySuite extends KittensSuite:
@@ -49,6 +51,11 @@ class ApplySuite extends KittensSuite:
     validate("semiauto.apply")
 
   locally:
+    import semiInstances.given
+    validate("strict.semiauto.apply")
+    testNoInstance("strict.semiauto.apply", "TopK")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.apply"
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].apply[Int, String, Long])
@@ -73,6 +80,15 @@ object ApplySuite:
     given Apply[Interleaved] = semiauto.apply
     given Apply[ListBox] = semiauto.apply
     given Apply[Search] = semiauto.apply
+
+  object strictInstances:
+    given [T: Semigroup]: Apply[Const[T]] = semiauto.apply
+    given [F[_]: Apply, G[_]: Apply]: Apply[[x] =>> F[G[x]]] = Apply[F].compose[G]
+    given Apply[Box] = strict.semiauto.apply
+    given Apply[CaseClassWOption] = strict.semiauto.apply
+    given Apply[AndInt] = strict.semiauto.apply
+    given Apply[Interleaved] = strict.semiauto.apply
+    given Apply[Search] = strict.semiauto.apply
 
   object derivedInstances:
     case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives Apply

@@ -19,12 +19,16 @@ object DerivedEq:
     import DerivedEq.given
     summonInline[DerivedEq[A]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[A]: Eq[A] =
+    import Strict.given
+    summonInline[DerivedEq[A]].instance
+
   given singleton[A <: Singleton: ValueOf]: DerivedEq[A] =
     Eq.allEqual
 
   given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedEq[A] =
-    given K0.ProductInstances[Eq, A] = inst.unify
-    new Product[Eq, A] {}
+    Strict.product(using inst.unify)
 
   given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedEq[A] =
     given K0.CoproductInstances[Eq, A] = inst.unify
@@ -37,3 +41,8 @@ object DerivedEq:
   trait Coproduct[F[x] <: Eq[x], A](using inst: K0.CoproductInstances[F, A]) extends Eq[A]:
     final override def eqv(x: A, y: A): Boolean = inst.fold2(x, y)(false):
       [t] => (eqt: F[t], x: t, y: t) => eqt.eqv(x, y)
+
+  object Strict:
+    export DerivedEq.coproduct
+    given product[A](using K0.ProductInstances[Eq, A]): DerivedEq[A] =
+      new Product[Eq, A] {}

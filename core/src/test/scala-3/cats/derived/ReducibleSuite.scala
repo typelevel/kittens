@@ -94,7 +94,7 @@ object ReducibleSuite:
 
   object strictInstances:
     given [T]: Foldable[Const[T]] = strict.semiauto.foldable
-    given [F[_]: Foldable, G[_]: Foldable]: Foldable[[x] =>> F[G[x]]] = strict.semiauto.foldable
+    given [F[_]: Foldable, G[_]: Foldable]: Foldable[[x] =>> F[G[x]]] = Foldable[F].compose[G]
     given Foldable[IList] = strict.semiauto.foldable
     given Foldable[Snoc] = strict.semiauto.foldable
     given Reducible[ICons] = strict.semiauto.reducible

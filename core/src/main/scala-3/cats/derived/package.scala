@@ -75,6 +75,7 @@ object strict:
   extension (x: MonoidK.type) inline def derived[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
   extension (x: Pure.type) inline def derived[F[_]]: Pure[F] = DerivedPure.strict[F]
   extension (x: Invariant.type) inline def derived[F[_]]: Invariant[F] = DerivedInvariant.strict[F]
+  extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor.strict[F]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
@@ -93,6 +94,7 @@ object strict:
     inline def monoidK[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
     inline def pure[F[_]]: Pure[F] = DerivedPure.strict[F]
     inline def invariant[F[_]]: Invariant[F] = DerivedInvariant.strict[F]
+    inline def functor[F[_]]: Functor[F] = DerivedFunctor.strict[F]
 
 object auto:
   object eq:

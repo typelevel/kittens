@@ -16,9 +16,11 @@
 
 package cats.derived
 
-import cats.{Eq, NonEmptyTraverse}
+import cats.{Eq, NonEmptyTraverse, Traverse}
 import cats.data.{NonEmptyList, OneAnd}
 import cats.laws.discipline.*
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class NonEmptyTraverseSuite extends KittensSuite:
@@ -83,6 +85,11 @@ class NonEmptyTraverseSuite extends KittensSuite:
     validate("semiauto.nonEmptyTraverse")
 
   locally:
+    import strictInstances.given
+    validate("strict.semiauto.nonEmptyTraverse")
+    testNoInstance("strict.semiauto.nonEmptyTraverse", "TopK")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.nonEmptyTraverse"
     checkAll(
@@ -131,6 +138,23 @@ object NonEmptyTraverseSuite:
     given NonEmptyTraverse[AtLeastOne] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[Singletons] = semiauto.nonEmptyTraverse
     given NonEmptyTraverse[Search] = semiauto.nonEmptyTraverse
+
+  object strictInstances:
+    given [T]: Traverse[Const[T]] = strict.semiauto.traverse
+    given [F[_]: Traverse, G[_]: Traverse]: Traverse[[x] =>> F[G[x]]] = Traverse[F].compose[G]
+    given Traverse[IList] = strict.semiauto.traverse
+    given Traverse[Snoc] = strict.semiauto.traverse
+    given NonEmptyTraverse[ICons] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[SCons] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[Tree] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[NelSCons] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[NelAndOne] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[VecAndNel] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[Interleaved] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[EnumK1] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[AtLeastOne] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[Singletons] = strict.semiauto.nonEmptyTraverse
+    given NonEmptyTraverse[Search] = strict.semiauto.nonEmptyTraverse
 
   object derivedInstances:
     case class ICons[A](x: ADTs.ICons[A]) derives NonEmptyTraverse

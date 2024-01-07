@@ -54,7 +54,7 @@ class ReducibleSuite extends KittensSuite:
     validate("semiauto.reducible")
 
   locally:
-    import semiInstances.given
+    import strictInstances.given
     validate("strict.semiauto.reducible")
     testNoInstance("strict.semiauto.reducible", "TopK")
 

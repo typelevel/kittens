@@ -82,6 +82,7 @@ object strict:
   extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
   extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible.strict[F]
   extension (x: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTraverse.strict[F]
+  extension (x: NonEmptyTraverse.type) inline def derived[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.strict[F]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
@@ -107,6 +108,7 @@ object strict:
     inline def foldable[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
     inline def reducible[F[_]]: Reducible[F] = DerivedReducible.strict[F]
     inline def traverse[F[_]]: Traverse[F] = DerivedTraverse.strict[F]
+    inline def nonEmptyTraverse[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.strict[F]
 
 object auto:
   object eq:

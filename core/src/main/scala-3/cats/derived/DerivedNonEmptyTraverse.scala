@@ -21,20 +21,23 @@ object DerivedNonEmptyTraverse:
     import DerivedNonEmptyTraverse.given
     summonInline[DerivedNonEmptyTraverse[F]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[F[_]]: NonEmptyTraverse[F] =
+    import DerivedTraverse.given
+    import DerivedNonEmptyTraverse.given
+    import DerivedTraverse.Strict.{nested, product}
+    import DerivedNonEmptyTraverse.Strict.{nested, product}
+    summonInline[DerivedNonEmptyTraverse[F]].instance
+
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedNonEmptyTraverse[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(G.unify)) with NonEmptyTraverse[[x] =>> F[G[x]]]:
-      export delegate.*
+    Strict.nested(using F.unify, G.unify)
 
   def product[F[_]](ev: NonEmptyTraverse[?])(using
       inst: K1.ProductInstances[DerivedTraverse.Or, F]
   ): DerivedNonEmptyTraverse[F] =
-    given K1.ProductInstances[Traverse, F] = inst.unify
-    new Product[Traverse, F](ev)
-      with DerivedReducible.Product[Traverse, F](ev)
-      with DerivedTraverse.Product[Traverse, F]
-      with DerivedFunctor.Generic[Traverse, F] {}
+    Strict.product(ev)(using inst.unify)
 
-  inline given [F[_]](using gen: K1.ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
+  inline given product[F[_]](using gen: K1.ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
     product(K1.summonFirst[Or, gen.MirroredElemTypes].unify)
 
   given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedNonEmptyTraverse[F] =
@@ -78,3 +81,20 @@ object DerivedNonEmptyTraverse:
       case (Left(ff), Right(a)) => Left(F.map(ff)(_(a)))
       case (Right(f), Left(fa)) => Left(F.map(fa)(f))
       case (Right(f), Right(a)) => Right(f(a))
+
+  object Strict:
+    given nested[F[_], G[_]](using
+        F: => NonEmptyTraverse[F],
+        G: => NonEmptyTraverse[G]
+    ): DerivedNonEmptyTraverse[[x] =>> F[G[x]]] =
+      new Derived.Lazy(() => F.compose(G)) with NonEmptyTraverse[[x] =>> F[G[x]]]:
+        export delegate.*
+
+    def product[F[_]](ev: NonEmptyTraverse[?])(using K1.ProductInstances[Traverse, F]): DerivedNonEmptyTraverse[F] =
+      new Product[Traverse, F](ev)
+        with DerivedReducible.Product[Traverse, F](ev)
+        with DerivedTraverse.Product[Traverse, F]
+        with DerivedFunctor.Generic[Traverse, F] {}
+
+    inline given product[F[_]](using gen: K1.ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
+      product(K1.summonFirst[NonEmptyTraverse, gen.MirroredElemTypes])

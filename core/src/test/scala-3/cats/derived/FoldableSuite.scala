@@ -56,7 +56,7 @@ class FoldableSuite extends KittensSuite:
     validate("semiauto.foldable")
 
   locally:
-    import semiInstances.given
+    import strictInstances.given
     validate("strict.semiauto.foldable")
     testNoInstance("strict.semiauto.foldable", "TopK")
 

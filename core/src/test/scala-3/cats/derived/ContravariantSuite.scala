@@ -16,10 +16,12 @@
 
 package cats.derived
 
-import cats.Contravariant
+import cats.{Contravariant, Functor}
 import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
 import cats.laws.discipline.eq.*
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class ContravariantSuite extends KittensSuite:
@@ -41,23 +43,25 @@ class ContravariantSuite extends KittensSuite:
     checkAll(s"$instance[EnumK1Contra]", tests[EnumK1Contra].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[Contravariant[TreePred]]))
 
-  locally {
+  locally:
     import auto.contravariant.given
     validate("auto.contravariant")
-  }
 
-  locally {
+  locally:
     import semiInstances.given
     validate("semiauto.contravariant")
-  }
 
-  locally {
+  locally:
+    import strictInstances.given
+    validate("strict.semiauto.contravariant")
+    testNoInstance("strict.semiauto.contravariant", "TopK")
+
+  locally:
     import derivedInstances.*
     val instance = "derived.contravariant"
     checkAll(s"$instance[EnumK1Contra]", tests[EnumK1Contra].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance[Single]", tests[Single].contravariant[MiniInt, String, Boolean])
     checkAll(s"$instance is Serializable", SerializableTests.serializable(Contravariant[EnumK1Contra]))
-  }
 
 end ContravariantSuite
 
@@ -82,6 +86,20 @@ object ContravariantSuite:
     given Contravariant[AndCharPred] = semiauto.contravariant
     given Contravariant[ListSnocF] = semiauto.contravariant
     given Contravariant[EnumK1Contra] = semiauto.contravariant
+
+  object strictInstances:
+    given [T]: Contravariant[Const[T]] = strict.semiauto.contravariant
+    given [F[_]: Functor, R]: Contravariant[[x] =>> F[x => R]] = Functor[F].composeContravariant[[x] =>> x => R]
+    given Functor[Snoc] = strict.semiauto.functor
+    given Contravariant[OptPred] = strict.semiauto.contravariant
+    given Contravariant[TreePred] = strict.semiauto.contravariant
+    given Contravariant[ListPred] = strict.semiauto.contravariant
+    given Contravariant[GenericAdtPred] = strict.semiauto.contravariant
+    // TODO: https://github.com/typelevel/kittens/issues/473
+    // given Contravariant[InterleavedPred] = strict.semiauto.contravariant
+    given Contravariant[AndCharPred] = strict.semiauto.contravariant
+    given Contravariant[ListSnocF] = strict.semiauto.contravariant
+    given Contravariant[EnumK1Contra] = strict.semiauto.contravariant
 
   object derivedInstances:
     case class EnumK1Contra[-A](x: ADTs.EnumK1Contra[A]) derives Contravariant

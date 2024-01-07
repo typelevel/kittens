@@ -76,6 +76,7 @@ object strict:
   extension (x: Pure.type) inline def derived[F[_]]: Pure[F] = DerivedPure.strict[F]
   extension (x: Invariant.type) inline def derived[F[_]]: Invariant[F] = DerivedInvariant.strict[F]
   extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor.strict[F]
+  extension (x: Contravariant.type) inline def derived[F[_]]: Contravariant[F] = DerivedContravariant.strict[F]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
@@ -95,6 +96,7 @@ object strict:
     inline def pure[F[_]]: Pure[F] = DerivedPure.strict[F]
     inline def invariant[F[_]]: Invariant[F] = DerivedInvariant.strict[F]
     inline def functor[F[_]]: Functor[F] = DerivedFunctor.strict[F]
+    inline def contravariant[F[_]]: Contravariant[F] = DerivedContravariant.strict[F]
 
 object auto:
   object eq:

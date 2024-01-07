@@ -21,17 +21,21 @@ object DerivedFoldable:
     import DerivedFoldable.given
     summonInline[DerivedFoldable[F]].instance
 
+  @nowarn("msg=unused import")
+  inline def strict[F[_]]: Foldable[F] =
+    import DerivedFoldable.given
+    import Strict.{nested, product}
+    summonInline[DerivedFoldable[F]].instance
+
   given [T]: DerivedFoldable[Const[T]] = new Foldable[Const[T]]:
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
   given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedFoldable[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(G.unify)) with Foldable[[x] =>> F[G[x]]]:
-      export delegate.*
+    Strict.nested(using F.unify, G.unify)
 
-  given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedFoldable[F] =
-    given K1.ProductInstances[Foldable, F] = inst.unify
-    new Product[Foldable, F] {}
+  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedFoldable[F] =
+    Strict.product(using inst.unify)
 
   given [F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedFoldable[F] =
     given K1.CoproductInstances[Foldable, F] = inst.unify
@@ -39,6 +43,9 @@ object DerivedFoldable:
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Or, G[_]: Or]: DerivedFoldable[[x] =>> F[G[x]]] = nested
+
+  @deprecated("Kept for binary compatibility", "3.2.0")
+  protected given [F[_]](using K1.ProductInstances[Or, F]): DerivedFoldable[F] = product
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: K1.ProductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
@@ -54,3 +61,11 @@ object DerivedFoldable:
 
     final override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
       inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => Eval.defer(F.foldRight(fa, lb)(f)))
+
+  object Strict:
+    given nested[F[_], G[_]](using F: => Foldable[F], G: => Foldable[G]): DerivedFoldable[[x] =>> F[G[x]]] =
+      new Derived.Lazy(() => F.compose(G)) with Foldable[[x] =>> F[G[x]]]:
+        export delegate.*
+
+    given product[F[_]](using K1.ProductInstances[Foldable, F]): DerivedFoldable[F] =
+      new Product[Foldable, F] {}

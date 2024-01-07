@@ -19,6 +19,8 @@ package cats.derived
 import cats.{Eval, Foldable}
 import cats.laws.discipline.*
 import cats.syntax.all.given
+import shapeless3.deriving.Const
+
 import scala.compiletime.*
 
 class FoldableSuite extends KittensSuite:
@@ -52,6 +54,11 @@ class FoldableSuite extends KittensSuite:
   locally:
     import semiInstances.given
     validate("semiauto.foldable")
+
+  locally:
+    import semiInstances.given
+    validate("strict.semiauto.foldable")
+    testNoInstance("strict.semiauto.foldable", "TopK")
 
   locally:
     import derivedInstances.*
@@ -93,6 +100,25 @@ object FoldableSuite:
     given Foldable[AtLeastOne] = semiauto.foldable
     given Foldable[Singletons] = semiauto.foldable
     given Foldable[Search] = semiauto.foldable
+
+  object strictInstances:
+    given [T]: Foldable[Const[T]] = strict.semiauto.foldable
+    given [F[_]: Foldable, G[_]: Foldable]: Foldable[[x] =>> F[G[x]]] = Foldable[F].compose[G]
+    given Foldable[Snoc] = strict.semiauto.foldable
+    given Foldable[IList] = strict.semiauto.foldable
+    given Foldable[Tree] = strict.semiauto.foldable
+    given Foldable[GenericAdt] = strict.semiauto.foldable
+    given Foldable[OptList] = strict.semiauto.foldable
+    given Foldable[ListSnoc] = strict.semiauto.foldable
+    given Foldable[AndChar] = strict.semiauto.foldable
+    given Foldable[Interleaved] = strict.semiauto.foldable
+    given Foldable[BoxNel] = strict.semiauto.foldable
+    given Foldable[EnumK1] = strict.semiauto.foldable
+    given Foldable[Many] = strict.semiauto.foldable
+    given Foldable[AtMostOne] = strict.semiauto.foldable
+    given Foldable[AtLeastOne] = strict.semiauto.foldable
+    given Foldable[Singletons] = strict.semiauto.foldable
+    given Foldable[Search] = strict.semiauto.foldable
 
   object derivedInstances:
     case class IList[A](x: ADTs.IList[A]) derives Foldable

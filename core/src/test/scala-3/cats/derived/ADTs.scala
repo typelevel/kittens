@@ -221,6 +221,7 @@ object ADTs:
       Cogen[Option[A]].contramap { case GenericAdtCase(value) => value }
 
   final case class CaseClassWOption[A](value: Option[A])
+  final case class UnCons[+A](head: Option[A], tail: List[A])
 
   final case class First(value: String)
   final case class Second(value: String)

@@ -89,7 +89,4 @@ object DerivedNonEmptyTraverse:
 
     given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedNonEmptyTraverse[F] =
       given K1.CoproductInstances[NonEmptyTraverse, F] = inst.unify
-      new Coproduct[NonEmptyTraverse, F]
-        with DerivedReducible.Coproduct[NonEmptyTraverse, F]
-        with DerivedTraverse.Coproduct[NonEmptyTraverse, F]
-        with DerivedFunctor.Generic[NonEmptyTraverse, F] {}
+      new NonEmptyTraverse[F] with Coproduct[NonEmptyTraverse, F] {}

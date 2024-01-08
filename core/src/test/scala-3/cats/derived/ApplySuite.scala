@@ -16,19 +16,15 @@
 
 package cats.derived
 
-import cats.{Apply, Semigroup}
 import cats.laws.discipline.*
-import cats.laws.discipline.SemigroupalTests.Isomorphisms
+import cats.{Apply, Semigroup}
 import shapeless3.deriving.Const
 
 import scala.compiletime.*
 
 class ApplySuite extends KittensSuite:
-  import ApplySuite.*
   import ADTs.*
-
-  inline given [F[_]]: Isomorphisms[F] =
-    Isomorphisms.invariant(summonInline[Apply[F]])
+  import ApplySuite.*
 
   inline def tests[F[_]]: ApplyTests[F] =
     ApplyTests[F](summonInline)

@@ -17,12 +17,14 @@
 package cats.derived
 
 import cats.Eq
+import cats.laws.discipline.SemigroupalTests.Isomorphisms
 import cats.platform.Platform
 import cats.syntax.AllSyntax
 import munit.DisciplineSuite
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 import org.scalacheck.Test.Parameters
 
+import scala.compiletime.summonInline
 import scala.deriving.Mirror
 import scala.quoted.*
 
@@ -54,6 +56,7 @@ object KittensSuite:
     given [A: Arbitrary]: Arbitrary[List[A]] = Arbitrary.arbContainer
     given [A <: Singleton: ValueOf]: Arbitrary[A] = Arbitrary(Gen.const(valueOf[A]))
     given [A <: Singleton: ValueOf]: Cogen[A] = Cogen((seed, _) => seed)
+    inline given [F[_]]: Isomorphisms[F] = Isomorphisms.invariant(summonInline)
 
     given [A <: Product](using mirror: Mirror.ProductOf[A], via: Arbitrary[mirror.MirroredElemTypes]): Arbitrary[A] =
       Arbitrary(via.arbitrary.map(mirror.fromTuple))

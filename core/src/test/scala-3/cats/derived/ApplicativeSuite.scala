@@ -16,20 +16,16 @@
 
 package cats.derived
 
-import cats.{Applicative, Monoid}
 import cats.laws.discipline.*
-import cats.laws.discipline.SemigroupalTests.Isomorphisms
+import cats.{Applicative, Monoid}
 import org.scalacheck.Arbitrary
 import shapeless3.deriving.Const
 
 import scala.compiletime.*
 
 class ApplicativeSuite extends KittensSuite:
-  import ApplicativeSuite.*
   import ADTs.*
-
-  inline given [F[_]]: Isomorphisms[F] =
-    Isomorphisms.invariant(summonInline[Applicative[F]])
+  import ApplicativeSuite.*
 
   inline def tests[F[_]]: ApplicativeTests[F] =
     ApplicativeTests[F](summonInline)

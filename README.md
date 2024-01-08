@@ -353,23 +353,24 @@ Legend:
 
 #### For polymorphic types
 
-| Type Class            | Case Classes                                     | Sealed Traits                | Constant Types `λ[x => T]`   | Nested Types `λ[x => F[G[x]]]`                                            |
-|-----------------------|--------------------------------------------------|------------------------------|------------------------------|---------------------------------------------------------------------------|
-| Applicative           | ∀ fields: Applicative                            |                              | for T: Monoid                | for F: Applicative and G: Applicative                                     |
-| Apply                 | ∀ fields: Apply                                  |                              | for T: Semigroup             | for F: Apply and G: Apply                                                 |
-| Contravariant         | ∀ fields: Contravariant                          | ∀ variants: Contravariant    | for any T                    | for F: Functor and G: Contravariant                                       |
-| EmptyK                | ∀ fields: EmptyK                                 | ∃! variant: EmptyK           | for T: Empty                 | for F: EmptyK and any G ∨ for F: Pure and G: EmptyK                       |
-| Foldable              | ∀ fields: Foldable                               | ∀ variants: Foldable         | for any T                    | for F: Foldable and G: Foldable                                           |
-| Functor               | ∀ fields: Functor                                | ∀ variants: Functor          | for any T                    | for F: Functor and G: Functor ∨ for F: Contravariant and G: Contravariant |
-| Invariant             | ∀ fields: Invariant                              | ∀ variants: Invariant        | for any T                    | for F: Invariant and G: Invariant                                         |
-| MonoidK               | ∀ fields: MonoidK                                |                              | for T: Monoid                | for F: MonoidK and any G ∨ for F: Applicative and G: MonoidK              |
-| NonEmptyTraverse      | ∃ field: NonEmptyTraverse ∧ ∀ fields: Traverse   | ∀ variants: NonEmptyTraverse |                              | for F: NonEmptyTraverse and G: NonEmptyTraverse                           |
-| Pure                  | ∀ fields: Pure                                   |                              | for T: Empty                 | for F: Pure and G: Pure                                                   |
-| Reducible             | ∃ field: Reducible ∧ ∀ fields: Foldable          | ∀ variants: Reducible        |                              | for F: Reducible and G: Reducible                                         |
-| SemigroupK            | ∀ fields: SemigroupK                             |                              | for T: Semigroup             | for F: SemigroupK and any G ∨ for F: Apply and G: SemigroupK              |
-| Traverse              | ∀ fields: Traverse                               | ∀ variants: Traverse         | for any T                    | for F: Traverse and G: Traverse                                           |
-| **Scala 3 only** ↓    |
-| NonEmptyAlternative   | ∀ fields: NonEmptyAlternative                    |                              |                              | for F: NonEmptyAlternative and G: Applicative                             |
+| Type Class          | Case Classes                                   | Sealed Traits                | Constant Types `λ[x => T]`   | Nested Types `λ[x => F[G[x]]]`                                            |
+|---------------------|------------------------------------------------|------------------------------|------------------------------|---------------------------------------------------------------------------|
+| Applicative         | ∀ fields: Applicative                          |                              | for T: Monoid                | for F: Applicative and G: Applicative                                     |
+| Apply               | ∀ fields: Apply                                |                              | for T: Semigroup             | for F: Apply and G: Apply                                                 |
+| Contravariant       | ∀ fields: Contravariant                        | ∀ variants: Contravariant    | for any T                    | for F: Functor and G: Contravariant                                       |
+| EmptyK              | ∀ fields: EmptyK                               | ∃! variant: EmptyK           | for T: Empty                 | for F: EmptyK and any G ∨ for F: Pure and G: EmptyK                       |
+| Foldable            | ∀ fields: Foldable                             | ∀ variants: Foldable         | for any T                    | for F: Foldable and G: Foldable                                           |
+| Functor             | ∀ fields: Functor                              | ∀ variants: Functor          | for any T                    | for F: Functor and G: Functor ∨ for F: Contravariant and G: Contravariant |
+| Invariant           | ∀ fields: Invariant                            | ∀ variants: Invariant        | for any T                    | for F: Invariant and G: Invariant                                         |
+| MonoidK             | ∀ fields: MonoidK                              |                              | for T: Monoid                | for F: MonoidK and any G ∨ for F: Applicative and G: MonoidK              |
+| NonEmptyTraverse    | ∃ field: NonEmptyTraverse ∧ ∀ fields: Traverse | ∀ variants: NonEmptyTraverse |                              | for F: NonEmptyTraverse and G: NonEmptyTraverse                           |
+| Pure                | ∀ fields: Pure                                 |                              | for T: Empty                 | for F: Pure and G: Pure                                                   |
+| Reducible           | ∃ field: Reducible ∧ ∀ fields: Foldable        | ∀ variants: Reducible        |                              | for F: Reducible and G: Reducible                                         |
+| SemigroupK          | ∀ fields: SemigroupK                           |                              | for T: Semigroup             | for F: SemigroupK and any G ∨ for F: Apply and G: SemigroupK              |
+| Traverse            | ∀ fields: Traverse                             | ∀ variants: Traverse         | for any T                    | for F: Traverse and G: Traverse                                           |
+| **Scala 3 only** ↓  |
+| NonEmptyAlternative | ∀ fields: NonEmptyAlternative                  |                              |                              | for F: NonEmptyAlternative and G: Applicative                             |
+| Alternative         | ∀ fields: Alternative                          |                              |                              | for F: Alternative and G: Applicative                                     |
 
 [cats]: https://github.com/typelevel/cats
 [shapeless]: https://github.com/milessabin/shapeless

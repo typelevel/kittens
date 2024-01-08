@@ -63,8 +63,8 @@ object DerivedTraverse:
 
   object Strict:
     given product[F[_]](using K1.ProductInstances[Traverse, F]): DerivedTraverse[F] =
-      new Product[Traverse, F] with DerivedFunctor.Generic[Traverse, F] {}
+      new Traverse[F] with Product[Traverse, F] {}
 
     given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedTraverse[F] =
       given K1.CoproductInstances[Traverse, F] = inst.unify
-      new Coproduct[Traverse, F] with DerivedFunctor.Generic[Traverse, F] {}
+      new Traverse[F] with Coproduct[Traverse, F] {}

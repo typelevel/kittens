@@ -48,4 +48,4 @@ object DerivedApplicative:
 
   object Strict:
     given product[F[_]](using K1.ProductInstances[Applicative, F]): DerivedApplicative[F] =
-      new Product[Applicative, F] with DerivedApply.Product[Applicative, F] {}
+      new Applicative[F] with Product[Applicative, F] {}

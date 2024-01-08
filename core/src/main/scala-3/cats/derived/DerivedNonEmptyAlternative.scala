@@ -41,6 +41,4 @@ object DerivedNonEmptyAlternative:
 
   object Strict:
     given product[F[_]](using K1.ProductInstances[NonEmptyAlternative, F]): DerivedNonEmptyAlternative[F] =
-      new Product[NonEmptyAlternative, F]
-        with DerivedApply.Product[NonEmptyAlternative, F]
-        with DerivedSemigroupK.Product[NonEmptyAlternative, F] {}
+      new NonEmptyAlternative[F] with Product[NonEmptyAlternative, F] {}

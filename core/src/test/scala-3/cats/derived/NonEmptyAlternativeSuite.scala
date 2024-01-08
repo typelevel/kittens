@@ -33,10 +33,7 @@ class NonEmptyAlternativeSuite extends KittensSuite:
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].nonEmptyAlternative[Int, String, Long])
     checkAll(s"$instance[OptList]", tests[OptList].nonEmptyAlternative[Int, String, Long])
     checkAll(s"$instance[UnCons]", tests[UnCons].nonEmptyAlternative[Int, String, Long])
-    checkAll(
-      s"$instance is Serializable",
-      SerializableTests.serializable(summonInline[NonEmptyAlternative[CaseClassWOption]])
-    )
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(summonInline[NonEmptyAlternative[UnCons]]))
 
   locally:
     import auto.nonEmptyAlternative.given
@@ -56,7 +53,7 @@ class NonEmptyAlternativeSuite extends KittensSuite:
     val instance = "derived.nonEmptyAlternative"
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].nonEmptyAlternative[Int, String, Long])
     checkAll(s"$instance[UnCons]", tests[UnCons].nonEmptyAlternative[Int, String, Long])
-    checkAll(s"$instance is Serializable", SerializableTests.serializable(Applicative[CaseClassWOption]))
+    checkAll(s"$instance is Serializable", SerializableTests.serializable(NonEmptyAlternative[UnCons]))
 
 end NonEmptyAlternativeSuite
 
@@ -64,7 +61,6 @@ object NonEmptyAlternativeSuite:
   import ADTs.*
 
   type OptList[A] = Option[List[A]]
-  type UnCons[+A] = (Option[A], Vector[A])
 
   object semiInstances:
     given NonEmptyAlternative[CaseClassWOption] = semiauto.nonEmptyAlternative
@@ -79,6 +75,6 @@ object NonEmptyAlternativeSuite:
 
   object derivedInstances:
     case class CaseClassWOption[A](x: ADTs.CaseClassWOption[A]) derives NonEmptyAlternative
-    case class UnCons[A](x: NonEmptyAlternativeSuite.UnCons[A]) derives NonEmptyAlternative
+    case class UnCons[A](x: ADTs.UnCons[A]) derives NonEmptyAlternative
 
 end NonEmptyAlternativeSuite

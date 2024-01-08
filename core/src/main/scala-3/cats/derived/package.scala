@@ -18,6 +18,7 @@ extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow[A]
 extension (x: Applicative.type) inline def derived[F[_]]: Applicative[F] = DerivedApplicative[F]
 extension (x: Apply.type) inline def derived[F[_]]: Apply[F] = DerivedApply[F]
 extension (x: NonEmptyAlternative.type) inline def derived[F[_]]: NonEmptyAlternative[F] = DerivedNonEmptyAlternative[F]
+extension (x: Alternative.type) inline def derived[F[_]]: Alternative[F] = DerivedAlternative[F]
 extension (x: EmptyK.type) inline def derived[F[_]]: EmptyK[F] = DerivedEmptyK[F]
 extension (x: Pure.type) inline def derived[F[_]]: Pure[F] = DerivedPure[F]
 extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable[F]
@@ -44,6 +45,7 @@ object semiauto:
   inline def applicative[F[_]]: Applicative[F] = DerivedApplicative[F]
   inline def apply[F[_]]: Apply[F] = DerivedApply[F]
   inline def nonEmptyAlternative[F[_]]: NonEmptyAlternative[F] = DerivedNonEmptyAlternative[F]
+  inline def alternative[F[_]]: Alternative[F] = DerivedAlternative[F]
   inline def emptyK[F[_]]: EmptyK[F] = DerivedEmptyK[F]
   inline def pure[F[_]]: Pure[F] = DerivedPure[F]
   inline def foldable[F[_]]: Foldable[F] = DerivedFoldable[F]
@@ -83,6 +85,7 @@ object strict:
   extension (x: Applicative.type) inline def derived[F[_]]: Applicative[F] = DerivedApplicative.strict[F]
   extension (x: NonEmptyAlternative.type)
     inline def derived[F[_]]: NonEmptyAlternative[F] = DerivedNonEmptyAlternative.strict[F]
+  extension (x: Alternative.type) inline def derived[F[_]]: Alternative[F] = DerivedAlternative.strict[F]
   extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
   extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible.strict[F]
   extension (x: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTraverse.strict[F]
@@ -110,6 +113,7 @@ object strict:
     inline def apply[F[_]]: Apply[F] = DerivedApply.strict[F]
     inline def applicative[F[_]]: Applicative[F] = DerivedApplicative.strict[F]
     inline def nonEmptyAlternative[F[_]]: NonEmptyAlternative[F] = DerivedNonEmptyAlternative.strict[F]
+    inline def alternative[F[_]]: Alternative[F] = DerivedAlternative.strict[F]
     inline def foldable[F[_]]: Foldable[F] = DerivedFoldable.strict[F]
     inline def reducible[F[_]]: Reducible[F] = DerivedReducible.strict[F]
     inline def traverse[F[_]]: Traverse[F] = DerivedTraverse.strict[F]
@@ -151,6 +155,9 @@ object auto:
 
   object nonEmptyAlternative:
     inline given [F[_]](using NotGiven[NonEmptyAlternative[F]]): NonEmptyAlternative[F] = DerivedNonEmptyAlternative[F]
+
+  object alternative:
+    inline given [F[_]](using NotGiven[Alternative[F]]): Alternative[F] = DerivedAlternative[F]
 
   object emptyK:
     inline given [F[_]](using NotGiven[EmptyK[F]]): EmptyK[F] = DerivedEmptyK[F]

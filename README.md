@@ -12,7 +12,7 @@ service][sonatype] and synced to Maven Central.
 
 It is available for Scala 2.12 and 2.13, Scala.js 1.5 and Scala Native 0.4.
 
-To get started with sbt, simply add the following to your `build.sbt` file:
+To get started with sbt, add the following to your `build.sbt` file:
 
 ```Scala
 libraryDependencies += "org.typelevel" %% "kittens" % "latestVersion" // indicated in the badge below
@@ -84,13 +84,13 @@ scala> mike.show
 res0: String = People(name = Mike, contactInfo = ContactInfo(phoneNumber = 202-295-3928, address = 1 Main ST, Chicago, IL))
 ```
 
-Note that in this example, the derivation generated instances for all referenced classes but still respected the
-existing instance in scope. For different ways to derive instances please see the
-[three modes of derivation below](#three-modes-of-derivation). 
+Note that in this example,
+the derivation generated instances for all referenced classes but still respected the existing instance in scope.
+For different ways to derive instances, please see the [three modes of derivation below](#three-modes-of-derivation). 
 
 ### Sequence examples
 
-Note that to run these examples you need partial unification enabled.
+Note that to run these examples, you need partial unification enabled.
 For **Scala 2.12** you should add the following to your `build.sbt`:
 
 ```scala
@@ -152,8 +152,8 @@ res0: Option[String] = Some(1 - a - 3.2)
 
 ### Three modes of derivation
 
-Kittens provides three objects for derivation `cats.derived.auto`, `cats.derived.cached` and `cats.derived.semi`
-The recommended best practice is going to be a semi auto one:
+Kittens provides three objects for derivation `cats.derived.auto`, `cats.derived.cached` and `cats.derived.semi`.
+The recommended best practice is the semiauto one:
 
 ```scala
 import cats.derived
@@ -167,7 +167,7 @@ This will respect all existing instances even if the field is a type constructor
 the native `Show` instance for `List` and derived instance for `A`. And it manually caches the result to the
 `val showFoo`. Downside user will need to write one for every type they directly need a `Show` instance.
 
-There are 3 alternatives:
+There are three alternatives:
 1. full auto: 
 
 ```scala
@@ -184,7 +184,7 @@ import derived.cached.show._
 ```
 
 Use this one with caution. It caches the derived instance globally. So it's only applicable if the instance is global
-in the application. This could be problematic for libraries, which has no control over the uniqueness of an instance on
+in the application. This could be problematic for libraries, which have no control over the uniqueness of an instance on
 use site. It relies on `shapeless.Cached` which is buggy.
 
 3. manual semi
@@ -192,10 +192,11 @@ use site. It relies on `shapeless.Cached` which is buggy.
 implicit val showFoo: Show[Foo] =  derived.semiauto.show
 ```
 
-It has the same downside as the recommenced semi-auto practice but also suffers from the type constructor field issue.
-I.e. if a field type is a type constructor whose native instance relies on the instance of the parameter type, this
-approach will by default derive an instance for the type constructor one. To overcome this user have to first derive
-the instance for type parameter. e.g. given:
+It has the same downside as the recommenced semiauto practice but also suffers from the type constructor field issue.
+I.e., if a field type is a type constructor whose native instance relies on the instance of the parameter type,
+this approach will by default derive an instance for the type constructor one.
+To overcome this, user have to first derive the instance for type parameter.
+E.g., given:
 
 ```scala
 case class Foo(bars: List[Bar])
@@ -214,9 +215,10 @@ This way the native instance for `Show[List]` would be used.
 
 ## Scala 3
 
-We also offer 3 methods of derivation for Scala 3. All of them have the same behaviour wrt to recursively defining instances: 
+We also offer three methods of derivation for Scala 3.
+All of them have the same behavior wrt to recursively defining instances: 
 1. Instances will always be recursively instantiated if necessary
-2. Subject to the same type constructor field limitation as the Scala 2 auto and manual semi derivations
+2. Subject to the same type constructor field limitation as the Scala 2 auto and manual semiauto derivations
 
 ### `derives` syntax (recommended)
 
@@ -314,16 +316,18 @@ List[Set[x]]]`.
 
 #### Stack safety
 
-Our derived instances are not stack-safe. This is a departure from the behaviour for Scala 2 because we didn't want to incur the performance penalty of trampolining all instances in `cats.Eval`. If your data-type is recursive or _extremely_ large then you may want to write instances by hand instead.
+Our derived instances are not stack-safe.
+This is a departure from the behaviour for Scala 2
+because we didn't want to incur the performance penalty of trampolining all instances in `cats.Eval`.
+If your data-type is recursive or _extremely_ large, then you may want to write instances by hand instead.
 
 #### Missing features
 
-Kittens for Scala 3 is built on top of [Shapeless
-3](https://github.com/typelevel/shapeless-3) which has a completely different
-API than [Shapeless 2](https://github.com/milessabin/shapeless) so we don't
-support features like `Sequence` and `Lift`.
+Kittens for Scala 3 is built on top of [Shapeless 3](https://github.com/typelevel/shapeless-3)
+which has a completely different API than [Shapeless 2](https://github.com/milessabin/shapeless),
+so we don't support features like `Sequence` and `Lift`.
 
-`ConsK` derivation is also not supported although we expect this to be
+`ConsK` derivation is also not supported, although we expect this to be
 [added](https://github.com/typelevel/kittens/issues/489) in a future release.
 
 ## Type class support matrix
@@ -337,40 +341,40 @@ Legend:
 
 #### For monomorphic types
 
-| Type Class           | Case Classes                   | Sealed Traits            |
-|----------------------|--------------------------------|--------------------------|
-| CommutativeMonoid    | ∀ fields: CommutativeMonoid    |                          |
-| CommutativeSemigroup | ∀ fields: CommutativeSemigroup |                          |
-| Empty                | ∀ fields: Empty                | ∃! variant: Empty        |
-| Eq                   | ∀ fields: Eq                   | ∀ variants: Eq           |
-| Hash                 | ∀ fields: Hash                 | ∀ variants: Hash         |
-| Monoid               | ∀ fields: Monoid               |                          |
-| Order                | ∀ fields: Order                | ∀ variants: Order        |
-| PartialOrder         | ∀ fields: PartialOrder         | ∀ variants: PartialOrder |
-| Semigroup            | ∀ fields: Semigroup            |                          |
-| Show                 | ∀ fields: Show                 | ∀ variants: Show         |
-| ShowPretty           | ∀ fields: ShowPretty           | ∀ variants: ShowPretty   |
+| Type Class           | Case Classes                   | Sealed Traits            | Singleton types |
+|----------------------|--------------------------------|--------------------------|:---------------:|
+| CommutativeMonoid    | ∀ fields: CommutativeMonoid    | ✗                        |        ✗        |
+| CommutativeSemigroup | ∀ fields: CommutativeSemigroup | ✗                        |        ✗        |
+| Empty                | ∀ fields: Empty                | ∃! variant: Empty        |        ✗        |
+| Eq                   | ∀ fields: Eq                   | ∀ variants: Eq           |        ✓        |
+| Hash                 | ∀ fields: Hash                 | ∀ variants: Hash         |        ✓        |
+| Monoid               | ∀ fields: Monoid               | ✗                        |        ✗        |
+| Order                | ∀ fields: Order                | ∀ variants: Order        |        ✓        |
+| PartialOrder         | ∀ fields: PartialOrder         | ∀ variants: PartialOrder |        ✓        |
+| Semigroup            | ∀ fields: Semigroup            | ✗                        |        ✗        |
+| Show                 | ∀ fields: Show                 | ∀ variants: Show         |        ✓        |
+| ShowPretty           | ∀ fields: ShowPretty           | ∀ variants: ShowPretty   |        ✓        |
 
 #### For polymorphic types
 
-| Type Class          | Case Classes                                   | Sealed Traits                | Constant Types `λ[x => T]`   | Nested Types `λ[x => F[G[x]]]`                                            |
-|---------------------|------------------------------------------------|------------------------------|------------------------------|---------------------------------------------------------------------------|
-| Applicative         | ∀ fields: Applicative                          |                              | for T: Monoid                | for F: Applicative and G: Applicative                                     |
-| Apply               | ∀ fields: Apply                                |                              | for T: Semigroup             | for F: Apply and G: Apply                                                 |
-| Contravariant       | ∀ fields: Contravariant                        | ∀ variants: Contravariant    | for any T                    | for F: Functor and G: Contravariant                                       |
-| EmptyK              | ∀ fields: EmptyK                               | ∃! variant: EmptyK           | for T: Empty                 | for F: EmptyK and any G ∨ for F: Pure and G: EmptyK                       |
-| Foldable            | ∀ fields: Foldable                             | ∀ variants: Foldable         | for any T                    | for F: Foldable and G: Foldable                                           |
-| Functor             | ∀ fields: Functor                              | ∀ variants: Functor          | for any T                    | for F: Functor and G: Functor ∨ for F: Contravariant and G: Contravariant |
-| Invariant           | ∀ fields: Invariant                            | ∀ variants: Invariant        | for any T                    | for F: Invariant and G: Invariant                                         |
-| MonoidK             | ∀ fields: MonoidK                              |                              | for T: Monoid                | for F: MonoidK and any G ∨ for F: Applicative and G: MonoidK              |
-| NonEmptyTraverse    | ∃ field: NonEmptyTraverse ∧ ∀ fields: Traverse | ∀ variants: NonEmptyTraverse |                              | for F: NonEmptyTraverse and G: NonEmptyTraverse                           |
-| Pure                | ∀ fields: Pure                                 |                              | for T: Empty                 | for F: Pure and G: Pure                                                   |
-| Reducible           | ∃ field: Reducible ∧ ∀ fields: Foldable        | ∀ variants: Reducible        |                              | for F: Reducible and G: Reducible                                         |
-| SemigroupK          | ∀ fields: SemigroupK                           |                              | for T: Semigroup             | for F: SemigroupK and any G ∨ for F: Apply and G: SemigroupK              |
-| Traverse            | ∀ fields: Traverse                             | ∀ variants: Traverse         | for any T                    | for F: Traverse and G: Traverse                                           |
+| Type Class          | Case Classes                                   | Sealed Traits                | Constant Types `λ[x => T]` | Nested Types `λ[x => F[G[x]]]`                                            |
+|---------------------|------------------------------------------------|------------------------------|----------------------------|---------------------------------------------------------------------------|
+| Applicative         | ∀ fields: Applicative                          | ✗                            | for T: Monoid              | for F: Applicative and G: Applicative                                     |
+| Apply               | ∀ fields: Apply                                | ✗                            | for T: Semigroup           | for F: Apply and G: Apply                                                 |
+| Contravariant       | ∀ fields: Contravariant                        | ∀ variants: Contravariant    | for any T                  | for F: Functor and G: Contravariant                                       |
+| EmptyK              | ∀ fields: EmptyK                               | ∃! variant: EmptyK           | for T: Empty               | for F: EmptyK and any G ∨ for F: Pure and G: EmptyK                       |
+| Foldable            | ∀ fields: Foldable                             | ∀ variants: Foldable         | for any T                  | for F: Foldable and G: Foldable                                           |
+| Functor             | ∀ fields: Functor                              | ∀ variants: Functor          | for any T                  | for F: Functor and G: Functor ∨ for F: Contravariant and G: Contravariant |
+| Invariant           | ∀ fields: Invariant                            | ∀ variants: Invariant        | for any T                  | for F: Invariant and G: Invariant                                         |
+| MonoidK             | ∀ fields: MonoidK                              | ✗                            | for T: Monoid              | for F: MonoidK and any G ∨ for F: Applicative and G: MonoidK              |
+| NonEmptyTraverse    | ∃ field: NonEmptyTraverse ∧ ∀ fields: Traverse | ∀ variants: NonEmptyTraverse | ✗                          | for F: NonEmptyTraverse and G: NonEmptyTraverse                           |
+| Pure                | ∀ fields: Pure                                 | ✗                            | for T: Empty               | for F: Pure and G: Pure                                                   |
+| Reducible           | ∃ field: Reducible ∧ ∀ fields: Foldable        | ∀ variants: Reducible        | ✗                          | for F: Reducible and G: Reducible                                         |
+| SemigroupK          | ∀ fields: SemigroupK                           | ✗                            | for T: Semigroup           | for F: SemigroupK and any G ∨ for F: Apply and G: SemigroupK              |
+| Traverse            | ∀ fields: Traverse                             | ∀ variants: Traverse         | for any T                  | for F: Traverse and G: Traverse                                           |
 | **Scala 3 only** ↓  |
-| NonEmptyAlternative | ∀ fields: NonEmptyAlternative                  |                              |                              | for F: NonEmptyAlternative and G: Applicative                             |
-| Alternative         | ∀ fields: Alternative                          |                              |                              | for F: Alternative and G: Applicative                                     |
+| NonEmptyAlternative | ∀ fields: NonEmptyAlternative                  | ✗                            | ✗                          | for F: NonEmptyAlternative and G: Applicative                             |
+| Alternative         | ∀ fields: Alternative                          | ✗                            | ✗                          | for F: Alternative and G: Applicative                                     |
 
 [cats]: https://github.com/typelevel/cats
 [shapeless]: https://github.com/milessabin/shapeless

@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.{Monoid, MonoidK}
-import shapeless3.deriving.{Const, K1}
+import shapeless3.deriving.Const
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -44,7 +45,7 @@ object DerivedMonoidK:
       def empty[A]: F[G[A]] = f.pure(g.empty[A])
       def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = f.map2(x, y)(g.combineK)
 
-  given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedMonoidK[F] =
+  given [F[_]](using inst: => ProductInstances[Or, F]): DerivedMonoidK[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
@@ -57,7 +58,7 @@ object DerivedMonoidK:
   )(using F: DerivedApplicative.Or[F], G: Or[G]): DerivedMonoidK[[x] =>> F[G[x]]] =
     nested(using ev)
 
-  trait Product[T[f[_]] <: MonoidK[f], F[_]](using inst: K1.ProductInstances[T, F])
+  trait Product[T[f[_]] <: MonoidK[f], F[_]](using inst: ProductInstances[T, F])
       extends MonoidK[F],
         DerivedSemigroupK.Product[T, F]:
 
@@ -65,5 +66,5 @@ object DerivedMonoidK:
       inst.construct([f[_]] => (F: T[f]) => F.empty[A])
 
   object Strict:
-    given product[F[_]](using K1.ProductInstances[MonoidK, F]): DerivedMonoidK[F] =
+    given product[F[_]: ProductInstancesOf[MonoidK]]: DerivedMonoidK[F] =
       new Product[MonoidK, F] {}

@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.{Eval, Foldable, Reducible}
-import shapeless3.deriving.{Continue, K1}
+import shapeless3.deriving.Continue
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -31,19 +32,19 @@ object DerivedReducible:
     new Derived.Lazy(() => F.unify.compose(using G.unify)) with Reducible[[x] =>> F[G[x]]]:
       export delegate.*
 
-  def product[F[_]](ev: Reducible[?])(using inst: K1.ProductInstances[DerivedFoldable.Or, F]): DerivedReducible[F] =
-    Strict.product(ev)(using inst.unify)
+  def product[F[_]: ProductInstancesOf[DerivedFoldable.Or]](ev: Reducible[?]): DerivedReducible[F] =
+    Strict.product(ev)(using ProductInstances.unify)
 
-  inline given product[F[_]](using gen: K1.ProductGeneric[F]): DerivedReducible[F] =
-    product(K1.summonFirst[Or, gen.MirroredElemTypes].unify)
+  inline given product[F[_]](using gen: ProductGeneric[F]): DerivedReducible[F] =
+    product(summonFirst[Or, gen.MirroredElemTypes].unify)
 
-  given [F[_]](using => K1.CoproductInstances[Or, F]): DerivedReducible[F] =
+  given [F[_]](using => CoproductInstances[Or, F]): DerivedReducible[F] =
     Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Or, G[_]: Or]: DerivedReducible[[x] =>> F[G[x]]] = nested
 
-  trait Product[T[f[_]] <: Foldable[f], F[_]](@unused ev: Reducible[?])(using inst: K1.ProductInstances[T, F])
+  trait Product[T[f[_]] <: Foldable[f], F[_]](@unused ev: Reducible[?])(using inst: ProductInstances[T, F])
       extends DerivedFoldable.Product[T, F],
         Reducible[F]:
 
@@ -70,7 +71,7 @@ object DerivedReducible:
               })
         .map(_.get)
 
-  trait Coproduct[T[f[_]] <: Reducible[f], F[_]](using inst: K1.CoproductInstances[T, F])
+  trait Coproduct[T[f[_]] <: Reducible[f], F[_]](using inst: CoproductInstances[T, F])
       extends DerivedFoldable.Coproduct[T, F],
         Reducible[F]:
 
@@ -81,12 +82,12 @@ object DerivedReducible:
       inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => Eval.defer(F.reduceRightTo(fa)(f)(g)))
 
   object Strict:
-    def product[F[_]](ev: Reducible[?])(using K1.ProductInstances[Foldable, F]): DerivedReducible[F] =
+    def product[F[_]: ProductInstancesOf[Foldable]](ev: Reducible[?]): DerivedReducible[F] =
       new Product[Foldable, F](ev) {}
 
-    inline given product[F[_]](using gen: K1.ProductGeneric[F]): DerivedReducible[F] =
-      product(K1.summonFirst[Reducible, gen.MirroredElemTypes])
+    inline given product[F[_]](using gen: ProductGeneric[F]): DerivedReducible[F] =
+      product(summonFirst[Reducible, gen.MirroredElemTypes])
 
-    given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedReducible[F] =
-      given K1.CoproductInstances[Reducible, F] = inst.unify
+    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedReducible[F] =
+      given CoproductInstances[Reducible, F] = inst.unify
       new Coproduct[Reducible, F] {}

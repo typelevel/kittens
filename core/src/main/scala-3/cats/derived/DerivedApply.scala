@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.{Apply, Semigroup}
-import shapeless3.deriving.{Const, K1}
+import shapeless3.deriving.Const
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -33,18 +34,18 @@ object DerivedApply:
     new Derived.Lazy(() => F.unify.compose(using G.unify)) with Apply[[x] =>> F[G[x]]]:
       export delegate.*
 
-  given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApply[F] =
+  given [F[_]](using inst: => ProductInstances[Or, F]): DerivedApply[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Or, G[_]: Or]: DerivedApply[[x] =>> F[G[x]]] = nested
 
-  trait Product[T[f[_]] <: Apply[f], F[_]](using inst: K1.ProductInstances[T, F]) extends Apply[F]:
+  trait Product[T[f[_]] <: Apply[f], F[_]](using inst: ProductInstances[T, F]) extends Apply[F]:
     private lazy val F = new DerivedFunctor.Generic[T, F] {}
     final override def map[A, B](fa: F[A])(f: A => B): F[B] = F.map(fa)(f)
     final override def ap[A, B](ff: F[A => B])(fa: F[A]): F[B] =
       inst.map2(ff, fa)([f[_]] => (F: T[f], ff: f[A => B], fa: f[A]) => F.ap(ff)(fa))
 
   object Strict:
-    given product[F[_]](using K1.ProductInstances[Apply, F]): DerivedApply[F] =
+    given product[F[_]: ProductInstancesOf[Apply]]: DerivedApply[F] =
       new Product[Apply, F] {}

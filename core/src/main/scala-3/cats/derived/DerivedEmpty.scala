@@ -1,7 +1,7 @@
 package cats.derived
 
 import alleycats.Empty
-import shapeless3.deriving.K0
+import shapeless3.deriving.K0.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -24,12 +24,12 @@ object DerivedEmpty:
     import Strict.given
     summonInline[DerivedEmpty[A]].instance
 
-  given product[A](using inst: K0.ProductInstances[Or, A]): DerivedEmpty[A] = Strict.product(using inst.unify)
-  inline given coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] = Strict.coproduct
+  given product[A: ProductInstancesOf[Or]]: DerivedEmpty[A] = Strict.product(using ProductInstances.unify)
+  inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] = Strict.coproduct
 
   object Strict:
-    given product[A](using inst: K0.ProductInstances[Empty, A]): DerivedEmpty[A] =
-      Empty(inst.construct([a] => (A: Empty[a]) => A.empty))
+    given product[A: ProductInstancesOf[Empty]]: DerivedEmpty[A] =
+      Empty(ProductInstances.construct([a] => (A: Empty[a]) => A.empty))
 
-    inline given coproduct[A](using gen: K0.CoproductGeneric[A]): DerivedEmpty[A] =
-      Empty(gen.withOnly[Or, A]([a <: A] => (A: Or[a]) => A.unify.empty))
+    inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] =
+      Empty(CoproductGeneric.withOnly[Or, A]([a <: A] => (A: Or[a]) => A.unify.empty))

@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.{Order, PartialOrder}
-import shapeless3.deriving.{Complete, K0}
+import shapeless3.deriving.Complete
+import shapeless3.deriving.K0.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -27,14 +28,14 @@ object DerivedPartialOrder:
   given singleton[A <: Singleton: ValueOf]: DerivedPartialOrder[A] =
     Order.allEqual
 
-  given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedPartialOrder[A] =
+  given product[A](using inst: => ProductInstances[Or, A]): DerivedPartialOrder[A] =
     Strict.product(using inst.unify)
 
-  given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedPartialOrder[A] =
-    given K0.CoproductInstances[PartialOrder, A] = inst.unify
+  given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedPartialOrder[A] =
+    given CoproductInstances[PartialOrder, A] = inst.unify
     new Coproduct[PartialOrder, A] {}
 
-  trait Product[T[x] <: PartialOrder[x], A](using inst: K0.ProductInstances[T, A]) extends PartialOrder[A]:
+  trait Product[T[x] <: PartialOrder[x], A](using inst: ProductInstances[T, A]) extends PartialOrder[A]:
     def partialCompare(x: A, y: A): Double =
       inst.foldLeft2(x, y)(0: Double):
         [t] =>
@@ -42,12 +43,12 @@ object DerivedPartialOrder:
             val cmp = ord.partialCompare(t0, t1)
             Complete(cmp != 0)(cmp)(acc)
 
-  trait Coproduct[T[x] <: PartialOrder[x], A](using inst: K0.CoproductInstances[T, A]) extends PartialOrder[A]:
+  trait Coproduct[T[x] <: PartialOrder[x], A](using inst: CoproductInstances[T, A]) extends PartialOrder[A]:
     def partialCompare(x: A, y: A): Double =
       inst.fold2(x, y)(Double.NaN: Double):
         [t] => (ord: T[t], t0: t, t1: t) => ord.partialCompare(t0, t1)
 
   object Strict:
     export DerivedPartialOrder.coproduct
-    given product[A](using K0.ProductInstances[PartialOrder, A]): DerivedPartialOrder[A] =
+    given product[A: ProductInstancesOf[PartialOrder]]: DerivedPartialOrder[A] =
       new Product[PartialOrder, A] {}

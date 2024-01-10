@@ -1,7 +1,8 @@
 package cats.derived
 
 import alleycats.{Empty, EmptyK}
-import shapeless3.deriving.{Const, K1}
+import shapeless3.deriving.Const
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.summonInline
@@ -44,8 +45,8 @@ object DerivedEmptyK:
       lazy val g = G.unify
       def empty[A]: F[G[A]] = f.pure(g.empty)
 
-  given product[F[_]](using inst: K1.ProductInstances[Or, F]): DerivedEmptyK[F] = Strict.product(using inst.unify)
-  inline given coproduct[F[_]](using K1.CoproductGeneric[F]): DerivedEmptyK[F] = Strict.coproduct
+  given product[F[_]: ProductInstancesOf[Or]]: DerivedEmptyK[F] = Strict.product(using ProductInstances.unify)
+  inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] = Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using F: Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
@@ -58,8 +59,8 @@ object DerivedEmptyK:
     nested(using ev)
 
   object Strict:
-    given product[F[_]](using inst: K1.ProductInstances[EmptyK, F]): DerivedEmptyK[F] = new EmptyK[F]:
-      def empty[A]: F[A] = inst.construct([f[_]] => (F: EmptyK[f]) => F.empty[A])
+    given product[F[_]: ProductInstancesOf[EmptyK]]: DerivedEmptyK[F] = new EmptyK[F]:
+      def empty[A]: F[A] = ProductInstances.construct([f[_]] => (F: EmptyK[f]) => F.empty[A])
 
-    inline given coproduct[F[_]](using gen: K1.CoproductGeneric[F]): DerivedEmptyK[F] =
-      gen.withOnly[Or, EmptyK[F]]([f[x] <: F[x]] => (F: Or[f]) => F.unify.asInstanceOf[EmptyK[F]])
+    inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] =
+      CoproductGeneric.withOnly[Or, EmptyK[F]]([f[x] <: F[x]] => (F: Or[f]) => F.unify.asInstanceOf[EmptyK[F]])

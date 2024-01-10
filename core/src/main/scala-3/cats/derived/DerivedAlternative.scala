@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.Alternative
-import shapeless3.deriving.K1
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -31,14 +31,14 @@ object DerivedAlternative:
     new Derived.Lazy(() => F.unify.compose(using G.unify)) with Alternative[[x] =>> F[G[x]]]:
       export delegate.*
 
-  given product[F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedAlternative[F] =
+  given product[F[_]](using inst: => ProductInstances[Or, F]): DerivedAlternative[F] =
     Strict.product(using inst.unify)
 
-  trait Product[T[f[_]] <: Alternative[f], F[_]](using K1.ProductInstances[T, F])
+  trait Product[T[f[_]] <: Alternative[f], F[_]: ProductInstancesOf[T]]
       extends Alternative[F],
         DerivedNonEmptyAlternative.Product[T, F],
         DerivedMonoidK.Product[T, F]
 
   object Strict:
-    given product[F[_]](using K1.ProductInstances[Alternative, F]): DerivedAlternative[F] =
+    given product[F[_]: ProductInstancesOf[Alternative]]: DerivedAlternative[F] =
       new Alternative[F] with Product[Alternative, F] {}

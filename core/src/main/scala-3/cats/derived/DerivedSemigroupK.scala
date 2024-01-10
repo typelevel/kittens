@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.{Semigroup, SemigroupK}
-import shapeless3.deriving.{Const, K1}
+import shapeless3.deriving.Const
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -42,7 +43,7 @@ object DerivedSemigroupK:
       lazy val g = G.unify
       def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = f.map2(x, y)(g.combineK)
 
-  given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedSemigroupK[F] =
+  given [F[_]](using inst: => ProductInstances[Or, F]): DerivedSemigroupK[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
@@ -55,10 +56,10 @@ object DerivedSemigroupK:
   )(using F: DerivedApply.Or[F], G: Or[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
     nested(using ev)
 
-  trait Product[T[f[_]] <: SemigroupK[f], F[_]](using inst: K1.ProductInstances[T, F]) extends SemigroupK[F]:
+  trait Product[T[f[_]] <: SemigroupK[f], F[_]](using inst: ProductInstances[T, F]) extends SemigroupK[F]:
     final override def combineK[A](x: F[A], y: F[A]): F[A] =
       inst.map2(x, y)([f[_]] => (F: T[f], x: f[A], y: f[A]) => F.combineK(x, y))
 
   object Strict:
-    given product[F[_]](using K1.ProductInstances[SemigroupK, F]): DerivedSemigroupK[F] =
+    given product[F[_]: ProductInstancesOf[SemigroupK]]: DerivedSemigroupK[F] =
       new Product[SemigroupK, F] {}

@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.Eq
-import shapeless3.deriving.{Complete, K0}
+import shapeless3.deriving.Complete
+import shapeless3.deriving.K0.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -27,22 +28,22 @@ object DerivedEq:
   given singleton[A <: Singleton: ValueOf]: DerivedEq[A] =
     Eq.allEqual
 
-  given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedEq[A] =
+  given product[A](using inst: => ProductInstances[Or, A]): DerivedEq[A] =
     Strict.product(using inst.unify)
 
-  given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedEq[A] =
-    given K0.CoproductInstances[Eq, A] = inst.unify
+  given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedEq[A] =
+    given CoproductInstances[Eq, A] = inst.unify
     new Coproduct[Eq, A] {}
 
-  trait Product[F[x] <: Eq[x], A](using inst: K0.ProductInstances[F, A]) extends Eq[A]:
+  trait Product[F[x] <: Eq[x], A](using inst: ProductInstances[F, A]) extends Eq[A]:
     final override def eqv(x: A, y: A): Boolean = inst.foldLeft2(x, y)(true: Boolean):
       [t] => (acc: Boolean, eqt: F[t], x: t, y: t) => Complete(!eqt.eqv(x, y))(false)(true)
 
-  trait Coproduct[F[x] <: Eq[x], A](using inst: K0.CoproductInstances[F, A]) extends Eq[A]:
+  trait Coproduct[F[x] <: Eq[x], A](using inst: CoproductInstances[F, A]) extends Eq[A]:
     final override def eqv(x: A, y: A): Boolean = inst.fold2(x, y)(false):
       [t] => (eqt: F[t], x: t, y: t) => eqt.eqv(x, y)
 
   object Strict:
     export DerivedEq.coproduct
-    given product[A](using K0.ProductInstances[Eq, A]): DerivedEq[A] =
+    given product[A: ProductInstancesOf[Eq]]: DerivedEq[A] =
       new Product[Eq, A] {}

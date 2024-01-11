@@ -120,80 +120,83 @@ object strict:
     inline def nonEmptyTraverse[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.strict[F]
 
 object auto:
+  private type NotGivenA[F[_]] = [A] =>> NotGiven[F[A]]
+  private type NotGivenF[T[_[_]]] = [F[_]] =>> NotGiven[T[F]]
+
   object eq:
-    inline given [A](using NotGiven[Eq[A]]): Eq[A] = DerivedEq[A]
+    inline given [A: NotGivenA[Eq]]: Eq[A] = DerivedEq[A]
 
   object hash:
-    inline given [A](using NotGiven[Hash[A]]): Hash[A] = DerivedHash[A]
+    inline given [A: NotGivenA[Hash]]: Hash[A] = DerivedHash[A]
 
   object empty:
-    inline given [A](using NotGiven[Empty[A]]): Empty[A] = DerivedEmpty[A]
+    inline given [A: NotGivenA[Empty]]: Empty[A] = DerivedEmpty[A]
 
   object semigroup:
-    inline given [A](using NotGiven[Semigroup[A]]): Semigroup[A] = DerivedSemigroup[A]
+    inline given [A: NotGivenA[Semigroup]]: Semigroup[A] = DerivedSemigroup[A]
 
   object monoid:
-    inline given [A](using NotGiven[Monoid[A]]): Monoid[A] = DerivedMonoid[A]
+    inline given [A: NotGivenA[Monoid]]: Monoid[A] = DerivedMonoid[A]
 
   object order:
-    inline given [A](using NotGiven[Order[A]]): Order[A] = DerivedOrder[A]
+    inline given [A: NotGivenA[Order]]: Order[A] = DerivedOrder[A]
 
   object commutativeSemigroup:
-    inline given [A](using NotGiven[CommutativeSemigroup[A]]): CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
+    inline given [A: NotGivenA[CommutativeSemigroup]]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
 
   object commutativeMonoid:
-    inline given [A](using NotGiven[CommutativeMonoid[A]]): CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
+    inline given [A: NotGivenA[CommutativeMonoid]]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
 
   object show:
-    inline given [A](using NotGiven[Show[A]]): Show[A] = DerivedShow[A]
+    inline given [A: NotGivenA[Show]]: Show[A] = DerivedShow[A]
 
   object applicative:
-    inline given [F[_]](using NotGiven[Applicative[F]]): Applicative[F] = DerivedApplicative[F]
+    inline given [F[_]: NotGivenF[Applicative]]: Applicative[F] = DerivedApplicative[F]
 
   object apply:
-    inline given [F[_]](using NotGiven[Apply[F]]): Apply[F] = DerivedApply[F]
+    inline given [F[_]: NotGivenF[Apply]]: Apply[F] = DerivedApply[F]
 
   object nonEmptyAlternative:
-    inline given [F[_]](using NotGiven[NonEmptyAlternative[F]]): NonEmptyAlternative[F] = DerivedNonEmptyAlternative[F]
+    inline given [F[_]: NotGivenF[NonEmptyAlternative]]: NonEmptyAlternative[F] = DerivedNonEmptyAlternative[F]
 
   object alternative:
-    inline given [F[_]](using NotGiven[Alternative[F]]): Alternative[F] = DerivedAlternative[F]
+    inline given [F[_]: NotGivenF[Alternative]]: Alternative[F] = DerivedAlternative[F]
 
   object emptyK:
-    inline given [F[_]](using NotGiven[EmptyK[F]]): EmptyK[F] = DerivedEmptyK[F]
+    inline given [F[_]: NotGivenF[EmptyK]]: EmptyK[F] = DerivedEmptyK[F]
 
   object pure:
-    inline given [F[_]](using NotGiven[Pure[F]]): Pure[F] = DerivedPure[F]
+    inline given [F[_]: NotGivenF[Pure]]: Pure[F] = DerivedPure[F]
 
   object functor:
-    inline given [F[_]](using NotGiven[Functor[F]]): Functor[F] = DerivedFunctor[F]
+    inline given [F[_]: NotGivenF[Functor]]: Functor[F] = DerivedFunctor[F]
 
   object foldable:
-    inline given [F[_]](using NotGiven[Foldable[F]]): Foldable[F] = DerivedFoldable[F]
+    inline given [F[_]: NotGivenF[Foldable]]: Foldable[F] = DerivedFoldable[F]
 
   object reducible:
-    inline given [F[_]](using NotGiven[Reducible[F]]): Reducible[F] = DerivedReducible[F]
+    inline given [F[_]: NotGivenF[Reducible]]: Reducible[F] = DerivedReducible[F]
 
   object traverse:
-    inline given [F[_]](using NotGiven[Traverse[F]]): Traverse[F] = DerivedTraverse[F]
+    inline given [F[_]: NotGivenF[Traverse]]: Traverse[F] = DerivedTraverse[F]
 
   object nonEmptyTraverse:
-    inline given [F[_]](using NotGiven[NonEmptyTraverse[F]]): NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
+    inline given [F[_]: NotGivenF[NonEmptyTraverse]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
 
   object semigroupK:
-    inline given [F[_]](using NotGiven[SemigroupK[F]]): SemigroupK[F] = DerivedSemigroupK[F]
+    inline given [F[_]: NotGivenF[SemigroupK]]: SemigroupK[F] = DerivedSemigroupK[F]
 
   object monoidK:
-    inline given [F[_]](using NotGiven[MonoidK[F]]): MonoidK[F] = DerivedMonoidK[F]
+    inline given [F[_]: NotGivenF[MonoidK]]: MonoidK[F] = DerivedMonoidK[F]
 
   object contravariant:
-    inline given [F[_]](using NotGiven[Contravariant[F]]): Contravariant[F] = DerivedContravariant[F]
+    inline given [F[_]: NotGivenF[Contravariant]]: Contravariant[F] = DerivedContravariant[F]
 
   object invariant:
-    inline given [F[_]](using NotGiven[Invariant[F]]): Invariant[F] = DerivedInvariant[F]
+    inline given [F[_]: NotGivenF[Invariant]]: Invariant[F] = DerivedInvariant[F]
 
   object partialOrder:
-    inline given [A](using NotGiven[PartialOrder[A]]): PartialOrder[A] = DerivedPartialOrder[A]
+    inline given [A: NotGivenA[PartialOrder]]: PartialOrder[A] = DerivedPartialOrder[A]
 
   object showPretty:
-    inline given [A](using NotGiven[Show[A]]): ShowPretty[A] = DerivedShowPretty[A]
+    inline given [A: NotGivenA[Show]]: ShowPretty[A] = DerivedShowPretty[A]

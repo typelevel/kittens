@@ -1,7 +1,8 @@
 package cats.derived
 
 import alleycats.{Empty, Pure}
-import shapeless3.deriving.{Const, K1}
+import shapeless3.deriving.Const
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.summonInline
@@ -37,12 +38,12 @@ object DerivedPure:
       lazy val g = G.unify
       def pure[A](a: A): F[G[A]] = f.pure(g.pure(a))
 
-  given [F[_]](using inst: K1.ProductInstances[Or, F]): DerivedPure[F] =
-    Strict.product(using inst.unify)
+  given [F[_]: ProductInstancesOf[Or]]: DerivedPure[F] =
+    Strict.product(using ProductInstances.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Or, G[_]: Or]: DerivedPure[[x] =>> F[G[x]]] = nested
 
   object Strict:
-    given product[F[_]](using inst: K1.ProductInstances[Pure, F]): DerivedPure[F] = new Pure[F]:
-      def pure[A](a: A): F[A] = inst.construct([f[_]] => (F: Pure[f]) => F.pure(a))
+    given product[F[_]: ProductInstancesOf[Pure]]: DerivedPure[F] = new Pure[F]:
+      def pure[A](a: A): F[A] = ProductInstances.construct([f[_]] => (F: Pure[f]) => F.pure(a))

@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.Show
-import shapeless3.deriving.{K0, Labelling}
+import shapeless3.deriving.K0.*
+import shapeless3.deriving.Labelling
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -54,16 +55,16 @@ object DerivedShowPretty:
   given string[A <: String]: DerivedShowPretty[A] = fromToString
   given symbol[A <: Symbol]: DerivedShowPretty[A] = fromToString
 
-  given product[A: Labelling](using => K0.ProductInstances[Or, A]): DerivedShowPretty[A] = new Product[A] {}
-  given coproduct[A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] = new Coproduct[A] {}
+  given product[A: Labelling](using => ProductInstances[Or, A]): DerivedShowPretty[A] = new Product[A] {}
+  given coproduct[A](using => CoproductInstances[Or, A]): DerivedShowPretty[A] = new Coproduct[A] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [A](using K0.ProductInstances[Or, A], Labelling[A]): DerivedShowPretty[A] = product
+  protected given [A: ProductInstancesOf[Or]: Labelling]: DerivedShowPretty[A] = product
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [A](using => K0.CoproductInstances[Or, A]): DerivedShowPretty[A] = coproduct
+  protected given [A](using => CoproductInstances[Or, A]): DerivedShowPretty[A] = coproduct
 
-  trait Product[A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]) extends ShowPretty[A]:
+  trait Product[A](using inst: ProductInstances[Or, A], labelling: Labelling[A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =
       val prefix = labelling.label
       val labels = labelling.elemLabels
@@ -83,12 +84,12 @@ object DerivedShowPretty:
           i -= 1
         s"$prefix(" :: lines
 
-  trait Coproduct[A](using inst: K0.CoproductInstances[Or, A]) extends ShowPretty[A]:
+  trait Coproduct[A](using inst: CoproductInstances[Or, A]) extends ShowPretty[A]:
     def showLines(a: A): List[String] =
       inst.fold(a)([a] => (show: Or[a], x: a) => show(x))
 
   object Strict:
     export DerivedShowPretty.coproduct
-    given product[A: Labelling](using inst: => K0.ProductInstances[Show, A]): DerivedShowPretty[A] =
-      given K0.ProductInstances[Or, A] = inst.mapK([a] => (show: Show[a]) => Or.fromShow(show))
+    given product[A: Labelling](using inst: => ProductInstances[Show, A]): DerivedShowPretty[A] =
+      given ProductInstances[Or, A] = inst.mapK([a] => (show: Show[a]) => Or.fromShow(show))
       DerivedShowPretty.product

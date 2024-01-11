@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.NonEmptyAlternative
-import shapeless3.deriving.K1
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -31,14 +31,14 @@ object DerivedNonEmptyAlternative:
     new Derived.Lazy(() => F.unify.compose(using G.unify)) with NonEmptyAlternative[[x] =>> F[G[x]]]:
       export delegate.*
 
-  given product[F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedNonEmptyAlternative[F] =
+  given product[F[_]](using inst: => ProductInstances[Or, F]): DerivedNonEmptyAlternative[F] =
     Strict.product(using inst.unify)
 
-  trait Product[T[f[_]] <: NonEmptyAlternative[f], F[_]](using K1.ProductInstances[T, F])
+  trait Product[T[f[_]] <: NonEmptyAlternative[f], F[_]: ProductInstancesOf[T]]
       extends NonEmptyAlternative[F],
         DerivedApplicative.Product[T, F],
         DerivedSemigroupK.Product[T, F]
 
   object Strict:
-    given product[F[_]](using K1.ProductInstances[NonEmptyAlternative, F]): DerivedNonEmptyAlternative[F] =
+    given product[F[_]: ProductInstancesOf[NonEmptyAlternative]]: DerivedNonEmptyAlternative[F] =
       new NonEmptyAlternative[F] with Product[NonEmptyAlternative, F] {}

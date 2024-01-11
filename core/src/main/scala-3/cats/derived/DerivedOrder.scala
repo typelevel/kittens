@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.Order
-import shapeless3.deriving.{Complete, K0}
+import shapeless3.deriving.Complete
+import shapeless3.deriving.K0.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -27,14 +28,14 @@ object DerivedOrder:
   given singleton[A <: Singleton: ValueOf]: DerivedOrder[A] =
     Order.allEqual
 
-  given product[A](using inst: => K0.ProductInstances[Or, A]): DerivedOrder[A] =
+  given product[A](using inst: => ProductInstances[Or, A]): DerivedOrder[A] =
     Strict.product(using inst.unify)
 
-  given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedOrder[A] =
-    given K0.CoproductInstances[Order, A] = inst.unify
+  given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedOrder[A] =
+    given CoproductInstances[Order, A] = inst.unify
     new Coproduct[Order, A] {}
 
-  trait Product[T[x] <: Order[x], A](using inst: K0.ProductInstances[T, A]) extends Order[A]:
+  trait Product[T[x] <: Order[x], A](using inst: ProductInstances[T, A]) extends Order[A]:
     def compare(x: A, y: A): Int =
       inst.foldLeft2(x, y)(0: Int):
         [t] =>
@@ -42,12 +43,12 @@ object DerivedOrder:
             val cmp = ord.compare(t0, t1)
             Complete(cmp != 0)(cmp)(acc)
 
-  trait Coproduct[T[x] <: Order[x], A](using inst: K0.CoproductInstances[T, A]) extends Order[A]:
+  trait Coproduct[T[x] <: Order[x], A](using inst: CoproductInstances[T, A]) extends Order[A]:
     def compare(x: A, y: A): Int =
       inst.fold2(x, y)((x: Int, y: Int) => x - y):
         [t] => (ord: T[t], t0: t, t1: t) => ord.compare(t0, t1)
 
   object Strict:
     export DerivedOrder.coproduct
-    given product[A](using K0.ProductInstances[Order, A]): DerivedOrder[A] =
+    given product[A: ProductInstancesOf[Order]]: DerivedOrder[A] =
       new Product[Order, A] {}

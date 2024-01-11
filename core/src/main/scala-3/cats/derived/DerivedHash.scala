@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.Hash
-import shapeless3.deriving.{K0, Continue}
+import shapeless3.deriving.Continue
+import shapeless3.deriving.K0.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -37,14 +38,14 @@ object DerivedHash:
   given string[A <: String]: DerivedHash[A] = Hash.fromUniversalHashCode
   given symbol[A <: Symbol]: DerivedHash[A] = Hash.fromUniversalHashCode
 
-  given product[A <: scala.Product](using inst: => K0.ProductInstances[Or, A]): DerivedHash[A] =
+  given product[A <: scala.Product](using inst: => ProductInstances[Or, A]): DerivedHash[A] =
     Strict.product(using inst.unify)
 
-  given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedHash[A] =
-    given K0.CoproductInstances[Hash, A] = inst.unify
+  given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedHash[A] =
+    given CoproductInstances[Hash, A] = inst.unify
     new Coproduct[Hash, A] {}
 
-  trait Product[F[x] <: Hash[x], A <: scala.Product](using inst: K0.ProductInstances[F, A])
+  trait Product[F[x] <: Hash[x], A <: scala.Product](using inst: ProductInstances[F, A])
       extends DerivedEq.Product[F, A],
         Hash[A]:
 
@@ -57,14 +58,10 @@ object DerivedHash:
           [t] => (acc: Int, h: F[t], x: t) => Continue(MurmurHash3.mix(acc, h.hash(x)))
         MurmurHash3.finalizeHash(hash, arity)
 
-  trait Coproduct[F[x] <: Hash[x], A](using inst: K0.CoproductInstances[F, A])
-      extends DerivedEq.Coproduct[F, A],
-        Hash[A]:
-
-    final override def hash(x: A): Int =
-      inst.fold[Int](x)([t] => (h: F[t], x: t) => h.hash(x))
+  trait Coproduct[F[x] <: Hash[x], A](using inst: CoproductInstances[F, A]) extends DerivedEq.Coproduct[F, A], Hash[A]:
+    final override def hash(x: A): Int = inst.fold[Int](x)([t] => (h: F[t], x: t) => h.hash(x))
 
   object Strict:
     export DerivedHash.coproduct
-    given product[A <: scala.Product](using K0.ProductInstances[Hash, A]): DerivedHash[A] =
+    given product[A <: scala.Product: ProductInstancesOf[Hash]]: DerivedHash[A] =
       new Product[Hash, A] {}

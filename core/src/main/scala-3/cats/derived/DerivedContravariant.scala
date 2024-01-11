@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.Contravariant
-import shapeless3.deriving.{Const, K1}
+import shapeless3.deriving.Const
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -33,20 +34,20 @@ object DerivedContravariant:
     new Derived.Lazy(() => F.unify.composeContravariant(using G.unify)) with Contravariant[[x] =>> F[G[x]]]:
       export delegate.*
 
-  given [F[_]](using inst: => K1.Instances[Or, F]): DerivedContravariant[F] =
+  given [F[_]](using inst: => Instances[Or, F]): DerivedContravariant[F] =
     generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: DerivedFunctor.Or, G[_]: Or]: DerivedContravariant[[x] =>> F[G[x]]] = nested
 
-  private def generic[F[_]](using K1.Instances[Contravariant, F]): DerivedContravariant[F] =
+  private def generic[F[_]: InstancesOf[Contravariant]]: DerivedContravariant[F] =
     new Generic[Contravariant, F] {}
 
-  trait Generic[T[f[_]] <: Contravariant[f], F[_]](using inst: K1.Instances[T, F]) extends Contravariant[F]:
+  trait Generic[T[f[_]] <: Contravariant[f], F[_]](using inst: Instances[T, F]) extends Contravariant[F]:
     final override def contramap[A, B](fa: F[A])(f: B => A): F[B] =
       inst.map(fa)([f[_]] => (T: T[f], fa: f[A]) => T.contramap(fa)(f))
 
   object Strict:
-    given product[F[_]](using K1.ProductInstances[Contravariant, F]): DerivedContravariant[F] = generic
-    given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedContravariant[F] =
+    given product[F[_]: ProductInstancesOf[Contravariant]]: DerivedContravariant[F] = generic
+    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedContravariant[F] =
       generic(using inst.unify)

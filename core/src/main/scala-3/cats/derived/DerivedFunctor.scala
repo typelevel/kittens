@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.Functor
-import shapeless3.deriving.{Const, K1}
+import shapeless3.deriving.Const
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -40,7 +41,7 @@ object DerivedFunctor:
   ): DerivedFunctor[[x] =>> F[G[x]]] =
     F.unify.compose(using G.unify)
 
-  given [F[_]](using inst: => K1.Instances[Or, F]): DerivedFunctor[F] =
+  given [F[_]](using inst: => Instances[Or, F]): DerivedFunctor[F] =
     generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
@@ -54,13 +55,14 @@ object DerivedFunctor:
   ): DerivedFunctor[[x] =>> F[G[x]]] =
     nested(using F, G)
 
-  private def generic[F[_]](using K1.Instances[Functor, F]): DerivedFunctor[F] =
+  private def generic[F[_]: InstancesOf[Functor]]: DerivedFunctor[F] =
     new Generic[Functor, F] {}
 
-  trait Generic[T[f[_]] <: Functor[f], F[_]](using inst: K1.Instances[T, F]) extends Functor[F]:
+  trait Generic[T[f[_]] <: Functor[f], F[_]](using inst: Instances[T, F]) extends Functor[F]:
     final override def map[A, B](fa: F[A])(f: A => B): F[B] =
       inst.map(fa)([f[_]] => (F: T[f], fa: f[A]) => F.map(fa)(f))
 
   object Strict:
-    given product[F[_]](using K1.ProductInstances[Functor, F]): DerivedFunctor[F] = generic
-    given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedFunctor[F] = generic(using inst.unify)
+    given product[F[_]: ProductInstancesOf[Functor]]: DerivedFunctor[F] = generic
+    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedFunctor[F] =
+      generic(using inst.unify)

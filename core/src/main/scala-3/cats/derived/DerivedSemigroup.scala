@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.Semigroup
-import shapeless3.deriving.K0
+import shapeless3.deriving.K0.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -22,13 +22,13 @@ object DerivedSemigroup:
     import Strict.given
     summonInline[DerivedSemigroup[A]].instance
 
-  given [A](using inst: => K0.ProductInstances[Or, A]): DerivedSemigroup[A] =
+  given [A](using inst: => ProductInstances[Or, A]): DerivedSemigroup[A] =
     Strict.product(using inst.unify)
 
-  trait Product[F[x] <: Semigroup[x], A](using inst: K0.ProductInstances[F, A]) extends Semigroup[A]:
+  trait Product[F[x] <: Semigroup[x], A](using inst: ProductInstances[F, A]) extends Semigroup[A]:
     final override def combine(x: A, y: A): A =
       inst.map2(x, y)([a] => (F: F[a], x: a, y: a) => F.combine(x, y))
 
   object Strict:
-    given product[A](using K0.ProductInstances[Semigroup, A]): DerivedSemigroup[A] =
+    given product[A: ProductInstancesOf[Semigroup]]: DerivedSemigroup[A] =
       new Product[Semigroup, A] {}

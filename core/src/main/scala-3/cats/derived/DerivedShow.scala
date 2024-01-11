@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.Show
-import shapeless3.deriving.{K0, Labelling}
+import shapeless3.deriving.K0.*
+import shapeless3.deriving.Labelling
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -36,13 +37,13 @@ object DerivedShow:
   given string[A <: String]: DerivedShow[A] = Show.fromToString
   given symbol[A <: Symbol]: DerivedShow[A] = Show.fromToString
 
-  given [A](using inst: K0.ProductInstances[Or, A], labelling: Labelling[A]): DerivedShow[A] =
-    Strict.product(using labelling, inst.unify)
+  given [A: ProductInstancesOf[Or]](using labelling: Labelling[A]): DerivedShow[A] =
+    Strict.product(using labelling, ProductInstances.unify)
 
-  given [A](using => K0.CoproductInstances[Or, A]): DerivedShow[A] =
+  given [A](using => CoproductInstances[Or, A]): DerivedShow[A] =
     Strict.coproduct
 
-  trait Product[F[x] <: Show[x], A](using inst: K0.ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
+  trait Product[F[x] <: Show[x], A](using inst: ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
     def show(a: A): String =
       val prefix = labelling.label
       val labels = labelling.elemLabels
@@ -64,14 +65,14 @@ object DerivedShow:
         sb.append(')')
         sb.toString
 
-  trait Coproduct[F[x] <: Show[x], A](using inst: K0.CoproductInstances[F, A]) extends Show[A]:
+  trait Coproduct[F[x] <: Show[x], A](using inst: CoproductInstances[F, A]) extends Show[A]:
     def show(a: A): String =
       inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))
 
   object Strict:
-    given product[A: Labelling](using => K0.ProductInstances[Show, A]): DerivedShow[A] =
+    given product[A: Labelling](using => ProductInstances[Show, A]): DerivedShow[A] =
       new Product[Show, A] {}
 
-    given coproduct[A](using inst: => K0.CoproductInstances[Or, A]): DerivedShow[A] =
-      given K0.CoproductInstances[Show, A] = inst.unify
+    given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedShow[A] =
+      given CoproductInstances[Show, A] = inst.unify
       new Coproduct[Show, A] {}

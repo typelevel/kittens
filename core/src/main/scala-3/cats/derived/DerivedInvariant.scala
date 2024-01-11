@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.Invariant
-import shapeless3.deriving.{Const, K1}
+import shapeless3.deriving.Const
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -33,19 +34,20 @@ object DerivedInvariant:
     new Derived.Lazy(() => F.unify.compose(using G.unify)) with Invariant[[x] =>> F[G[x]]]:
       export delegate.*
 
-  given [F[_]](using inst: => K1.Instances[Or, F]): DerivedInvariant[F] =
+  given [F[_]](using inst: => Instances[Or, F]): DerivedInvariant[F] =
     generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Or, G[_]: Or]: DerivedInvariant[[x] =>> F[G[x]]] = nested
 
-  private def generic[F[_]](using K1.Instances[Invariant, F]): DerivedInvariant[F] =
+  private def generic[F[_]: InstancesOf[Invariant]]: DerivedInvariant[F] =
     new Generic[Invariant, F] {}
 
-  trait Generic[T[f[_]] <: Invariant[f], F[_]](using inst: K1.Instances[T, F]) extends Invariant[F]:
+  trait Generic[T[f[_]] <: Invariant[f], F[_]](using inst: Instances[T, F]) extends Invariant[F]:
     final override def imap[A, B](fa: F[A])(f: A => B)(g: B => A): F[B] =
       inst.map(fa)([f[_]] => (F: T[f], fa: f[A]) => F.imap(fa)(f)(g))
 
   object Strict:
-    given product[F[_]](using K1.ProductInstances[Invariant, F]): DerivedInvariant[F] = generic
-    given coproduct[F[_]](using inst: => K1.CoproductInstances[Or, F]): DerivedInvariant[F] = generic(using inst.unify)
+    given product[F[_]: ProductInstancesOf[Invariant]]: DerivedInvariant[F] = generic
+    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedInvariant[F] =
+      generic(using inst.unify)

@@ -1,7 +1,8 @@
 package cats.derived
 
 import cats.{Applicative, Monoid}
-import shapeless3.deriving.{Const, K1}
+import shapeless3.deriving.Const
+import shapeless3.deriving.K1.*
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -33,13 +34,13 @@ object DerivedApplicative:
     new Derived.Lazy(() => F.unify.compose(using G.unify)) with Applicative[[x] =>> F[G[x]]]:
       export delegate.*
 
-  given [F[_]](using inst: => K1.ProductInstances[Or, F]): DerivedApplicative[F] =
+  given [F[_]](using inst: => ProductInstances[Or, F]): DerivedApplicative[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Or, G[_]: Or]: DerivedApplicative[[x] =>> F[G[x]]] = nested
 
-  trait Product[T[f[_]] <: Applicative[f], F[_]](using inst: K1.ProductInstances[T, F])
+  trait Product[T[f[_]] <: Applicative[f], F[_]](using inst: ProductInstances[T, F])
       extends Applicative[F],
         DerivedApply.Product[T, F]:
 
@@ -47,5 +48,5 @@ object DerivedApplicative:
       inst.construct([f[_]] => (F: T[f]) => F.pure[A](x))
 
   object Strict:
-    given product[F[_]](using K1.ProductInstances[Applicative, F]): DerivedApplicative[F] =
+    given product[F[_]: ProductInstancesOf[Applicative]]: DerivedApplicative[F] =
       new Applicative[F] with Product[Applicative, F] {}

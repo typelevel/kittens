@@ -86,7 +86,7 @@ res0: String = People(name = Mike, contactInfo = ContactInfo(phoneNumber = 202-2
 
 Note that in this example,
 the derivation generated instances for all referenced classes but still respected the existing instance in scope.
-For different ways to derive instances, please see the [three modes of derivation below](#three-modes-of-derivation). 
+For different ways to derive instances, please see [Derivation on Scala 2](#derivation-on-scala-2) below. 
 
 ### Sequence examples
 
@@ -150,79 +150,62 @@ scala> lifted(Some(1), Some("a"), Some(3.2f))
 res0: Option[String] = Some(1 - a - 3.2)
 ```
 
-### Three modes of derivation
+### Derivation on Scala 2
 
-Kittens provides three objects for derivation `cats.derived.auto`, `cats.derived.cached` and `cats.derived.semi`.
-The recommended best practice is the semiauto one:
+There are three options for type class derivation on Scala 2:
+`cats.derived.auto`, `cats.derived.cached` and `cats.derived.semiauto`.
+The recommended best practice is to use `semiauto`:
 
 ```scala
 import cats.derived
 
-implicit val showFoo: Show[Foo] = {
-   import derived.auto.show._
-   derived.semiauto.show
-}
+implicit val showFoo: Show[Foo] = derived.semiauto.show
 ```
-This will respect all existing instances even if the field is a type constructor. For example `Show[List[A]]` will use
-the native `Show` instance for `List` and derived instance for `A`. And it manually caches the result to the
-`val showFoo`. Downside user will need to write one for every type they directly need a `Show` instance.
 
-There are three alternatives:
-1. full auto: 
+This will respect all existing instances even if the field is a type constructor.
+For example `Show[List[A]]` will use the native `Show` instance for `List` and derived instance for `A`.
+And it manually caches the result to `val showFoo`.
+
+#### Auto derivation
 
 ```scala
 import derived.auto.show._
 ```
 
-The downside is that it will re-derive for every use site, which multiples the compilation time cost. 
+A downside is that it will derive an instance from scratch for every use site, increasing compilation time.
 
-
-2. full auto cached 
+#### Cached derivation
 
 ```scala 
 import derived.cached.show._
 ```
 
-Use this one with caution. It caches the derived instance globally. So it's only applicable if the instance is global
-in the application. This could be problematic for libraries, which have no control over the uniqueness of an instance on
-use site. It relies on `shapeless.Cached` which is buggy.
+Use this one with caution - it caches the derived instance globally.
+So it's only applicable if the instance is global in the application.
+This could be problematic for libraries, which have no control over the uniqueness of an instance at use site.
 
-3. manual semi
-```scala
-implicit val showFoo: Show[Foo] =  derived.semiauto.show
-```
-
-It has the same downside as the recommenced semiauto practice but also suffers from the type constructor field issue.
-I.e., if a field type is a type constructor whose native instance relies on the instance of the parameter type,
-this approach will by default derive an instance for the type constructor one.
-To overcome this, user have to first derive the instance for type parameter.
-E.g., given:
+#### Semiauto derivation (recommended)
 
 ```scala
-case class Foo(bars: List[Bar])
-case class Bar(a: String)
+implicit val showFoo: Show[Foo] = derived.semiauto.show
 ```
 
-Since the `bars` field of `Foo` is a `List` of `Bar` which breaks the chains of auto derivation, you will need to
-derive `Bar` first and then `Foo`.
-
-```scala
-implicit val showBar: Show[Bar] =  semiauto.show
-implicit val showFoo: Show[Foo] =  semiauto.show
-```
-
-This way the native instance for `Show[List]` would be used.
+A downside is we need to write one for every type that needs an instance.
 
 ## Scala 3
 
-We also offer three methods of derivation for Scala 3.
-All of them have the same behavior wrt to recursively defining instances: 
-1. Instances will always be recursively instantiated if necessary
-2. Subject to the same type constructor field limitation as the Scala 2 auto and manual semiauto derivations
+There are five options for type class derivation on Scala 3.
+The recommended way is to `import cats.derived.*` and use `derives` clauses.
 
-### `derives` syntax (recommended)
+In contrast to Scala 2:
+ - Cached derivation is not supported (and also not necessary)
+ - [Type Class Derivation](https://docs.scala-lang.org/scala3/reference/contextual/derivation.html) is supported
+ - A `strict` mode is available for `semiauto` and `derives` clauses
 
-Kittens for scala 3 supports Scala 3's [derivation syntax](https://docs.scala-lang.org/scala3/reference/contextual/derivation.html). 
+#### `derives` clause (recommended)
+
+Kittens supports Scala 3's [derivation syntax](https://docs.scala-lang.org/scala3/reference/contextual/derivation.html). 
+Similar to Scala 2, instances will be derived recursively if necessary.
 
 ```scala 3
 import cats.derived.*
@@ -250,9 +233,10 @@ object Concat:
 
 In such cases it is recommended to use semiauto derivation, described below.
 
-### semiauto derivation
+#### Semiauto derivation
 
 This looks similar to `semiauto` for Scala 2.
+Instances will be derived recursively if necessary.
 
 ```scala 3
 import cats.derived.semiauto
@@ -273,23 +257,54 @@ object CList:
   given Functor[CList] = semiauto.functor
 ```
 
-As with Scala 2, you can combine `auto` and `semiauto` to avoid the type constructor field limitation:
+#### Strict `derives` clause
+
+Similar to `derives` above, but instances are **not** derived recursively (except for enums and sealed traits).
+Users need to be more explicit about which types implement an instance.
 
 ```scala 3
-import cats.derived.*
+import cats.derived.strict.*
+
+// The instances for Name need to be declared explicitly
+case class Name(value: String) derives Eq, Show
+case class Person(name: Name, age: Int) derives Eq, Show
+
+// A coproduct type (enum) needs only a top-level declaration
+enum CList[+A] derives Functor:
+  case CNil
+  case CCons(head: A, tail: CList[A])
+```
+
+The same limitations apply as with the default `derives` clause.
+
+#### Strict semiauto derivation
+
+Similar to `semiauto` above, but instances are **not** derived recursively (except for enums and sealed traits).
+Users need to be more explicit about which types implement an instance.
+
+```scala 3
+import cats.derived.strict
 
 case class Name(value: String)
 case class Person(name: Name, age: Int)
 
-case class People(people: List[Person])
-object People:
-  given Show[People] =
-    import auto.show.given
-    // Uses the correct List instance despite deriving an instance for Person automatically
-    semiauto.show
+object Person:
+  // The instances for Name need to be declared explicitly
+  given Eq[Name] = strict.semiauto.eq
+  given Show[Name] = strict.semiauto.show
+  given Eq[Person] = strict.semiauto.eq
+  given Show[Person] = strict.semiauto.show
+
+enum CList[+A]:
+  case CNil
+  case CCons(head: A, tail: CList[A])
+  
+object CList:
+  // A coproduct type (enum) needs only a top-level declaration
+  given Functor[CList] = semiauto.functor
 ```
 
-### auto derivation
+#### Auto derivation
 
 This looks similar to `auto` for Scala 2.
 

@@ -11,6 +11,7 @@ extension (x: Hash.type) inline def derived[A]: Hash[A] = DerivedHash[A]
 extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty[A]
 extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup[A]
 extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid[A]
+extension (x: Group.type) inline def derived[A]: Group[A] = DerivedGroup[A]
 extension (x: Order.type) inline def derived[A]: Order[A] = DerivedOrder[A]
 extension (x: CommutativeSemigroup.type) inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
 extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
@@ -39,6 +40,7 @@ object semiauto:
   inline def empty[A]: Empty[A] = DerivedEmpty[A]
   inline def semigroup[A]: Semigroup[A] = DerivedSemigroup[A]
   inline def monoid[A]: Monoid[A] = DerivedMonoid[A]
+  inline def group[A]: Group[A] = DerivedGroup[A]
   inline def order[A]: Order[A] = DerivedOrder[A]
   inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
   inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
@@ -71,6 +73,7 @@ object strict:
   extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty.strict[A]
   extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup.strict[A]
   extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid.strict[A]
+  extension (x: Group.type) inline def derived[A]: Group[A] = DerivedGroup.strict[A]
   extension (x: CommutativeSemigroup.type)
     inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
   extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
@@ -101,6 +104,7 @@ object strict:
     inline def empty[A]: Empty[A] = DerivedEmpty.strict[A]
     inline def semigroup[A]: Semigroup[A] = DerivedSemigroup.strict[A]
     inline def monoid[A]: Monoid[A] = DerivedMonoid.strict[A]
+    inline def group[A]: Group[A] = DerivedGroup.strict[A]
     inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
     inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
     inline def emptyK[F[_]]: EmptyK[F] = DerivedEmptyK.strict[F]
@@ -137,6 +141,9 @@ object auto:
 
   object monoid:
     inline given [A: NotGivenA[Monoid]]: Monoid[A] = DerivedMonoid[A]
+
+  object group:
+    inline given [A: NotGivenA[Group]]: Group[A] = DerivedGroup[A]
 
   object order:
     inline given [A: NotGivenA[Order]]: Order[A] = DerivedOrder[A]

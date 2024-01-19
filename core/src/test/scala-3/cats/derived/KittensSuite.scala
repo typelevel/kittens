@@ -25,6 +25,7 @@ import org.scalacheck.{Arbitrary, Cogen, Gen}
 import org.scalacheck.Test.Parameters
 
 import scala.compiletime.summonInline
+import scala.concurrent.duration.*
 import scala.deriving.Mirror
 import scala.quoted.*
 
@@ -53,6 +54,8 @@ object KittensSuite:
       .withMaxSize(if Platform.isJvm then 10 else 5)
       .withMinSize(0)
 
+    // The default Arbitrary[Duration] causes overflow.
+    given Arbitrary[Duration] = Arbitrary(Gen.chooseNum(-1000.days.toNanos, 1000.days.toNanos).map(Duration.fromNanos))
     given [A: Arbitrary]: Arbitrary[List[A]] = Arbitrary.arbContainer
     given [A <: Singleton: ValueOf]: Arbitrary[A] = Arbitrary(Gen.const(valueOf[A]))
     given [A <: Singleton: ValueOf]: Cogen[A] = Cogen((seed, _) => seed)

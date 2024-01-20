@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.Alternative
+import cats.derived.Derived.<<<
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -25,10 +26,10 @@ object DerivedAlternative:
     summonInline[DerivedAlternative[F]].instance
 
   given nested[F[_], G[_]](using
-      F: => Or[F],
+      F: => DerivedAlternative.Or[F],
       G: => DerivedApplicative.Or[G]
-  ): DerivedAlternative[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Alternative[[x] =>> F[G[x]]]:
+  ): DerivedAlternative[F <<< G] =
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Alternative[F <<< G]:
       export delegate.*
 
   given product[F[_]](using inst: => ProductInstances[Or, F]): DerivedAlternative[F] =

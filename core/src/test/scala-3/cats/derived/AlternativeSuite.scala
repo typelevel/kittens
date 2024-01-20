@@ -16,6 +16,7 @@
 
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.laws.discipline.*
 import cats.{Alternative, Applicative}
 import org.scalacheck.Arbitrary
@@ -68,7 +69,7 @@ object AlternativeSuite:
     given Alternative[UnCons] = semiauto.alternative
 
   object strictInstances:
-    given [F[_]: Alternative, G[_]: Applicative]: Alternative[[x] =>> F[G[x]]] = Alternative[F].compose[G]
+    given [F[_]: Alternative, G[_]: Applicative]: Alternative[F <<< G] = Alternative[F].compose[G]
     given Alternative[CaseClassWOption] = strict.semiauto.alternative
     given Alternative[UnCons] = strict.semiauto.alternative
 

@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.Invariant
+import cats.derived.Derived.<<<
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -30,15 +31,18 @@ object DerivedInvariant:
   given [T]: DerivedInvariant[Const[T]] = new Invariant[Const[T]]:
     def imap[A, B](fa: T)(f: A => B)(g: B => A): T = fa
 
-  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedInvariant[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Invariant[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using
+      F: => DerivedInvariant.Or[F],
+      G: => DerivedInvariant.Or[G]
+  ): DerivedInvariant[F <<< G] =
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Invariant[F <<< G]:
       export delegate.*
 
   given [F[_]](using inst: => Instances[Or, F]): DerivedInvariant[F] =
     generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Or, G[_]: Or]: DerivedInvariant[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: DerivedInvariant.Or, G[_]: DerivedInvariant.Or]: DerivedInvariant[[x] =>> F[G[x]]] = nested
 
   private def generic[F[_]: InstancesOf[Invariant]]: DerivedInvariant[F] =
     new Generic[Invariant, F] {}

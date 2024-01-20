@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.Functor
+import cats.derived.Derived.<<<
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -31,21 +32,24 @@ object DerivedFunctor:
   given [T]: DerivedFunctor[Const[T]] = new Functor[Const[T]]:
     def map[A, B](fa: T)(f: A => B): T = fa
 
-  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedFunctor[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Functor[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using F: => DerivedFunctor.Or[F], G: => DerivedFunctor.Or[G]): DerivedFunctor[F <<< G] =
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Functor[F <<< G]:
       export delegate.*
 
   given nested[F[_], G[_]](using
       F: DerivedContravariant.Or[F],
       G: DerivedContravariant.Or[G]
-  ): DerivedFunctor[[x] =>> F[G[x]]] =
+  ): DerivedFunctor[F <<< G] =
     F.unify.compose(using G.unify)
 
   given [F[_]](using inst: => Instances[Or, F]): DerivedFunctor[F] =
     generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_], G[_]](using F: Or[F], G: Or[G]): DerivedFunctor[[x] =>> F[G[x]]] =
+  protected given [F[_], G[_]](using
+      F: DerivedFunctor.Or[F],
+      G: DerivedFunctor.Or[G]
+  ): DerivedFunctor[[x] =>> F[G[x]]] =
     nested(using F, G)
 
   @deprecated("Kept for binary compatibility", "3.2.0")

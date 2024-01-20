@@ -1,5 +1,6 @@
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Applicative, Eval, Traverse}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
@@ -33,15 +34,18 @@ object DerivedTraverse:
     override def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
     override def traverse[G[_], A, B](fa: T)(f: A => G[B])(using G: Applicative[G]): G[T] = G.pure(fa)
 
-  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedTraverse[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Traverse[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using F: => DerivedTraverse.Or[F], G: => DerivedTraverse.Or[G]): DerivedTraverse[F <<< G] =
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Traverse[F <<< G]:
       export delegate.*
 
-  given [F[_]: ProductInstancesOf[Or]]: DerivedTraverse[F] = Strict.product(using ProductInstances.unify)
-  given [F[_]](using => CoproductInstances[Or, F]): DerivedTraverse[F] = Strict.coproduct
+  given [F[_]: ProductInstancesOf[DerivedTraverse.Or]]: DerivedTraverse[F] =
+    Strict.product(using ProductInstances.unify)
+
+  given [F[_]](using => CoproductInstances[Or, F]): DerivedTraverse[F] =
+    Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Or, G[_]: Or]: DerivedTraverse[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: DerivedTraverse.Or, G[_]: DerivedTraverse.Or]: DerivedTraverse[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Traverse[f], F[_]](using inst: ProductInstances[T, F])
       extends Traverse[F],

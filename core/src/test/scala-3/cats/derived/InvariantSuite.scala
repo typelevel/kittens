@@ -17,6 +17,7 @@
 package cats.derived
 
 import cats.Invariant
+import cats.derived.Derived.<<<
 import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
 import cats.laws.discipline.eq.*
@@ -105,7 +106,7 @@ object InvariantSuite:
 
   object strictInstances:
     given [T]: Invariant[Const[T]] = semiauto.invariant
-    given [F[_]: Invariant, G[_]: Invariant]: Invariant[[x] =>> F[G[x]]] = Invariant[F].compose[G]
+    given [F[_]: Invariant, G[_]: Invariant]: Invariant[F <<< G] = Invariant[F].compose[G]
     given [F[_]: Invariant, R]: Invariant[[x] =>> F[x => R]] = Invariant[F].compose[[x] =>> x => R]
     given Invariant[Snoc] = strict.semiauto.invariant
     given Invariant[GenericAdtF] = strict.semiauto.invariant

@@ -1,8 +1,9 @@
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Eval, Foldable}
-import shapeless3.deriving.{Const, Continue}
 import shapeless3.deriving.K1.*
+import shapeless3.deriving.{Const, Continue}
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -31,18 +32,18 @@ object DerivedFoldable:
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
-  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedFoldable[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Foldable[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using F: => DerivedFoldable.Or[F], G: => DerivedFoldable.Or[G]): DerivedFoldable[F <<< G] =
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Foldable[F <<< G]:
       export delegate.*
 
-  given [F[_]: ProductInstancesOf[Or]]: DerivedFoldable[F] =
+  given [F[_]: ProductInstancesOf[DerivedFoldable.Or]]: DerivedFoldable[F] =
     Strict.product(using ProductInstances.unify)
 
   given [F[_]](using => CoproductInstances[Or, F]): DerivedFoldable[F] =
     Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Or, G[_]: Or]: DerivedFoldable[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: DerivedFoldable.Or, G[_]: DerivedFoldable.Or]: DerivedFoldable[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: ProductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =

@@ -1,5 +1,6 @@
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Semigroup, SemigroupK}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
@@ -31,14 +32,14 @@ object DerivedSemigroupK:
   given [T](using T: Semigroup[T]): DerivedSemigroupK[Const[T]] = new SemigroupK[Const[T]]:
     def combineK[A](x: T, y: T): T = T.combine(x, y)
 
-  given nested[F[_], G[_]](using F: => Or[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose[G]) with SemigroupK[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using F: => DerivedSemigroupK.Or[F]): DerivedSemigroupK[F <<< G] =
+    new Derived.Lazy(() => F.unify.compose[G]) with SemigroupK[F <<< G]:
       export delegate.*
 
   given nested[F[_], G[_]](using
-      NotGiven[Or[F]]
-  )(using F: DerivedApply.Or[F], G: => Or[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
-    new SemigroupK[[x] =>> F[G[x]]]:
+      NotGiven[DerivedSemigroupK.Or[F]]
+  )(using F: DerivedApply.Or[F], G: => DerivedSemigroupK.Or[G]): DerivedSemigroupK[F <<< G] =
+    new SemigroupK[F <<< G]:
       val f = F.unify
       lazy val g = G.unify
       def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = f.map2(x, y)(g.combineK)
@@ -47,13 +48,13 @@ object DerivedSemigroupK:
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_], G[_]](using F: Or[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
+  protected given [F[_], G[_]](using F: DerivedSemigroupK.Or[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
     nested(using F)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      ev: NotGiven[Or[F]]
-  )(using F: DerivedApply.Or[F], G: Or[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
+      ev: NotGiven[DerivedSemigroupK.Or[F]]
+  )(using F: DerivedApply.Or[F], G: DerivedSemigroupK.Or[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
     nested(using ev)
 
   trait Product[T[f[_]] <: SemigroupK[f], F[_]](using inst: ProductInstances[T, F]) extends SemigroupK[F]:

@@ -1,5 +1,6 @@
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Apply, Eval, Semigroup, SemigroupK}
 import cats.laws.discipline.{SemigroupKTests, SerializableTests}
 import shapeless3.deriving.Const
@@ -56,8 +57,8 @@ object SemigroupKSuite:
 
   object strictInstances:
     given [T: Semigroup]: SemigroupK[Const[T]] = semiauto.semigroupK
-    given [F[_]: SemigroupK, G[_]]: SemigroupK[[x] =>> F[G[x]]] = SemigroupK[F].compose[G]
-    given [F[_]: Apply, G[_]: SemigroupK]: SemigroupK[[x] =>> F[G[x]]] = semiauto.semigroupK
+    given [F[_]: SemigroupK, G[_]]: SemigroupK[F <<< G] = SemigroupK[F].compose[G]
+    given [F[_]: Apply, G[_]: SemigroupK]: SemigroupK[F <<< G] = semiauto.semigroupK
     given SemigroupK[ComplexProduct] = strict.semiauto.semigroupK
     given SemigroupK[CaseClassWOption] = strict.semiauto.semigroupK
     given SemigroupK[BoxMul] = strict.semiauto.semigroupK

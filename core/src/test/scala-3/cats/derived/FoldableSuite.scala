@@ -16,6 +16,7 @@
 
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Eval, Foldable}
 import cats.laws.discipline.*
 import cats.syntax.all.given
@@ -103,7 +104,7 @@ object FoldableSuite:
 
   object strictInstances:
     given [T]: Foldable[Const[T]] = semiauto.foldable
-    given [F[_]: Foldable, G[_]: Foldable]: Foldable[[x] =>> F[G[x]]] = Foldable[F].compose[G]
+    given [F[_]: Foldable, G[_]: Foldable]: Foldable[F <<< G] = Foldable[F].compose[G]
     given Foldable[Snoc] = strict.semiauto.foldable
     given Foldable[IList] = strict.semiauto.foldable
     given Foldable[Tree] = strict.semiauto.foldable

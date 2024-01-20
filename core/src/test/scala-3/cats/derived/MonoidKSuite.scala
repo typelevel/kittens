@@ -1,5 +1,6 @@
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Applicative, Eval, Monoid, MonoidK}
 import cats.laws.discipline.{MonoidKTests, SerializableTests}
 import shapeless3.deriving.Const
@@ -58,8 +59,8 @@ object MonoidKSuite:
 
   object strictInstances:
     given [T: Monoid]: MonoidK[Const[T]] = semiauto.monoidK
-    given [F[_]: MonoidK, G[_]]: MonoidK[[x] =>> F[G[x]]] = MonoidK[F].compose[G]
-    given [F[_]: Applicative, G[_]: MonoidK]: MonoidK[[x] =>> F[G[x]]] = semiauto.monoidK
+    given [F[_]: MonoidK, G[_]]: MonoidK[F <<< G] = MonoidK[F].compose[G]
+    given [F[_]: Applicative, G[_]: MonoidK]: MonoidK[F <<< G] = semiauto.monoidK
     given MonoidK[ComplexProduct] = strict.semiauto.monoidK
     given MonoidK[CaseClassWOption] = strict.semiauto.monoidK
     given MonoidK[BoxMul] = strict.semiauto.monoidK

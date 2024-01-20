@@ -24,12 +24,15 @@ object DerivedEmpty:
     import Strict.given
     summonInline[DerivedEmpty[A]].instance
 
-  given product[A: ProductInstancesOf[Or]]: DerivedEmpty[A] = Strict.product(using ProductInstances.unify)
-  inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] = Strict.coproduct
+  given product[A: ProductInstancesOf[DerivedEmpty.Or]]: DerivedEmpty[A] =
+    Strict.product(using ProductInstances.unify)
+
+  inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] =
+    Strict.coproduct
 
   object Strict:
     given product[A: ProductInstancesOf[Empty]]: DerivedEmpty[A] =
       Empty(ProductInstances.construct([a] => (A: Empty[a]) => A.empty))
 
     inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] =
-      Empty(CoproductGeneric.withOnly[Or, A]([a <: A] => (A: Or[a]) => A.unify.empty))
+      Empty(CoproductGeneric.withOnly[DerivedEmpty.Or, A]([a <: A] => (A: DerivedEmpty.Or[a]) => A.unify.empty))

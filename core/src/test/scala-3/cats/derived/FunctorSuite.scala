@@ -16,6 +16,7 @@
 
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Contravariant, Functor}
 import cats.laws.discipline.*
 import cats.laws.discipline.eq.*
@@ -107,8 +108,8 @@ object FunctorSuite:
 
   object strictInstances:
     given [T]: Functor[Const[T]] = semiauto.functor
-    given [F[_]: Functor, G[_]: Functor]: Functor[[x] =>> F[G[x]]] = Functor[F].compose[G]
-    given [F[_]: Contravariant, G[_]: Contravariant]: Functor[[x] =>> F[G[x]]] = Contravariant[F].compose[G]
+    given [F[_]: Functor, G[_]: Functor]: Functor[F <<< G] = Functor[F].compose[G]
+    given [F[_]: Contravariant, G[_]: Contravariant]: Functor[F <<< G] = Contravariant[F].compose[G]
     given Functor[Snoc] = strict.semiauto.functor
     given Functor[IList] = strict.semiauto.functor
     given Functor[Tree] = strict.semiauto.functor

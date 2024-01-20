@@ -16,6 +16,7 @@
 
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.laws.discipline.*
 import cats.{Apply, Semigroup}
 import shapeless3.deriving.Const
@@ -79,7 +80,7 @@ object ApplySuite:
 
   object strictInstances:
     given [T: Semigroup]: Apply[Const[T]] = semiauto.apply
-    given [F[_]: Apply, G[_]: Apply]: Apply[[x] =>> F[G[x]]] = Apply[F].compose[G]
+    given [F[_]: Apply, G[_]: Apply]: Apply[F <<< G] = Apply[F].compose[G]
     given Apply[Box] = strict.semiauto.apply
     given Apply[CaseClassWOption] = strict.semiauto.apply
     given Apply[AndInt] = strict.semiauto.apply

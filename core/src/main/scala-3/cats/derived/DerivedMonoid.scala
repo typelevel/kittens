@@ -29,7 +29,7 @@ object DerivedMonoid:
       extends DerivedSemigroup.Product[F, A],
         Monoid[A]:
     final override lazy val empty: A =
-      inst.construct([A] => (F: F[A]) => F.empty)
+      inst.construct([a] => (F: F[a]) => F.empty)
 
   object Strict:
     given product[A: ProductInstancesOf[Monoid]]: DerivedMonoid[A] =

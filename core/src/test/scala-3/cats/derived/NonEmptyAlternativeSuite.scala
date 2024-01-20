@@ -27,7 +27,7 @@ class NonEmptyAlternativeSuite extends KittensSuite:
   import NonEmptyAlternativeSuite.*
 
   inline def tests[F[_]]: NonEmptyAlternativeTests[F] =
-    NonEmptyAlternativeTests[F](summonInline)
+    NonEmptyAlternativeTests[F](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].nonEmptyAlternative[Int, String, Long])

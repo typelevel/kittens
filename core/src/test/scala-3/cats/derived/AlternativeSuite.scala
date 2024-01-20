@@ -27,7 +27,7 @@ class AlternativeSuite extends KittensSuite:
   import AlternativeSuite.*
 
   inline def tests[F[_]]: AlternativeTests[F] =
-    AlternativeTests[F](summonInline)
+    AlternativeTests[F](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].alternative[Int, String, Long])

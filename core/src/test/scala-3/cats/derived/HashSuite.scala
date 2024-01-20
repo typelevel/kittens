@@ -9,7 +9,7 @@ class HashSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[A]: HashTests[A] =
-    HashTests[A](summonInline)
+    HashTests[A](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[IList[Int]]", tests[IList[Int]].hash)

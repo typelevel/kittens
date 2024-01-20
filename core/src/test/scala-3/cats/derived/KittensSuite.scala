@@ -55,7 +55,7 @@ object KittensSuite:
       .withMinSize(0)
 
     // The default Arbitrary[Duration] causes overflow.
-    given Arbitrary[Duration] = Arbitrary(Gen.chooseNum(-1000.days.toNanos, 1000.days.toNanos).map(Duration.fromNanos))
+    given Arbitrary[Duration] = Arbitrary(Gen.chooseNum(-750.days.toNanos, 750.days.toNanos).map(Duration.fromNanos))
     given [A: Arbitrary]: Arbitrary[List[A]] = Arbitrary.arbContainer
     given [A <: Singleton: ValueOf]: Arbitrary[A] = Arbitrary(Gen.const(valueOf[A]))
     given [A <: Singleton: ValueOf]: Cogen[A] = Cogen((seed, _) => seed)

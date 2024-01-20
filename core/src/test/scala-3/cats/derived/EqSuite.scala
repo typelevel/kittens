@@ -25,7 +25,7 @@ class EqSuite extends KittensSuite.WithoutEq:
   import ADTs.*
 
   inline def tests[A]: EqTests[A] =
-    EqTests[A](summonInline)
+    EqTests[A](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[Foo]]", tests[Foo].eqv)

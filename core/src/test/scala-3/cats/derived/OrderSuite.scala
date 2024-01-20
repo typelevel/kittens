@@ -25,7 +25,7 @@ class OrderSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[A]: OrderTests[A] =
-    OrderTests[A](summonInline)
+    OrderTests[A](using summonInline)
 
   inline def validate(instance: String): Unit =
     checkAll(s"$instance[Inner]", tests[Inner].order)

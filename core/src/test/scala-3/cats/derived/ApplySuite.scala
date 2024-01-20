@@ -27,7 +27,7 @@ class ApplySuite extends KittensSuite:
   import ApplySuite.*
 
   inline def tests[F[_]]: ApplyTests[F] =
-    ApplyTests[F](summonInline)
+    ApplyTests[F](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].apply[Int, String, Long])

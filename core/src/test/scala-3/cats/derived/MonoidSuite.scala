@@ -25,7 +25,7 @@ class MonoidSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[A]: MonoidTests[A] =
-    MonoidTests[A](summonInline)
+    MonoidTests[A](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[Foo]", tests[Foo].monoid)

@@ -25,7 +25,7 @@ class CommutativeMonoidSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[A]: CommutativeMonoidTests[A] =
-    CommutativeMonoidTests[A](summonInline)
+    CommutativeMonoidTests[A](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeMonoid)

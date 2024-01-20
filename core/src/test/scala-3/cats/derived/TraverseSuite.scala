@@ -11,7 +11,7 @@ class TraverseSuite extends KittensSuite:
   import TraverseSuite.*
 
   inline def tests[F[_]]: TraverseTests[F] =
-    TraverseTests[F](summonInline)
+    TraverseTests[F](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[IList]", tests[IList].traverse[Int, Double, String, Long, Option, Option])

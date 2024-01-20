@@ -26,7 +26,7 @@ class PartialOrderSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[A]: PartialOrderTests[A] =
-    PartialOrderTests[A](summonInline)
+    PartialOrderTests[A](using summonInline)
 
   inline def validate(instance: String): Unit =
     checkAll(s"$instance[IList[Int]]", tests[IList[Int]].partialOrder)

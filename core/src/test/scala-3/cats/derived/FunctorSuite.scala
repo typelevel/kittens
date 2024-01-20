@@ -31,7 +31,7 @@ class FunctorSuite extends KittensSuite:
     ExhaustiveCheck.instance(List(_ => true, _ => false, identity, !_))
 
   inline def tests[F[_]]: FunctorTests[F] =
-    FunctorTests[F](summonInline)
+    FunctorTests[F](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[IList]", tests[IList].functor[Int, String, Long])

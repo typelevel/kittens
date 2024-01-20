@@ -59,7 +59,7 @@ object DerivedShowPretty:
   given coproduct[A](using => CoproductInstances[Or, A]): DerivedShowPretty[A] = new Coproduct[A] {}
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [A: ProductInstancesOf[Or]: Labelling]: DerivedShowPretty[A] = product
+  protected given [A: ProductInstancesOf[DerivedShowPretty.Or]: Labelling]: DerivedShowPretty[A] = product
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [A](using => CoproductInstances[Or, A]): DerivedShowPretty[A] = coproduct
@@ -85,11 +85,10 @@ object DerivedShowPretty:
         s"$prefix(" :: lines
 
   trait Coproduct[A](using inst: CoproductInstances[Or, A]) extends ShowPretty[A]:
-    def showLines(a: A): List[String] =
-      inst.fold(a)([a] => (show: Or[a], x: a) => show(x))
+    def showLines(a: A): List[String] = inst.fold(a)([a] => (show: DerivedShowPretty.Or[a], x: a) => show(x))
 
   object Strict:
     export DerivedShowPretty.coproduct
     given product[A: Labelling](using inst: => ProductInstances[Show, A]): DerivedShowPretty[A] =
-      given ProductInstances[Or, A] = inst.mapK([a] => (show: Show[a]) => Or.fromShow(show))
+      given ProductInstances[Or, A] = inst.mapK([a] => (show: Show[a]) => DerivedShowPretty.Or.fromShow(show))
       DerivedShowPretty.product

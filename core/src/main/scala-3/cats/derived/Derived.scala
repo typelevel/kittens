@@ -12,15 +12,18 @@ object Derived:
   extension [A](derived: Derived[A]) def instance: A = derived
   given [A]: Conversion[A, Derived[A]] = apply
 
-  type Or0[F[_]] = [x] =>> Or[F[x]]
-  type Or1[F[_[_]]] = [x[_]] =>> Or[F[x]]
-  type Or11[F[_[_[_]]]] = [x[_[_]]] =>> Or[F[x]]
-  type Or2[F[_[_, _]]] = [x[_, _]] =>> Or[F[x]]
+  infix type >>>[F[_], G[_]] = [x] =>> G[F[x]]
+  infix type <<<[F[_], G[_]] = [x] =>> F[G[x]]
+
+  type Or0[F[_]] = [x] =>> Derived.Or[F[x]]
+  type Or1[F[_[_]]] = [x[_]] =>> Derived.Or[F[x]]
+  type Or11[F[_[_[_]]]] = [x[_[_]]] =>> Derived.Or[F[x]]
+  type Or2[F[_[_, _]]] = [x[_, _]] =>> Derived.Or[F[x]]
 
   opaque type Or[A] = A
   object Or extends OrInstances:
     def apply[A](instance: A): Or[A] = instance
-    extension [A](or: Or[A]) def unify: A = or
+    extension [A](derived: Or[A]) def unify: A = derived
     extension [I[f[_], t] <: K0.Instances[f, t], F[_], T](inst: I[Or0[F], T])
       @targetName("unifyK0") def unify: I[F, T] = inst
     extension [I[f[_[_]], t[_]] <: K1.Instances[f, t], F[_[_]], T[_]](inst: I[Or1[F], T])

@@ -1,6 +1,7 @@
 package cats.derived
 
 import alleycats.{Empty, Pure}
+import cats.derived.Derived.<<<
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -32,17 +33,17 @@ object DerivedPure:
   given [T <: Singleton: ValueOf]: DerivedPure[Const[T]] = new Pure[Const[T]]:
     def pure[A](a: A): T = valueOf[T]
 
-  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedPure[[x] =>> F[G[x]]] =
-    new Pure[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using F: => DerivedPure.Or[F], G: => DerivedPure.Or[G]): DerivedPure[F <<< G] =
+    new Pure[F <<< G]:
       lazy val f = F.unify
       lazy val g = G.unify
       def pure[A](a: A): F[G[A]] = f.pure(g.pure(a))
 
-  given [F[_]: ProductInstancesOf[Or]]: DerivedPure[F] =
+  given [F[_]: ProductInstancesOf[DerivedPure.Or]]: DerivedPure[F] =
     Strict.product(using ProductInstances.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Or, G[_]: Or]: DerivedPure[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: DerivedPure.Or, G[_]: DerivedPure.Or]: DerivedPure[[x] =>> F[G[x]]] = nested
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Pure]]: DerivedPure[F] = new Pure[F]:

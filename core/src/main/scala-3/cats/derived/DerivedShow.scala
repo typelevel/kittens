@@ -37,7 +37,7 @@ object DerivedShow:
   given string[A <: String]: DerivedShow[A] = Show.fromToString
   given symbol[A <: Symbol]: DerivedShow[A] = Show.fromToString
 
-  given [A: ProductInstancesOf[Or]](using labelling: Labelling[A]): DerivedShow[A] =
+  given [A: ProductInstancesOf[DerivedShow.Or]](using labelling: Labelling[A]): DerivedShow[A] =
     Strict.product(using labelling, ProductInstances.unify)
 
   given [A](using => CoproductInstances[Or, A]): DerivedShow[A] =
@@ -66,8 +66,7 @@ object DerivedShow:
         sb.toString
 
   trait Coproduct[F[x] <: Show[x], A](using inst: CoproductInstances[F, A]) extends Show[A]:
-    def show(a: A): String =
-      inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))
+    def show(a: A): String = inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))
 
   object Strict:
     given product[A: Labelling](using => ProductInstances[Show, A]): DerivedShow[A] =

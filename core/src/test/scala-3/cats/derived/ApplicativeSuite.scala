@@ -16,6 +16,7 @@
 
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.laws.discipline.*
 import cats.{Applicative, Monoid}
 import org.scalacheck.Arbitrary
@@ -78,7 +79,7 @@ object ApplicativeSuite:
 
   object strictInstances:
     given [T: Monoid]: Applicative[Const[T]] = semiauto.applicative
-    given [F[_]: Applicative, G[_]: Applicative]: Applicative[[x] =>> F[G[x]]] = Applicative[F].compose[G]
+    given [F[_]: Applicative, G[_]: Applicative]: Applicative[F <<< G] = Applicative[F].compose[G]
     given Applicative[Box] = strict.semiauto.applicative
     given Applicative[CaseClassWOption] = strict.semiauto.applicative
     given Applicative[AndInt] = strict.semiauto.applicative

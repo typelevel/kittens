@@ -16,6 +16,7 @@
 
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.laws.discipline.*
 import cats.{Applicative, NonEmptyAlternative}
 import org.scalacheck.Arbitrary
@@ -68,7 +69,7 @@ object NonEmptyAlternativeSuite:
     given NonEmptyAlternative[UnCons] = semiauto.nonEmptyAlternative
 
   object strictInstances:
-    given [F[_]: NonEmptyAlternative, G[_]: Applicative]: NonEmptyAlternative[[x] =>> F[G[x]]] =
+    given [F[_]: NonEmptyAlternative, G[_]: Applicative]: NonEmptyAlternative[F <<< G] =
       NonEmptyAlternative[F].compose[G]
     given NonEmptyAlternative[CaseClassWOption] = strict.semiauto.nonEmptyAlternative
     given NonEmptyAlternative[UnCons] = strict.semiauto.nonEmptyAlternative

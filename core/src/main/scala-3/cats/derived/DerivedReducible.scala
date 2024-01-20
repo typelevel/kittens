@@ -1,5 +1,6 @@
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Eval, Foldable, Reducible}
 import shapeless3.deriving.Continue
 import shapeless3.deriving.K1.*
@@ -28,21 +29,24 @@ object DerivedReducible:
     import DerivedReducible.Strict.given
     summonInline[DerivedReducible[F]].instance
 
-  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedReducible[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Reducible[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using
+      F: => DerivedReducible.Or[F],
+      G: => DerivedReducible.Or[G]
+  ): DerivedReducible[F <<< G] =
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Reducible[F <<< G]:
       export delegate.*
 
   def product[F[_]: ProductInstancesOf[DerivedFoldable.Or]](ev: Reducible[?]): DerivedReducible[F] =
     Strict.product(ev)(using ProductInstances.unify)
 
   inline given product[F[_]](using gen: ProductGeneric[F]): DerivedReducible[F] =
-    product(summonFirst[Or, gen.MirroredElemTypes].unify)
+    product(summonFirst[DerivedReducible.Or, gen.MirroredElemTypes].unify)
 
   given [F[_]](using => CoproductInstances[Or, F]): DerivedReducible[F] =
     Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Or, G[_]: Or]: DerivedReducible[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: DerivedReducible.Or, G[_]: DerivedReducible.Or]: DerivedReducible[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](@unused ev: Reducible[?])(using inst: ProductInstances[T, F])
       extends DerivedFoldable.Product[T, F],

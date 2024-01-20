@@ -1,5 +1,6 @@
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Monoid, MonoidK}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
@@ -32,14 +33,14 @@ object DerivedMonoidK:
     def empty[A]: T = T.empty
     def combineK[A](x: T, y: T): T = T.combine(x, y)
 
-  given nested[F[_], G[_]](using F: => Or[F]): DerivedMonoidK[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose[G]) with MonoidK[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using F: => DerivedMonoidK.Or[F]): DerivedMonoidK[F <<< G] =
+    new Derived.Lazy(() => F.unify.compose[G]) with MonoidK[F <<< G]:
       export delegate.*
 
   given nested[F[_], G[_]](using
-      NotGiven[Or[F]]
-  )(using F: DerivedApplicative.Or[F], G: => Or[G]): DerivedMonoidK[[x] =>> F[G[x]]] =
-    new MonoidK[[x] =>> F[G[x]]]:
+      NotGiven[DerivedMonoidK.Or[F]]
+  )(using F: DerivedApplicative.Or[F], G: => DerivedMonoidK.Or[G]): DerivedMonoidK[F <<< G] =
+    new MonoidK[F <<< G]:
       val f = F.unify
       lazy val g = G.unify
       def empty[A]: F[G[A]] = f.pure(g.empty[A])
@@ -49,13 +50,13 @@ object DerivedMonoidK:
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_], G[_]](using F: Or[F]): DerivedMonoidK[[x] =>> F[G[x]]] =
+  protected given [F[_], G[_]](using F: DerivedMonoidK.Or[F]): DerivedMonoidK[[x] =>> F[G[x]]] =
     nested(using F)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      ev: NotGiven[Or[F]]
-  )(using F: DerivedApplicative.Or[F], G: Or[G]): DerivedMonoidK[[x] =>> F[G[x]]] =
+      ev: NotGiven[DerivedMonoidK.Or[F]]
+  )(using F: DerivedApplicative.Or[F], G: DerivedMonoidK.Or[G]): DerivedMonoidK[[x] =>> F[G[x]]] =
     nested(using ev)
 
   trait Product[T[f[_]] <: MonoidK[f], F[_]](using inst: ProductInstances[T, F])

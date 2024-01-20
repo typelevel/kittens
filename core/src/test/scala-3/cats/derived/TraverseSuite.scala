@@ -1,5 +1,6 @@
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Eq, Traverse}
 import cats.laws.discipline.*
 import shapeless3.deriving.Const
@@ -82,7 +83,7 @@ object TraverseSuite:
 
   object strictInstances:
     given [T]: Traverse[Const[T]] = semiauto.traverse
-    given [F[_]: Traverse, G[_]: Traverse]: Traverse[[x] =>> F[G[x]]] = Traverse[F].compose[G]
+    given [F[_]: Traverse, G[_]: Traverse]: Traverse[F <<< G] = Traverse[F].compose[G]
     given Traverse[Snoc] = strict.semiauto.traverse
     given Traverse[IList] = strict.semiauto.traverse
     given Traverse[Tree] = strict.semiauto.traverse

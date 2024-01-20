@@ -1,5 +1,6 @@
 package cats.derived
 
+import cats.derived.Derived.<<<
 import cats.{Applicative, Monoid}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
@@ -30,15 +31,19 @@ object DerivedApplicative:
     def pure[A](x: A): T = T.empty
     def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
 
-  given nested[F[_], G[_]](using F: => Or[F], G: => Or[G]): DerivedApplicative[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Applicative[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using
+      F: => DerivedApplicative.Or[F],
+      G: => DerivedApplicative.Or[G]
+  ): DerivedApplicative[F <<< G] =
+    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Applicative[F <<< G]:
       export delegate.*
 
   given [F[_]](using inst: => ProductInstances[Or, F]): DerivedApplicative[F] =
     Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Or, G[_]: Or]: DerivedApplicative[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: DerivedApplicative.Or, G[_]: DerivedApplicative.Or]: DerivedApplicative[[x] =>> F[G[x]]] =
+    nested
 
   trait Product[T[f[_]] <: Applicative[f], F[_]](using inst: ProductInstances[T, F])
       extends Applicative[F],

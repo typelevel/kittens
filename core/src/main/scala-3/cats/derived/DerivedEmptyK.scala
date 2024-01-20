@@ -1,6 +1,7 @@
 package cats.derived
 
 import alleycats.{Empty, EmptyK}
+import cats.derived.Derived.<<<
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -32,30 +33,33 @@ object DerivedEmptyK:
   given [T](using T: Empty[T]): DerivedEmptyK[Const[T]] = new EmptyK[Const[T]]:
     def empty[A]: T = T.empty
 
-  given nested[F[_], G[_]](using F: => Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
-    new EmptyK[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using F: => DerivedEmptyK.Or[F]): DerivedEmptyK[F <<< G] =
+    new EmptyK[F <<< G]:
       lazy val f = F.unify
       def empty[A]: F[G[A]] = f.empty
 
   given nested[F[_], G[_]](using
-      NotGiven[Or[F]]
-  )(using F: DerivedPure.Or[F], G: => Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] =
-    new EmptyK[[x] =>> F[G[x]]]:
+      NotGiven[DerivedEmptyK.Or[F]]
+  )(using F: DerivedPure.Or[F], G: => DerivedEmptyK.Or[G]): DerivedEmptyK[F <<< G] =
+    new EmptyK[F <<< G]:
       val f = F.unify
       lazy val g = G.unify
       def empty[A]: F[G[A]] = f.pure(g.empty)
 
-  given product[F[_]: ProductInstancesOf[Or]]: DerivedEmptyK[F] = Strict.product(using ProductInstances.unify)
-  inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] = Strict.coproduct
+  given product[F[_]: ProductInstancesOf[DerivedEmptyK.Or]]: DerivedEmptyK[F] =
+    Strict.product(using ProductInstances.unify)
+
+  inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] =
+    Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_], G[_]](using F: Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
+  protected given [F[_], G[_]](using F: DerivedEmptyK.Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
     nested(using F)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      ev: NotGiven[Or[F]]
-  )(using DerivedPure.Or[F], Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] =
+      ev: NotGiven[DerivedEmptyK.Or[F]]
+  )(using DerivedPure.Or[F], DerivedEmptyK.Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] =
     nested(using ev)
 
   object Strict:
@@ -63,4 +67,5 @@ object DerivedEmptyK:
       def empty[A]: F[A] = ProductInstances.construct([f[_]] => (F: EmptyK[f]) => F.empty[A])
 
     inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] =
-      CoproductGeneric.withOnly[Or, EmptyK[F]]([f[x] <: F[x]] => (F: Or[f]) => F.unify.asInstanceOf[EmptyK[F]])
+      CoproductGeneric.withOnly[DerivedEmptyK.Or, EmptyK[F]]:
+        [f[x] <: F[x]] => (F: DerivedEmptyK.Or[f]) => F.unify.asInstanceOf[EmptyK[F]]

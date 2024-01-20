@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.Contravariant
+import cats.derived.Derived.<<<
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -30,15 +31,19 @@ object DerivedContravariant:
   given [T]: DerivedContravariant[Const[T]] = new Contravariant[Const[T]]:
     def contramap[A, B](fa: T)(f: B => A): T = fa
 
-  given nested[F[_], G[_]](using F: DerivedFunctor.Or[F], G: => Or[G]): DerivedContravariant[[x] =>> F[G[x]]] =
-    new Derived.Lazy(() => F.unify.composeContravariant(using G.unify)) with Contravariant[[x] =>> F[G[x]]]:
+  given nested[F[_], G[_]](using
+      F: DerivedFunctor.Or[F],
+      G: => DerivedContravariant.Or[G]
+  ): DerivedContravariant[F <<< G] =
+    new Derived.Lazy(() => F.unify.composeContravariant(using G.unify)) with Contravariant[F <<< G]:
       export delegate.*
 
   given [F[_]](using inst: => Instances[Or, F]): DerivedContravariant[F] =
     generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: DerivedFunctor.Or, G[_]: Or]: DerivedContravariant[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: DerivedFunctor.Or, G[_]: DerivedContravariant.Or]: DerivedContravariant[[x] =>> F[G[x]]] =
+    nested
 
   private def generic[F[_]: InstancesOf[Contravariant]]: DerivedContravariant[F] =
     new Generic[Contravariant, F] {}

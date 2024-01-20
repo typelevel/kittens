@@ -29,7 +29,7 @@ class ReducibleSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[F[_]]: ReducibleTests[F] =
-    ReducibleTests[F](summonInline)
+    ReducibleTests[F](using summonInline)
 
   inline def validate(instance: String): Unit =
     checkAll(s"$instance[ICons]", tests[ICons].reducible[Option, Int, Long])

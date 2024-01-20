@@ -29,7 +29,7 @@ class InvariantSuite extends KittensSuite:
   import InvariantSuite.*
 
   inline def tests[F[_]]: InvariantTests[F] =
-    InvariantTests[F](summonInline)
+    InvariantTests[F](using summonInline)
 
   inline def validate(instance: String): Unit =
     checkAll(s"$instance[TreeF]", tests[TreeF].invariant[MiniInt, String, Boolean])

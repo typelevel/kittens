@@ -11,7 +11,7 @@ class MonoidKSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[F[_]]: MonoidKTests[F] =
-    MonoidKTests[F](summonInline)
+    MonoidKTests[F](using summonInline)
 
   inline def validate(instance: String): Unit =
     checkAll(s"$instance[ComplexProduct]", tests[ComplexProduct].monoidK[Char])

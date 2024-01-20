@@ -25,7 +25,7 @@ class CommutativeSemigroupSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[A]: CommutativeSemigroupTests[A] =
-    CommutativeSemigroupTests[A](summonInline)
+    CommutativeSemigroupTests[A](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[CommutativeFoo]", tests[CommutativeFoo].commutativeSemigroup)

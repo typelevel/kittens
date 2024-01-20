@@ -28,7 +28,7 @@ class ApplicativeSuite extends KittensSuite:
   import ApplicativeSuite.*
 
   inline def tests[F[_]]: ApplicativeTests[F] =
-    ApplicativeTests[F](summonInline)
+    ApplicativeTests[F](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[CaseClassWOption]", tests[CaseClassWOption].applicative[Int, String, Long])

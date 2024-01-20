@@ -29,7 +29,7 @@ class ContravariantSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[F[_]]: ContravariantTests[F] =
-    ContravariantTests[F](summonInline)
+    ContravariantTests[F](using summonInline)
 
   inline def validate(instance: String): Unit =
     checkAll(s"$instance[OptPred]", tests[OptPred].contravariant[MiniInt, String, Boolean])

@@ -28,7 +28,7 @@ class FoldableSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[F[_]]: FoldableTests[F] =
-    FoldableTests[F](summonInline)
+    FoldableTests[F](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(s"$instance[IList]", tests[IList].foldable[Int, Long])

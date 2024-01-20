@@ -11,7 +11,7 @@ class SemigroupKSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[F[_]]: SemigroupKTests[F] =
-    SemigroupKTests[F](summonInline)
+    SemigroupKTests[F](using summonInline)
 
   inline def validate(instance: String): Unit =
     checkAll(s"$instance[ComplexProduct]", tests[ComplexProduct].semigroupK[Char])

@@ -28,7 +28,7 @@ class NonEmptyTraverseSuite extends KittensSuite:
   import ADTs.*
 
   inline def tests[F[_]]: NonEmptyTraverseTests[F] =
-    NonEmptyTraverseTests[F](summonInline)
+    NonEmptyTraverseTests[F](using summonInline)
 
   inline def validate(inline instance: String): Unit =
     checkAll(

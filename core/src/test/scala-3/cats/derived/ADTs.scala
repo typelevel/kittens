@@ -20,7 +20,9 @@ import cats.{Eq, Eval}
 import cats.syntax.all.given
 import org.scalacheck.rng.Seed
 import org.scalacheck.{Arbitrary, Cogen, Gen}
+
 import scala.annotation.tailrec
+import scala.concurrent.duration.Duration
 
 object ADTs:
   enum EnumK0:
@@ -282,6 +284,9 @@ object ADTs:
         child <- Gen.resize(n / 2, Arbitrary.arbitrary[Option[Search[A]]])
         variations <- Gen.resize(n / 2, Arbitrary.arbitrary[List[Search[A]]])
       yield Search(move, child, variations))
+
+  case class Slice(count: Long, percentile: Double, duration: Duration)
+  case class Compared(x: Slice, y: Slice)
 
   trait EqInstances:
     import ADTs.*

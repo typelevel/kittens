@@ -22,11 +22,11 @@ object DerivedGroup:
     import Strict.given
     summonInline[DerivedGroup[A]].instance
 
-  given [A](using inst: => ProductInstances[Or, A]): DerivedGroup[A] =
+  given product[A](using inst: => ProductInstances[Or, A]): DerivedGroup[A] =
     Strict.product(using inst.unify)
 
-  trait Product[F[x] <: Group[x], A](using inst: ProductInstances[F, A]) extends DerivedMonoid.Product[F, A], Group[A]:
-    override def inverse(a: A): A = inst.map(a)([a] => (F: F[a], x: a) => F.inverse(x))
+  trait Product[F[x] <: Group[x], A: ProductInstancesOf[F]] extends DerivedMonoid.Product[F, A], Group[A]:
+    final override def inverse(a: A): A = ProductInstances.map(a)([a] => (F: F[a], x: a) => F.inverse(x))
 
   object Strict:
     given product[A: ProductInstancesOf[Group]]: DerivedGroup[A] =

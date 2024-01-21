@@ -23,6 +23,7 @@ import scala.compiletime.*
 import scala.concurrent.duration.Duration
 
 class GroupSuite extends KittensSuite:
+  import ADTs.*
   import GroupSuite.*
 
   inline def tests[A]: GroupTests[A] =
@@ -56,8 +57,7 @@ class GroupSuite extends KittensSuite:
 end GroupSuite
 
 object GroupSuite:
-  case class Slice(count: Long, percentile: Double, duration: Duration)
-  case class Compared(x: Slice, y: Slice)
+  import ADTs.*
 
   object semiInstances:
     given Group[Slice] = semiauto.group
@@ -68,7 +68,7 @@ object GroupSuite:
     given Group[Compared] = strict.semiauto.group
 
   object derivedInstances:
-    case class Slice(x: GroupSuite.Slice) derives Group
-    case class Compared(x: GroupSuite.Compared) derives Group
+    case class Slice(x: ADTs.Slice) derives Group
+    case class Compared(x: ADTs.Compared) derives Group
 
 end GroupSuite

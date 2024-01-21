@@ -16,7 +16,7 @@
 
 package cats.derived
 
-import cats.Eq
+import cats.{Eq, Order}
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
 import cats.platform.Platform
 import cats.syntax.AllSyntax
@@ -33,6 +33,8 @@ import scala.quoted.*
   * corresponding CatsSuite in the Cat project, this trait does not mix in any instances.
   */
 abstract class KittensSuite extends KittensSuite.WithoutEq, ADTs.EqInstances:
+  // Some tolerance for numeric underflow.
+  given Order[Double] = (x, y) => if (x / y - 1).abs < 1e-9 then 0 else x.compareTo(y)
   given [A <: Singleton: ValueOf]: Eq[A] = Eq.allEqual
   given [A <: Product](using mirror: Mirror.ProductOf[A], via: Eq[mirror.MirroredElemTypes]): Eq[A] =
     Eq.by(Tuple.fromProductTyped)

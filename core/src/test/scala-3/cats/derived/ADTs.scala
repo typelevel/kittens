@@ -22,6 +22,7 @@ import org.scalacheck.rng.Seed
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 
 import scala.annotation.tailrec
+import scala.collection.immutable.BitSet
 import scala.concurrent.duration.Duration
 
 object ADTs:
@@ -287,6 +288,13 @@ object ADTs:
 
   case class Slice(count: Long, percentile: Double, duration: Duration)
   case class Compared(x: Slice, y: Slice)
+
+  case class Masked[A](mask: BitSet, values: Set[A])
+  object Masked:
+    given [A: Arbitrary]: Arbitrary[Masked[A]] = Arbitrary(for
+      mask <- Gen.buildableOf[BitSet, Int](Gen.oneOf(Gen.const(0), Gen.posNum[Int]))
+      values <- Arbitrary.arbitrary[Set[A]]
+    yield Masked(mask, values))
 
   trait EqInstances:
     import ADTs.*

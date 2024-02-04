@@ -2,7 +2,7 @@ package cats.derived
 
 import alleycats.*
 import cats.*
-import cats.kernel.{CommutativeGroup, CommutativeMonoid, CommutativeSemigroup}
+import cats.kernel.{Band, CommutativeGroup, CommutativeMonoid, CommutativeSemigroup}
 
 import scala.util.NotGiven
 
@@ -12,6 +12,7 @@ extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty[A]
 extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup[A]
 extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid[A]
 extension (x: Group.type) inline def derived[A]: Group[A] = DerivedGroup[A]
+extension (x: Band.type) inline def derived[A]: Band[A] = DerivedBand[A]
 extension (x: Order.type) inline def derived[A]: Order[A] = DerivedOrder[A]
 extension (x: CommutativeSemigroup.type) inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
 extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
@@ -42,6 +43,7 @@ object semiauto:
   inline def semigroup[A]: Semigroup[A] = DerivedSemigroup[A]
   inline def monoid[A]: Monoid[A] = DerivedMonoid[A]
   inline def group[A]: Group[A] = DerivedGroup[A]
+  inline def band[A]: Band[A] = DerivedBand[A]
   inline def order[A]: Order[A] = DerivedOrder[A]
   inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
   inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
@@ -76,6 +78,7 @@ object strict:
   extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup.strict[A]
   extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid.strict[A]
   extension (x: Group.type) inline def derived[A]: Group[A] = DerivedGroup.strict[A]
+  extension (x: Band.type) inline def derived[A]: Band[A] = DerivedBand.strict[A]
   extension (x: CommutativeSemigroup.type)
     inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
   extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
@@ -108,6 +111,7 @@ object strict:
     inline def semigroup[A]: Semigroup[A] = DerivedSemigroup.strict[A]
     inline def monoid[A]: Monoid[A] = DerivedMonoid.strict[A]
     inline def group[A]: Group[A] = DerivedGroup.strict[A]
+    inline def band[A]: Band[A] = DerivedBand.strict[A]
     inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
     inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
     inline def commutativeGroup[A]: CommutativeGroup[A] = DerivedCommutativeGroup.strict[A]
@@ -148,6 +152,9 @@ object auto:
 
   object group:
     inline given [A: NotGivenA[Group]]: Group[A] = DerivedGroup[A]
+
+  object band:
+    inline given [A: NotGivenA[Band]]: Band[A] = DerivedBand[A]
 
   object order:
     inline given [A: NotGivenA[Order]]: Order[A] = DerivedOrder[A]

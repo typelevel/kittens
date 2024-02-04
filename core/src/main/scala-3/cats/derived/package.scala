@@ -2,7 +2,7 @@ package cats.derived
 
 import alleycats.*
 import cats.*
-import cats.kernel.{CommutativeGroup, CommutativeMonoid, CommutativeSemigroup}
+import cats.kernel.{Band, BoundedSemilattice, CommutativeGroup, CommutativeMonoid, CommutativeSemigroup, Semilattice}
 
 import scala.util.NotGiven
 
@@ -12,10 +12,13 @@ extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty[A]
 extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup[A]
 extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid[A]
 extension (x: Group.type) inline def derived[A]: Group[A] = DerivedGroup[A]
+extension (x: Band.type) inline def derived[A]: Band[A] = DerivedBand[A]
 extension (x: Order.type) inline def derived[A]: Order[A] = DerivedOrder[A]
 extension (x: CommutativeSemigroup.type) inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
 extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
 extension (x: CommutativeGroup.type) inline def derived[A]: CommutativeGroup[A] = DerivedCommutativeGroup[A]
+extension (x: Semilattice.type) inline def derived[A]: Semilattice[A] = DerivedSemilattice[A]
+extension (x: BoundedSemilattice.type) inline def derived[A]: BoundedSemilattice[A] = DerivedBoundedSemilattice[A]
 extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow[A]
 extension (x: Applicative.type) inline def derived[F[_]]: Applicative[F] = DerivedApplicative[F]
 extension (x: Apply.type) inline def derived[F[_]]: Apply[F] = DerivedApply[F]
@@ -42,10 +45,13 @@ object semiauto:
   inline def semigroup[A]: Semigroup[A] = DerivedSemigroup[A]
   inline def monoid[A]: Monoid[A] = DerivedMonoid[A]
   inline def group[A]: Group[A] = DerivedGroup[A]
+  inline def band[A]: Band[A] = DerivedBand[A]
   inline def order[A]: Order[A] = DerivedOrder[A]
   inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
   inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
   inline def commutativeGroup[A]: CommutativeGroup[A] = DerivedCommutativeGroup[A]
+  inline def semilattice[A]: Semilattice[A] = DerivedSemilattice[A]
+  inline def boundedSemilattice[A]: BoundedSemilattice[A] = DerivedBoundedSemilattice[A]
   inline def applicative[F[_]]: Applicative[F] = DerivedApplicative[F]
   inline def apply[F[_]]: Apply[F] = DerivedApply[F]
   inline def nonEmptyAlternative[F[_]]: NonEmptyAlternative[F] = DerivedNonEmptyAlternative[F]
@@ -76,10 +82,14 @@ object strict:
   extension (x: Semigroup.type) inline def derived[A]: Semigroup[A] = DerivedSemigroup.strict[A]
   extension (x: Monoid.type) inline def derived[A]: Monoid[A] = DerivedMonoid.strict[A]
   extension (x: Group.type) inline def derived[A]: Group[A] = DerivedGroup.strict[A]
+  extension (x: Band.type) inline def derived[A]: Band[A] = DerivedBand.strict[A]
   extension (x: CommutativeSemigroup.type)
     inline def derived[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
   extension (x: CommutativeMonoid.type) inline def derived[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
   extension (x: CommutativeGroup.type) inline def derived[A]: CommutativeGroup[A] = DerivedCommutativeGroup.strict[A]
+  extension (x: Semilattice.type) inline def derived[A]: Semilattice[A] = DerivedSemilattice.strict[A]
+  extension (x: BoundedSemilattice.type)
+    inline def derived[A]: BoundedSemilattice[A] = DerivedBoundedSemilattice.strict[A]
   extension (x: EmptyK.type) inline def derived[F[_]]: EmptyK[F] = DerivedEmptyK.strict[F]
   extension (x: SemigroupK.type) inline def derived[F[_]]: SemigroupK[F] = DerivedSemigroupK.strict[F]
   extension (x: MonoidK.type) inline def derived[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
@@ -108,9 +118,12 @@ object strict:
     inline def semigroup[A]: Semigroup[A] = DerivedSemigroup.strict[A]
     inline def monoid[A]: Monoid[A] = DerivedMonoid.strict[A]
     inline def group[A]: Group[A] = DerivedGroup.strict[A]
+    inline def band[A]: Band[A] = DerivedBand.strict[A]
     inline def commutativeSemigroup[A]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup.strict[A]
     inline def commutativeMonoid[A]: CommutativeMonoid[A] = DerivedCommutativeMonoid.strict[A]
     inline def commutativeGroup[A]: CommutativeGroup[A] = DerivedCommutativeGroup.strict[A]
+    inline def semilattice[A]: Semilattice[A] = DerivedSemilattice.strict[A]
+    inline def boundedSemilattice[A]: BoundedSemilattice[A] = DerivedBoundedSemilattice.strict[A]
     inline def emptyK[F[_]]: EmptyK[F] = DerivedEmptyK.strict[F]
     inline def semigroupK[F[_]]: SemigroupK[F] = DerivedSemigroupK.strict[F]
     inline def monoidK[F[_]]: MonoidK[F] = DerivedMonoidK.strict[F]
@@ -149,6 +162,9 @@ object auto:
   object group:
     inline given [A: NotGivenA[Group]]: Group[A] = DerivedGroup[A]
 
+  object band:
+    inline given [A: NotGivenA[Band]]: Band[A] = DerivedBand[A]
+
   object order:
     inline given [A: NotGivenA[Order]]: Order[A] = DerivedOrder[A]
 
@@ -160,6 +176,12 @@ object auto:
 
   object commutativeGroup:
     inline given [A: NotGivenA[CommutativeGroup]]: CommutativeGroup[A] = DerivedCommutativeGroup[A]
+
+  object semilattice:
+    inline given [A: NotGivenA[Semilattice]]: Semilattice[A] = DerivedSemilattice[A]
+
+  object boundedSemilattice:
+    inline given [A: NotGivenA[BoundedSemilattice]]: BoundedSemilattice[A] = DerivedBoundedSemilattice[A]
 
   object show:
     inline given [A: NotGivenA[Show]]: Show[A] = DerivedShow[A]

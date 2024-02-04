@@ -25,7 +25,9 @@ object DerivedSemilattice:
   given product[A](using inst: => ProductInstances[Or, A]): DerivedSemilattice[A] =
     Strict.product(using inst.unify)
 
-  trait Product[F[x] <: Semilattice[x], A: ProductInstancesOf[F]] extends DerivedSemigroup.Product[F, A], Semilattice[A]
+  trait Product[F[x] <: Semilattice[x], A: ProductInstancesOf[F]]
+      extends DerivedCommutativeSemigroup.Product[F, A],
+        Semilattice[A]
 
   object Strict:
     given product[A: ProductInstancesOf[Semilattice]]: DerivedSemilattice[A] =

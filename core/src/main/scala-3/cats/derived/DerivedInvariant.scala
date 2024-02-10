@@ -8,12 +8,13 @@ import shapeless3.deriving.K1.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Invariant[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type [x] => T
-  * it is a nested type [x] => G[H[x]] where G: Invariant and H: Invariant
-  * it is a generic case class where all fields have an Invariant instance
-  * it is a generic sealed trait where all subclasses have an Invariant instance""")
+@implicitNotFound("""Could not derive Invariant for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type [x] => T
+  * nested type [x] => G[H[x]] where G: Invariant and H: Invariant
+  * generic case class where all fields form Invariant
+  * generic sealed trait where all subclasses form Invariant
+  * generic enum where all variants form Invariant""")
 type DerivedInvariant[F[_]] = Derived[Invariant[F]]
 object DerivedInvariant:
   type Or[F[_]] = Derived.Or[Invariant[F]]

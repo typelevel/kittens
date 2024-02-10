@@ -6,8 +6,8 @@ import shapeless3.deriving.K0.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of CommutativeGroup[A] where A = ${A}.
-Make sure that A is a case class where all fields have a CommutativeGroup instance.""")
+@implicitNotFound("""Could not derive CommutativeGroup for ${A}.
+Make sure it is a case class where all fields form CommutativeGroup.""")
 type DerivedCommutativeGroup[A] = Derived[CommutativeGroup[A]]
 object DerivedCommutativeGroup:
   type Or[A] = Derived.Or[CommutativeGroup[A]]

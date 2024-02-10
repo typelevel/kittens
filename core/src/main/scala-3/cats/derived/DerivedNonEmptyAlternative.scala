@@ -7,10 +7,10 @@ import shapeless3.deriving.K1.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of NonEmptyAlternative[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a nested type [x] =>> G[H[x]] where G: NonEmptyAlternative and H: Applicative
-  * it is a generic case class where all fields have a NonEmptyAlternative instance""")
+@implicitNotFound("""Could not derive NonEmptyAlternative for ${F}.
+Make sure it satisfies one of the following conditions:
+  * nested type [x] =>> G[H[x]] where G: NonEmptyAlternative and H: Applicative
+  * generic case class where all fields form NonEmptyAlternative""")
 type DerivedNonEmptyAlternative[F[_]] = Derived[NonEmptyAlternative[F]]
 object DerivedNonEmptyAlternative:
   type Or[F[_]] = Derived.Or[NonEmptyAlternative[F]]

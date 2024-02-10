@@ -6,8 +6,8 @@ import shapeless3.deriving.K0.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Band[A] where A = ${A}.
-Make sure that A is a case class where all fields have a Band instance.""")
+@implicitNotFound("""Could not derive Band for ${A}.
+Make sure it is a case class where all fields form Band.""")
 type DerivedBand[A] = Derived[Band[A]]
 object DerivedBand:
   type Or[A] = Derived.Or[Band[A]]

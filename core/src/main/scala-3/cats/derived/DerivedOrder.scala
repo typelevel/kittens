@@ -7,10 +7,11 @@ import shapeless3.deriving.K0.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Order[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have an Order instance
-  * it is a sealed trait where all subclasses have an Order instance""")
+@implicitNotFound("""Could not derive Order for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form Order
+  * sealed trait where all subclasses form Order
+  * enum where all variants form Order""")
 type DerivedOrder[A] = Derived[Order[A]]
 object DerivedOrder:
   type Or[A] = Derived.Or[Order[A]]

@@ -6,8 +6,8 @@ import shapeless3.deriving.K0.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Semilattice[A] where A = ${A}.
-Make sure that A is a case class where all fields have a Semilattice instance.""")
+@implicitNotFound("""Could not derive Semilattice for ${A}.
+Make sure it is a case class where all fields form Semilattice.""")
 type DerivedSemilattice[A] = Derived[Semilattice[A]]
 object DerivedSemilattice:
   type Or[A] = Derived.Or[Semilattice[A]]

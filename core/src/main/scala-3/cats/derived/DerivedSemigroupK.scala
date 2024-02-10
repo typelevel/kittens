@@ -9,12 +9,12 @@ import scala.annotation.*
 import scala.compiletime.*
 import scala.util.NotGiven
 
-@implicitNotFound("""Could not derive an instance of SemigroupK[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type [x] =>> T where T: Semigroup
-  * it is a nested type [x] =>> G[H[x]] where G: SemigroupK
-  * it is a nested type [x] =>> G[H[x]] where G: Apply and H: SemigroupK
-  * it is a generic case class where all fields have a SemigroupK instance""")
+@implicitNotFound("""Could not derive SemigroupK for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type [x] =>> T where T: Semigroup
+  * nested type [x] =>> G[H[x]] where G: SemigroupK
+  * nested type [x] =>> G[H[x]] where G: Apply and H: SemigroupK
+  * generic case class where all fields form SemigroupK""")
 type DerivedSemigroupK[F[_]] = Derived[SemigroupK[F]]
 object DerivedSemigroupK:
   type Or[F[_]] = Derived.Or[SemigroupK[F]]

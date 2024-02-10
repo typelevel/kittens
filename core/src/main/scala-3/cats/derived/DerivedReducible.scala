@@ -8,11 +8,12 @@ import shapeless3.deriving.K1.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Reducible[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a nested type [x] =>> G[H[x]] where G: Reducible and H: Reducible
-  * it is a generic case class where at least one field has a Reducible and the rest Foldable instances
-  * it is a generic sealed trait where all subclasses have a Reducible instance""")
+@implicitNotFound("""Could not derive Reducible for ${F}.
+Make sure it satisfies one of the following conditions:
+  * nested type [x] =>> G[H[x]] where G: Reducible and H: Reducible
+  * generic case class where at least one field forms Reducible and the rest form Foldable
+  * generic sealed trait where all subclasses form Reducible
+  * generic enum where all variants form Reducible""")
 type DerivedReducible[F[_]] = Derived[Reducible[F]]
 object DerivedReducible:
   type Or[F[_]] = Derived.Or[Reducible[F]]

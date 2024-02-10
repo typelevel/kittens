@@ -6,8 +6,8 @@ import shapeless3.deriving.K0.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Monoid[A] where A = ${A}.
-Make sure that A is a case class where all fields have a Monoid instance.""")
+@implicitNotFound("""Could not derive Monoid for ${A}.
+Make sure it is a case class where all fields form Monoid.""")
 type DerivedMonoid[A] = Derived[Monoid[A]]
 object DerivedMonoid:
   type Or[A] = Derived.Or[Monoid[A]]

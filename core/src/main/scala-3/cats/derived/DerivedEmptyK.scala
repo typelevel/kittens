@@ -9,13 +9,14 @@ import scala.annotation.*
 import scala.compiletime.summonInline
 import scala.util.NotGiven
 
-@implicitNotFound("""Could not derive an instance of EmptyK[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type [x] =>> T where T: Empty
-  * it is a nested type [x] =>> G[H[x]] where G: EmptyK
-  * it is a nested type [x] =>> G[H[x]] where G: Pure and H: EmptyK
-  * it is a generic case class where all fields have an EmptyK instance
-  * it is a generic sealed trait where exactly one subclass has an EmptyK instance""")
+@implicitNotFound("""Could not derive EmptyK for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type [x] =>> T where T: Empty
+  * nested type [x] =>> G[H[x]] where G: EmptyK
+  * nested type [x] =>> G[H[x]] where G: Pure and H: EmptyK
+  * generic case class where all fields form EmptyK
+  * generic sealed trait where exactly one subclass forms EmptyK
+  * generic enum where exactly one variant forms EmptyK""")
 type DerivedEmptyK[F[_]] = Derived[EmptyK[F]]
 object DerivedEmptyK:
   type Or[F[_]] = Derived.Or[EmptyK[F]]

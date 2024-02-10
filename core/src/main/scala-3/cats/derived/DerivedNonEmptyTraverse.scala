@@ -7,11 +7,12 @@ import shapeless3.deriving.K1.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of NonEmptyTraverse[F] where F = ${F}.
+@implicitNotFound("""Could not derive NonEmptyTraverse for ${F}.
 Make sure that F[_] satisfies one of the following conditions:
-  * it is a nested type [x] =>> G[H[x]] where G: NonEmptyTraverse and H: NonEmptyTraverse
-  * it is a generic case class where at least one field has a NonEmptyTraverse and the rest Traverse instances
-  * it is a generic sealed trait where all subclasses have a NonEmptyTraverse instance""")
+  * nested type [x] =>> G[H[x]] where G: NonEmptyTraverse and H: NonEmptyTraverse
+  * generic case class where at least one field forms NonEmptyTraverse and the rest form Traverse
+  * generic sealed trait where all subclasses form NonEmptyTraverse
+  * generic enum where all variants form NonEmptyTraverse""")
 type DerivedNonEmptyTraverse[F[_]] = Derived[NonEmptyTraverse[F]]
 object DerivedNonEmptyTraverse:
   type Or[F[_]] = Derived.Or[NonEmptyTraverse[F]]

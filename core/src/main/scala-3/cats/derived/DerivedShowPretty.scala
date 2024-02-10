@@ -14,10 +14,11 @@ trait ShowPretty[A] extends Show[A]:
 object ShowPretty:
   inline def apply[A](using A: ShowPretty[A]): A.type = A
 
-@implicitNotFound("""Could not derive an instance of ShowPretty[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have a Show instance
-  * it is a sealed trait where all subclasses have a Show instance""")
+@implicitNotFound("""Could not derive ShowPretty for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form Show
+  * sealed trait where all subclasses form Show
+  * enum where all variants form Show""")
 type DerivedShowPretty[A] = Derived[ShowPretty[A]]
 object DerivedShowPretty:
   opaque type Or[A] = A => List[String]

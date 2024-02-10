@@ -22,8 +22,8 @@ import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of Monoid[A] where A = ${A}.
-Make sure that A is a case class where all fields have a Monoid instance.""")
+@implicitNotFound("""Could not derive Monoid for ${A}.
+Make sure it is a case class where all fields form Monoid.""")
 trait MkMonoid[A] extends Monoid[A]
 
 object MkMonoid extends MkMonoidDerivation {

@@ -22,13 +22,11 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of NonEmptyTraverse[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a nested type λ[x => G[H[x]]] where G: NonEmptyTraverse and H: NonEmptyTraverse
-  * it is a generic case class where at least one field has a NonEmptyTraverse and the rest Traverse instances
-  * it is a generic sealed trait where all subclasses have a NonEmptyTraverse instance
-
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
+@implicitNotFound("""Could not derive NonEmptyTraverse for ${F}.
+Make sure it satisfies one of the following conditions:
+  * nested type λ[x => G[H[x]]] where G: NonEmptyTraverse and H: NonEmptyTraverse
+  * generic case class where at least one field forms NonEmptyTraverse and the rest form Traverse
+  * generic sealed trait where all subclasses form NonEmptyTraverse""")
 trait MkNonEmptyTraverse[F[_]] extends NonEmptyTraverse[F] with MkTraverse[F] with MkReducible[F] {
   def safeNonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => Eval[G[B]]): Eval[G[F[B]]]
 

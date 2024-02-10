@@ -23,10 +23,10 @@ import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of Empty[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have an Empty instance
-  * it is a sealed trait where exactly one subclass has an Empty instance""")
+@implicitNotFound("""Could not derive Empty for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form Empty
+  * sealed trait where exactly one subclass forms Empty""")
 trait MkEmpty[A] extends Empty[A]
 
 object MkEmpty extends MkEmptyDerivation {

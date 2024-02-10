@@ -22,10 +22,10 @@ import shapeless._
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of Eq[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have an Eq instance
-  * it is a sealed trait where all subclasses have an Eq instance""")
+@implicitNotFound("""Could not derive Eq for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form Eq
+  * sealed trait where all subclasses form Eq""")
 trait MkEq[A] extends Eq[A]
 
 object MkEq extends MkEqDerivation {

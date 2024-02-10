@@ -22,13 +22,11 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of Reducible[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a nested type λ[x => G[H[x]]] where G: Reducible and H: Reducible
-  * it is a generic case class where at least one field has a Reducible and the rest Foldable instances
-  * it is a generic sealed trait where all subclasses have a Reducible instance
-
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
+@implicitNotFound("""Could not derive Reducible for ${F}.
+Make sure it satisfies one of the following conditions:
+  * nested type λ[x => G[H[x]]] where G: Reducible and H: Reducible
+  * generic case class where at least one field forms Reducible and the rest form Foldable
+  * generic sealed trait where all subclasses form Reducible""")
 trait MkReducible[F[_]] extends Reducible[F] with MkFoldable[F] {
   def safeReduceLeftTo[A, B](fa: F[A])(f: A => B)(g: (B, A) => Eval[B]): Eval[B]
 

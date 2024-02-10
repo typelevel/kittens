@@ -22,8 +22,8 @@ import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of CommutativeSemigroup[A] where A = ${A}.
-Make sure that A is a case class where all fields have a CommutativeSemigroup instance.""")
+@implicitNotFound("""Could not derive CommutativeSemigroup for ${A}.
+Make sure it is a case class where all fields form CommutativeSemigroup.""")
 trait MkCommutativeSemigroup[A] extends CommutativeSemigroup[A]
 
 object MkCommutativeSemigroup extends MkCommutativeSemigroupDerivation {

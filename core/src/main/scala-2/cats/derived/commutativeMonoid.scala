@@ -22,8 +22,8 @@ import util.VersionSpecific.{OrElse, Lazy}
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of CommutativeMonoid[A] where A = ${A}.
-Make sure that A is a case class where all fields have a CommutativeMonoid instance.""")
+@implicitNotFound("""Could not derive CommutativeMonoid for ${A}.
+Make sure it is a case class where all fields form CommutativeMonoid.""")
 trait MkCommutativeMonoid[A] extends CommutativeMonoid[A]
 
 object MkCommutativeMonoid extends MkCommutativeMonoidDerivation {

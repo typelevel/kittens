@@ -7,10 +7,11 @@ import shapeless3.deriving.Labelling
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Show[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have a Show instance
-  * it is a sealed trait where all subclasses have a Show instance""")
+@implicitNotFound("""Could not derive Show for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form Show
+  * sealed trait where all subclasses form Show
+  * enum where all variants form Show""")
 type DerivedShow[A] = Derived[Show[A]]
 object DerivedShow:
   type Or[A] = Derived.Or[Show[A]]

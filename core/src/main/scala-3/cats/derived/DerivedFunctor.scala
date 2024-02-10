@@ -8,13 +8,14 @@ import shapeless3.deriving.K1.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Functor[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type [x] =>> T
-  * it is a nested type [x] =>> G[H[x]] where G: Functor and H: Functor
-  * it is a nested type [x] =>> G[H[x]] where G: Contravariant and H: Contravariant
-  * it is a generic case class where all fields have a Functor instance
-  * it is a generic sealed trait where all subclasses have a Functor instance""")
+@implicitNotFound("""Could not derive Functor for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type [x] =>> T
+  * nested type [x] =>> G[H[x]] where G: Functor and H: Functor
+  * nested type [x] =>> G[H[x]] where G: Contravariant and H: Contravariant
+  * generic case class where all fields form Functor
+  * generic sealed trait where all subclasses form Functor
+  * generic enum where all variants form Functor""")
 type DerivedFunctor[F[_]] = Derived[Functor[F]]
 object DerivedFunctor:
   type Or[F[_]] = Derived.Or[Functor[F]]

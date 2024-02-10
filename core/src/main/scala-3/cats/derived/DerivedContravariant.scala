@@ -8,12 +8,13 @@ import shapeless3.deriving.K1.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Contravariant[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type [x] =>> T
-  * it is a nested type [x] =>> G[H[x]] where G: Functor and H: Contravariant
-  * it is a generic case class where all fields have a Contravariant instance
-  * it is a generic sealed trait where all subclasses have a Contravariant instance""")
+@implicitNotFound("""Could not derive Contravariant for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type [x] =>> T
+  * nested type [x] =>> G[H[x]] where G: Functor and H: Contravariant
+  * generic case class where all fields form Contravariant
+  * generic sealed trait where all subclasses form Contravariant
+  * generic enum where all variants form Contravariant""")
 type DerivedContravariant[F[_]] = Derived[Contravariant[F]]
 object DerivedContravariant:
   type Or[F[_]] = Derived.Or[Contravariant[F]]

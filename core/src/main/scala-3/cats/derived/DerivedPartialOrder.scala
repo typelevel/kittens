@@ -7,10 +7,11 @@ import shapeless3.deriving.K0.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of PartialOrder[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have a PartialOrder instance
-  * it is a sealed trait where all subclasses have a PartialOrder instance""")
+@implicitNotFound("""Could not derive PartialOrder for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form PartialOrder
+  * sealed trait where all subclasses form PartialOrder
+  * enum where all variants form PartialOrder""")
 type DerivedPartialOrder[A] = Derived[PartialOrder[A]]
 object DerivedPartialOrder:
   type Or[A] = Derived.Or[PartialOrder[A]]

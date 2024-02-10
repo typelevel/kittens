@@ -23,15 +23,13 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of Functor[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type λ[x => T]
-  * it is a nested type λ[x => G[H[x]]] where G: Functor and H: Functor
-  * it is a nested type λ[x => G[H[x]]] where G: Contravariant and H: Contravariant
-  * it is a generic case class where all fields have a Functor instance
-  * it is a generic sealed trait where all subclasses have a Functor instance
-
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
+@implicitNotFound("""Could not derive Functor for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type λ[x => T]
+  * nested type λ[x => G[H[x]]] where G: Functor and H: Functor
+  * nested type λ[x => G[H[x]]] where G: Contravariant and H: Contravariant
+  * generic case class where all fields form Functor
+  * generic sealed trait where all subclasses form Functor""")
 trait MkFunctor[F[_]] extends Functor[F] {
   def safeMap[A, B](fa: F[A])(f: A => Eval[B]): Eval[F[B]]
 

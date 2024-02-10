@@ -4,10 +4,10 @@ package derived
 import scala.annotation._
 import scala.util.hashing.MurmurHash3
 
-@implicitNotFound("""Could not derive an instance of Hash[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have a Hash instance
-  * it is a sealed trait where all subclasses have a Hash instance""")
+@implicitNotFound("""Could not derive Hash for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form Hash
+  * sealed trait where all subclasses form Hash""")
 trait MkHash[A] extends Hash[A]
 
 object MkHash extends MkHashDerivation {

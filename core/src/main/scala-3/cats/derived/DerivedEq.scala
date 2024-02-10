@@ -7,10 +7,11 @@ import shapeless3.deriving.K0.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Eq[A] where A = ${A}.
+@implicitNotFound("""Could not derive Eq for ${A}.
 Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have an Eq instance
-  * it is a sealed trait where all subclasses have an Eq instance""")
+  * case class where all fields form Eq
+  * sealed trait where all subclasses form Eq
+  * enum where all variants form Eq""")
 type DerivedEq[A] = Derived[Eq[A]]
 object DerivedEq:
   type Or[A] = Derived.Or[Eq[A]]

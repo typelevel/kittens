@@ -6,8 +6,8 @@ import shapeless3.deriving.K0.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Semigroup[A] where A = ${A}.
-Make sure that A is a case class where all fields have a Semigroup instance.""")
+@implicitNotFound("""Could not derive Semigroup for ${A}.
+Make sure it is a case class where all fields form Semigroup.""")
 type DerivedSemigroup[A] = Derived[Semigroup[A]]
 object DerivedSemigroup:
   type Or[A] = Derived.Or[Semigroup[A]]

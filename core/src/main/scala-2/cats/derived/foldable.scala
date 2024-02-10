@@ -22,14 +22,12 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of Foldable[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type λ[x => T]
-  * it is a nested type λ[x => G[H[x]]] where G: Foldable and H: Foldable
-  * it is a generic case class where all fields have a Foldable instance
-  * it is a generic sealed trait where all subclasses have a Foldable instance
-
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
+@implicitNotFound("""Could not derive Foldable for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type λ[x => T]
+  * nested type λ[x => G[H[x]]] where G: Foldable and H: Foldable
+  * generic case class where all fields form Foldable
+  * generic sealed trait where all subclasses form Foldable""")
 trait MkFoldable[F[_]] extends Foldable[F] {
   def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
   def safeFoldLeft[A, B](fa: F[A], b: B)(f: (B, A) => Eval[B]): Eval[B]

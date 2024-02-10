@@ -8,11 +8,11 @@ import shapeless3.deriving.K1.*
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Apply[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type [x] =>> T where T: Semigroup
-  * it is a nested type [x] =>> G[H[x]] where G: Apply and H: Apply
-  * it is a generic case class where all fields have an Apply instance""")
+@implicitNotFound("""Could not derive Apply for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type [x] =>> T where T: Semigroup
+  * nested type [x] =>> G[H[x]] where G: Apply and H: Apply
+  * generic case class where all fields form Apply""")
 type DerivedApply[F[_]] = Derived[Apply[F]]
 object DerivedApply:
   type Or[F[_]] = Derived.Or[Apply[F]]

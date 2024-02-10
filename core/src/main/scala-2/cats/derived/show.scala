@@ -16,10 +16,10 @@ import scala.reflect.ClassTag
   *
   * See the test suite for more precise examples of what can and cannot be derived.
   */
-@implicitNotFound("""Could not derive an instance of Show[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have a Show instance
-  * it is a sealed trait where all subclasses have a Show instance""")
+@implicitNotFound("""Could not derive Show for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form Show
+  * sealed trait where all subclasses form Show""")
 trait MkShow[A] extends Show[A]
 
 object MkShow extends MkShowDerivation {

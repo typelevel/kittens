@@ -9,12 +9,12 @@ import scala.annotation.*
 import scala.compiletime.*
 import scala.util.NotGiven
 
-@implicitNotFound("""Could not derive an instance of MonoidK[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type [x] =>> T where T: Monoid
-  * it is a nested type [x] =>> G[H[x]] where G: MonoidK
-  * it is a nested type [x] =>> G[H[x]] where G: Applicative and H: MonoidK
-  * it is a generic case class where all fields have a MonoidK instance""")
+@implicitNotFound("""Could not derive MonoidK for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type [x] =>> T where T: Monoid
+  * nested type [x] =>> G[H[x]] where G: MonoidK
+  * nested type [x] =>> G[H[x]] where G: Applicative and H: MonoidK
+  * generic case class where all fields form MonoidK""")
 type DerivedMonoidK[F[_]] = Derived[MonoidK[F]]
 object DerivedMonoidK:
   type Or[F[_]] = Derived.Or[MonoidK[F]]

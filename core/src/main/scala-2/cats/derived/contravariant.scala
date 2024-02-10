@@ -22,14 +22,12 @@ import util.VersionSpecific.OrElse
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of Contravariant[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type λ[x => T]
-  * it is a nested type λ[x => G[H[x]]] where G: Functor and H: Contravariant
-  * it is a generic case class where all fields have a Contravariant instance
-  * it is a generic sealed trait where all subclasses have a Contravariant instance
-
-Note: using kind-projector notation - https://github.com/typelevel/kind-projector""")
+@implicitNotFound("""Could not derive Contravariant for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type λ[x => T]
+  * nested type λ[x => G[H[x]]] where G: Functor and H: Contravariant
+  * generic case class where all fields form Contravariant
+  * generic sealed trait where all subclasses form Contravariant""")
 trait MkContravariant[F[_]] extends Contravariant[F] {
   def safeContramap[A, B](fa: F[A])(f: B => Eval[A]): Eval[F[B]]
   def contramap[A, B](fa: F[A])(f: B => A): F[B] = safeContramap(fa)((b: B) => Eval.later(f(b))).value

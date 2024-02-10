@@ -21,7 +21,7 @@ import shapeless._
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Could not derive an instance of ConsK[${F}]")
+@implicitNotFound("Could not derive ConsK for ${F}")
 trait MkConsK[F[_], G[_]] extends Serializable {
   def cons[A](head: A, tail: G[A]): F[A]
 }

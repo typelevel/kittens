@@ -8,11 +8,11 @@ import shapeless3.deriving.K1.*
 import scala.annotation.*
 import scala.compiletime.summonInline
 
-@implicitNotFound("""Could not derive an instance of Pure[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type [x] =>> T where T: Empty
-  * it is a nested type [x] =>> G[H[x]] where G: Pure and H: Pure
-  * it is a generic case class where all fields have a Pure instance""")
+@implicitNotFound("""Could not derive Pure for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type [x] =>> T where T: Empty
+  * nested type [x] =>> G[H[x]] where G: Pure and H: Pure
+  * generic case class where all fields form Pure""")
 type DerivedPure[F[_]] = Derived[Pure[F]]
 object DerivedPure:
   type Or[F[_]] = Derived.Or[Pure[F]]

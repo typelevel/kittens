@@ -22,10 +22,10 @@ import shapeless._
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not derive an instance of Order[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have an Order instance
-  * it is a sealed trait with exactly one subclass that has an Order instance""")
+@implicitNotFound("""Could not derive Order for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form Order
+  * sealed trait with exactly one subclass that forms Order""")
 trait MkOrder[A] extends Order[A]
 
 object MkOrder extends MkOrderDerivation {

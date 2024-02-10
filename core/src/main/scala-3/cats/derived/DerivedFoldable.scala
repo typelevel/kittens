@@ -8,12 +8,13 @@ import shapeless3.deriving.{Const, Continue}
 import scala.annotation.*
 import scala.compiletime.*
 
-@implicitNotFound("""Could not derive an instance of Foldable[F] where F = ${F}.
-Make sure that F[_] satisfies one of the following conditions:
-  * it is a constant type [x] =>> T
-  * it is a nested type [x] =>> G[H[x]] where G: Foldable and H: Foldable
-  * it is a generic case class where all fields have a Foldable instance
-  * it is a generic sealed trait where all subclasses have a Foldable instance""")
+@implicitNotFound("""Could not derive Foldable for ${F}.
+Make sure it satisfies one of the following conditions:
+  * constant type [x] =>> T
+  * nested type [x] =>> G[H[x]] where G: Foldable and H: Foldable
+  * generic case class where all fields form Foldable
+  * generic sealed trait where all subclasses form Foldable
+  * generic enum where all variants form Foldable""")
 type DerivedFoldable[F[_]] = Derived[Foldable[F]]
 object DerivedFoldable:
   type Or[F[_]] = Derived.Or[Foldable[F]]

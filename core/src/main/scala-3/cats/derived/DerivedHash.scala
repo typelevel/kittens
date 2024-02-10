@@ -8,10 +8,11 @@ import scala.annotation.*
 import scala.compiletime.*
 import scala.util.hashing.MurmurHash3
 
-@implicitNotFound("""Could not derive an instance of Hash[A] where A = ${A}.
-Make sure that A satisfies one of the following conditions:
-  * it is a case class where all fields have a Hash instance
-  * it is a sealed trait where all subclasses have a Hash instance""")
+@implicitNotFound("""Could not derive Hash for ${A}.
+Make sure it satisfies one of the following conditions:
+  * case class where all fields form Hash
+  * sealed trait where all subclasses form Hash
+  * enum where all variants form Hash""")
 type DerivedHash[A] = Derived[Hash[A]]
 object DerivedHash:
   type Or[A] = Derived.Or[Hash[A]]

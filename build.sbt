@@ -26,7 +26,7 @@ lazy val commonSettings = Seq(
     "-Werror"
   ),
   scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).toList.flatMap {
-    case (3, _) => List("-Xmax-inlines", "64", "-Wunused:all", "-Wvalue-discard")
+    case (3, _) => List("-source:future", "-Xmax-inlines", "64", "-Wunused:all", "-Wvalue-discard")
     case (2, 12) => List("-Ypartial-unification", "-Xlint")
     case _ => List("-Xlint:_,-byname-implicit", "-Wconf:cat=deprecation&site=.*SequenceSuite:silent")
   },

@@ -145,94 +145,96 @@ object auto:
   private type NotGivenF[T[_[_]]] = [F[_]] =>> NotGiven[T[F]]
 
   object eq:
-    inline given [A: NotGivenA[Eq]]: Eq[A] = DerivedEq[A]
+    transparent inline given [A: NotGivenA[Eq]]: Eq[A] = DerivedEq[A]
 
   object hash:
-    inline given [A: NotGivenA[Hash]]: Hash[A] = DerivedHash[A]
+    transparent inline given [A: NotGivenA[Hash]]: Hash[A] = DerivedHash[A]
 
   object empty:
-    inline given [A: NotGivenA[Empty]]: Empty[A] = DerivedEmpty[A]
+    transparent inline given [A: NotGivenA[Empty]]: Empty[A] = DerivedEmpty[A]
 
   object semigroup:
-    inline given [A: NotGivenA[Semigroup]]: Semigroup[A] = DerivedSemigroup[A]
+    transparent inline given [A: NotGivenA[Semigroup]]: Semigroup[A] = DerivedSemigroup[A]
 
   object monoid:
-    inline given [A: NotGivenA[Monoid]]: Monoid[A] = DerivedMonoid[A]
+    transparent inline given [A: NotGivenA[Monoid]]: Monoid[A] = DerivedMonoid[A]
 
   object group:
-    inline given [A: NotGivenA[Group]]: Group[A] = DerivedGroup[A]
+    transparent inline given [A: NotGivenA[Group]]: Group[A] = DerivedGroup[A]
 
   object band:
-    inline given [A: NotGivenA[Band]]: Band[A] = DerivedBand[A]
+    transparent inline given [A: NotGivenA[Band]]: Band[A] = DerivedBand[A]
 
   object order:
-    inline given [A: NotGivenA[Order]]: Order[A] = DerivedOrder[A]
+    transparent inline given [A: NotGivenA[Order]]: Order[A] = DerivedOrder[A]
 
   object commutativeSemigroup:
-    inline given [A: NotGivenA[CommutativeSemigroup]]: CommutativeSemigroup[A] = DerivedCommutativeSemigroup[A]
+    transparent inline given [A: NotGivenA[CommutativeSemigroup]]: CommutativeSemigroup[A] =
+      DerivedCommutativeSemigroup[A]
 
   object commutativeMonoid:
-    inline given [A: NotGivenA[CommutativeMonoid]]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
+    transparent inline given [A: NotGivenA[CommutativeMonoid]]: CommutativeMonoid[A] = DerivedCommutativeMonoid[A]
 
   object commutativeGroup:
-    inline given [A: NotGivenA[CommutativeGroup]]: CommutativeGroup[A] = DerivedCommutativeGroup[A]
+    transparent inline given [A: NotGivenA[CommutativeGroup]]: CommutativeGroup[A] = DerivedCommutativeGroup[A]
 
   object semilattice:
-    inline given [A: NotGivenA[Semilattice]]: Semilattice[A] = DerivedSemilattice[A]
+    transparent inline given [A: NotGivenA[Semilattice]]: Semilattice[A] = DerivedSemilattice[A]
 
   object boundedSemilattice:
-    inline given [A: NotGivenA[BoundedSemilattice]]: BoundedSemilattice[A] = DerivedBoundedSemilattice[A]
+    transparent inline given [A: NotGivenA[BoundedSemilattice]]: BoundedSemilattice[A] = DerivedBoundedSemilattice[A]
 
   object show:
-    inline given [A: NotGivenA[Show]]: Show[A] = DerivedShow[A]
+    transparent inline given [A: NotGivenA[Show]]: Show[A] = DerivedShow[A]
 
   object applicative:
-    inline given [F[_]: NotGivenF[Applicative]]: Applicative[F] = DerivedApplicative[F]
+    transparent inline given [F[_]: NotGivenF[Applicative]]: Applicative[F] = DerivedApplicative[F]
 
   object apply:
-    inline given [F[_]: NotGivenF[Apply]]: Apply[F] = DerivedApply[F]
+    transparent inline given [F[_]: NotGivenF[Apply]]: Apply[F] = DerivedApply[F]
 
   object nonEmptyAlternative:
-    inline given [F[_]: NotGivenF[NonEmptyAlternative]]: NonEmptyAlternative[F] = DerivedNonEmptyAlternative[F]
+    transparent inline given [F[_]: NotGivenF[NonEmptyAlternative]]: NonEmptyAlternative[F] =
+      DerivedNonEmptyAlternative[F]
 
   object alternative:
-    inline given [F[_]: NotGivenF[Alternative]]: Alternative[F] = DerivedAlternative[F]
+    transparent inline given [F[_]: NotGivenF[Alternative]]: Alternative[F] = DerivedAlternative[F]
 
   object emptyK:
-    inline given [F[_]: NotGivenF[EmptyK]]: EmptyK[F] = DerivedEmptyK[F]
+    transparent inline given [F[_]: NotGivenF[EmptyK]]: EmptyK[F] = DerivedEmptyK[F]
 
   object pure:
-    inline given [F[_]: NotGivenF[Pure]]: Pure[F] = DerivedPure[F]
+    transparent inline given [F[_]: NotGivenF[Pure]]: Pure[F] = DerivedPure[F]
 
   object functor:
-    inline given [F[_]: NotGivenF[Functor]]: Functor[F] = DerivedFunctor[F]
+    transparent inline given [F[_]: NotGivenF[Functor]]: Functor[F] = DerivedFunctor[F]
 
   object foldable:
-    inline given [F[_]: NotGivenF[Foldable]]: Foldable[F] = DerivedFoldable[F]
+    transparent inline given [F[_]: NotGivenF[Foldable]]: Foldable[F] = DerivedFoldable[F]
 
   object reducible:
-    inline given [F[_]: NotGivenF[Reducible]]: Reducible[F] = DerivedReducible[F]
+    transparent inline given [F[_]: NotGivenF[Reducible]]: Reducible[F] = DerivedReducible[F]
 
   object traverse:
-    inline given [F[_]: NotGivenF[Traverse]]: Traverse[F] = DerivedTraverse[F]
+    transparent inline given [F[_]: NotGivenF[Traverse]]: Traverse[F] = DerivedTraverse[F]
 
   object nonEmptyTraverse:
-    inline given [F[_]: NotGivenF[NonEmptyTraverse]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
+    transparent inline given [F[_]: NotGivenF[NonEmptyTraverse]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse[F]
 
   object semigroupK:
-    inline given [F[_]: NotGivenF[SemigroupK]]: SemigroupK[F] = DerivedSemigroupK[F]
+    transparent inline given [F[_]: NotGivenF[SemigroupK]]: SemigroupK[F] = DerivedSemigroupK[F]
 
   object monoidK:
-    inline given [F[_]: NotGivenF[MonoidK]]: MonoidK[F] = DerivedMonoidK[F]
+    transparent inline given [F[_]: NotGivenF[MonoidK]]: MonoidK[F] = DerivedMonoidK[F]
 
   object contravariant:
-    inline given [F[_]: NotGivenF[Contravariant]]: Contravariant[F] = DerivedContravariant[F]
+    transparent inline given [F[_]: NotGivenF[Contravariant]]: Contravariant[F] = DerivedContravariant[F]
 
   object invariant:
-    inline given [F[_]: NotGivenF[Invariant]]: Invariant[F] = DerivedInvariant[F]
+    transparent inline given [F[_]: NotGivenF[Invariant]]: Invariant[F] = DerivedInvariant[F]
 
   object partialOrder:
-    inline given [A: NotGivenA[PartialOrder]]: PartialOrder[A] = DerivedPartialOrder[A]
+    transparent inline given [A: NotGivenA[PartialOrder]]: PartialOrder[A] = DerivedPartialOrder[A]
 
   object showPretty:
-    inline given [A: NotGivenA[Show]]: ShowPretty[A] = DerivedShowPretty[A]
+    transparent inline given [A: NotGivenA[Show]]: ShowPretty[A] = DerivedShowPretty[A]

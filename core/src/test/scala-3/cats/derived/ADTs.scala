@@ -121,7 +121,7 @@ object ADTs:
         rec.is match
           case Some(is) => perturb(i, is)
           case None => i
-      Cogen(perturb _)
+      Cogen(perturb)
 
   final case class Interleaved[T](i: Int, t: T, l: Long, tt: Vector[T], s: String)
   object Interleaved:
@@ -299,11 +299,6 @@ object ADTs:
   trait EqInstances:
     import ADTs.*
 
-    given Eq[Recursive] = Eq.fromUniversalEquals
-    given [A: Eq]: Eq[ICons[A]] = Eq.by(identity[IList[A]])
-    given [A: Eq]: Eq[SCons[A]] = Eq.by(identity[Snoc[A]])
-    given [A: Eq]: Eq[GenericAdt[A]] = Eq.by { case GenericAdtCase(v) => v }
-
     given [A: Eq]: Eq[IList[A]] with
       @tailrec final def eqv(x: IList[A], y: IList[A]): Boolean = (x, y) match
         case (ICons(hx, tx), ICons(hy, ty)) => hx === hy && eqv(tx, ty)
@@ -315,6 +310,11 @@ object ADTs:
         case (SCons(ix, lx), SCons(iy, ly)) => lx === ly && eqv(ix, iy)
         case (SNil(), SNil()) => true
         case _ => false
+
+    given Eq[Recursive] = Eq.fromUniversalEquals
+    given [A: Eq]: Eq[ICons[A]] = Eq.by(identity[IList[A]])
+    given [A: Eq]: Eq[SCons[A]] = Eq.by(identity[Snoc[A]])
+    given [A: Eq]: Eq[GenericAdt[A]] = Eq.by { case GenericAdtCase(v) => v }
 
     given [A: Eq]: Eq[Tree[A]] with
       def eqv(x: Tree[A], y: Tree[A]): Boolean = (x, y) match
@@ -331,23 +331,27 @@ object ADTs:
       case (EnumK0.LeafI(i1), EnumK0.LeafI(i2)) => i1 === i2
       case _ => false
 
-    given [A: Eq]: Eq[EnumK1[A]] =
-      case (EnumK1.Leaf(v1), EnumK1.Leaf(v2)) => v1 === v2
-      case (EnumK1.Rec(l1, r1), EnumK1.Rec(l2, r2)) => l1 === l2 && r1 === r2
-      case _ => false
+    given [A: Eq]: Eq[EnumK1[A]] with
+      def eqv(x: EnumK1[A], y: EnumK1[A]) = (x, y) match
+        case (EnumK1.Leaf(v1), EnumK1.Leaf(v2)) => v1 === v2
+        case (EnumK1.Rec(l1, r1), EnumK1.Rec(l2, r2)) => eqv(l1, l2) && eqv(r1, r2)
+        case _ => false
 
-    given [A](using Eq[A => Unit]): Eq[EnumK1Contra[A]] =
-      case (EnumK1Contra.Leaf(v1), EnumK1Contra.Leaf(v2)) => v1 === v2
-      case (EnumK1Contra.Rec(l1, r1), EnumK1Contra.Rec(l2, r2)) => l1 === l2 && r1 === r2
-      case _ => false
+    given [A](using Eq[A => Unit]): Eq[EnumK1Contra[A]] with
+      def eqv(x: EnumK1Contra[A], y: EnumK1Contra[A]) = (x, y) match
+        case (EnumK1Contra.Leaf(v1), EnumK1Contra.Leaf(v2)) => v1 === v2
+        case (EnumK1Contra.Rec(l1, r1), EnumK1Contra.Rec(l2, r2)) => eqv(l1, l2) && eqv(r1, r2)
+        case _ => false
 
-    given [A: Eq](using Eq[A => Unit]): Eq[EnumK1Inv[A]] =
-      case (EnumK1Inv.Leaf(cov1, contra1), EnumK1Inv.Leaf(cov2, contra2)) => cov1 === cov2 && contra1 === contra2
-      case (EnumK1Inv.Rec(l1, r1), EnumK1Inv.Rec(l2, r2)) => l1 === l2 && r1 === r2
-      case _ => false
+    given [A: Eq](using Eq[A => Unit]): Eq[EnumK1Inv[A]] with
+      def eqv(x: EnumK1Inv[A], y: EnumK1Inv[A]) = (x, y) match
+        case (EnumK1Inv.Leaf(cov1, contra1), EnumK1Inv.Leaf(cov2, contra2)) => cov1 === cov2 && contra1 === contra2
+        case (EnumK1Inv.Rec(l1, r1), EnumK1Inv.Rec(l2, r2)) => eqv(l1, l2) && eqv(r1, r2)
+        case _ => false
 
-    given [A: Eq]: Eq[Search[A]] =
-      (x, y) => x.move === y.move && x.child === y.child && x.variations === y.variations
+    given [A: Eq]: Eq[Search[A]] with
+      def eqv(x: Search[A], y: Search[A]) =
+        x.move === y.move && x.child === y.child && x.variations === y.variations
 
   end EqInstances
 end ADTs

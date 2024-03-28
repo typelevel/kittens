@@ -349,7 +349,7 @@ so we don't support features like `Sequence` and `Lift`.
 
 Legend:
 - `∀` - all must satisfy a constraint
-- `∃` - at lest one must satisfy a constraint
+- `∃` - at least one must satisfy a constraint
 - `∃!` - exactly one must satisfy a constraint
 - `∧` - both constraints must be satisfied  
 - `∨` - either constraint must be satisfied

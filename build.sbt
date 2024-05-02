@@ -27,7 +27,7 @@ lazy val commonSettings = Seq(
   ),
   scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).toList.flatMap {
     case (3, _) => List("-source:future", "-Xmax-inlines", "64", "-Wunused:all", "-Wvalue-discard")
-    case (2, 12) => List("-Ypartial-unification", "-Xlint")
+    case (2, 12) => List("-Ypartial-unification", "-Xlint", "-Wconf:cat=unused&src=.*/derived/package.scala:silent")
     case _ => List("-Xlint:_,-byname-implicit", "-Wconf:cat=deprecation&site=.*SequenceSuite:silent")
   },
   resolvers ++= Resolver.sonatypeOssRepos("releases"),

@@ -9,7 +9,7 @@ ThisBuild / scalaVersion := scala3
 ThisBuild / tlBaseVersion := "3.3"
 ThisBuild / organization := "org.typelevel"
 
-val catsVersion = "2.10.0"
+val catsVersion = "2.11.0"
 val munitVersion = "1.0.0"
 val disciplineMunitVersion = "2.0.0-M3"
 val kindProjectorVersion = "0.13.3"

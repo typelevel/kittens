@@ -6,15 +6,15 @@ val scala3 = "3.3.3"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
-ThisBuild / tlBaseVersion := "3.3"
+ThisBuild / tlBaseVersion := "3.4"
 ThisBuild / organization := "org.typelevel"
 
-val catsVersion = "2.11.0"
+val catsVersion = "2.12.0"
 val munitVersion = "1.0.0"
-val disciplineMunitVersion = "2.0.0-M3"
+val disciplineMunitVersion = "2.0.0"
 val kindProjectorVersion = "0.13.3"
-val shapeless2Version = "2.3.11"
-val shapeless3Version = "3.4.1"
+val shapeless2Version = "2.3.12"
+val shapeless3Version = "3.4.3"
 
 lazy val commonSettings = Seq(
   scalacOptions ++= Seq(
@@ -60,8 +60,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "kittens")
   .settings(commonSettings *)
-  .jsSettings(tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.1.0").toMap)
-  .nativeSettings(tlVersionIntroduced := List("2.12", "2.13").map(_ -> "2.2.2").toMap)
+  .nativeSettings(tlVersionIntroduced := List("2.12", "2.13", "3").map(_ -> "3.4.0").toMap)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js

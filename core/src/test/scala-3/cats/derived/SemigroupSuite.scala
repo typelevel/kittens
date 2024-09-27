@@ -16,7 +16,7 @@
 
 package cats.derived
 
-import cats.{Eq, Semigroup}
+import cats.Semigroup
 import cats.kernel.laws.discipline.*
 import org.scalacheck.Arbitrary
 

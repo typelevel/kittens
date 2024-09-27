@@ -69,9 +69,10 @@ object KittensSuite:
     given [A <: Product](using mirror: Mirror.ProductOf[A], via: Cogen[mirror.MirroredElemTypes]): Cogen[A] =
       via.contramap(Tuple.fromProductTyped)
 
-    def assertNoInstance(errors: String): Unit =
-      val message = "No given instance of type"
-      assert(errors.contains(message), s"$errors did not contain $message")
+    inline def testNoInstance(inline tc: String, inline target: String): Unit =
+      val tcName = tc.drop(tc.lastIndexOf('.') + 1).capitalize
+      testNoGiven(tc + "[" + target + "]", s"Could not derive $tcName for")
 
-    inline def testNoInstance(inline tc: String, target: String): Unit =
-      test(s"No $tc for $target")(assertNoInstance(compileErrors(tc + "[" + target + "]")))
+    inline def testNoGiven(inline code: String, message: String): Unit =
+      val errors = compileErrors(code)
+      test(s"No given $code")(assert(errors.contains(message), s"$errors did not contain $message"))

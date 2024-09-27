@@ -35,5 +35,6 @@ object DerivedEmpty:
     given product[A: ProductInstancesOf[Empty]]: DerivedEmpty[A] =
       Empty(ProductInstances.construct([a] => (A: Empty[a]) => A.empty))
 
+    @nowarn("id=E197")
     inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] =
       Empty(CoproductGeneric.withOnly[DerivedEmpty.Or, A]([a <: A] => (A: DerivedEmpty.Or[a]) => A.unify.empty))

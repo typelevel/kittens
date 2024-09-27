@@ -44,8 +44,8 @@ class PureSuite extends KittensSuite:
   locally:
     import auto.pure.given
     validate("auto.pure")
-    testNoInstance("Pure", "IList")
-    testNoInstance("Pure", "Snoc")
+    testNoGiven("Pure[IList]", "No given instance of type alleycats.Pure")
+    testNoGiven("Pure[Snoc]", "No given instance of type alleycats.Pure")
 
   locally:
     import semiInstances.given

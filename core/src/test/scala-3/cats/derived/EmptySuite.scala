@@ -41,9 +41,9 @@ class EmptySuite extends KittensSuite:
   locally:
     import auto.empty.given
     validate("auto.empty")
-    testNoInstance("Empty", "IList[Int]")
-    testNoInstance("Empty", "Snoc[Int]")
-    testNoInstance("Empty", "Rgb")
+    testNoGiven("Empty[IList[Int]]", "alleycats.Empty")
+    testNoGiven("Empty[Snoc[Int]]", "alleycats.Empty")
+    testNoGiven("Empty[Rgb]", "alleycats.Empty")
 
   locally:
     import semiInstances.given
@@ -58,8 +58,8 @@ class EmptySuite extends KittensSuite:
     testNoInstance("strict.semiauto.empty", "Rgb")
     testNoInstance("strict.semiauto.empty", "Top")
     test("No strict.semiauto.empty for IList[Int] or Snoc[Int]"):
-      assertNoInstance(compileErrors("given Empty[IList[Int]] = strict.semiauto.empty"))
-      assertNoInstance(compileErrors("given Empty[Snoc[Int]] = strict.semiauto.empty"))
+      testNoGiven("given Empty[IList[Int]] = strict.semiauto.empty", "alleycats.Empty")
+      testNoGiven("given Empty[Snoc[Int]] = strict.semiauto.empty", "alleycats.Empty")
 
   locally:
     import derivedInstances.*

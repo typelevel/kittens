@@ -67,6 +67,7 @@ object DerivedEmptyK:
     given product[F[_]: ProductInstancesOf[EmptyK]]: DerivedEmptyK[F] = new EmptyK[F]:
       def empty[A]: F[A] = ProductInstances.construct([f[_]] => (F: EmptyK[f]) => F.empty[A])
 
+    @nowarn("id=E197")
     inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] =
       CoproductGeneric.withOnly[DerivedEmptyK.Or, EmptyK[F]]:
         [f[x] <: F[x]] => (F: DerivedEmptyK.Or[f]) => F.unify.asInstanceOf[EmptyK[F]]

@@ -12,15 +12,15 @@ pull_request_rules:
   - or:
     - body~=labels:.*early-semver-patch
     - body~=labels:.*early-semver-minor
-  - status-success=Build and Test (ubuntu-latest, 2.12, temurin@8, rootJS)
-  - status-success=Build and Test (ubuntu-latest, 2.12, temurin@8, rootJVM)
-  - status-success=Build and Test (ubuntu-latest, 2.12, temurin@8, rootNative)
-  - status-success=Build and Test (ubuntu-latest, 2.13, temurin@8, rootJS)
-  - status-success=Build and Test (ubuntu-latest, 2.13, temurin@8, rootJVM)
-  - status-success=Build and Test (ubuntu-latest, 2.13, temurin@8, rootNative)
-  - status-success=Build and Test (ubuntu-latest, 3, temurin@8, rootJS)
-  - status-success=Build and Test (ubuntu-latest, 3, temurin@8, rootJVM)
-  - status-success=Build and Test (ubuntu-latest, 3, temurin@8, rootNative)
+  - status-success=Test (ubuntu-22.04, 2.12, temurin@8, rootJS)
+  - status-success=Test (ubuntu-22.04, 2.12, temurin@8, rootJVM)
+  - status-success=Test (ubuntu-22.04, 2.12, temurin@8, rootNative)
+  - status-success=Test (ubuntu-22.04, 2.13, temurin@8, rootJS)
+  - status-success=Test (ubuntu-22.04, 2.13, temurin@8, rootJVM)
+  - status-success=Test (ubuntu-22.04, 2.13, temurin@8, rootNative)
+  - status-success=Test (ubuntu-22.04, 3, temurin@8, rootJS)
+  - status-success=Test (ubuntu-22.04, 3, temurin@8, rootJVM)
+  - status-success=Test (ubuntu-22.04, 3, temurin@8, rootNative)
   actions:
     merge: {}
 - name: Label core PRs

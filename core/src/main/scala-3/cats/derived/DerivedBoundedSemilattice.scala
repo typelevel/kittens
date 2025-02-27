@@ -10,8 +10,6 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form BoundedSemilattice.""")
 type DerivedBoundedSemilattice[A] = Derived[BoundedSemilattice[A]]
 object DerivedBoundedSemilattice:
-  type Or[A] = Derived.Or[BoundedSemilattice[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: BoundedSemilattice[A] =
     import DerivedBoundedSemilattice.given
@@ -22,8 +20,8 @@ object DerivedBoundedSemilattice:
     import Strict.given
     summonInline[DerivedBoundedSemilattice[A]].instance
 
-  given product[A](using inst: => ProductInstances[Or, A]): DerivedBoundedSemilattice[A] =
-    Strict.product(using inst.unify)
+  given product[A](using inst: => ProductInstances[Derived.Or0[BoundedSemilattice], A]): DerivedBoundedSemilattice[A] =
+    Strict.product
 
   trait Product[F[x] <: BoundedSemilattice[x], A: ProductInstancesOf[F]]
       extends DerivedCommutativeMonoid.Product[F, A],

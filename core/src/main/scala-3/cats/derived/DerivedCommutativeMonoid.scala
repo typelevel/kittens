@@ -10,8 +10,6 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form CommutativeMonoid.""")
 type DerivedCommutativeMonoid[A] = Derived[CommutativeMonoid[A]]
 object DerivedCommutativeMonoid:
-  type Or[A] = Derived.Or[CommutativeMonoid[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: CommutativeMonoid[A] =
     import DerivedCommutativeMonoid.given
@@ -22,8 +20,8 @@ object DerivedCommutativeMonoid:
     import Strict.given
     summonInline[DerivedCommutativeMonoid[A]].instance
 
-  given [A](using inst: => ProductInstances[Or, A]): DerivedCommutativeMonoid[A] =
-    Strict.product(using inst.unify)
+  given [A](using inst: => ProductInstances[Derived.Or0[CommutativeMonoid], A]): DerivedCommutativeMonoid[A] =
+    Strict.product
 
   trait Product[F[x] <: CommutativeMonoid[x], A](using @unused inst: ProductInstances[F, A])
       extends DerivedMonoid.Product[F, A],

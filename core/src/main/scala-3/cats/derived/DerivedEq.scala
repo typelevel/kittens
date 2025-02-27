@@ -14,8 +14,6 @@ Make sure that A satisfies one of the following conditions:
   * enum where all variants form Eq""")
 type DerivedEq[A] = Derived[Eq[A]]
 object DerivedEq:
-  type Or[A] = Derived.Or[Eq[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: Eq[A] =
     import DerivedEq.given
@@ -29,11 +27,10 @@ object DerivedEq:
   given singleton[A <: Singleton: ValueOf]: DerivedEq[A] =
     Eq.allEqual
 
-  given product[A](using inst: => ProductInstances[Or, A]): DerivedEq[A] =
-    Strict.product(using inst.unify)
+  given product[A](using inst: => ProductInstances[Derived.Or0[Eq], A]): DerivedEq[A] =
+    Strict.product
 
-  given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedEq[A] =
-    given CoproductInstances[Eq, A] = inst.unify
+  given coproduct[A](using inst: => CoproductInstances[Derived.Or0[Eq], A]): DerivedEq[A] =
     new Coproduct[Eq, A] {}
 
   trait Product[F[x] <: Eq[x], A](using inst: ProductInstances[F, A]) extends Eq[A]:

@@ -17,7 +17,6 @@
 package cats.derived
 
 import cats.Invariant
-import cats.derived.Derived.<<<
 import cats.laws.discipline.*
 import cats.laws.discipline.arbitrary.*
 import cats.laws.discipline.eq.*

@@ -18,7 +18,6 @@ package cats.derived
 
 import cats.{NonEmptyTraverse, Traverse}
 import cats.data.{NonEmptyList, OneAnd}
-import cats.derived.Derived.<<<
 import cats.laws.discipline.*
 import shapeless3.deriving.Const
 

@@ -1,6 +1,5 @@
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.{Applicative, Monoid}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
@@ -15,8 +14,6 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form Applicative""")
 type DerivedApplicative[F[_]] = Derived[Applicative[F]]
 object DerivedApplicative:
-  type Or[F[_]] = Derived.Or[Applicative[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Applicative[F] =
     import DerivedApplicative.given
@@ -32,18 +29,18 @@ object DerivedApplicative:
     def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
 
   given nested[F[_], G[_]](using
-      F: => DerivedApplicative.Or[F],
-      G: => DerivedApplicative.Or[G]
+      F: => Derived.Or[Applicative[F]],
+      G: => Derived.Or[Applicative[G]]
   ): DerivedApplicative[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Applicative[F <<< G]:
+    new Derived.Lazy(() => F.compose(using G)) with Applicative[F <<< G]:
       export delegate.*
 
-  given [F[_]](using inst: => ProductInstances[Or, F]): DerivedApplicative[F] =
-    Strict.product(using inst.unify)
+  given [F[_]](using inst: => ProductInstances[Derived.Or1[Applicative], F]): DerivedApplicative[F] =
+    Strict.product
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: DerivedApplicative.Or, G[_]: DerivedApplicative.Or]: DerivedApplicative[[x] =>> F[G[x]]] =
-    nested
+  protected given [F[_]: Derived.Or1[Applicative], G[_]: Derived.Or1[Applicative]]
+      : DerivedApplicative[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Applicative[f], F[_]](using inst: ProductInstances[T, F])
       extends Applicative[F],

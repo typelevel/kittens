@@ -1,6 +1,5 @@
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.{Apply, Eval, Semigroup, SemigroupK}
 import cats.laws.discipline.{SemigroupKTests, SerializableTests}
 import shapeless3.deriving.Const

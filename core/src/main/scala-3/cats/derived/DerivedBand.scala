@@ -10,8 +10,6 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form Band.""")
 type DerivedBand[A] = Derived[Band[A]]
 object DerivedBand:
-  type Or[A] = Derived.Or[Band[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: Band[A] =
     import DerivedBand.given
@@ -22,8 +20,8 @@ object DerivedBand:
     import Strict.given
     summonInline[DerivedBand[A]].instance
 
-  given product[A](using inst: => ProductInstances[Or, A]): DerivedBand[A] =
-    Strict.product(using inst.unify)
+  given product[A](using inst: => ProductInstances[Derived.Or0[Band], A]): DerivedBand[A] =
+    Strict.product
 
   trait Product[F[x] <: Band[x], A: ProductInstancesOf[F]] extends DerivedSemigroup.Product[F, A], Band[A]
 

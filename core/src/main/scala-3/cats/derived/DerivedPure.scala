@@ -1,7 +1,6 @@
 package cats.derived
 
 import alleycats.{Empty, Pure}
-import cats.derived.Derived.<<<
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -15,8 +14,6 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form Pure""")
 type DerivedPure[F[_]] = Derived[Pure[F]]
 object DerivedPure:
-  type Or[F[_]] = Derived.Or[Pure[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Pure[F] =
     import DerivedPure.given
@@ -33,17 +30,17 @@ object DerivedPure:
   given [T <: Singleton: ValueOf]: DerivedPure[Const[T]] = new Pure[Const[T]]:
     def pure[A](a: A): T = valueOf[T]
 
-  given nested[F[_], G[_]](using F: => DerivedPure.Or[F], G: => DerivedPure.Or[G]): DerivedPure[F <<< G] =
+  given nested[F[_], G[_]](using F: => Derived.Or[Pure[F]], G: => Derived.Or[Pure[G]]): DerivedPure[F <<< G] =
     new Pure[F <<< G]:
-      lazy val f = F.unify
-      lazy val g = G.unify
+      lazy val f = F
+      lazy val g = G
       def pure[A](a: A): F[G[A]] = f.pure(g.pure(a))
 
-  given [F[_]: ProductInstancesOf[DerivedPure.Or]]: DerivedPure[F] =
-    Strict.product(using ProductInstances.unify)
+  given [F[_]: ProductInstancesOf[Derived.Or1[Pure]]]: DerivedPure[F] =
+    Strict.product
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: DerivedPure.Or, G[_]: DerivedPure.Or]: DerivedPure[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: Derived.Or1[Pure], G[_]: Derived.Or1[Pure]]: DerivedPure[[x] =>> F[G[x]]] = nested
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Pure]]: DerivedPure[F] = new Pure[F]:

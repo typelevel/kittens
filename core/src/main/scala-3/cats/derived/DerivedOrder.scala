@@ -14,8 +14,6 @@ Make sure it satisfies one of the following conditions:
   * enum where all variants form Order""")
 type DerivedOrder[A] = Derived[Order[A]]
 object DerivedOrder:
-  type Or[A] = Derived.Or[Order[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: Order[A] =
     import DerivedOrder.given
@@ -29,11 +27,10 @@ object DerivedOrder:
   given singleton[A <: Singleton: ValueOf]: DerivedOrder[A] =
     Order.allEqual
 
-  given product[A](using inst: => ProductInstances[Or, A]): DerivedOrder[A] =
-    Strict.product(using inst.unify)
+  given product[A](using inst: => ProductInstances[Derived.Or0[Order], A]): DerivedOrder[A] =
+    Strict.product
 
-  given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedOrder[A] =
-    given CoproductInstances[Order, A] = inst.unify
+  given coproduct[A](using inst: => CoproductInstances[Derived.Or0[Order], A]): DerivedOrder[A] =
     new Coproduct[Order, A] {}
 
   trait Product[T[x] <: Order[x], A](using inst: ProductInstances[T, A]) extends Order[A]:

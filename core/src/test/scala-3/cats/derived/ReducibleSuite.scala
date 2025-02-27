@@ -18,7 +18,6 @@ package cats.derived
 
 import cats.{Eval, Foldable, Reducible}
 import cats.data.{NonEmptyList, OneAnd}
-import cats.derived.Derived.<<<
 import cats.laws.discipline.*
 import cats.syntax.all.given
 import shapeless3.deriving.Const

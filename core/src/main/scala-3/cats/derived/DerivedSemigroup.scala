@@ -10,8 +10,6 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form Semigroup.""")
 type DerivedSemigroup[A] = Derived[Semigroup[A]]
 object DerivedSemigroup:
-  type Or[A] = Derived.Or[Semigroup[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: Semigroup[A] =
     import DerivedSemigroup.given
@@ -22,8 +20,8 @@ object DerivedSemigroup:
     import Strict.given
     summonInline[DerivedSemigroup[A]].instance
 
-  given [A](using inst: => ProductInstances[Or, A]): DerivedSemigroup[A] =
-    Strict.product(using inst.unify)
+  given [A](using inst: => ProductInstances[Derived.Or0[Semigroup], A]): DerivedSemigroup[A] =
+    Strict.product
 
   trait Product[F[x] <: Semigroup[x], A](using inst: ProductInstances[F, A]) extends Semigroup[A]:
     final override def combine(x: A, y: A): A =

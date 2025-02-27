@@ -1,6 +1,5 @@
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.{Eval, Foldable}
 import shapeless3.deriving.K1.*
 import shapeless3.deriving.{Const, Continue}
@@ -17,8 +16,6 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Foldable""")
 type DerivedFoldable[F[_]] = Derived[Foldable[F]]
 object DerivedFoldable:
-  type Or[F[_]] = Derived.Or[Foldable[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Foldable[F] =
     import DerivedFoldable.given
@@ -33,18 +30,21 @@ object DerivedFoldable:
     def foldLeft[A, B](fa: T, b: B)(f: (B, A) => B): B = b
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
-  given nested[F[_], G[_]](using F: => DerivedFoldable.Or[F], G: => DerivedFoldable.Or[G]): DerivedFoldable[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Foldable[F <<< G]:
+  given nested[F[_], G[_]](using
+      F: => Derived.Or[Foldable[F]],
+      G: => Derived.Or[Foldable[G]]
+  ): DerivedFoldable[F <<< G] =
+    new Derived.Lazy(() => F.compose(using G)) with Foldable[F <<< G]:
       export delegate.*
 
-  given [F[_]: ProductInstancesOf[DerivedFoldable.Or]]: DerivedFoldable[F] =
-    Strict.product(using ProductInstances.unify)
+  given [F[_]: ProductInstancesOf[Derived.Or1[Foldable]]]: DerivedFoldable[F] =
+    Strict.product
 
-  given [F[_]](using => CoproductInstances[Or, F]): DerivedFoldable[F] =
+  given [F[_]](using => CoproductInstances[Derived.Or1[Foldable], F]): DerivedFoldable[F] =
     Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: DerivedFoldable.Or, G[_]: DerivedFoldable.Or]: DerivedFoldable[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: Derived.Or1[Foldable], G[_]: Derived.Or1[Foldable]]: DerivedFoldable[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: ProductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
@@ -65,6 +65,5 @@ object DerivedFoldable:
     given product[F[_]: ProductInstancesOf[Foldable]]: DerivedFoldable[F] =
       new Product[Foldable, F] {}
 
-    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedFoldable[F] =
-      given CoproductInstances[Foldable, F] = inst.unify
+    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Foldable], F]): DerivedFoldable[F] =
       new Coproduct[Foldable, F] {}

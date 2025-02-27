@@ -1,7 +1,6 @@
 package cats.derived
 
-import cats.derived.Derived.<<<
-import cats.{Monoid, MonoidK}
+import cats.{Applicative, Monoid, MonoidK}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -17,8 +16,6 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form MonoidK""")
 type DerivedMonoidK[F[_]] = Derived[MonoidK[F]]
 object DerivedMonoidK:
-  type Or[F[_]] = Derived.Or[MonoidK[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: MonoidK[F] =
     import DerivedMonoidK.given
@@ -33,30 +30,29 @@ object DerivedMonoidK:
     def empty[A]: T = T.empty
     def combineK[A](x: T, y: T): T = T.combine(x, y)
 
-  given nested[F[_], G[_]](using F: => DerivedMonoidK.Or[F]): DerivedMonoidK[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose[G]) with MonoidK[F <<< G]:
+  given nested[F[_], G[_]](using F: => Derived.Or[MonoidK[F]]): DerivedMonoidK[F <<< G] =
+    new Derived.Lazy(() => F.compose[G]) with MonoidK[F <<< G]:
       export delegate.*
 
   given nested[F[_], G[_]](using
-      NotGiven[DerivedMonoidK.Or[F]]
-  )(using F: DerivedApplicative.Or[F], G: => DerivedMonoidK.Or[G]): DerivedMonoidK[F <<< G] =
+      NotGiven[Derived.Or[MonoidK[F]]]
+  )(using F: Derived.Or[Applicative[F]], G: => Derived.Or[MonoidK[G]]): DerivedMonoidK[F <<< G] =
     new MonoidK[F <<< G]:
-      val f = F.unify
-      lazy val g = G.unify
-      def empty[A]: F[G[A]] = f.pure(g.empty[A])
-      def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = f.map2(x, y)(g.combineK)
+      lazy val g = G
+      def empty[A]: F[G[A]] = F.pure(g.empty[A])
+      def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = F.map2(x, y)(g.combineK)
 
-  given [F[_]](using inst: => ProductInstances[Or, F]): DerivedMonoidK[F] =
-    Strict.product(using inst.unify)
+  given [F[_]](using inst: => ProductInstances[Derived.Or1[MonoidK], F]): DerivedMonoidK[F] =
+    Strict.product
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_], G[_]](using F: DerivedMonoidK.Or[F]): DerivedMonoidK[[x] =>> F[G[x]]] =
+  protected given [F[_], G[_]](using F: Derived.Or[MonoidK[F]]): DerivedMonoidK[[x] =>> F[G[x]]] =
     nested(using F)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      ev: NotGiven[DerivedMonoidK.Or[F]]
-  )(using F: DerivedApplicative.Or[F], G: DerivedMonoidK.Or[G]): DerivedMonoidK[[x] =>> F[G[x]]] =
+      ev: NotGiven[Derived.Or[MonoidK[F]]]
+  )(using F: Derived.Or[Applicative[F]], G: Derived.Or[MonoidK[G]]): DerivedMonoidK[[x] =>> F[G[x]]] =
     nested(using ev)
 
   trait Product[T[f[_]] <: MonoidK[f], F[_]](using inst: ProductInstances[T, F])

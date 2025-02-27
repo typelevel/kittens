@@ -1,7 +1,6 @@
 package cats.derived
 
 import cats.Alternative
-import cats.derived.Derived.<<<
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -13,8 +12,6 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form Alternative""")
 type DerivedAlternative[F[_]] = Derived[Alternative[F]]
 object DerivedAlternative:
-  type Or[F[_]] = Derived.Or[Alternative[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Alternative[F] =
     import DerivedAlternative.given
@@ -26,14 +23,14 @@ object DerivedAlternative:
     summonInline[DerivedAlternative[F]].instance
 
   given nested[F[_], G[_]](using
-      F: => DerivedAlternative.Or[F],
-      G: => DerivedApplicative.Or[G]
+      F: => Derived.Or[Alternative[F]],
+      G: => Derived.Or[Alternative[G]]
   ): DerivedAlternative[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Alternative[F <<< G]:
+    new Derived.Lazy(() => F.compose(using G)) with Alternative[F <<< G]:
       export delegate.*
 
-  given product[F[_]](using inst: => ProductInstances[Or, F]): DerivedAlternative[F] =
-    Strict.product(using inst.unify)
+  given product[F[_]](using inst: => ProductInstances[Derived.Or1[Alternative], F]): DerivedAlternative[F] =
+    Strict.product
 
   trait Product[T[f[_]] <: Alternative[f], F[_]: ProductInstancesOf[T]]
       extends Alternative[F],

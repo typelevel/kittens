@@ -1,6 +1,5 @@
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.Traverse
 import cats.laws.discipline.*
 import shapeless3.deriving.Const

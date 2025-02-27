@@ -1,6 +1,5 @@
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.{Eval, Foldable, Reducible}
 import shapeless3.deriving.Continue
 import shapeless3.deriving.K1.*
@@ -16,8 +15,6 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Reducible""")
 type DerivedReducible[F[_]] = Derived[Reducible[F]]
 object DerivedReducible:
-  type Or[F[_]] = Derived.Or[Reducible[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Reducible[F] =
     import DerivedFoldable.given
@@ -31,23 +28,24 @@ object DerivedReducible:
     summonInline[DerivedReducible[F]].instance
 
   given nested[F[_], G[_]](using
-      F: => DerivedReducible.Or[F],
-      G: => DerivedReducible.Or[G]
+      F: => Derived.Or[Reducible[F]],
+      G: => Derived.Or[Reducible[G]]
   ): DerivedReducible[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Reducible[F <<< G]:
+    new Derived.Lazy(() => F.compose(using G)) with Reducible[F <<< G]:
       export delegate.*
 
-  def product[F[_]: ProductInstancesOf[DerivedFoldable.Or]](ev: Reducible[?]): DerivedReducible[F] =
-    Strict.product(ev)(using ProductInstances.unify)
+  def product[F[_]: ProductInstancesOf[Derived.Or1[Foldable]]](ev: Reducible[?]): DerivedReducible[F] =
+    Strict.product(ev)
 
   inline given product[F[_]](using gen: ProductGeneric[F]): DerivedReducible[F] =
-    product(summonFirst[DerivedReducible.Or, gen.MirroredElemTypes].unify)
+    product(summonFirst[Derived.Or1[Reducible], gen.MirroredElemTypes])
 
-  given [F[_]](using => CoproductInstances[Or, F]): DerivedReducible[F] =
+  given [F[_]](using => CoproductInstances[Derived.Or1[Reducible], F]): DerivedReducible[F] =
     Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: DerivedReducible.Or, G[_]: DerivedReducible.Or]: DerivedReducible[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: Derived.Or1[Reducible], G[_]: Derived.Or1[Reducible]]: DerivedReducible[[x] =>> F[G[x]]] =
+    nested
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](@unused ev: Reducible[?])(using inst: ProductInstances[T, F])
       extends DerivedFoldable.Product[T, F],
@@ -93,6 +91,5 @@ object DerivedReducible:
     inline given product[F[_]](using gen: ProductGeneric[F]): DerivedReducible[F] =
       product(summonFirst[Reducible, gen.MirroredElemTypes])
 
-    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedReducible[F] =
-      given CoproductInstances[Reducible, F] = inst.unify
+    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Reducible], F]): DerivedReducible[F] =
       new Coproduct[Reducible, F] {}

@@ -1,7 +1,6 @@
 package cats.derived
 
-import cats.Contravariant
-import cats.derived.Derived.<<<
+import cats.{Contravariant, Functor}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -17,8 +16,6 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Contravariant""")
 type DerivedContravariant[F[_]] = Derived[Contravariant[F]]
 object DerivedContravariant:
-  type Or[F[_]] = Derived.Or[Contravariant[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Contravariant[F] =
     import DerivedContravariant.given
@@ -33,17 +30,18 @@ object DerivedContravariant:
     def contramap[A, B](fa: T)(f: B => A): T = fa
 
   given nested[F[_], G[_]](using
-      F: DerivedFunctor.Or[F],
-      G: => DerivedContravariant.Or[G]
+      F: Derived.Or[Functor[F]],
+      G: => Derived.Or[Contravariant[G]]
   ): DerivedContravariant[F <<< G] =
-    new Derived.Lazy(() => F.unify.composeContravariant(using G.unify)) with Contravariant[F <<< G]:
+    new Derived.Lazy(() => F.composeContravariant(using G)) with Contravariant[F <<< G]:
       export delegate.*
 
-  given [F[_]](using inst: => Instances[Or, F]): DerivedContravariant[F] =
-    generic(using inst.unify)
+  given [F[_]](using inst: => Instances[Derived.Or1[Contravariant], F]): DerivedContravariant[F] =
+    generic
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: DerivedFunctor.Or, G[_]: DerivedContravariant.Or]: DerivedContravariant[[x] =>> F[G[x]]] =
+  protected given [F[_]: Derived.Or1[Functor], G[_]: Derived.Or1[Contravariant]]
+      : DerivedContravariant[[x] =>> F[G[x]]] =
     nested
 
   private def generic[F[_]: InstancesOf[Contravariant]]: DerivedContravariant[F] =
@@ -55,5 +53,5 @@ object DerivedContravariant:
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Contravariant]]: DerivedContravariant[F] = generic
-    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedContravariant[F] =
-      generic(using inst.unify)
+    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Contravariant], F]): DerivedContravariant[F] =
+      generic

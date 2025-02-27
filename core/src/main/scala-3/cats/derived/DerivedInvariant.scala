@@ -1,7 +1,6 @@
 package cats.derived
 
 import cats.Invariant
-import cats.derived.Derived.<<<
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -17,8 +16,6 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Invariant""")
 type DerivedInvariant[F[_]] = Derived[Invariant[F]]
 object DerivedInvariant:
-  type Or[F[_]] = Derived.Or[Invariant[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Invariant[F] =
     import DerivedInvariant.given
@@ -33,17 +30,18 @@ object DerivedInvariant:
     def imap[A, B](fa: T)(f: A => B)(g: B => A): T = fa
 
   given nested[F[_], G[_]](using
-      F: => DerivedInvariant.Or[F],
-      G: => DerivedInvariant.Or[G]
+      F: => Derived.Or[Invariant[F]],
+      G: => Derived.Or[Invariant[G]]
   ): DerivedInvariant[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Invariant[F <<< G]:
+    new Derived.Lazy(() => F.compose(using G)) with Invariant[F <<< G]:
       export delegate.*
 
-  given [F[_]](using inst: => Instances[Or, F]): DerivedInvariant[F] =
-    generic(using inst.unify)
+  given [F[_]](using inst: => Instances[Derived.Or1[Invariant], F]): DerivedInvariant[F] =
+    generic
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: DerivedInvariant.Or, G[_]: DerivedInvariant.Or]: DerivedInvariant[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: Derived.Or1[Invariant], G[_]: Derived.Or1[Invariant]]: DerivedInvariant[[x] =>> F[G[x]]] =
+    nested
 
   private def generic[F[_]: InstancesOf[Invariant]]: DerivedInvariant[F] =
     new Generic[Invariant, F] {}
@@ -54,5 +52,4 @@ object DerivedInvariant:
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Invariant]]: DerivedInvariant[F] = generic
-    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedInvariant[F] =
-      generic(using inst.unify)
+    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Invariant], F]): DerivedInvariant[F] = generic

@@ -1,7 +1,6 @@
 package cats.derived
 
-import cats.NonEmptyAlternative
-import cats.derived.Derived.<<<
+import cats.{Applicative, NonEmptyAlternative}
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -13,8 +12,6 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form NonEmptyAlternative""")
 type DerivedNonEmptyAlternative[F[_]] = Derived[NonEmptyAlternative[F]]
 object DerivedNonEmptyAlternative:
-  type Or[F[_]] = Derived.Or[NonEmptyAlternative[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: NonEmptyAlternative[F] =
     import DerivedNonEmptyAlternative.given
@@ -26,14 +23,16 @@ object DerivedNonEmptyAlternative:
     summonInline[DerivedNonEmptyAlternative[F]].instance
 
   given nested[F[_], G[_]](using
-      F: => DerivedNonEmptyAlternative.Or[F],
-      G: => DerivedApplicative.Or[G]
+      F: => Derived.Or[NonEmptyAlternative[F]],
+      G: => Derived.Or[Applicative[G]]
   ): DerivedNonEmptyAlternative[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with NonEmptyAlternative[F <<< G]:
+    new Derived.Lazy(() => F.compose(using G)) with NonEmptyAlternative[F <<< G]:
       export delegate.*
 
-  given product[F[_]](using inst: => ProductInstances[Or, F]): DerivedNonEmptyAlternative[F] =
-    Strict.product(using inst.unify)
+  given product[F[_]](using
+      inst: => ProductInstances[Derived.Or1[NonEmptyAlternative], F]
+  ): DerivedNonEmptyAlternative[F] =
+    Strict.product
 
   trait Product[T[f[_]] <: NonEmptyAlternative[f], F[_]: ProductInstancesOf[T]]
       extends NonEmptyAlternative[F],

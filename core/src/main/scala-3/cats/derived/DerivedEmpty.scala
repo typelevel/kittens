@@ -13,8 +13,6 @@ Make sure it satisfies one of the following conditions:
   * enum where exactly one variant forms Empty""")
 type DerivedEmpty[A] = Derived[Empty[A]]
 object DerivedEmpty:
-  type Or[A] = Derived.Or[Empty[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: Empty[A] =
     import DerivedEmpty.given
@@ -25,8 +23,8 @@ object DerivedEmpty:
     import Strict.given
     summonInline[DerivedEmpty[A]].instance
 
-  given product[A: ProductInstancesOf[DerivedEmpty.Or]]: DerivedEmpty[A] =
-    Strict.product(using ProductInstances.unify)
+  given product[A: ProductInstancesOf[Derived.Or0[Empty]]]: DerivedEmpty[A] =
+    Strict.product
 
   inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] =
     Strict.coproduct
@@ -37,4 +35,4 @@ object DerivedEmpty:
 
     @nowarn("id=E197")
     inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] =
-      Empty(CoproductGeneric.withOnly[DerivedEmpty.Or, A]([a <: A] => (A: DerivedEmpty.Or[a]) => A.unify.empty))
+      Empty(CoproductGeneric.withOnly[Derived.Or0[Empty], A]([a <: A] => (A: Derived.Or[Empty[a]]) => A.empty))

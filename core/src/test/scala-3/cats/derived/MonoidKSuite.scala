@@ -1,6 +1,5 @@
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.{Applicative, Eval, Monoid, MonoidK}
 import cats.laws.discipline.{MonoidKTests, SerializableTests}
 import shapeless3.deriving.Const

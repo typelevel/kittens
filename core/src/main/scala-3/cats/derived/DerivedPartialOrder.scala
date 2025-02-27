@@ -14,8 +14,6 @@ Make sure it satisfies one of the following conditions:
   * enum where all variants form PartialOrder""")
 type DerivedPartialOrder[A] = Derived[PartialOrder[A]]
 object DerivedPartialOrder:
-  type Or[A] = Derived.Or[PartialOrder[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: PartialOrder[A] =
     import DerivedPartialOrder.given
@@ -29,11 +27,10 @@ object DerivedPartialOrder:
   given singleton[A <: Singleton: ValueOf]: DerivedPartialOrder[A] =
     Order.allEqual
 
-  given product[A](using inst: => ProductInstances[Or, A]): DerivedPartialOrder[A] =
-    Strict.product(using inst.unify)
+  given product[A](using inst: => ProductInstances[Derived.Or0[PartialOrder], A]): DerivedPartialOrder[A] =
+    Strict.product
 
-  given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedPartialOrder[A] =
-    given CoproductInstances[PartialOrder, A] = inst.unify
+  given coproduct[A](using inst: => CoproductInstances[Derived.Or0[PartialOrder], A]): DerivedPartialOrder[A] =
     new Coproduct[PartialOrder, A] {}
 
   trait Product[T[x] <: PartialOrder[x], A](using inst: ProductInstances[T, A]) extends PartialOrder[A]:

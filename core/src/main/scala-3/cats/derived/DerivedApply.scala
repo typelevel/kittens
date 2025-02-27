@@ -1,6 +1,5 @@
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.{Apply, Semigroup}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
@@ -15,8 +14,6 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form Apply""")
 type DerivedApply[F[_]] = Derived[Apply[F]]
 object DerivedApply:
-  type Or[F[_]] = Derived.Or[Apply[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Apply[F] =
     import DerivedApply.given
@@ -31,15 +28,16 @@ object DerivedApply:
     def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
     def map[A, B](fa: T)(f: A => B): T = fa
 
-  given nested[F[_], G[_]](using F: => DerivedApply.Or[F], G: => DerivedApply.Or[G]): DerivedApply[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Apply[F <<< G]:
+  given nested[F[_], G[_]](using F: => Derived.Or[Apply[F]], G: => Derived.Or[Apply[G]]): DerivedApply[F <<< G] =
+    new Derived.Lazy(() => F.compose(using G)) with Apply[F <<< G]:
       export delegate.*
 
-  given [F[_]](using inst: => ProductInstances[Or, F]): DerivedApply[F] =
-    Strict.product(using inst.unify)
+  given [F[_]](using inst: => ProductInstances[Derived.Or1[Apply], F]): DerivedApply[F] =
+    Strict.product
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: DerivedApply.Or, G[_]: DerivedApply.Or]: DerivedApply[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: Derived.Or1[Apply], G[_]: Derived.Or1[Apply]]: DerivedApply[[x] =>> F[G[x]]] =
+    nested
 
   trait Product[T[f[_]] <: Apply[f], F[_]](using inst: ProductInstances[T, F]) extends Apply[F]:
     private lazy val F = DerivedFunctor.Strict.product(using inst.widen).instance

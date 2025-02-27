@@ -16,7 +16,6 @@
 
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.laws.discipline.*
 import cats.{Alternative, Applicative}
 import org.scalacheck.Arbitrary

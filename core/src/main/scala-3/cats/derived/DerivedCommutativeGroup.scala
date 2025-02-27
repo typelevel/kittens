@@ -10,8 +10,6 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form CommutativeGroup.""")
 type DerivedCommutativeGroup[A] = Derived[CommutativeGroup[A]]
 object DerivedCommutativeGroup:
-  type Or[A] = Derived.Or[CommutativeGroup[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: CommutativeGroup[A] =
     import DerivedCommutativeGroup.given
@@ -22,8 +20,8 @@ object DerivedCommutativeGroup:
     import Strict.given
     summonInline[DerivedCommutativeGroup[A]].instance
 
-  given product[A](using inst: => ProductInstances[Or, A]): DerivedCommutativeGroup[A] =
-    Strict.product(using inst.unify)
+  given product[A](using inst: => ProductInstances[Derived.Or0[CommutativeGroup], A]): DerivedCommutativeGroup[A] =
+    Strict.product
 
   trait Product[F[x] <: CommutativeGroup[x], A: ProductInstancesOf[F]]
       extends DerivedGroup.Product[F, A],

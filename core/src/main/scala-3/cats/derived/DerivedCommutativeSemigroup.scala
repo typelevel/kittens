@@ -10,8 +10,6 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form CommutativeSemigroup.""")
 type DerivedCommutativeSemigroup[A] = Derived[CommutativeSemigroup[A]]
 object DerivedCommutativeSemigroup:
-  type Or[A] = Derived.Or[CommutativeSemigroup[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: CommutativeSemigroup[A] =
     import DerivedCommutativeSemigroup.given
@@ -22,8 +20,8 @@ object DerivedCommutativeSemigroup:
     import Strict.given
     summonInline[DerivedCommutativeSemigroup[A]].instance
 
-  given [A](using inst: => ProductInstances[Or, A]): DerivedCommutativeSemigroup[A] =
-    Strict.product(using inst.unify)
+  given [A](using inst: => ProductInstances[Derived.Or0[CommutativeSemigroup], A]): DerivedCommutativeSemigroup[A] =
+    Strict.product
 
   trait Product[F[x] <: CommutativeSemigroup[x], A](using @unused inst: ProductInstances[F, A])
       extends DerivedSemigroup.Product[F, A],

@@ -1,6 +1,5 @@
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.{Applicative, Eval, Traverse}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
@@ -17,8 +16,6 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Traverse""")
 type DerivedTraverse[F[_]] = Derived[Traverse[F]]
 object DerivedTraverse:
-  type Or[F[_]] = Derived.Or[Traverse[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Traverse[F] =
     import DerivedTraverse.given
@@ -35,18 +32,21 @@ object DerivedTraverse:
     override def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
     override def traverse[G[_], A, B](fa: T)(f: A => G[B])(using G: Applicative[G]): G[T] = G.pure(fa)
 
-  given nested[F[_], G[_]](using F: => DerivedTraverse.Or[F], G: => DerivedTraverse.Or[G]): DerivedTraverse[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Traverse[F <<< G]:
+  given nested[F[_], G[_]](using
+      F: => Derived.Or[Traverse[F]],
+      G: => Derived.Or[Traverse[G]]
+  ): DerivedTraverse[F <<< G] =
+    new Derived.Lazy(() => F.compose(using G)) with Traverse[F <<< G]:
       export delegate.*
 
-  given [F[_]: ProductInstancesOf[DerivedTraverse.Or]]: DerivedTraverse[F] =
-    Strict.product(using ProductInstances.unify)
+  given [F[_]: ProductInstancesOf[Derived.Or1[Traverse]]]: DerivedTraverse[F] =
+    Strict.product
 
-  given [F[_]](using => CoproductInstances[Or, F]): DerivedTraverse[F] =
+  given [F[_]](using => CoproductInstances[Derived.Or1[Traverse], F]): DerivedTraverse[F] =
     Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: DerivedTraverse.Or, G[_]: DerivedTraverse.Or]: DerivedTraverse[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: Derived.Or1[Traverse], G[_]: Derived.Or1[Traverse]]: DerivedTraverse[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Traverse[f], F[_]](using inst: ProductInstances[T, F])
       extends Traverse[F],
@@ -71,6 +71,5 @@ object DerivedTraverse:
     given product[F[_]: ProductInstancesOf[Traverse]]: DerivedTraverse[F] =
       new Traverse[F] with Product[Traverse, F] {}
 
-    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedTraverse[F] =
-      given CoproductInstances[Traverse, F] = inst.unify
+    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Traverse], F]): DerivedTraverse[F] =
       new Traverse[F] with Coproduct[Traverse, F] {}

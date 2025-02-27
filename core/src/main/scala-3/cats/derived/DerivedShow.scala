@@ -14,8 +14,6 @@ Make sure it satisfies one of the following conditions:
   * enum where all variants form Show""")
 type DerivedShow[A] = Derived[Show[A]]
 object DerivedShow:
-  type Or[A] = Derived.Or[Show[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: Show[A] =
     import DerivedShow.given
@@ -38,10 +36,10 @@ object DerivedShow:
   given string[A <: String]: DerivedShow[A] = Show.fromToString
   given symbol[A <: Symbol]: DerivedShow[A] = Show.fromToString
 
-  given [A: ProductInstancesOf[DerivedShow.Or]](using labelling: Labelling[A]): DerivedShow[A] =
-    Strict.product(using labelling, ProductInstances.unify)
+  given [A: ProductInstancesOf[Derived.Or0[Show]]: Labelling]: DerivedShow[A] =
+    Strict.product
 
-  given [A](using => CoproductInstances[Or, A]): DerivedShow[A] =
+  given [A](using => CoproductInstances[Derived.Or0[Show], A]): DerivedShow[A] =
     Strict.coproduct
 
   trait Product[F[x] <: Show[x], A](using inst: ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
@@ -73,6 +71,5 @@ object DerivedShow:
     given product[A: Labelling](using => ProductInstances[Show, A]): DerivedShow[A] =
       new Product[Show, A] {}
 
-    given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedShow[A] =
-      given CoproductInstances[Show, A] = inst.unify
+    given coproduct[A](using inst: => CoproductInstances[Derived.Or0[Show], A]): DerivedShow[A] =
       new Coproduct[Show, A] {}

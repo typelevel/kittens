@@ -16,7 +16,6 @@
 
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.{Contravariant, Functor}
 import cats.laws.discipline.*
 import cats.laws.discipline.eq.*

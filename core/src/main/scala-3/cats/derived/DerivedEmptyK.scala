@@ -1,7 +1,6 @@
 package cats.derived
 
-import alleycats.{Empty, EmptyK}
-import cats.derived.Derived.<<<
+import alleycats.{Empty, EmptyK, Pure}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -19,8 +18,6 @@ Make sure it satisfies one of the following conditions:
   * generic enum where exactly one variant forms EmptyK""")
 type DerivedEmptyK[F[_]] = Derived[EmptyK[F]]
 object DerivedEmptyK:
-  type Or[F[_]] = Derived.Or[EmptyK[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: EmptyK[F] =
     import DerivedEmptyK.given
@@ -31,36 +28,36 @@ object DerivedEmptyK:
     import Strict.given
     summonInline[DerivedEmptyK[F]].instance
 
-  given [T](using T: Empty[T]): DerivedEmptyK[Const[T]] = new EmptyK[Const[T]]:
-    def empty[A]: T = T.empty
+  given [T](using T: Empty[T]): DerivedEmptyK[Const[T]] =
+    new EmptyK[Const[T]]:
+      def empty[A]: T = T.empty
 
-  given nested[F[_], G[_]](using F: => DerivedEmptyK.Or[F]): DerivedEmptyK[F <<< G] =
+  given nested[F[_], G[_]](using F: => Derived.Or[EmptyK[F]]): DerivedEmptyK[F <<< G] =
     new EmptyK[F <<< G]:
-      lazy val f = F.unify
+      lazy val f = F
       def empty[A]: F[G[A]] = f.empty
 
   given nested[F[_], G[_]](using
-      NotGiven[DerivedEmptyK.Or[F]]
-  )(using F: DerivedPure.Or[F], G: => DerivedEmptyK.Or[G]): DerivedEmptyK[F <<< G] =
+      NotGiven[Derived.Or[EmptyK[F]]]
+  )(using F: Derived.Or[Pure[F]], G: => Derived.Or[EmptyK[G]]): DerivedEmptyK[F <<< G] =
     new EmptyK[F <<< G]:
-      val f = F.unify
-      lazy val g = G.unify
-      def empty[A]: F[G[A]] = f.pure(g.empty)
+      lazy val g = G
+      def empty[A]: F[G[A]] = F.pure(g.empty)
 
-  given product[F[_]: ProductInstancesOf[DerivedEmptyK.Or]]: DerivedEmptyK[F] =
-    Strict.product(using ProductInstances.unify)
+  given product[F[_]: ProductInstancesOf[Derived.Or1[EmptyK]]]: DerivedEmptyK[F] =
+    Strict.product
 
   inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] =
     Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_], G[_]](using F: DerivedEmptyK.Or[F]): DerivedEmptyK[[x] =>> F[G[x]]] =
+  protected given [F[_], G[_]](using F: Derived.Or[EmptyK[F]]): DerivedEmptyK[[x] =>> F[G[x]]] =
     nested(using F)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      ev: NotGiven[DerivedEmptyK.Or[F]]
-  )(using DerivedPure.Or[F], DerivedEmptyK.Or[G]): DerivedEmptyK[[x] =>> F[G[x]]] =
+      ev: NotGiven[Derived.Or[EmptyK[F]]]
+  )(using Derived.Or[Pure[F]], Derived.Or[EmptyK[G]]): DerivedEmptyK[[x] =>> F[G[x]]] =
     nested(using ev)
 
   object Strict:
@@ -69,5 +66,5 @@ object DerivedEmptyK:
 
     @nowarn("id=E197")
     inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] =
-      CoproductGeneric.withOnly[DerivedEmptyK.Or, EmptyK[F]]:
-        [f[x] <: F[x]] => (F: DerivedEmptyK.Or[f]) => F.unify.asInstanceOf[EmptyK[F]]
+      CoproductGeneric.withOnly[Derived.Or1[EmptyK], EmptyK[F]]:
+        [f[x] <: F[x]] => (F: Derived.Or[EmptyK[f]]) => F.asInstanceOf[EmptyK[F]]

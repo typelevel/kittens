@@ -1,7 +1,6 @@
 package cats.derived
 
-import cats.Functor
-import cats.derived.Derived.<<<
+import cats.{Contravariant, Functor}
 import shapeless3.deriving.Const
 import shapeless3.deriving.K1.*
 
@@ -18,8 +17,6 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Functor""")
 type DerivedFunctor[F[_]] = Derived[Functor[F]]
 object DerivedFunctor:
-  type Or[F[_]] = Derived.Or[Functor[F]]
-
   @nowarn("msg=unused import")
   inline def apply[F[_]]: Functor[F] =
     import DerivedFunctor.given
@@ -33,30 +30,30 @@ object DerivedFunctor:
   given [T]: DerivedFunctor[Const[T]] = new Functor[Const[T]]:
     def map[A, B](fa: T)(f: A => B): T = fa
 
-  given nested[F[_], G[_]](using F: => DerivedFunctor.Or[F], G: => DerivedFunctor.Or[G]): DerivedFunctor[F <<< G] =
-    new Derived.Lazy(() => F.unify.compose(using G.unify)) with Functor[F <<< G]:
+  given nested[F[_], G[_]](using F: => Derived.Or[Functor[F]], G: => Derived.Or[Functor[G]]): DerivedFunctor[F <<< G] =
+    new Derived.Lazy(() => F.compose(using G)) with Functor[F <<< G]:
       export delegate.*
 
   given nested[F[_], G[_]](using
-      F: DerivedContravariant.Or[F],
-      G: DerivedContravariant.Or[G]
+      F: Derived.Or[Contravariant[F]],
+      G: Derived.Or[Contravariant[G]]
   ): DerivedFunctor[F <<< G] =
-    F.unify.compose(using G.unify)
+    F.compose(using G)
 
-  given [F[_]](using inst: => Instances[Or, F]): DerivedFunctor[F] =
-    generic(using inst.unify)
+  given [F[_]](using inst: => Instances[Derived.Or1[Functor], F]): DerivedFunctor[F] =
+    generic
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      F: DerivedFunctor.Or[F],
-      G: DerivedFunctor.Or[G]
+      F: Derived.Or[Functor[F]],
+      G: Derived.Or[Functor[G]]
   ): DerivedFunctor[[x] =>> F[G[x]]] =
     nested(using F, G)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      F: DerivedContravariant.Or[F],
-      G: DerivedContravariant.Or[G]
+      F: Derived.Or[Contravariant[F]],
+      G: Derived.Or[Contravariant[G]]
   ): DerivedFunctor[[x] =>> F[G[x]]] =
     nested(using F, G)
 
@@ -69,5 +66,4 @@ object DerivedFunctor:
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Functor]]: DerivedFunctor[F] = generic
-    given coproduct[F[_]](using inst: => CoproductInstances[Or, F]): DerivedFunctor[F] =
-      generic(using inst.unify)
+    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Functor], F]): DerivedFunctor[F] = generic

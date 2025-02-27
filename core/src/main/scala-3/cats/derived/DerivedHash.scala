@@ -15,8 +15,6 @@ Make sure it satisfies one of the following conditions:
   * enum where all variants form Hash""")
 type DerivedHash[A] = Derived[Hash[A]]
 object DerivedHash:
-  type Or[A] = Derived.Or[Hash[A]]
-
   @nowarn("msg=unused import")
   inline def apply[A]: Hash[A] =
     import DerivedHash.given
@@ -39,11 +37,10 @@ object DerivedHash:
   given string[A <: String]: DerivedHash[A] = Hash.fromUniversalHashCode
   given symbol[A <: Symbol]: DerivedHash[A] = Hash.fromUniversalHashCode
 
-  given product[A <: scala.Product](using inst: => ProductInstances[Or, A]): DerivedHash[A] =
-    Strict.product(using inst.unify)
+  given product[A <: scala.Product](using inst: => ProductInstances[Derived.Or0[Hash], A]): DerivedHash[A] =
+    Strict.product
 
-  given coproduct[A](using inst: => CoproductInstances[Or, A]): DerivedHash[A] =
-    given CoproductInstances[Hash, A] = inst.unify
+  given coproduct[A](using inst: => CoproductInstances[Derived.Or0[Hash], A]): DerivedHash[A] =
     new Coproduct[Hash, A] {}
 
   trait Product[F[x] <: Hash[x], A <: scala.Product](using inst: ProductInstances[F, A])

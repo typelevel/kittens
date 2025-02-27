@@ -16,7 +16,6 @@
 
 package cats.derived
 
-import cats.derived.Derived.<<<
 import cats.{Eval, Foldable}
 import cats.laws.discipline.*
 import cats.syntax.all.given

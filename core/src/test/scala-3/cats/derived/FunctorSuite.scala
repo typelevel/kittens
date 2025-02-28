@@ -130,7 +130,7 @@ object FunctorSuite:
     case class GenericAdt[A](x: ADTs.GenericAdt[A]) derives Functor
     case class Interleaved[A](x: ADTs.Interleaved[A]) derives Functor
     case class EnumK1[A](x: ADTs.EnumK1[A]) derives Functor
-    case class AndChar[A](x: FoldableSuite.AndChar[A]) derives Functor
+    case class AndChar[A](x: FunctorSuite.AndChar[A]) derives Functor
     case class Many[+A](x: ADTs.Many[A]) derives Functor
     case class AtMostOne[+A](x: ADTs.AtMostOne[A]) derives Functor
     case class AtLeastOne[+A](x: ADTs.AtLeastOne[A]) derives Functor

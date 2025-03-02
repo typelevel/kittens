@@ -39,6 +39,7 @@ extension (x: PartialOrder.type) inline def derived[A]: PartialOrder[A] = Derive
 extension (x: ShowPretty.type) inline def derived[A]: ShowPretty[A] = DerivedShowPretty[A]
 extension (x: Bifunctor.type) inline def derived[F[_, _]]: Bifunctor[F] = DerivedBifunctor[F]
 extension (x: Bifoldable.type) inline def derived[F[_, _]]: Bifoldable[F] = DerivedBifoldable[F]
+extension (x: Bitraverse.type) inline def derived[F[_, _]]: Bitraverse[F] = DerivedBitraverse[F]
 
 object semiauto:
   inline def eq[A]: Eq[A] = DerivedEq[A]
@@ -74,6 +75,7 @@ object semiauto:
   inline def showPretty[A]: ShowPretty[A] = DerivedShowPretty[A]
   inline def bifunctor[F[_, _]]: Bifunctor[F] = DerivedBifunctor[F]
   inline def bifoldable[F[_, _]]: Bifoldable[F] = DerivedBifoldable[F]
+  inline def bitraverse[F[_, _]]: Bitraverse[F] = DerivedBitraverse[F]
 
 object strict:
   extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq.strict[A]
@@ -112,6 +114,7 @@ object strict:
   extension (x: NonEmptyTraverse.type) inline def derived[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.strict[F]
   extension (x: Bifunctor.type) inline def derived[F[_, _]]: Bifunctor[F] = DerivedBifunctor.strict[F]
   extension (x: Bifoldable.type) inline def derived[F[_, _]]: Bifoldable[F] = DerivedBifoldable.strict[F]
+  extension (x: Bitraverse.type) inline def derived[F[_, _]]: Bitraverse[F] = DerivedBitraverse.strict[F]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
@@ -147,6 +150,7 @@ object strict:
     inline def nonEmptyTraverse[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.strict[F]
     inline def bifunctor[F[_, _]]: Bifunctor[F] = DerivedBifunctor.strict[F]
     inline def bifoldable[F[_, _]]: Bifoldable[F] = DerivedBifoldable.strict[F]
+    inline def bitraverse[F[_, _]]: Bitraverse[F] = DerivedBitraverse.strict[F]
 
 object auto:
   private type NotGiven0[F[_]] = [A] =>> NotGiven[F[A]]
@@ -253,3 +257,6 @@ object auto:
 
   object bifoldable:
     transparent inline given [F[_, _]: NotGiven2[Bifoldable]]: Bifoldable[F] = DerivedBifoldable[F]
+
+  object bitraverse:
+    transparent inline given [F[_, _]: NotGiven2[Bitraverse]]: Bitraverse[F] = DerivedBitraverse[F]

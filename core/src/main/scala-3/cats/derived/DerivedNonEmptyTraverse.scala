@@ -62,8 +62,8 @@ object DerivedNonEmptyTraverse:
         DerivedReducible.Coproduct[T, F],
         DerivedTraverse.Coproduct[T, F]:
 
-    final override def nonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
-      inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => F.nonEmptyTraverse(fa)(f).asInstanceOf[G[F[B]]])
+    final override def nonEmptyTraverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Apply[G]): G[F[B]] =
+      inst.fold(fa)([f[a] <: F[a]] => (F: T[f], fa: f[A]) => G.widen[f[B], F[B]](F.nonEmptyTraverse(fa)(f)))
 
   private type Alt[F[_]] = [A] =>> Either[F[A], A]
   private given [F[_]](using F: Apply[F]): Applicative[Alt[F]] with

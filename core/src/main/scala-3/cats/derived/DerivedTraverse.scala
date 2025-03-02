@@ -64,8 +64,8 @@ object DerivedTraverse:
         DerivedFunctor.Generic[T, F],
         DerivedFoldable.Coproduct[T, F]:
 
-    final override def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
-      inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => F.traverse(fa)(f).asInstanceOf[G[F[B]]])
+    final override def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
+      inst.fold(fa)([f[a] <: F[a]] => (F: T[f], fa: f[A]) => G.widen[f[B], F[B]](F.traverse(fa)(f)))
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Traverse]]: DerivedTraverse[F] =

@@ -18,6 +18,7 @@ package cats.derived
 
 import cats.laws.discipline.*
 import cats.{Bifoldable, Bitraverse, Traverse}
+import shapeless3.deriving.K2.*
 
 import scala.compiletime.*
 
@@ -64,11 +65,11 @@ object BitraverseSuite:
     given Bitraverse[Nested] = semiauto.bitraverse
 
   object strictInstances:
-    given [T]: Bitraverse[[_, _] =>> T] = semiauto.bitraverse
-    given leftId: Bitraverse[[a, _] =>> a] = semiauto.bitraverse
-    given rightId: Bitraverse[[_, b] =>> b] = semiauto.bitraverse
-    given left[F[_]: Traverse]: Bitraverse[[a, _] =>> F[a]] = semiauto.bitraverse
-    given right[F[_]: Traverse]: Bitraverse[[_, b] =>> F[b]] = semiauto.bitraverse
+    given [T]: Bitraverse[Const[T]] = semiauto.bitraverse
+    given Bitraverse[Id1] = semiauto.bitraverse
+    given Bitraverse[Id2] = semiauto.bitraverse
+    given [F[_]: Traverse]: Bitraverse[Left1[F]] = semiauto.bitraverse
+    given [F[_]: Traverse]: Bitraverse[Right1[F]] = semiauto.bitraverse
     given Bitraverse[Result] = strict.semiauto.bitraverse
     given Bitraverse[Nested] = strict.semiauto.bitraverse
 

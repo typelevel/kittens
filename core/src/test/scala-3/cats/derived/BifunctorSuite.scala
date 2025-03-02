@@ -18,6 +18,7 @@ package cats.derived
 
 import cats.laws.discipline.*
 import cats.{Bifunctor, Functor}
+import shapeless3.deriving.K2.*
 
 import scala.compiletime.*
 
@@ -64,11 +65,11 @@ object BifunctorSuite:
     given Bifunctor[Nested] = semiauto.bifunctor
 
   object strictInstances:
-    given [T]: Bifunctor[[_, _] =>> T] = semiauto.bifunctor
-    given leftId: Bifunctor[[a, _] =>> a] = semiauto.bifunctor
-    given rightId: Bifunctor[[_, b] =>> b] = semiauto.bifunctor
-    given left[F[_]: Functor]: Bifunctor[[a, _] =>> F[a]] = semiauto.bifunctor
-    given right[F[_]: Functor]: Bifunctor[[_, b] =>> F[b]] = semiauto.bifunctor
+    given [T]: Bifunctor[Const[T]] = semiauto.bifunctor
+    given Bifunctor[Id1] = semiauto.bifunctor
+    given Bifunctor[Id2] = semiauto.bifunctor
+    given [F[_]: Functor]: Bifunctor[Left1[F]] = semiauto.bifunctor
+    given [F[_]: Functor]: Bifunctor[Right1[F]] = semiauto.bifunctor
     given Bifunctor[Result] = strict.semiauto.bifunctor
     given Bifunctor[Nested] = strict.semiauto.bifunctor
 

@@ -25,19 +25,19 @@ object DerivedBifunctor:
     import Strict.given
     summonInline[DerivedBifunctor[F]].instance
 
-  given const[T]: DerivedBifunctor[[_, _] =>> T] = new Bifunctor[[_, _] =>> T]:
+  given const[T]: DerivedBifunctor[Const[T]] = new Bifunctor[Const[T]]:
     def bimap[A, B, C, D](fab: T)(f: A => C, g: B => D): T = fab
 
-  given leftId: DerivedBifunctor[[a, _] =>> a] = new Bifunctor[[a, _] =>> a]:
+  given leftId: DerivedBifunctor[Id1] = new Bifunctor[Id1]:
     override def bimap[A, B, C, D](fab: A)(f: A => C, g: B => D): C = f(fab)
 
-  given rightId: DerivedBifunctor[[_, b] =>> b] = new Bifunctor[[_, b] =>> b]:
+  given rightId: DerivedBifunctor[Id2] = new Bifunctor[Id2]:
     override def bimap[A, B, C, D](fab: B)(f: A => C, g: B => D): D = g(fab)
 
-  given left[F[_]](using F: Functor[F]): DerivedBifunctor[[a, _] =>> F[a]] = new Bifunctor[[a, _] =>> F[a]]:
+  given left[F[_]](using F: Functor[F]): DerivedBifunctor[Left1[F]] = new Bifunctor[Left1[F]]:
     override def bimap[A, B, C, D](fab: F[A])(f: A => C, g: B => D): F[C] = F.map(fab)(f)
 
-  given right[F[_]](using F: Functor[F]): DerivedBifunctor[[_, b] =>> F[b]] = new Bifunctor[[_, b] =>> F[b]]:
+  given right[F[_]](using F: Functor[F]): DerivedBifunctor[Right1[F]] = new Bifunctor[Right1[F]]:
     override def bimap[A, B, C, D](fab: F[B])(f: A => C, g: B => D): F[D] = F.map(fab)(g)
 
   given nested[F[_, _], G[_, _]](using

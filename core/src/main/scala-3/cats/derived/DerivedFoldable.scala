@@ -2,7 +2,7 @@ package cats.derived
 
 import cats.{Eval, Foldable}
 import shapeless3.deriving.K1.*
-import shapeless3.deriving.{Const, Continue}
+import shapeless3.deriving.Const
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -48,11 +48,10 @@ object DerivedFoldable:
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: ProductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-      inst.foldLeft(fa)(b)([f[_]] => (b: B, F: T[f], fa: f[A]) => Continue(F.foldLeft(fa, b)(f)))
+      inst.foldLeft(fa)(b)([f[_]] => (b: B, F: T[f], fa: f[A]) => F.foldLeft(fa, b)(f))
 
     final override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-      inst.foldRight(fa)(lb):
-        [f[_]] => (F: T[f], fa: f[A], lb: Eval[B]) => Continue(Eval.defer(F.foldRight(fa, lb)(f)))
+      inst.foldRight(fa)(lb)([f[_]] => (F: T[f], fa: f[A], lb: Eval[B]) => Eval.defer(F.foldRight(fa, lb)(f)))
 
   trait Coproduct[T[f[_]] <: Foldable[f], F[_]](using inst: CoproductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =

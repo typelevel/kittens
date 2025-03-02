@@ -1,7 +1,6 @@
 package cats.derived
 
 import cats.{Eval, Foldable, Reducible}
-import shapeless3.deriving.Continue
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -59,8 +58,8 @@ object DerivedReducible:
           [f[_]] =>
             (acc: Option[B], F: T[f], fa: f[A]) =>
               acc match
-                case Some(b) => Continue(Some(F.foldLeft(fa, b)(g)))
-                case None => Continue(F.reduceLeftToOption(fa)(f)(g))
+                case Some(b) => Some(F.foldLeft(fa, b)(g))
+                case None => F.reduceLeftToOption(fa)(f)(g)
         .get
 
     final override def reduceRightTo[A, B](fa: F[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] =
@@ -68,10 +67,9 @@ object DerivedReducible:
         .foldRight[A, Eval[Option[B]]](fa)(evalNone):
           [f[_]] =>
             (F: T[f], fa: f[A], acc: Eval[Option[B]]) =>
-              Continue(acc.flatMap {
+              acc.flatMap:
                 case Some(b) => F.foldRight(fa, Eval.now(b))(g).map(Some.apply)
                 case None => F.reduceRightToOption(fa)(f)(g)
-              })
         .map(_.get)
 
   trait Coproduct[T[f[_]] <: Reducible[f], F[_]](using inst: CoproductInstances[T, F])

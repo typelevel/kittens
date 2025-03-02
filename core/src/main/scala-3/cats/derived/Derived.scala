@@ -8,6 +8,8 @@ import scala.compiletime.summonFrom
 
 private[derived] infix type >>>[F[_], G[_]] = [x] =>> G[F[x]]
 private[derived] infix type <<<[F[_], G[_]] = [x] =>> F[G[x]]
+private[derived] infix type Left1[F[_]] = [a, _] =>> F[a]
+private[derived] infix type Right1[F[_]] = [_, b] =>> F[b]
 
 private[derived] given [I[k, t] <: ErasedInstances[k, t], K, T](using inst: I[K, Derived.Or[T]]): I[K, T] =
   Derived.Or.unify(inst)

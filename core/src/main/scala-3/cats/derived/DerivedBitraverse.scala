@@ -25,7 +25,7 @@ object DerivedBitraverse:
     import Strict.given
     summonInline[DerivedBitraverse[F]].instance
 
-  given const[T]: DerivedBitraverse[[_, _] =>> T] = new Bitraverse[[_, _] =>> T]:
+  given const[T]: DerivedBitraverse[Const[T]] = new Bitraverse[Const[T]]:
     override def bimap[A, B, C, D](fab: T)(f: A => C, g: B => D): T = fab
     override def bitraverse[G[_], A, B, C, D](fab: T)(f: A => G[C], g: B => G[D])(using G: Applicative[G]): G[T] =
       G.pure(fab)
@@ -36,7 +36,7 @@ object DerivedBitraverse:
         g: (B, Eval[C]) => Eval[C]
     ): Eval[C] = c
 
-  given leftId: DerivedBitraverse[[a, _] =>> a] = new Bitraverse[[a, _] =>> a]:
+  given leftId: DerivedBitraverse[Id1] = new Bitraverse[Id1]:
     override def bimap[A, B, C, D](fab: A)(f: A => C, g: B => D): C = f(fab)
     override def bitraverse[G[_]: Applicative, A, B, C, D](fab: A)(f: A => G[C], g: B => G[D]): G[C] = f(fab)
     override def bifoldLeft[A, B, C](fab: A, c: C)(f: (C, A) => C, g: (C, B) => C): C = f(c, fab)
@@ -45,7 +45,7 @@ object DerivedBitraverse:
         g: (B, Eval[C]) => Eval[C]
     ): Eval[C] = f(fab, c)
 
-  given rightId: DerivedBitraverse[[_, b] =>> b] = new Bitraverse[[_, b] =>> b]:
+  given rightId: DerivedBitraverse[Id2] = new Bitraverse[Id2]:
     override def bimap[A, B, C, D](fab: B)(f: A => C, g: B => D): D = g(fab)
     override def bitraverse[G[_]: Applicative, A, B, C, D](fab: B)(f: A => G[C], g: B => G[D]): G[D] = g(fab)
     override def bifoldLeft[A, B, C](fab: B, c: C)(f: (C, A) => C, g: (C, B) => C): C = g(c, fab)
@@ -54,7 +54,7 @@ object DerivedBitraverse:
         g: (B, Eval[C]) => Eval[C]
     ): Eval[C] = g(fab, c)
 
-  given left[F[_]](using F: Traverse[F]): DerivedBitraverse[[a, _] =>> F[a]] = new Bitraverse[[a, _] =>> F[a]]:
+  given left[F[_]](using F: Traverse[F]): DerivedBitraverse[Left1[F]] = new Bitraverse[Left1[F]]:
     override def bimap[A, B, C, D](fab: F[A])(f: A => C, g: B => D): F[C] = F.map(fab)(f)
     override def bitraverse[G[_]: Applicative, A, B, C, D](fab: F[A])(f: A => G[C], g: B => G[D]): G[F[C]] =
       F.traverse(fab)(f)
@@ -65,7 +65,7 @@ object DerivedBitraverse:
         g: (B, Eval[C]) => Eval[C]
     ): Eval[C] = F.foldRight(fab, c)(f)
 
-  given right[F[_]](using F: Traverse[F]): DerivedBitraverse[[_, b] =>> F[b]] = new Bitraverse[[_, b] =>> F[b]]:
+  given right[F[_]](using F: Traverse[F]): DerivedBitraverse[Right1[F]] = new Bitraverse[Right1[F]]:
     override def bimap[A, B, C, D](fab: F[B])(f: A => C, g: B => D): F[D] = F.map(fab)(g)
     override def bitraverse[G[_]: Applicative, A, B, C, D](fab: F[B])(f: A => G[C], g: B => G[D]): G[F[D]] =
       F.traverse(fab)(g)

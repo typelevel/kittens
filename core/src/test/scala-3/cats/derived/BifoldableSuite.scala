@@ -18,6 +18,7 @@ package cats.derived
 
 import cats.laws.discipline.*
 import cats.{Bifoldable, Foldable}
+import shapeless3.deriving.K2.*
 
 import scala.compiletime.*
 
@@ -64,11 +65,11 @@ object BifoldableSuite:
     given Bifoldable[Nested] = semiauto.bifoldable
 
   object strictInstances:
-    given [T]: Bifoldable[[_, _] =>> T] = semiauto.bifoldable
-    given leftId: Bifoldable[[a, _] =>> a] = semiauto.bifoldable
-    given rightId: Bifoldable[[_, b] =>> b] = semiauto.bifoldable
-    given left[F[_]: Foldable]: Bifoldable[[a, _] =>> F[a]] = semiauto.bifoldable
-    given right[F[_]: Foldable]: Bifoldable[[_, b] =>> F[b]] = semiauto.bifoldable
+    given [T]: Bifoldable[Const[T]] = semiauto.bifoldable
+    given Bifoldable[Id1] = semiauto.bifoldable
+    given Bifoldable[Id2] = semiauto.bifoldable
+    given [F[_]: Foldable]: Bifoldable[Left1[F]] = semiauto.bifoldable
+    given [F[_]: Foldable]: Bifoldable[Right1[F]] = semiauto.bifoldable
     given Bifoldable[Result] = strict.semiauto.bifoldable
     given Bifoldable[Nested] = strict.semiauto.bifoldable
 

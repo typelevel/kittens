@@ -26,28 +26,28 @@ object DerivedBifoldable:
     import Strict.given
     summonInline[DerivedBifoldable[F]].instance
 
-  given const[T]: DerivedBifoldable[[_, _] =>> T] = new Bifoldable[[_, _] =>> T]:
+  given const[T]: DerivedBifoldable[Const[T]] = new Bifoldable[Const[T]]:
     override def bifoldLeft[A, B, C](fab: T, c: C)(f: (C, A) => C, g: (C, B) => C): C = c
     override def bifoldRight[A, B, C](fab: T, c: Eval[C])(
         f: (A, Eval[C]) => Eval[C],
         g: (B, Eval[C]) => Eval[C]
     ): Eval[C] = c
 
-  given leftId: DerivedBifoldable[[a, _] =>> a] = new Bifoldable[[a, _] =>> a]:
+  given leftId: DerivedBifoldable[Id1] = new Bifoldable[Id1]:
     override def bifoldLeft[A, B, C](fab: A, c: C)(f: (C, A) => C, g: (C, B) => C): C = f(c, fab)
     override def bifoldRight[A, B, C](fab: A, c: Eval[C])(
         f: (A, Eval[C]) => Eval[C],
         g: (B, Eval[C]) => Eval[C]
     ): Eval[C] = f(fab, c)
 
-  given rightId: DerivedBifoldable[[_, b] =>> b] = new Bifoldable[[_, b] =>> b]:
+  given rightId: DerivedBifoldable[Id2] = new Bifoldable[Id2]:
     override def bifoldLeft[A, B, C](fab: B, c: C)(f: (C, A) => C, g: (C, B) => C): C = g(c, fab)
     override def bifoldRight[A, B, C](fab: B, c: Eval[C])(
         f: (A, Eval[C]) => Eval[C],
         g: (B, Eval[C]) => Eval[C]
     ): Eval[C] = g(fab, c)
 
-  given left[F[_]](using F: Foldable[F]): DerivedBifoldable[[a, _] =>> F[a]] = new Bifoldable[[a, _] =>> F[a]]:
+  given left[F[_]](using F: Foldable[F]): DerivedBifoldable[Left1[F]] = new Bifoldable[Left1[F]]:
     override def bifoldLeft[A, B, C](fab: F[A], c: C)(f: (C, A) => C, g: (C, B) => C): C =
       F.foldLeft(fab, c)(f)
     override def bifoldRight[A, B, C](fab: F[A], c: Eval[C])(
@@ -55,7 +55,7 @@ object DerivedBifoldable:
         g: (B, Eval[C]) => Eval[C]
     ): Eval[C] = F.foldRight(fab, c)(f)
 
-  given right[F[_]](using F: Foldable[F]): DerivedBifoldable[[_, b] =>> F[b]] = new Bifoldable[[_, b] =>> F[b]]:
+  given right[F[_]](using F: Foldable[F]): DerivedBifoldable[Right1[F]] = new Bifoldable[Right1[F]]:
     override def bifoldLeft[A, B, C](fab: F[B], c: C)(f: (C, A) => C, g: (C, B) => C): C =
       F.foldLeft(fab, c)(g)
     override def bifoldRight[A, B, C](fab: F[B], c: Eval[C])(

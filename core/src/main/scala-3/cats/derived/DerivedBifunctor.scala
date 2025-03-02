@@ -51,7 +51,7 @@ object DerivedBifunctor:
   private def gen[F[_, _]: InstancesOf[Bifunctor]]: DerivedBifunctor[F] = new Generic[Bifunctor, F] {}
 
   trait Generic[T[f[_, _]] <: Bifunctor[f], F[_, _]](using inst: Instances[T, F]) extends Bifunctor[F]:
-    def bimap[A, B, C, D](fab: F[A, B])(f: A => C, g: B => D): F[C, D] =
+    final override def bimap[A, B, C, D](fab: F[A, B])(f: A => C, g: B => D): F[C, D] =
       inst.map(fab)([f[_, _]] => (F: T[f], fa: f[A, B]) => F.bimap(fa)(f, g))
 
   object Strict:

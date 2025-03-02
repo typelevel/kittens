@@ -1,7 +1,6 @@
 package cats.derived
 
 import cats.Hash
-import shapeless3.deriving.Continue
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -53,7 +52,7 @@ object DerivedHash:
       if arity <= 0 then prefix
       else
         val hash = inst.foldLeft[Int](x)(MurmurHash3.mix(MurmurHash3.productSeed, prefix)):
-          [t] => (acc: Int, h: F[t], x: t) => Continue(MurmurHash3.mix(acc, h.hash(x)))
+          [t] => (acc: Int, h: F[t], x: t) => MurmurHash3.mix(acc, h.hash(x))
         MurmurHash3.finalizeHash(hash, arity)
 
   trait Coproduct[F[x] <: Hash[x], A](using inst: CoproductInstances[F, A]) extends DerivedEq.Coproduct[F, A], Hash[A]:

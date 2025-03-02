@@ -1,7 +1,6 @@
 package cats.derived
 
 import cats.{Bifoldable, Eval, Foldable}
-import shapeless3.deriving.Continue
 import shapeless3.deriving.K2.*
 
 import scala.annotation.*
@@ -78,13 +77,13 @@ object DerivedBifoldable:
 
   trait Product[T[f[_, _]] <: Bifoldable[f], F[_, _]](using inst: ProductInstances[T, F]) extends Bifoldable[F]:
     final override def bifoldLeft[A, B, C](fab: F[A, B], c: C)(f: (C, A) => C, g: (C, B) => C): C =
-      inst.foldLeft(fab)(c)([f[_, _]] => (c: C, F: T[f], fab: f[A, B]) => Continue(F.bifoldLeft(fab, c)(f, g)))
+      inst.foldLeft(fab)(c)([f[_, _]] => (c: C, F: T[f], fab: f[A, B]) => F.bifoldLeft(fab, c)(f, g))
 
     final override def bifoldRight[A, B, C](fab: F[A, B], c: Eval[C])(
         f: (A, Eval[C]) => Eval[C],
         g: (B, Eval[C]) => Eval[C]
     ): Eval[C] = inst.foldRight(fab)(c):
-      [f[_, _]] => (F: T[f], fab: f[A, B], c: Eval[C]) => Continue(Eval.defer(F.bifoldRight(fab, c)(f, g)))
+      [f[_, _]] => (F: T[f], fab: f[A, B], c: Eval[C]) => Eval.defer(F.bifoldRight(fab, c)(f, g))
 
   trait Coproduct[T[f[_, _]] <: Bifoldable[f], F[_, _]](using inst: CoproductInstances[T, F]) extends Bifoldable[F]:
     final override def bifoldLeft[A, B, C](fab: F[A, B], c: C)(f: (C, A) => C, g: (C, B) => C): C =

@@ -296,6 +296,28 @@ object ADTs:
       values <- Arbitrary.arbitrary[Set[A]]
     yield Masked(mask, values))
 
+  enum Result[+A, +E]:
+    case Done
+    case Maybe(either: Either[A, E])
+    case Ok(value: A, code: Int)
+    case Err(err: E, errs: List[E])
+
+  object Result:
+    given [A: Arbitrary, E: Arbitrary]: Arbitrary[Result[A, E]] = Arbitrary(
+      Gen.oneOf(
+        Gen.const(Done),
+        Arbitrary.arbitrary[Either[A, E]].map(Maybe.apply),
+        for
+          value <- Arbitrary.arbitrary[A]
+          code <- Arbitrary.arbitrary[Int]
+        yield Ok(value, code),
+        for
+          err <- Arbitrary.arbitrary[E]
+          errs <- Arbitrary.arbitrary[List[E]]
+        yield Err(err, errs)
+      )
+    )
+
   trait EqInstances:
     import ADTs.*
 
@@ -352,6 +374,13 @@ object ADTs:
     given [A: Eq]: Eq[Search[A]] with
       def eqv(x: Search[A], y: Search[A]) =
         x.move === y.move && x.child === y.child && x.variations === y.variations
+
+    given [A: Eq, E: Eq]: Eq[Result[A, E]] =
+      case (Result.Done, Result.Done) => true
+      case (Result.Maybe(e1), Result.Maybe(e2)) => e1 === e2
+      case (Result.Ok(v1, c1), Result.Ok(v2, c2)) => c1 == c2 && v1 === v2
+      case (Result.Err(e1, errs1), Result.Err(e2, errs2)) => e1 === e2 && errs1 === errs2
+      case _ => false
 
   end EqInstances
 end ADTs

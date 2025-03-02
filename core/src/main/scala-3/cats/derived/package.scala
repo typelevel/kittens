@@ -38,6 +38,7 @@ extension (x: Invariant.type) inline def derived[F[_]]: Invariant[F] = DerivedIn
 extension (x: PartialOrder.type) inline def derived[A]: PartialOrder[A] = DerivedPartialOrder[A]
 extension (x: ShowPretty.type) inline def derived[A]: ShowPretty[A] = DerivedShowPretty[A]
 extension (x: Bifunctor.type) inline def derived[F[_, _]]: Bifunctor[F] = DerivedBifunctor[F]
+extension (x: Bifoldable.type) inline def derived[F[_, _]]: Bifoldable[F] = DerivedBifoldable[F]
 
 object semiauto:
   inline def eq[A]: Eq[A] = DerivedEq[A]
@@ -72,6 +73,7 @@ object semiauto:
   inline def partialOrder[A]: PartialOrder[A] = DerivedPartialOrder[A]
   inline def showPretty[A]: ShowPretty[A] = DerivedShowPretty[A]
   inline def bifunctor[F[_, _]]: Bifunctor[F] = DerivedBifunctor[F]
+  inline def bifoldable[F[_, _]]: Bifoldable[F] = DerivedBifoldable[F]
 
 object strict:
   extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq.strict[A]
@@ -109,6 +111,7 @@ object strict:
   extension (x: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTraverse.strict[F]
   extension (x: NonEmptyTraverse.type) inline def derived[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.strict[F]
   extension (x: Bifunctor.type) inline def derived[F[_, _]]: Bifunctor[F] = DerivedBifunctor.strict[F]
+  extension (x: Bifoldable.type) inline def derived[F[_, _]]: Bifoldable[F] = DerivedBifoldable.strict[F]
 
   object semiauto:
     inline def eq[A]: Eq[A] = DerivedEq.strict[A]
@@ -143,6 +146,7 @@ object strict:
     inline def traverse[F[_]]: Traverse[F] = DerivedTraverse.strict[F]
     inline def nonEmptyTraverse[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.strict[F]
     inline def bifunctor[F[_, _]]: Bifunctor[F] = DerivedBifunctor.strict[F]
+    inline def bifoldable[F[_, _]]: Bifoldable[F] = DerivedBifoldable.strict[F]
 
 object auto:
   private type NotGiven0[F[_]] = [A] =>> NotGiven[F[A]]
@@ -246,3 +250,6 @@ object auto:
 
   object bifunctor:
     transparent inline given [F[_, _]: NotGiven2[Bifunctor]]: Bifunctor[F] = DerivedBifunctor[F]
+
+  object bifoldable:
+    transparent inline given [F[_, _]: NotGiven2[Bifoldable]]: Bifoldable[F] = DerivedBifoldable[F]

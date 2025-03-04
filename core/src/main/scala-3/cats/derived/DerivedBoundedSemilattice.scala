@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.kernel.BoundedSemilattice
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -20,8 +21,8 @@ object DerivedBoundedSemilattice:
     import Strict.given
     summonInline[DerivedBoundedSemilattice[A]].instance
 
-  given product[A](using inst: => ProductInstances[Derived.Or0[BoundedSemilattice], A]): DerivedBoundedSemilattice[A] =
-    Strict.product
+  given product[A](using inst: => ProductInstances[BoundedSemilattice |: Derived, A]): DerivedBoundedSemilattice[A] =
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: BoundedSemilattice[x], A: ProductInstancesOf[F]]
       extends DerivedCommutativeMonoid.Product[F, A],

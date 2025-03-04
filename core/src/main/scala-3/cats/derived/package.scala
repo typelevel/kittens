@@ -6,6 +6,12 @@ import cats.kernel.{Band, BoundedSemilattice, CommutativeGroup, CommutativeMonoi
 
 import scala.util.NotGiven
 
+private[derived] infix type <<<[F[_], G[_]] = [x] =>> F[G[x]]
+private[derived] infix type Left1[F[_]] = [a, _] =>> F[a]
+private[derived] infix type Right1[F[_]] = [_, b] =>> F[b]
+private[derived] open class Lazy[A](f: () => A) extends Serializable:
+  final protected lazy val delegate: A = f()
+
 extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq[A]
 extension (x: Hash.type) inline def derived[A]: Hash[A] = DerivedHash[A]
 extension (x: Empty.type) inline def derived[A]: Empty[A] = DerivedEmpty[A]

@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Apply, Semigroup}
-import shapeless3.deriving.Const
+import shapeless3.deriving.{Const, Derived}
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -28,15 +28,15 @@ object DerivedApply:
     def ap[A, B](ff: T)(fa: T): T = T.combine(ff, fa)
     def map[A, B](fa: T)(f: A => B): T = fa
 
-  given nested[F[_], G[_]](using F: => Derived.Or[Apply[F]], G: => Derived.Or[Apply[G]]): DerivedApply[F <<< G] =
-    new Derived.Lazy(() => F.compose(using G)) with Apply[F <<< G]:
+  given nested[F[_], G[_]](using F: => (Apply |: Derived)[F], G: => (Apply |: Derived)[G]): DerivedApply[F <<< G] =
+    new Lazy(() => F.unify.compose(using G.unify)) with Apply[F <<< G]:
       export delegate.*
 
-  given [F[_]](using inst: => ProductInstances[Derived.Or1[Apply], F]): DerivedApply[F] =
-    Strict.product
+  given [F[_]](using inst: => ProductInstances[Apply |: Derived, F]): DerivedApply[F] =
+    Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Derived.Or1[Apply], G[_]: Derived.Or1[Apply]]: DerivedApply[[x] =>> F[G[x]]] =
+  protected given [F[_]: Apply |: Derived, G[_]: Apply |: Derived]: DerivedApply[[x] =>> F[G[x]]] =
     nested
 
   trait Product[T[f[_]] <: Apply[f], F[_]](using inst: ProductInstances[T, F]) extends Apply[F]:

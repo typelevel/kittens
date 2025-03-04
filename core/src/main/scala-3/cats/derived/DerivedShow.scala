@@ -1,8 +1,8 @@
 package cats.derived
 
 import cats.Show
+import shapeless3.deriving.{Derived, Labelling}
 import shapeless3.deriving.K0.*
-import shapeless3.deriving.Labelling
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -36,10 +36,11 @@ object DerivedShow:
   given string[A <: String]: DerivedShow[A] = Show.fromToString
   given symbol[A <: Symbol]: DerivedShow[A] = Show.fromToString
 
-  given [A: ProductInstancesOf[Derived.Or0[Show]]: Labelling]: DerivedShow[A] =
+  given [A](using inst: ProductInstances[Show |: Derived, A], labelling: Labelling[A]): DerivedShow[A] =
+    given ProductInstances[Show, A] = inst.unify
     Strict.product
 
-  given [A](using => CoproductInstances[Derived.Or0[Show], A]): DerivedShow[A] =
+  given [A](using => CoproductInstances[Show |: Derived, A]): DerivedShow[A] =
     Strict.coproduct
 
   trait Product[F[x] <: Show[x], A](using inst: ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
@@ -71,5 +72,6 @@ object DerivedShow:
     given product[A: Labelling](using => ProductInstances[Show, A]): DerivedShow[A] =
       new Product[Show, A] {}
 
-    given coproduct[A](using inst: => CoproductInstances[Derived.Or0[Show], A]): DerivedShow[A] =
+    given coproduct[A](using inst: => CoproductInstances[Show |: Derived, A]): DerivedShow[A] =
+      given CoproductInstances[Show, A] = inst.unify
       new Coproduct[Show, A] {}

@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.Monoid
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -20,8 +21,8 @@ object DerivedMonoid:
     import Strict.given
     summonInline[DerivedMonoid[A]].instance
 
-  given [A](using inst: => ProductInstances[Derived.Or0[Monoid], A]): DerivedMonoid[A] =
-    Strict.product
+  given [A](using inst: => ProductInstances[Monoid |: Derived, A]): DerivedMonoid[A] =
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: Monoid[x], A](using inst: ProductInstances[F, A])
       extends DerivedSemigroup.Product[F, A],

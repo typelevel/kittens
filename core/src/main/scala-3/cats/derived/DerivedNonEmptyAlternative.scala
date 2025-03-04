@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.{Applicative, NonEmptyAlternative}
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -23,16 +24,16 @@ object DerivedNonEmptyAlternative:
     summonInline[DerivedNonEmptyAlternative[F]].instance
 
   given nested[F[_], G[_]](using
-      F: => Derived.Or[NonEmptyAlternative[F]],
-      G: => Derived.Or[Applicative[G]]
+      F: => (NonEmptyAlternative |: Derived)[F],
+      G: => (Applicative |: Derived)[G]
   ): DerivedNonEmptyAlternative[F <<< G] =
-    new Derived.Lazy(() => F.compose(using G)) with NonEmptyAlternative[F <<< G]:
+    new Lazy(() => F.unify.compose(using G.unify)) with NonEmptyAlternative[F <<< G]:
       export delegate.*
 
   given product[F[_]](using
-      inst: => ProductInstances[Derived.Or1[NonEmptyAlternative], F]
+      inst: => ProductInstances[NonEmptyAlternative |: Derived, F]
   ): DerivedNonEmptyAlternative[F] =
-    Strict.product
+    Strict.product(using inst.unify)
 
   trait Product[T[f[_]] <: NonEmptyAlternative[f], F[_]: ProductInstancesOf[T]]
       extends NonEmptyAlternative[F],

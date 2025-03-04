@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.{Applicative, Bitraverse, Eval, Traverse}
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K2.*
 
 import scala.annotation.*
@@ -77,16 +78,16 @@ object DerivedBitraverse:
     ): Eval[C] = F.foldRight(fab, c)(g)
 
   given nested[F[_, _], G[_, _]](using
-      F: => Derived.Or[Bitraverse[F]],
-      G: => Derived.Or[Bitraverse[G]]
+      F: => (Bitraverse |: Derived)[F],
+      G: => (Bitraverse |: Derived)[G]
   ): DerivedBitraverse[[a, b] =>> F[G[a, b], G[a, b]]] =
-    new Derived.Lazy(() => F.compose(using G)) with Bitraverse[[a, b] =>> F[G[a, b], G[a, b]]]:
+    new Lazy(() => F.unify.compose(using G.unify)) with Bitraverse[[a, b] =>> F[G[a, b], G[a, b]]]:
       export delegate.*
 
-  given [F[_, _]: ProductInstancesOf[Derived.Or2[Bitraverse]]]: DerivedBitraverse[F] =
-    Strict.product
+  given [F[_, _]](using inst: ProductInstances[Bitraverse |: Derived, F]): DerivedBitraverse[F] =
+    Strict.product(using inst.unify)
 
-  given [F[_, _]](using => CoproductInstances[Derived.Or2[Bitraverse], F]): DerivedBitraverse[F] =
+  given [F[_, _]](using => CoproductInstances[Bitraverse |: Derived, F]): DerivedBitraverse[F] =
     Strict.coproduct
 
   trait Product[T[f[_, _]] <: Bitraverse[f], F[_, _]](using inst: ProductInstances[T, F])
@@ -116,5 +117,6 @@ object DerivedBitraverse:
     given product[F[_, _]: ProductInstancesOf[Bitraverse]]: DerivedBitraverse[F] =
       new Bitraverse[F] with Product[Bitraverse, F] {}
 
-    given coproduct[F[_, _]](using inst: => CoproductInstances[Derived.Or2[Bitraverse], F]): DerivedBitraverse[F] =
+    given coproduct[F[_, _]](using inst: => CoproductInstances[Bitraverse |: Derived, F]): DerivedBitraverse[F] =
+      given CoproductInstances[Bitraverse, F] = inst.unify
       new Bitraverse[F] with Coproduct[Bitraverse, F] {}

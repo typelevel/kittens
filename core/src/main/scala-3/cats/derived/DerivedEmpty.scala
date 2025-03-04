@@ -1,6 +1,7 @@
 package cats.derived
 
 import alleycats.Empty
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -23,8 +24,8 @@ object DerivedEmpty:
     import Strict.given
     summonInline[DerivedEmpty[A]].instance
 
-  given product[A: ProductInstancesOf[Derived.Or0[Empty]]]: DerivedEmpty[A] =
-    Strict.product
+  given product[A](using inst: ProductInstances[Empty |: Derived, A]): DerivedEmpty[A] =
+    Strict.product(using inst.unify)
 
   inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] =
     Strict.coproduct
@@ -35,4 +36,4 @@ object DerivedEmpty:
 
     @nowarn("id=E197")
     inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] =
-      Empty(CoproductGeneric.withOnly[Derived.Or0[Empty], A]([a <: A] => (A: Derived.Or[Empty[a]]) => A.empty))
+      Empty(CoproductGeneric.withOnly[Empty |: Derived, A]([a <: A] => (A: (Empty |: Derived)[a]) => A.unify.empty))

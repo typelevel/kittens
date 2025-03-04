@@ -1,8 +1,8 @@
 package cats.derived
 
 import cats.Show
+import shapeless3.deriving.{Derived, Labelling}
 import shapeless3.deriving.K0.*
-import shapeless3.deriving.Labelling
 
 import scala.annotation.*
 import scala.compiletime.*

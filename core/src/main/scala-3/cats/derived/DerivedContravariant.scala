@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Contravariant, Functor}
-import shapeless3.deriving.Const
+import shapeless3.deriving.{Const, Derived}
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -30,18 +30,17 @@ object DerivedContravariant:
     def contramap[A, B](fa: T)(f: B => A): T = fa
 
   given nested[F[_], G[_]](using
-      F: Derived.Or[Functor[F]],
-      G: => Derived.Or[Contravariant[G]]
+      F: (Functor |: Derived)[F],
+      G: => (Contravariant |: Derived)[G]
   ): DerivedContravariant[F <<< G] =
-    new Derived.Lazy(() => F.composeContravariant(using G)) with Contravariant[F <<< G]:
+    new Lazy(() => F.unify.composeContravariant(using G.unify)) with Contravariant[F <<< G]:
       export delegate.*
 
-  given [F[_]](using inst: => Instances[Derived.Or1[Contravariant], F]): DerivedContravariant[F] =
-    generic
+  given [F[_]](using inst: => Instances[Contravariant |: Derived, F]): DerivedContravariant[F] =
+    generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Derived.Or1[Functor], G[_]: Derived.Or1[Contravariant]]
-      : DerivedContravariant[[x] =>> F[G[x]]] =
+  protected given [F[_]: Functor |: Derived, G[_]: Contravariant |: Derived]: DerivedContravariant[[x] =>> F[G[x]]] =
     nested
 
   private def generic[F[_]: InstancesOf[Contravariant]]: DerivedContravariant[F] =
@@ -53,5 +52,5 @@ object DerivedContravariant:
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Contravariant]]: DerivedContravariant[F] = generic
-    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Contravariant], F]): DerivedContravariant[F] =
-      generic
+    given coproduct[F[_]](using inst: => CoproductInstances[Contravariant |: Derived, F]): DerivedContravariant[F] =
+      generic(using inst.unify)

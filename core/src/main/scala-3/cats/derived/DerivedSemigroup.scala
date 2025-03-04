@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.Semigroup
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -20,8 +21,8 @@ object DerivedSemigroup:
     import Strict.given
     summonInline[DerivedSemigroup[A]].instance
 
-  given [A](using inst: => ProductInstances[Derived.Or0[Semigroup], A]): DerivedSemigroup[A] =
-    Strict.product
+  given [A](using inst: => ProductInstances[Semigroup |: Derived, A]): DerivedSemigroup[A] =
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: Semigroup[x], A](using inst: ProductInstances[F, A]) extends Semigroup[A]:
     final override def combine(x: A, y: A): A =

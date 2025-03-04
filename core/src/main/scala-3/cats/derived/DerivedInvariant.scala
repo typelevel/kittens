@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.Invariant
-import shapeless3.deriving.Const
+import shapeless3.deriving.{Const, Derived}
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -30,17 +30,17 @@ object DerivedInvariant:
     def imap[A, B](fa: T)(f: A => B)(g: B => A): T = fa
 
   given nested[F[_], G[_]](using
-      F: => Derived.Or[Invariant[F]],
-      G: => Derived.Or[Invariant[G]]
+      F: => (Invariant |: Derived)[F],
+      G: => (Invariant |: Derived)[G]
   ): DerivedInvariant[F <<< G] =
-    new Derived.Lazy(() => F.compose(using G)) with Invariant[F <<< G]:
+    new Lazy(() => F.unify.compose(using G.unify)) with Invariant[F <<< G]:
       export delegate.*
 
-  given [F[_]](using inst: => Instances[Derived.Or1[Invariant], F]): DerivedInvariant[F] =
-    generic
+  given [F[_]](using inst: => Instances[Invariant |: Derived, F]): DerivedInvariant[F] =
+    generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Derived.Or1[Invariant], G[_]: Derived.Or1[Invariant]]: DerivedInvariant[[x] =>> F[G[x]]] =
+  protected given [F[_]: Invariant |: Derived, G[_]: Invariant |: Derived]: DerivedInvariant[[x] =>> F[G[x]]] =
     nested
 
   private def generic[F[_]: InstancesOf[Invariant]]: DerivedInvariant[F] =
@@ -52,4 +52,5 @@ object DerivedInvariant:
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Invariant]]: DerivedInvariant[F] = generic
-    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Invariant], F]): DerivedInvariant[F] = generic
+    given coproduct[F[_]](using inst: => CoproductInstances[Invariant |: Derived, F]): DerivedInvariant[F] =
+      generic(using inst.unify)

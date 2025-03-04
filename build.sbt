@@ -1,4 +1,4 @@
-import sbt.*
+import com.typesafe.tools.mima.core.{MissingClassProblem, ProblemFilters}
 
 val scala212 = "2.12.20"
 val scala213 = "2.13.16"
@@ -61,6 +61,10 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(moduleName := "kittens")
   .settings(commonSettings *)
   .nativeSettings(tlVersionIntroduced := List("2.12", "2.13", "3").map(_ -> "3.4.0").toMap)
+  .settings(
+    // Lazy was private
+    mimaBinaryIssueFilters += ProblemFilters.exclude[MissingClassProblem]("cats.derived.Derived$package$Derived$Lazy")
+  )
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js

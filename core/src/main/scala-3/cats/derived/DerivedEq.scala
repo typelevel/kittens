@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.Eq
-import shapeless3.deriving.Complete
+import shapeless3.deriving.{Complete, Derived}
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -27,10 +27,11 @@ object DerivedEq:
   given singleton[A <: Singleton: ValueOf]: DerivedEq[A] =
     Eq.allEqual
 
-  given product[A](using inst: => ProductInstances[Derived.Or0[Eq], A]): DerivedEq[A] =
-    Strict.product
+  given product[A](using inst: => ProductInstances[Eq |: Derived, A]): DerivedEq[A] =
+    Strict.product(using inst.unify)
 
-  given coproduct[A](using inst: => CoproductInstances[Derived.Or0[Eq], A]): DerivedEq[A] =
+  given coproduct[A](using inst: => CoproductInstances[Eq |: Derived, A]): DerivedEq[A] =
+    given CoproductInstances[Eq, A] = inst.unify
     new Coproduct[Eq, A] {}
 
   trait Product[F[x] <: Eq[x], A](using inst: ProductInstances[F, A]) extends Eq[A]:

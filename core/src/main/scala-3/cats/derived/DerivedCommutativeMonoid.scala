@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.kernel.CommutativeMonoid
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -20,8 +21,8 @@ object DerivedCommutativeMonoid:
     import Strict.given
     summonInline[DerivedCommutativeMonoid[A]].instance
 
-  given [A](using inst: => ProductInstances[Derived.Or0[CommutativeMonoid], A]): DerivedCommutativeMonoid[A] =
-    Strict.product
+  given [A](using inst: => ProductInstances[CommutativeMonoid |: Derived, A]): DerivedCommutativeMonoid[A] =
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: CommutativeMonoid[x], A](using @unused inst: ProductInstances[F, A])
       extends DerivedMonoid.Product[F, A],

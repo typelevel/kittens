@@ -1,8 +1,8 @@
 package cats.derived
 
 import cats.{Eval, Foldable}
+import shapeless3.deriving.{Const, Derived}
 import shapeless3.deriving.K1.*
-import shapeless3.deriving.Const
 
 import scala.annotation.*
 import scala.compiletime.*
@@ -31,20 +31,20 @@ object DerivedFoldable:
     def foldRight[A, B](fa: T, lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = lb
 
   given nested[F[_], G[_]](using
-      F: => Derived.Or[Foldable[F]],
-      G: => Derived.Or[Foldable[G]]
+      F: => (Foldable |: Derived)[F],
+      G: => (Foldable |: Derived)[G]
   ): DerivedFoldable[F <<< G] =
-    new Derived.Lazy(() => F.compose(using G)) with Foldable[F <<< G]:
+    new Lazy(() => F.unify.compose(using G.unify)) with Foldable[F <<< G]:
       export delegate.*
 
-  given [F[_]: ProductInstancesOf[Derived.Or1[Foldable]]]: DerivedFoldable[F] =
-    Strict.product
+  given [F[_]](using inst: ProductInstances[Foldable |: Derived, F]): DerivedFoldable[F] =
+    Strict.product(using inst.unify)
 
-  given [F[_]](using => CoproductInstances[Derived.Or1[Foldable], F]): DerivedFoldable[F] =
+  given [F[_]](using => CoproductInstances[Foldable |: Derived, F]): DerivedFoldable[F] =
     Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Derived.Or1[Foldable], G[_]: Derived.Or1[Foldable]]: DerivedFoldable[[x] =>> F[G[x]]] = nested
+  protected given [F[_]: Foldable |: Derived, G[_]: Foldable |: Derived]: DerivedFoldable[[x] =>> F[G[x]]] = nested
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: ProductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
@@ -64,5 +64,6 @@ object DerivedFoldable:
     given product[F[_]: ProductInstancesOf[Foldable]]: DerivedFoldable[F] =
       new Product[Foldable, F] {}
 
-    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Foldable], F]): DerivedFoldable[F] =
+    given coproduct[F[_]](using inst: => CoproductInstances[Foldable |: Derived, F]): DerivedFoldable[F] =
+      given CoproductInstances[Foldable, F] = inst.unify
       new Coproduct[Foldable, F] {}

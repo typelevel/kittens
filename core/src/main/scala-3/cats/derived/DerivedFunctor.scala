@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Contravariant, Functor}
-import shapeless3.deriving.Const
+import shapeless3.deriving.{Const, Derived}
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -30,30 +30,33 @@ object DerivedFunctor:
   given [T]: DerivedFunctor[Const[T]] = new Functor[Const[T]]:
     def map[A, B](fa: T)(f: A => B): T = fa
 
-  given nested[F[_], G[_]](using F: => Derived.Or[Functor[F]], G: => Derived.Or[Functor[G]]): DerivedFunctor[F <<< G] =
-    new Derived.Lazy(() => F.compose(using G)) with Functor[F <<< G]:
+  given nested[F[_], G[_]](using
+      F: => (Functor |: Derived)[F],
+      G: => (Functor |: Derived)[G]
+  ): DerivedFunctor[F <<< G] =
+    new Lazy(() => F.unify.compose(using G.unify)) with Functor[F <<< G]:
       export delegate.*
 
   given nested[F[_], G[_]](using
-      F: Derived.Or[Contravariant[F]],
-      G: Derived.Or[Contravariant[G]]
+      F: (Contravariant |: Derived)[F],
+      G: (Contravariant |: Derived)[G]
   ): DerivedFunctor[F <<< G] =
-    F.compose(using G)
+    F.unify.compose(using G.unify)
 
-  given [F[_]](using inst: => Instances[Derived.Or1[Functor], F]): DerivedFunctor[F] =
-    generic
+  given [F[_]](using inst: => Instances[Functor |: Derived, F]): DerivedFunctor[F] =
+    generic(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      F: Derived.Or[Functor[F]],
-      G: Derived.Or[Functor[G]]
+      F: (Functor |: Derived)[F],
+      G: (Functor |: Derived)[G]
   ): DerivedFunctor[[x] =>> F[G[x]]] =
     nested(using F, G)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      F: Derived.Or[Contravariant[F]],
-      G: Derived.Or[Contravariant[G]]
+      F: (Contravariant |: Derived)[F],
+      G: (Contravariant |: Derived)[G]
   ): DerivedFunctor[[x] =>> F[G[x]]] =
     nested(using F, G)
 
@@ -66,4 +69,5 @@ object DerivedFunctor:
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Functor]]: DerivedFunctor[F] = generic
-    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Functor], F]): DerivedFunctor[F] = generic
+    given coproduct[F[_]](using inst: => CoproductInstances[Functor |: Derived, F]): DerivedFunctor[F] =
+      generic(using inst.unify)

@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.kernel.CommutativeSemigroup
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -20,8 +21,8 @@ object DerivedCommutativeSemigroup:
     import Strict.given
     summonInline[DerivedCommutativeSemigroup[A]].instance
 
-  given [A](using inst: => ProductInstances[Derived.Or0[CommutativeSemigroup], A]): DerivedCommutativeSemigroup[A] =
-    Strict.product
+  given [A](using inst: => ProductInstances[CommutativeSemigroup |: Derived, A]): DerivedCommutativeSemigroup[A] =
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: CommutativeSemigroup[x], A](using @unused inst: ProductInstances[F, A])
       extends DerivedSemigroup.Product[F, A],

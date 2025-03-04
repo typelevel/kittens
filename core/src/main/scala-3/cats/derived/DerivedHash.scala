@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.Hash
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -36,10 +37,11 @@ object DerivedHash:
   given string[A <: String]: DerivedHash[A] = Hash.fromUniversalHashCode
   given symbol[A <: Symbol]: DerivedHash[A] = Hash.fromUniversalHashCode
 
-  given product[A <: scala.Product](using inst: => ProductInstances[Derived.Or0[Hash], A]): DerivedHash[A] =
-    Strict.product
+  given product[A <: scala.Product](using inst: => ProductInstances[Hash |: Derived, A]): DerivedHash[A] =
+    Strict.product(using inst.unify)
 
-  given coproduct[A](using inst: => CoproductInstances[Derived.Or0[Hash], A]): DerivedHash[A] =
+  given coproduct[A](using inst: => CoproductInstances[Hash |: Derived, A]): DerivedHash[A] =
+    given CoproductInstances[Hash, A] = inst.unify
     new Coproduct[Hash, A] {}
 
   trait Product[F[x] <: Hash[x], A <: scala.Product](using inst: ProductInstances[F, A])

@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.{Bifunctor, Functor}
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K2.*
 
 import scala.annotation.*
@@ -41,14 +42,17 @@ object DerivedBifunctor:
     override def bimap[A, B, C, D](fab: F[B])(f: A => C, g: B => D): F[D] = F.map(fab)(g)
 
   given nested[F[_, _], G[_, _]](using
-      F: => Derived.Or[Bifunctor[F]],
-      G: => Derived.Or[Bifunctor[G]]
+      F: => (Bifunctor |: Derived)[F],
+      G: => (Bifunctor |: Derived)[G]
   ): DerivedBifunctor[[a, b] =>> F[G[a, b], G[a, b]]] =
-    new Derived.Lazy(() => F.compose(using G)) with Bifunctor[[a, b] =>> F[G[a, b], G[a, b]]]:
+    new Lazy(() => F.unify.compose(using G.unify)) with Bifunctor[[a, b] =>> F[G[a, b], G[a, b]]]:
       export delegate.*
 
-  given generic[F[_, _]](using inst: => Instances[Derived.Or2[Bifunctor], F]): DerivedBifunctor[F] = gen
-  private def gen[F[_, _]: InstancesOf[Bifunctor]]: DerivedBifunctor[F] = new Generic[Bifunctor, F] {}
+  given generic[F[_, _]](using inst: => Instances[Bifunctor |: Derived, F]): DerivedBifunctor[F] =
+    gen(using inst.unify)
+
+  private def gen[F[_, _]: InstancesOf[Bifunctor]]: DerivedBifunctor[F] =
+    new Generic[Bifunctor, F] {}
 
   trait Generic[T[f[_, _]] <: Bifunctor[f], F[_, _]](using inst: Instances[T, F]) extends Bifunctor[F]:
     final override def bimap[A, B, C, D](fab: F[A, B])(f: A => C, g: B => D): F[C, D] =
@@ -56,4 +60,5 @@ object DerivedBifunctor:
 
   object Strict:
     given product[F[_, _]: ProductInstancesOf[Bifunctor]]: DerivedBifunctor[F] = gen
-    given coproduct[F[_, _]](using inst: => CoproductInstances[Derived.Or2[Bifunctor], F]): DerivedBifunctor[F] = gen
+    given coproduct[F[_, _]](using inst: => CoproductInstances[Bifunctor |: Derived, F]): DerivedBifunctor[F] =
+      gen(using inst.unify)

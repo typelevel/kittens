@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.kernel.Band
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -20,8 +21,8 @@ object DerivedBand:
     import Strict.given
     summonInline[DerivedBand[A]].instance
 
-  given product[A](using inst: => ProductInstances[Derived.Or0[Band], A]): DerivedBand[A] =
-    Strict.product
+  given product[A](using inst: => ProductInstances[Band |: Derived, A]): DerivedBand[A] =
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: Band[x], A: ProductInstancesOf[F]] extends DerivedSemigroup.Product[F, A], Band[A]
 

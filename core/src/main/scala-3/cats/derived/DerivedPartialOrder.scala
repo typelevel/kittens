@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Order, PartialOrder}
-import shapeless3.deriving.Complete
+import shapeless3.deriving.{Complete, Derived}
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -27,10 +27,11 @@ object DerivedPartialOrder:
   given singleton[A <: Singleton: ValueOf]: DerivedPartialOrder[A] =
     Order.allEqual
 
-  given product[A](using inst: => ProductInstances[Derived.Or0[PartialOrder], A]): DerivedPartialOrder[A] =
-    Strict.product
+  given product[A](using inst: => ProductInstances[PartialOrder |: Derived, A]): DerivedPartialOrder[A] =
+    Strict.product(using inst.unify)
 
-  given coproduct[A](using inst: => CoproductInstances[Derived.Or0[PartialOrder], A]): DerivedPartialOrder[A] =
+  given coproduct[A](using inst: => CoproductInstances[PartialOrder |: Derived, A]): DerivedPartialOrder[A] =
+    given CoproductInstances[PartialOrder, A] = inst.unify
     new Coproduct[PartialOrder, A] {}
 
   trait Product[T[x] <: PartialOrder[x], A](using inst: ProductInstances[T, A]) extends PartialOrder[A]:

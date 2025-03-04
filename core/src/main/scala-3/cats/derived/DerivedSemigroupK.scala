@@ -1,7 +1,7 @@
 package cats.derived
 
 import cats.{Apply, Semigroup, SemigroupK}
-import shapeless3.deriving.Const
+import shapeless3.deriving.{Const, Derived}
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -29,28 +29,29 @@ object DerivedSemigroupK:
   given [T](using T: Semigroup[T]): DerivedSemigroupK[Const[T]] = new SemigroupK[Const[T]]:
     def combineK[A](x: T, y: T): T = T.combine(x, y)
 
-  given nested[F[_], G[_]](using F: => Derived.Or[SemigroupK[F]]): DerivedSemigroupK[F <<< G] =
-    new Derived.Lazy(() => F.compose[G]) with SemigroupK[F <<< G]:
+  given nested[F[_], G[_]](using F: => (SemigroupK |: Derived)[F]): DerivedSemigroupK[F <<< G] =
+    new Lazy(() => F.unify.compose[G]) with SemigroupK[F <<< G]:
       export delegate.*
 
   given nested[F[_], G[_]](using
-      NotGiven[Derived.Or[SemigroupK[F]]]
-  )(using F: Derived.Or[Apply[F]], G: => Derived.Or[SemigroupK[G]]): DerivedSemigroupK[F <<< G] =
+      NotGiven[(SemigroupK |: Derived)[F]]
+  )(using F: (Apply |: Derived)[F], G: => (SemigroupK |: Derived)[G]): DerivedSemigroupK[F <<< G] =
     new SemigroupK[F <<< G]:
-      lazy val g = G
-      def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = F.map2(x, y)(g.combineK)
+      val f = F.unify
+      lazy val g = G.unify
+      def combineK[A](x: F[G[A]], y: F[G[A]]): F[G[A]] = f.map2(x, y)(g.combineK)
 
-  given [F[_]](using inst: => ProductInstances[Derived.Or1[SemigroupK], F]): DerivedSemigroupK[F] =
-    Strict.product
+  given [F[_]](using inst: => ProductInstances[SemigroupK |: Derived, F]): DerivedSemigroupK[F] =
+    Strict.product(using inst.unify)
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_], G[_]](using F: Derived.Or[SemigroupK[F]]): DerivedSemigroupK[[x] =>> F[G[x]]] =
+  protected given [F[_], G[_]](using F: (SemigroupK |: Derived)[F]): DerivedSemigroupK[[x] =>> F[G[x]]] =
     nested(using F)
 
-  @deprecated("Kept for binary compati`bility", "3.2.0")
+  @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_], G[_]](using
-      ev: NotGiven[Derived.Or[SemigroupK[F]]]
-  )(using F: Derived.Or[Apply[F]], G: Derived.Or[SemigroupK[G]]): DerivedSemigroupK[[x] =>> F[G[x]]] =
+      ev: NotGiven[(SemigroupK |: Derived)[F]]
+  )(using F: (Apply |: Derived)[F], G: (SemigroupK |: Derived)[G]): DerivedSemigroupK[[x] =>> F[G[x]]] =
     nested(using ev)
 
   trait Product[T[f[_]] <: SemigroupK[f], F[_]](using inst: ProductInstances[T, F]) extends SemigroupK[F]:

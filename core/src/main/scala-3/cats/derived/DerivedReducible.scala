@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.{Eval, Foldable, Reducible}
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K1.*
 
 import scala.annotation.*
@@ -27,23 +28,23 @@ object DerivedReducible:
     summonInline[DerivedReducible[F]].instance
 
   given nested[F[_], G[_]](using
-      F: => Derived.Or[Reducible[F]],
-      G: => Derived.Or[Reducible[G]]
+      F: => (Reducible |: Derived)[F],
+      G: => (Reducible |: Derived)[G]
   ): DerivedReducible[F <<< G] =
-    new Derived.Lazy(() => F.compose(using G)) with Reducible[F <<< G]:
+    new Lazy(() => F.unify.compose(using G.unify)) with Reducible[F <<< G]:
       export delegate.*
 
-  def product[F[_]: ProductInstancesOf[Derived.Or1[Foldable]]](ev: Reducible[?]): DerivedReducible[F] =
-    Strict.product(ev)
+  def product[F[_]](ev: Reducible[?])(using inst: ProductInstances[Foldable |: Derived, F]): DerivedReducible[F] =
+    Strict.product(ev)(using inst.unify)
 
   inline given product[F[_]](using gen: ProductGeneric[F]): DerivedReducible[F] =
-    product(summonFirst[Derived.Or1[Reducible], gen.MirroredElemTypes])
+    product(summonFirst[Reducible |: Derived, gen.MirroredElemTypes].unify)
 
-  given [F[_]](using => CoproductInstances[Derived.Or1[Reducible], F]): DerivedReducible[F] =
+  given [F[_]](using => CoproductInstances[Reducible |: Derived, F]): DerivedReducible[F] =
     Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
-  protected given [F[_]: Derived.Or1[Reducible], G[_]: Derived.Or1[Reducible]]: DerivedReducible[[x] =>> F[G[x]]] =
+  protected given [F[_]: Reducible |: Derived, G[_]: Reducible |: Derived]: DerivedReducible[[x] =>> F[G[x]]] =
     nested
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](@unused ev: Reducible[?])(using inst: ProductInstances[T, F])
@@ -89,5 +90,6 @@ object DerivedReducible:
     inline given product[F[_]](using gen: ProductGeneric[F]): DerivedReducible[F] =
       product(summonFirst[Reducible, gen.MirroredElemTypes])
 
-    given coproduct[F[_]](using inst: => CoproductInstances[Derived.Or1[Reducible], F]): DerivedReducible[F] =
+    given coproduct[F[_]](using inst: => CoproductInstances[Reducible |: Derived, F]): DerivedReducible[F] =
+      given CoproductInstances[Reducible, F] = inst.unify
       new Coproduct[Reducible, F] {}

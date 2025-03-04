@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.kernel.Semilattice
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -20,8 +21,8 @@ object DerivedSemilattice:
     import Strict.given
     summonInline[DerivedSemilattice[A]].instance
 
-  given product[A](using inst: => ProductInstances[Derived.Or0[Semilattice], A]): DerivedSemilattice[A] =
-    Strict.product
+  given product[A](using inst: => ProductInstances[Semilattice |: Derived, A]): DerivedSemilattice[A] =
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: Semilattice[x], A: ProductInstancesOf[F]]
       extends DerivedCommutativeSemigroup.Product[F, A],

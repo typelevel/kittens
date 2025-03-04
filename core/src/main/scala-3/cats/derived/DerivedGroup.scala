@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.Group
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -20,8 +21,8 @@ object DerivedGroup:
     import Strict.given
     summonInline[DerivedGroup[A]].instance
 
-  given product[A](using inst: => ProductInstances[Derived.Or0[Group], A]): DerivedGroup[A] =
-    Strict.product
+  given product[A](using inst: => ProductInstances[Group |: Derived, A]): DerivedGroup[A] =
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: Group[x], A: ProductInstancesOf[F]] extends DerivedMonoid.Product[F, A], Group[A]:
     final override def inverse(a: A): A = ProductInstances.map(a)([a] => (F: F[a], x: a) => F.inverse(x))

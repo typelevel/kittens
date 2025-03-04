@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.{Bifoldable, Eval, Foldable}
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K2.*
 
 import scala.annotation.*
@@ -63,16 +64,16 @@ object DerivedBifoldable:
     ): Eval[C] = F.foldRight(fab, c)(g)
 
   given nested[F[_, _], G[_, _]](using
-      F: => Derived.Or[Bifoldable[F]],
-      G: => Derived.Or[Bifoldable[G]]
+      F: => (Bifoldable |: Derived)[F],
+      G: => (Bifoldable |: Derived)[G]
   ): DerivedBifoldable[[a, b] =>> F[G[a, b], G[a, b]]] =
-    new Derived.Lazy(() => F.compose(using G)) with Bifoldable[[a, b] =>> F[G[a, b], G[a, b]]]:
+    new Lazy(() => F.unify.compose(using G.unify)) with Bifoldable[[a, b] =>> F[G[a, b], G[a, b]]]:
       export delegate.*
 
-  given [F[_, _]: ProductInstancesOf[Derived.Or2[Bifoldable]]]: DerivedBifoldable[F] =
-    Strict.product
+  given [F[_, _]](using inst: ProductInstances[Bifoldable |: Derived, F]): DerivedBifoldable[F] =
+    Strict.product(using inst.unify)
 
-  given [F[_, _]](using => CoproductInstances[Derived.Or2[Bifoldable], F]): DerivedBifoldable[F] =
+  given [F[_, _]](using => CoproductInstances[Bifoldable |: Derived, F]): DerivedBifoldable[F] =
     Strict.coproduct
 
   trait Product[T[f[_, _]] <: Bifoldable[f], F[_, _]](using inst: ProductInstances[T, F]) extends Bifoldable[F]:
@@ -99,5 +100,6 @@ object DerivedBifoldable:
     given product[F[_, _]: ProductInstancesOf[Bifoldable]]: DerivedBifoldable[F] =
       new Product[Bifoldable, F] {}
 
-    given coproduct[F[_, _]](using inst: => CoproductInstances[Derived.Or2[Bifoldable], F]): DerivedBifoldable[F] =
+    given coproduct[F[_, _]](using inst: => CoproductInstances[Bifoldable |: Derived, F]): DerivedBifoldable[F] =
+      given CoproductInstances[Bifoldable, F] = inst.unify
       new Coproduct[Bifoldable, F] {}

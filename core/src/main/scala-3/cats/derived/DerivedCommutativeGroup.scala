@@ -1,6 +1,7 @@
 package cats.derived
 
 import cats.kernel.CommutativeGroup
+import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
 import scala.annotation.*
@@ -20,8 +21,8 @@ object DerivedCommutativeGroup:
     import Strict.given
     summonInline[DerivedCommutativeGroup[A]].instance
 
-  given product[A](using inst: => ProductInstances[Derived.Or0[CommutativeGroup], A]): DerivedCommutativeGroup[A] =
-    Strict.product
+  given product[A](using inst: => ProductInstances[CommutativeGroup |: Derived, A]): DerivedCommutativeGroup[A] =
+    Strict.product(using inst.unify)
 
   trait Product[F[x] <: CommutativeGroup[x], A: ProductInstancesOf[F]]
       extends DerivedGroup.Product[F, A],

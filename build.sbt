@@ -6,7 +6,7 @@ val scala3 = "3.3.5"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
-ThisBuild / tlBaseVersion := "3.4"
+ThisBuild / tlBaseVersion := "3.5"
 ThisBuild / organization := "org.typelevel"
 
 val catsVersion = "2.13.0"

@@ -10,7 +10,7 @@ ThisBuild / tlBaseVersion := "3.5"
 ThisBuild / organization := "org.typelevel"
 
 val catsVersion = "2.13.0"
-val munitVersion = "1.1.1"
+val munitVersion = "1.2.0"
 val disciplineMunitVersion = "2.0.0"
 val kindProjectorVersion = "0.13.3"
 val shapeless2Version = "2.3.13"
@@ -30,8 +30,7 @@ lazy val commonSettings = Seq(
     case (2, 12) => List("-Ypartial-unification", "-Xlint", "-Wconf:cat=unused&src=.*/derived/package.scala:silent")
     case _ => List("-Xlint:_,-byname-implicit", "-Wconf:cat=deprecation&site=.*SequenceSuite:silent")
   },
-  resolvers ++= Resolver.sonatypeOssRepos("releases"),
-  resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
+  resolvers += Resolver.sonatypeCentralSnapshots,
   libraryDependencies ++= Seq(
     "org.typelevel" %%% "cats-core" % catsVersion,
     "org.typelevel" %%% "alleycats-core" % catsVersion,

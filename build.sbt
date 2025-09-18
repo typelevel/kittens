@@ -30,8 +30,7 @@ lazy val commonSettings = Seq(
     case (2, 12) => List("-Ypartial-unification", "-Xlint", "-Wconf:cat=unused&src=.*/derived/package.scala:silent")
     case _ => List("-Xlint:_,-byname-implicit", "-Wconf:cat=deprecation&site=.*SequenceSuite:silent")
   },
-  resolvers ++= Resolver.sonatypeOssRepos("releases"),
-  resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
+  resolvers += Resolver.sonatypeCentralSnapshots,
   libraryDependencies ++= Seq(
     "org.typelevel" %%% "cats-core" % catsVersion,
     "org.typelevel" %%% "alleycats-core" % catsVersion,

@@ -12,7 +12,7 @@ ThisBuild / organization := "org.typelevel"
 val catsVersion = "2.13.0"
 val munitVersion = "1.2.0"
 val disciplineMunitVersion = "2.0.0"
-val kindProjectorVersion = "0.13.3"
+val kindProjectorVersion = "0.13.4"
 val shapeless2Version = "2.3.13"
 val shapeless3Version = "3.5.0"
 

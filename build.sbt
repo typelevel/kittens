@@ -1,7 +1,7 @@
 import com.typesafe.tools.mima.core.{MissingClassProblem, ProblemFilters}
 
 val scala212 = "2.12.20"
-val scala213 = "2.13.16"
+val scala213 = "2.13.17"
 val scala3 = "3.3.6"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
@@ -28,7 +28,8 @@ lazy val commonSettings = Seq(
   scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).toList.flatMap {
     case (3, _) => List("-source:future", "-Xmax-inlines", "64", "-Wunused:all", "-Wvalue-discard")
     case (2, 12) => List("-Ypartial-unification", "-Xlint", "-Wconf:cat=unused&src=.*/derived/package.scala:silent")
-    case _ => List("-Xlint:_,-byname-implicit", "-Wconf:cat=deprecation&site=.*SequenceSuite:silent")
+    case (2, 13) => List("-Xlint:-infer-any", "-Wconf:cat=deprecation&site=.*SequenceSuite:silent")
+    case _ => Nil
   },
   resolvers += Resolver.sonatypeCentralSnapshots,
   libraryDependencies ++= Seq(

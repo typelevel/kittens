@@ -14,12 +14,10 @@ Make sure it satisfies one of the following conditions:
   * enum where all variants form Show""")
 type DerivedShow[A] = Derived[Show[A]]
 object DerivedShow:
-  @nowarn("msg=unused import")
   inline def apply[A]: Show[A] =
     import DerivedShow.given
     summonInline[DerivedShow[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: Show[A] =
     import Strict.given
     summonInline[DerivedShow[A]].instance

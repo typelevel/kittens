@@ -15,12 +15,10 @@ Make sure it satisfies one of the following conditions:
   * enum where all variants form Hash""")
 type DerivedHash[A] = Derived[Hash[A]]
 object DerivedHash:
-  @nowarn("msg=unused import")
   inline def apply[A]: Hash[A] =
     import DerivedHash.given
     summonInline[DerivedHash[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: Hash[A] =
     import Strict.given
     summonInline[DerivedHash[A]].instance

@@ -18,6 +18,8 @@ package cats.derived
 
 import alleycats.Empty
 import cats.laws.discipline.SerializableTests
+
+import scala.annotation.nowarn
 import scala.compiletime.*
 
 class EmptySuite extends KittensSuite:
@@ -107,7 +109,9 @@ object EmptySuite:
     case class Outer(x: ADTs.Outer) derives Empty
     case class Interleaved[A](x: ADTs.Interleaved[A]) derives Empty
     case class Recursive(x: ADTs.Recursive) derives Empty
+    @nowarn("msg=unused implicit parameter")
     case class IList[A](x: ADTs.IList[A]) derives Empty
+    @nowarn("msg=unused implicit parameter")
     case class Snoc[A](x: ADTs.Snoc[A]) derives Empty
     case class BoxMask(x: Box[Mask]) derives Empty
 

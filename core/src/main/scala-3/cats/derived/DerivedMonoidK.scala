@@ -16,12 +16,10 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form MonoidK""")
 type DerivedMonoidK[F[_]] = Derived[MonoidK[F]]
 object DerivedMonoidK:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: MonoidK[F] =
     import DerivedMonoidK.given
     summonInline[DerivedMonoidK[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: MonoidK[F] =
     import Strict.given
     summonInline[DerivedMonoidK[F]].instance

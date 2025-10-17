@@ -20,7 +20,6 @@ import cats.kernel.CommutativeGroup
 import cats.kernel.laws.discipline.{CommutativeGroupTests, SerializableTests}
 
 import scala.compiletime.*
-import scala.concurrent.duration.Duration
 
 class CommutativeGroupSuite extends KittensSuite:
   import ADTs.*

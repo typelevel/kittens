@@ -2,6 +2,8 @@ package cats.derived
 
 import cats.Show
 import cats.laws.discipline.SerializableTests
+
+import scala.annotation.unused
 import scala.compiletime.*
 
 class ShowSuite extends KittensSuite:
@@ -115,7 +117,7 @@ object ShowSuite:
     given Show[EnumK0] = semiauto.show
 
   object strictInstances:
-    given [A <: Singleton: ValueOf]: Show[A] = Show.fromToString
+    @unused given [A <: Singleton: ValueOf]: Show[A] = Show.fromToString
     given Show[Foo] = strict.semiauto.show
     given Show[Inner] = strict.semiauto.show
     given Show[Outer] = strict.semiauto.show

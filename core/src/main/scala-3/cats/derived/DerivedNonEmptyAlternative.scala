@@ -13,12 +13,10 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form NonEmptyAlternative""")
 type DerivedNonEmptyAlternative[F[_]] = Derived[NonEmptyAlternative[F]]
 object DerivedNonEmptyAlternative:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: NonEmptyAlternative[F] =
     import DerivedNonEmptyAlternative.given
     summonInline[DerivedNonEmptyAlternative[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: NonEmptyAlternative[F] =
     import Strict.given
     summonInline[DerivedNonEmptyAlternative[F]].instance
@@ -35,7 +33,7 @@ object DerivedNonEmptyAlternative:
   ): DerivedNonEmptyAlternative[F] =
     Strict.product(using inst.unify)
 
-  trait Product[T[f[_]] <: NonEmptyAlternative[f], F[_]: ProductInstancesOf[T]]
+  trait Product[T[f[_]] <: NonEmptyAlternative[f], F[_]]
       extends NonEmptyAlternative[F],
         DerivedApplicative.Product[T, F],
         DerivedSemigroupK.Product[T, F]

@@ -16,12 +16,10 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Bifoldable""")
 type DerivedBifoldable[F[_, _]] = Derived[Bifoldable[F]]
 object DerivedBifoldable:
-  @nowarn("msg=unused import")
   inline def apply[F[_, _]]: Bifoldable[F] =
     import DerivedBifoldable.given
     summonInline[DerivedBifoldable[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_, _]]: Bifoldable[F] =
     import Strict.given
     summonInline[DerivedBifoldable[F]].instance

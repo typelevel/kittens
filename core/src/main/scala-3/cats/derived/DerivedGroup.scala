@@ -11,12 +11,10 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form Group.""")
 type DerivedGroup[A] = Derived[Group[A]]
 object DerivedGroup:
-  @nowarn("msg=unused import")
   inline def apply[A]: Group[A] =
     import DerivedGroup.given
     summonInline[DerivedGroup[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: Group[A] =
     import Strict.given
     summonInline[DerivedGroup[A]].instance

@@ -2,7 +2,7 @@ import com.typesafe.tools.mima.core.{MissingClassProblem, ProblemFilters}
 
 val scala212 = "2.12.20"
 val scala213 = "2.13.17"
-val scala3 = "3.3.6"
+val scala3 = "3.3.7"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
@@ -16,19 +16,48 @@ val kindProjectorVersion = "0.13.4"
 val shapeless2Version = "2.3.13"
 val shapeless3Version = "3.5.0"
 
+val commonOptions = List(
+  "-feature",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-unchecked",
+  "-deprecation",
+  "-Werror"
+)
+
+val scala3Options = List(
+  "-source:future",
+  "-Xmax-inlines",
+  "64",
+  "-Wvalue-discard",
+  List(
+    "explicits",
+    "implicits",
+    "imports",
+    "locals",
+    "params",
+    "strict-no-implicit-warn",
+    "unsafe-warn-patvars"
+  ).mkString("-Wunused:", ",", "")
+)
+
+val scala213Options = List(
+  "-Xlint:-infer-any",
+  "-Wconf:cat=deprecation&site=.*SequenceSuite:silent"
+)
+
+val scala212Options = List(
+  "-Ypartial-unification",
+  "-Xlint",
+  "-Wconf:cat=unused&src=.*/derived/package.scala:silent"
+)
+
 lazy val commonSettings = Seq(
-  scalacOptions ++= Seq(
-    "-feature",
-    "-language:higherKinds",
-    "-language:implicitConversions",
-    "-unchecked",
-    "-deprecation",
-    "-Werror"
-  ),
+  scalacOptions ++= commonOptions,
   scalacOptions ++= CrossVersion.partialVersion(scalaVersion.value).toList.flatMap {
-    case (3, _) => List("-source:future", "-Xmax-inlines", "64", "-Wunused:all", "-Wvalue-discard")
-    case (2, 12) => List("-Ypartial-unification", "-Xlint", "-Wconf:cat=unused&src=.*/derived/package.scala:silent")
-    case (2, 13) => List("-Xlint:-infer-any", "-Wconf:cat=deprecation&site=.*SequenceSuite:silent")
+    case (3, _) => scala3Options
+    case (2, 13) => scala213Options
+    case (2, 12) => scala212Options
     case _ => Nil
   },
   resolvers += Resolver.sonatypeCentralSnapshots,

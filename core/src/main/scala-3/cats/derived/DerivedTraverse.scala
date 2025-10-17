@@ -16,12 +16,10 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Traverse""")
 type DerivedTraverse[F[_]] = Derived[Traverse[F]]
 object DerivedTraverse:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: Traverse[F] =
     import DerivedTraverse.given
     summonInline[DerivedTraverse[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: Traverse[F] =
     import Strict.given
     summonInline[DerivedTraverse[F]].instance

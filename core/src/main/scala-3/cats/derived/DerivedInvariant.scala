@@ -16,12 +16,10 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Invariant""")
 type DerivedInvariant[F[_]] = Derived[Invariant[F]]
 object DerivedInvariant:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: Invariant[F] =
     import DerivedInvariant.given
     summonInline[DerivedInvariant[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: Invariant[F] =
     import Strict.given
     summonInline[DerivedInvariant[F]].instance

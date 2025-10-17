@@ -16,12 +16,10 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Contravariant""")
 type DerivedContravariant[F[_]] = Derived[Contravariant[F]]
 object DerivedContravariant:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: Contravariant[F] =
     import DerivedContravariant.given
     summonInline[DerivedContravariant[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: Contravariant[F] =
     import Strict.given
     summonInline[DerivedContravariant[F]].instance

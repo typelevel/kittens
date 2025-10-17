@@ -14,16 +14,15 @@ Make sure it satisfies one of the following conditions:
   * enum where all variants form PartialOrder""")
 type DerivedPartialOrder[A] = Derived[PartialOrder[A]]
 object DerivedPartialOrder:
-  @nowarn("msg=unused import")
   inline def apply[A]: PartialOrder[A] =
     import DerivedPartialOrder.given
     summonInline[DerivedPartialOrder[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: PartialOrder[A] =
     import Strict.given
     summonInline[DerivedPartialOrder[A]].instance
 
+  @unused
   given singleton[A <: Singleton: ValueOf]: DerivedPartialOrder[A] =
     Order.allEqual
 

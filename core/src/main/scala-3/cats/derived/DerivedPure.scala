@@ -14,12 +14,10 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form Pure""")
 type DerivedPure[F[_]] = Derived[Pure[F]]
 object DerivedPure:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: Pure[F] =
     import DerivedPure.given
     summonInline[DerivedPure[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: Pure[F] =
     import Strict.given
     summonInline[DerivedPure[F]].instance

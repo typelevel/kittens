@@ -19,6 +19,7 @@ package cats.derived
 import cats.{Order, PartialOrder}
 import cats.kernel.laws.discipline.*
 
+import scala.annotation.unused
 import scala.compiletime.*
 
 class PartialOrderSuite extends KittensSuite:
@@ -91,7 +92,7 @@ object PartialOrderSuite:
     given PartialOrder[Singletons[Int]] = semiauto.partialOrder
 
   object strictInstances:
-    given [A <: Singleton: ValueOf]: PartialOrder[A] = Order.allEqual
+    @unused given [A <: Singleton: ValueOf]: PartialOrder[A] = Order.allEqual
     given PartialOrder[IList[Int]] = strict.semiauto.partialOrder
     given PartialOrder[Inner] = strict.semiauto.partialOrder
     given PartialOrder[Outer] = strict.semiauto.partialOrder

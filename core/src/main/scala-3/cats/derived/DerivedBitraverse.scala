@@ -16,12 +16,10 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Bitraverse""")
 type DerivedBitraverse[F[_, _]] = Derived[Bitraverse[F]]
 object DerivedBitraverse:
-  @nowarn("msg=unused import")
   inline def apply[F[_, _]]: Bitraverse[F] =
     import DerivedBitraverse.given
     summonInline[DerivedBitraverse[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_, _]]: Bitraverse[F] =
     import Strict.given
     summonInline[DerivedBitraverse[F]].instance

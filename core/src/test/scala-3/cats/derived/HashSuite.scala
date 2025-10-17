@@ -2,6 +2,8 @@ package cats.derived
 
 import cats.Hash
 import cats.kernel.laws.discipline.*
+
+import scala.annotation.unused
 import scala.compiletime.*
 
 class HashSuite extends KittensSuite:
@@ -64,7 +66,7 @@ object HashSuite:
     given Hash[Singletons[Int]] = semiauto.hash
 
   object strictInstances:
-    given [A <: Singleton: ValueOf]: Hash[A] = Hash.fromUniversalHashCode
+    @unused given [A <: Singleton: ValueOf]: Hash[A] = Hash.fromUniversalHashCode
     given Hash[IList[Int]] = strict.semiauto.hash
     given Hash[Inner] = strict.semiauto.hash
     given Hash[Outer] = strict.semiauto.hash

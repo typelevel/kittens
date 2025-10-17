@@ -15,13 +15,11 @@ Make sure that F[_] satisfies one of the following conditions:
   * generic enum where all variants form NonEmptyTraverse""")
 type DerivedNonEmptyTraverse[F[_]] = Derived[NonEmptyTraverse[F]]
 object DerivedNonEmptyTraverse:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: NonEmptyTraverse[F] =
     import DerivedTraverse.given
     import DerivedNonEmptyTraverse.given
     summonInline[DerivedNonEmptyTraverse[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: NonEmptyTraverse[F] =
     import DerivedTraverse.Strict.given
     import DerivedNonEmptyTraverse.Strict.given

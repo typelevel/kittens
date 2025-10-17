@@ -31,12 +31,10 @@ object DerivedShowPretty:
       case pretty: ShowPretty[A] => pretty.showLines
       case _ => instance.show(_).split(System.lineSeparator).toList
 
-  @nowarn("msg=unused import")
   inline def apply[A]: ShowPretty[A] =
     import DerivedShowPretty.given
     summonInline[DerivedShowPretty[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: ShowPretty[A] =
     import Strict.given
     summonInline[DerivedShowPretty[A]].instance

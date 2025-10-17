@@ -22,7 +22,10 @@ object DerivedBoundedSemilattice:
   given product[A](using inst: => ProductInstances[BoundedSemilattice |: Derived, A]): DerivedBoundedSemilattice[A] =
     Strict.product(using inst.unify)
 
-  trait Product[F[x] <: BoundedSemilattice[x], A] extends DerivedCommutativeMonoid.Product[F, A], BoundedSemilattice[A]
+  @nowarn("msg=unused implicit parameter")
+  trait Product[F[x] <: BoundedSemilattice[x], A: ProductInstancesOf[F]]
+      extends DerivedCommutativeMonoid.Product[F, A],
+        BoundedSemilattice[A]
 
   object Strict:
     given product[A: ProductInstancesOf[BoundedSemilattice]]: DerivedBoundedSemilattice[A] =

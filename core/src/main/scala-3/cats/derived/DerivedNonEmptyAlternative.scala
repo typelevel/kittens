@@ -33,7 +33,8 @@ object DerivedNonEmptyAlternative:
   ): DerivedNonEmptyAlternative[F] =
     Strict.product(using inst.unify)
 
-  trait Product[T[f[_]] <: NonEmptyAlternative[f], F[_]]
+  @nowarn("msg=unused implicit parameter")
+  trait Product[T[f[_]] <: NonEmptyAlternative[f], F[_]: ProductInstancesOf[T]]
       extends NonEmptyAlternative[F],
         DerivedApplicative.Product[T, F],
         DerivedSemigroupK.Product[T, F]

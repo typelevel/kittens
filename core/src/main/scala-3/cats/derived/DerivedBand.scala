@@ -22,7 +22,8 @@ object DerivedBand:
   given product[A](using inst: => ProductInstances[Band |: Derived, A]): DerivedBand[A] =
     Strict.product(using inst.unify)
 
-  trait Product[F[x] <: Band[x], A] extends DerivedSemigroup.Product[F, A], Band[A]
+  @nowarn("msg=unused implicit parameter")
+  trait Product[F[x] <: Band[x], A: ProductInstancesOf[F]] extends DerivedSemigroup.Product[F, A], Band[A]
 
   object Strict:
     given product[A: ProductInstancesOf[Band]]: DerivedBand[A] =

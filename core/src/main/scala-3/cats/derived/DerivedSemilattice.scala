@@ -22,7 +22,10 @@ object DerivedSemilattice:
   given product[A](using inst: => ProductInstances[Semilattice |: Derived, A]): DerivedSemilattice[A] =
     Strict.product(using inst.unify)
 
-  trait Product[F[x] <: Semilattice[x], A] extends DerivedCommutativeSemigroup.Product[F, A], Semilattice[A]
+  @nowarn("msg=unused implicit parameter")
+  trait Product[F[x] <: Semilattice[x], A: ProductInstancesOf[F]]
+      extends DerivedCommutativeSemigroup.Product[F, A],
+        Semilattice[A]
 
   object Strict:
     given product[A: ProductInstancesOf[Semilattice]]: DerivedSemilattice[A] =

@@ -31,7 +31,8 @@ object DerivedAlternative:
   given product[F[_]](using inst: => ProductInstances[Alternative |: Derived, F]): DerivedAlternative[F] =
     Strict.product(using inst.unify)
 
-  trait Product[T[f[_]] <: Alternative[f], F[_]]
+  @nowarn("msg=unused implicit parameter")
+  trait Product[T[f[_]] <: Alternative[f], F[_]: ProductInstancesOf[T]]
       extends Alternative[F],
         DerivedNonEmptyAlternative.Product[T, F],
         DerivedMonoidK.Product[T, F]

@@ -22,7 +22,10 @@ object DerivedCommutativeGroup:
   given product[A](using inst: => ProductInstances[CommutativeGroup |: Derived, A]): DerivedCommutativeGroup[A] =
     Strict.product(using inst.unify)
 
-  trait Product[F[x] <: CommutativeGroup[x], A] extends DerivedGroup.Product[F, A], CommutativeGroup[A]
+  @nowarn("msg=unused implicit parameter")
+  trait Product[F[x] <: CommutativeGroup[x], A: ProductInstancesOf[F]]
+      extends DerivedGroup.Product[F, A],
+        CommutativeGroup[A]
 
   object Strict:
     given product[A: ProductInstancesOf[CommutativeGroup]]: DerivedCommutativeGroup[A] =

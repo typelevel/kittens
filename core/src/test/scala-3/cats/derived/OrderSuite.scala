@@ -18,6 +18,8 @@ package cats.derived
 
 import cats.Order
 import cats.kernel.laws.discipline.*
+
+import scala.annotation.unused
 import scala.compiletime.*
 
 class OrderSuite extends KittensSuite:
@@ -77,7 +79,7 @@ object OrderSuite:
     given Order[Singletons[Int]] = semiauto.order
 
   object strictInstances:
-    given [A <: Singleton: ValueOf]: Order[A] = Order.allEqual
+    @unused given [A <: Singleton: ValueOf]: Order[A] = Order.allEqual
     given Order[Inner] = strict.semiauto.order
     given Order[Outer] = strict.semiauto.order
     given Order[Interleaved[Int]] = strict.semiauto.order

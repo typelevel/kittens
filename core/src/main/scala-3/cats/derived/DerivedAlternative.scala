@@ -13,12 +13,10 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form Alternative""")
 type DerivedAlternative[F[_]] = Derived[Alternative[F]]
 object DerivedAlternative:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: Alternative[F] =
     import DerivedAlternative.given
     summonInline[DerivedAlternative[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: Alternative[F] =
     import Strict.given
     summonInline[DerivedAlternative[F]].instance
@@ -33,7 +31,7 @@ object DerivedAlternative:
   given product[F[_]](using inst: => ProductInstances[Alternative |: Derived, F]): DerivedAlternative[F] =
     Strict.product(using inst.unify)
 
-  trait Product[T[f[_]] <: Alternative[f], F[_]: ProductInstancesOf[T]]
+  trait Product[T[f[_]] <: Alternative[f], F[_]]
       extends Alternative[F],
         DerivedNonEmptyAlternative.Product[T, F],
         DerivedMonoidK.Product[T, F]

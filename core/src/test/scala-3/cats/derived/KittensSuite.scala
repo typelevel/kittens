@@ -24,6 +24,7 @@ import munit.DisciplineSuite
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 import org.scalacheck.Test.Parameters
 
+import scala.annotation.unused
 import scala.compiletime.summonInline
 import scala.concurrent.duration.*
 import scala.deriving.Mirror
@@ -35,7 +36,7 @@ import scala.quoted.*
 abstract class KittensSuite extends KittensSuite.WithoutEq, ADTs.EqInstances:
   // Some tolerance for numeric underflow.
   given Order[Double] = (x, y) => if (x / y - 1).abs < 1e-9 then 0 else x.compareTo(y)
-  given [A <: Singleton: ValueOf]: Eq[A] = Eq.allEqual
+  @unused given [A <: Singleton: ValueOf]: Eq[A] = Eq.allEqual
   given [A <: Product](using mirror: Mirror.ProductOf[A], via: Eq[mirror.MirroredElemTypes]): Eq[A] =
     Eq.by(Tuple.fromProductTyped)
 
@@ -60,7 +61,7 @@ object KittensSuite:
     given Arbitrary[Duration] = Arbitrary(Gen.chooseNum(-750.days.toNanos, 750.days.toNanos).map(Duration.fromNanos))
     given [A: Arbitrary]: Arbitrary[List[A]] = Arbitrary.arbContainer
     given [A <: Singleton: ValueOf]: Arbitrary[A] = Arbitrary(Gen.const(valueOf[A]))
-    given [A <: Singleton: ValueOf]: Cogen[A] = Cogen((seed, _) => seed)
+    @unused given [A <: Singleton: ValueOf]: Cogen[A] = Cogen((seed, _) => seed)
     inline given [F[_]]: Isomorphisms[F] = Isomorphisms.invariant(summonInline)
 
     given [A <: Product](using mirror: Mirror.ProductOf[A], via: Arbitrary[mirror.MirroredElemTypes]): Arbitrary[A] =

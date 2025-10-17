@@ -17,12 +17,10 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Functor""")
 type DerivedFunctor[F[_]] = Derived[Functor[F]]
 object DerivedFunctor:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: Functor[F] =
     import DerivedFunctor.given
     summonInline[DerivedFunctor[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: Functor[F] =
     import Strict.given
     summonInline[DerivedFunctor[F]].instance

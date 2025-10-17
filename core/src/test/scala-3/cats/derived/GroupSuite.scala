@@ -20,7 +20,6 @@ import cats.Group
 import cats.kernel.laws.discipline.{GroupTests, SerializableTests}
 
 import scala.compiletime.*
-import scala.concurrent.duration.Duration
 
 class GroupSuite extends KittensSuite:
   import ADTs.*

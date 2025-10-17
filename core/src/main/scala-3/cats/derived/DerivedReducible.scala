@@ -15,13 +15,11 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Reducible""")
 type DerivedReducible[F[_]] = Derived[Reducible[F]]
 object DerivedReducible:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: Reducible[F] =
     import DerivedFoldable.given
     import DerivedReducible.given
     summonInline[DerivedReducible[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: Reducible[F] =
     import DerivedFoldable.Strict.given
     import DerivedReducible.Strict.given

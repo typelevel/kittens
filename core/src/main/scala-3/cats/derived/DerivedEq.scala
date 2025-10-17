@@ -14,16 +14,15 @@ Make sure that A satisfies one of the following conditions:
   * enum where all variants form Eq""")
 type DerivedEq[A] = Derived[Eq[A]]
 object DerivedEq:
-  @nowarn("msg=unused import")
   inline def apply[A]: Eq[A] =
     import DerivedEq.given
     summonInline[DerivedEq[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: Eq[A] =
     import Strict.given
     summonInline[DerivedEq[A]].instance
 
+  @unused
   given singleton[A <: Singleton: ValueOf]: DerivedEq[A] =
     Eq.allEqual
 
@@ -36,7 +35,7 @@ object DerivedEq:
 
   trait Product[F[x] <: Eq[x], A](using inst: ProductInstances[F, A]) extends Eq[A]:
     final override def eqv(x: A, y: A): Boolean = inst.foldLeft2(x, y)(true: Boolean):
-      [t] => (acc: Boolean, eqt: F[t], x: t, y: t) => Complete(!eqt.eqv(x, y))(false)(true)
+      [t] => (acc: Boolean, eqt: F[t], x: t, y: t) => Complete(!eqt.eqv(x, y))(false)(acc)
 
   trait Coproduct[F[x] <: Eq[x], A](using inst: CoproductInstances[F, A]) extends Eq[A]:
     final override def eqv(x: A, y: A): Boolean = inst.fold2(x, y)(false):

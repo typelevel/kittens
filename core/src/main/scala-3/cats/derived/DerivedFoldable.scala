@@ -16,12 +16,10 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Foldable""")
 type DerivedFoldable[F[_]] = Derived[Foldable[F]]
 object DerivedFoldable:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: Foldable[F] =
     import DerivedFoldable.given
     summonInline[DerivedFoldable[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: Foldable[F] =
     import Strict.given
     summonInline[DerivedFoldable[F]].instance

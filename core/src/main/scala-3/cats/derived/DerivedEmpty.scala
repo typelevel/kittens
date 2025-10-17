@@ -14,12 +14,10 @@ Make sure it satisfies one of the following conditions:
   * enum where exactly one variant forms Empty""")
 type DerivedEmpty[A] = Derived[Empty[A]]
 object DerivedEmpty:
-  @nowarn("msg=unused import")
   inline def apply[A]: Empty[A] =
     import DerivedEmpty.given
     summonInline[DerivedEmpty[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: Empty[A] =
     import Strict.given
     summonInline[DerivedEmpty[A]].instance

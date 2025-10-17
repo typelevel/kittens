@@ -11,12 +11,10 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form Semilattice.""")
 type DerivedSemilattice[A] = Derived[Semilattice[A]]
 object DerivedSemilattice:
-  @nowarn("msg=unused import")
   inline def apply[A]: Semilattice[A] =
     import DerivedSemilattice.given
     summonInline[DerivedSemilattice[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: Semilattice[A] =
     import Strict.given
     summonInline[DerivedSemilattice[A]].instance
@@ -24,9 +22,7 @@ object DerivedSemilattice:
   given product[A](using inst: => ProductInstances[Semilattice |: Derived, A]): DerivedSemilattice[A] =
     Strict.product(using inst.unify)
 
-  trait Product[F[x] <: Semilattice[x], A: ProductInstancesOf[F]]
-      extends DerivedCommutativeSemigroup.Product[F, A],
-        Semilattice[A]
+  trait Product[F[x] <: Semilattice[x], A] extends DerivedCommutativeSemigroup.Product[F, A], Semilattice[A]
 
   object Strict:
     given product[A: ProductInstancesOf[Semilattice]]: DerivedSemilattice[A] =

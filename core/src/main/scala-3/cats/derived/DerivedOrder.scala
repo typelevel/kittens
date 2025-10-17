@@ -14,16 +14,15 @@ Make sure it satisfies one of the following conditions:
   * enum where all variants form Order""")
 type DerivedOrder[A] = Derived[Order[A]]
 object DerivedOrder:
-  @nowarn("msg=unused import")
   inline def apply[A]: Order[A] =
     import DerivedOrder.given
     summonInline[DerivedOrder[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: Order[A] =
     import Strict.given
     summonInline[DerivedOrder[A]].instance
 
+  @unused
   given singleton[A <: Singleton: ValueOf]: DerivedOrder[A] =
     Order.allEqual
 

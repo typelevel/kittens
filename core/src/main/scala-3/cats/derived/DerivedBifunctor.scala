@@ -16,12 +16,10 @@ Make sure it satisfies one of the following conditions:
   * generic enum where all variants form Bifunctor""")
 type DerivedBifunctor[F[_, _]] = Derived[Bifunctor[F]]
 object DerivedBifunctor:
-  @nowarn("msg=unused import")
   inline def apply[F[_, _]]: Bifunctor[F] =
     import DerivedBifunctor.given
     summonInline[DerivedBifunctor[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_, _]]: Bifunctor[F] =
     import Strict.given
     summonInline[DerivedBifunctor[F]].instance

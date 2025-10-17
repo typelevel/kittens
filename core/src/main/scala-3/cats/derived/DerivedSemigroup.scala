@@ -11,12 +11,10 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form Semigroup.""")
 type DerivedSemigroup[A] = Derived[Semigroup[A]]
 object DerivedSemigroup:
-  @nowarn("msg=unused import")
   inline def apply[A]: Semigroup[A] =
     import DerivedSemigroup.given
     summonInline[DerivedSemigroup[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: Semigroup[A] =
     import Strict.given
     summonInline[DerivedSemigroup[A]].instance

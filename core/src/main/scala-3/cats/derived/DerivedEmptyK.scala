@@ -18,12 +18,10 @@ Make sure it satisfies one of the following conditions:
   * generic enum where exactly one variant forms EmptyK""")
 type DerivedEmptyK[F[_]] = Derived[EmptyK[F]]
 object DerivedEmptyK:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: EmptyK[F] =
     import DerivedEmptyK.given
     summonInline[DerivedEmptyK[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: EmptyK[F] =
     import Strict.given
     summonInline[DerivedEmptyK[F]].instance

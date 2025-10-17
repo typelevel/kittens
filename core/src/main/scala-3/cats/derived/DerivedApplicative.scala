@@ -14,12 +14,10 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form Applicative""")
 type DerivedApplicative[F[_]] = Derived[Applicative[F]]
 object DerivedApplicative:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: Applicative[F] =
     import DerivedApplicative.given
     summonInline[DerivedApplicative[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: Applicative[F] =
     import Strict.given
     summonInline[DerivedApplicative[F]].instance

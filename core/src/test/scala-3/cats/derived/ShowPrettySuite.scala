@@ -2,6 +2,8 @@ package cats.derived
 
 import cats.Show
 import cats.laws.discipline.SerializableTests
+
+import scala.annotation.unused
 import scala.compiletime.*
 
 class ShowPrettySuite extends KittensSuite:
@@ -193,7 +195,7 @@ object ShowPrettySuite:
     given ShowPretty[Box[Bogus]] = semiauto.showPretty
 
   object strictInstances:
-    given [A <: Singleton: ValueOf]: Show[A] = Show.fromToString
+    @unused given [A <: Singleton: ValueOf]: Show[A] = Show.fromToString
     given ShowPretty[Foo] = strict.semiauto.showPretty
     given ShowPretty[Inner] = strict.semiauto.showPretty
     given ShowPretty[Outer] = strict.semiauto.showPretty

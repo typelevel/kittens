@@ -16,12 +16,10 @@ Make sure it satisfies one of the following conditions:
   * generic case class where all fields form SemigroupK""")
 type DerivedSemigroupK[F[_]] = Derived[SemigroupK[F]]
 object DerivedSemigroupK:
-  @nowarn("msg=unused import")
   inline def apply[F[_]]: SemigroupK[F] =
     import DerivedSemigroupK.given
     summonInline[DerivedSemigroupK[F]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[F[_]]: SemigroupK[F] =
     import Strict.given
     summonInline[DerivedSemigroupK[F]].instance

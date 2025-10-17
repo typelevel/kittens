@@ -18,6 +18,8 @@ package cats.derived
 
 import cats.Eq
 import cats.kernel.laws.discipline.*
+
+import scala.annotation.unused
 import scala.compiletime.*
 
 class EqSuite extends KittensSuite.WithoutEq:
@@ -80,7 +82,7 @@ object EqSuite:
     given Eq[Singletons[Int]] = semiauto.eq
 
   object strictInstances:
-    given [A <: Singleton: ValueOf]: Eq[A] = Eq.allEqual
+    @unused given [A <: Singleton: ValueOf]: Eq[A] = Eq.allEqual
     given Eq[Foo] = strict.semiauto.eq
     given Eq[IList[Int]] = strict.semiauto.eq
     given Eq[Inner] = strict.semiauto.eq

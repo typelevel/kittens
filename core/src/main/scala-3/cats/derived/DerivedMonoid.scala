@@ -11,12 +11,10 @@ import scala.compiletime.*
 Make sure it is a case class where all fields form Monoid.""")
 type DerivedMonoid[A] = Derived[Monoid[A]]
 object DerivedMonoid:
-  @nowarn("msg=unused import")
   inline def apply[A]: Monoid[A] =
     import DerivedMonoid.given
     summonInline[DerivedMonoid[A]].instance
 
-  @nowarn("msg=unused import")
   inline def strict[A]: Monoid[A] =
     import Strict.given
     summonInline[DerivedMonoid[A]].instance

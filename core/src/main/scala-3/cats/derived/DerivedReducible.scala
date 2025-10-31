@@ -53,22 +53,20 @@ object DerivedReducible:
 
     final override def reduceLeftTo[A, B](fa: F[A])(f: A => B)(g: (B, A) => B): B =
       inst
-        .foldLeft[A, Option[B]](fa)(None):
-          [f[_]] =>
-            (acc: Option[B], F: T[f], fa: f[A]) =>
-              acc match
-                case Some(b) => Some(F.foldLeft(fa, b)(g))
-                case None => F.reduceLeftToOption(fa)(f)(g)
+        .foldLeft[A, Option[B]](fa)(None): [f[_]] =>
+          (acc: Option[B], F: T[f], fa: f[A]) =>
+            acc match
+              case Some(b) => Some(F.foldLeft(fa, b)(g))
+              case None => F.reduceLeftToOption(fa)(f)(g)
         .get
 
     final override def reduceRightTo[A, B](fa: F[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] =
       inst
-        .foldRight[A, Eval[Option[B]]](fa)(evalNone):
-          [f[_]] =>
-            (F: T[f], fa: f[A], acc: Eval[Option[B]]) =>
-              acc.flatMap:
-                case Some(b) => F.foldRight(fa, Eval.now(b))(g).map(Some.apply)
-                case None => F.reduceRightToOption(fa)(f)(g)
+        .foldRight[A, Eval[Option[B]]](fa)(evalNone): [f[_]] =>
+          (F: T[f], fa: f[A], acc: Eval[Option[B]]) =>
+            acc.flatMap:
+              case Some(b) => F.foldRight(fa, Eval.now(b))(g).map(Some.apply)
+              case None => F.reduceRightToOption(fa)(f)(g)
         .map(_.get)
 
   trait Coproduct[T[f[_]] <: Reducible[f], F[_]](using inst: CoproductInstances[T, F])

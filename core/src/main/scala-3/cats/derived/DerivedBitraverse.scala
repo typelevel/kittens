@@ -108,8 +108,8 @@ object DerivedBitraverse:
 
     final override def bitraverse[G[_], A, B, C, D](fab: F[A, B])(f: A => G[C], g: B => G[D])(using
         G: Applicative[G]
-    ): G[F[C, D]] = inst.fold(fab):
-      [f[a, b] <: F[a, b]] => (F: T[f], fa: f[A, B]) => G.widen[f[C, D], F[C, D]](F.bitraverse(fa)(f, g))
+    ): G[F[C, D]] = inst.fold(fab): [f[a, b] <: F[a, b]] =>
+      (F: T[f], fa: f[A, B]) => G.widen[f[C, D], F[C, D]](F.bitraverse(fa)(f, g))
 
   object Strict:
     given product[F[_, _]: ProductInstancesOf[Bitraverse]]: DerivedBitraverse[F] =

@@ -65,5 +65,5 @@ object DerivedEmptyK:
 
     @nowarn("id=E197")
     inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] =
-      CoproductGeneric.withOnly[EmptyK |: Derived, EmptyK[F]]:
-        [f[x] <: F[x]] => (F: (EmptyK |: Derived)[f]) => F.asInstanceOf[EmptyK[F]]
+      CoproductGeneric.withOnly[EmptyK |: Derived, EmptyK[F]]: [f[x] <: F[x]] =>
+        (F: (EmptyK |: Derived)[f]) => F.asInstanceOf[EmptyK[F]]

@@ -34,12 +34,12 @@ object DerivedEq:
     new Coproduct[Eq, A] {}
 
   trait Product[F[x] <: Eq[x], A](using inst: ProductInstances[F, A]) extends Eq[A]:
-    final override def eqv(x: A, y: A): Boolean = inst.foldLeft2(x, y)(true: Boolean):
-      [t] => (acc: Boolean, eqt: F[t], x: t, y: t) => Complete(!eqt.eqv(x, y))(false)(acc)
+    final override def eqv(x: A, y: A): Boolean = inst.foldLeft2(x, y)(true: Boolean): [t] =>
+      (acc: Boolean, eqt: F[t], x: t, y: t) => Complete(!eqt.eqv(x, y))(false)(acc)
 
   trait Coproduct[F[x] <: Eq[x], A](using inst: CoproductInstances[F, A]) extends Eq[A]:
-    final override def eqv(x: A, y: A): Boolean = inst.fold2(x, y)(false):
-      [t] => (eqt: F[t], x: t, y: t) => eqt.eqv(x, y)
+    final override def eqv(x: A, y: A): Boolean = inst.fold2(x, y)(false): [t] =>
+      (eqt: F[t], x: t, y: t) => eqt.eqv(x, y)
 
   object Strict:
     export DerivedEq.coproduct

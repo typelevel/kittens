@@ -35,16 +35,15 @@ object DerivedPartialOrder:
 
   trait Product[T[x] <: PartialOrder[x], A](using inst: ProductInstances[T, A]) extends PartialOrder[A]:
     def partialCompare(x: A, y: A): Double =
-      inst.foldLeft2(x, y)(0: Double):
-        [t] =>
-          (acc: Double, ord: T[t], t0: t, t1: t) =>
-            val cmp = ord.partialCompare(t0, t1)
-            Complete(cmp != 0)(cmp)(acc)
+      inst.foldLeft2(x, y)(0: Double): [t] =>
+        (acc: Double, ord: T[t], t0: t, t1: t) =>
+          val cmp = ord.partialCompare(t0, t1)
+          Complete(cmp != 0)(cmp)(acc)
 
   trait Coproduct[T[x] <: PartialOrder[x], A](using inst: CoproductInstances[T, A]) extends PartialOrder[A]:
     def partialCompare(x: A, y: A): Double =
-      inst.fold2(x, y)(Double.NaN: Double):
-        [t] => (ord: T[t], t0: t, t1: t) => ord.partialCompare(t0, t1)
+      inst.fold2(x, y)(Double.NaN: Double): [t] =>
+        (ord: T[t], t0: t, t1: t) => ord.partialCompare(t0, t1)
 
   object Strict:
     export DerivedPartialOrder.coproduct

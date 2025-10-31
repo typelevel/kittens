@@ -51,8 +51,8 @@ object DerivedHash:
       val prefix = x.productPrefix.hashCode
       if arity <= 0 then prefix
       else
-        val hash = inst.foldLeft[Int](x)(MurmurHash3.mix(MurmurHash3.productSeed, prefix)):
-          [t] => (acc: Int, h: F[t], x: t) => MurmurHash3.mix(acc, h.hash(x))
+        val hash = inst.foldLeft[Int](x)(MurmurHash3.mix(MurmurHash3.productSeed, prefix)): [t] =>
+          (acc: Int, h: F[t], x: t) => MurmurHash3.mix(acc, h.hash(x))
         MurmurHash3.finalizeHash(hash, arity)
 
   trait Coproduct[F[x] <: Hash[x], A](using inst: CoproductInstances[F, A]) extends DerivedEq.Coproduct[F, A], Hash[A]:

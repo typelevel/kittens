@@ -22,7 +22,7 @@ libraryDependencies += "org.typelevel" %% "kittens" % "latestVersion" // indicat
 [![Build status](https://github.com/typelevel/kittens/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/typelevel/kittens/actions)
 [![Gitter channel](https://badges.gitter.im/typelevel/kittens.svg)](https://gitter.im/typelevel/kittens)
 [![Scala.js](http://scala-js.org/assets/badges/scalajs-1.5.0.svg)](http://scala-js.org)
-[![Latest version](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.12.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/kittens_2.12)
+[![Latest version](https://img.shields.io/maven-central/v/org.typelevel/kittens_2.12.svg)](https://central.sonatype.com/artifact/org.typelevel/kittens_2.12)
 
 ## Scala 2
 

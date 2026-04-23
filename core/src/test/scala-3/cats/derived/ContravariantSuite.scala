@@ -57,6 +57,20 @@ class ContravariantSuite extends KittensSuite:
     testNoInstance("strict.semiauto.contravariant", "TopK")
 
   locally:
+    import semiInstances.given
+    val Size = 10000
+    test("semiauto.contravariant is stack safe for recursive ListPred"):
+      val longList: ListPred[Int] = List.fill(Size)((_: Int) => true)
+      val contramapped = Contravariant[ListPred].contramap(longList)((s: String) => s.length)
+      assertEquals(contramapped.size, Size)
+
+    test("semiauto.contravariant is stack safe for recursive EnumK1Contra"):
+      val tree = (1 to Size).foldLeft[EnumK1Contra[Int]](EnumK1Contra.Leaf((_: Int) => ())): (acc, _) =>
+        EnumK1Contra.Rec(EnumK1Contra.Leaf((_: Int) => ()), acc)
+      val contramapped = Contravariant[EnumK1Contra].contramap(tree)((s: String) => s.length)
+      assert(contramapped ne null)
+
+  locally:
     import derivedInstances.*
     val instance = "derived.contravariant"
     checkAll(s"$instance[EnumK1Contra]", tests[EnumK1Contra].contravariant[MiniInt, String, Boolean])

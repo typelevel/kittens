@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.{Contravariant, Functor}
+import cats.{Contravariant, Eval, Functor}
 import shapeless3.deriving.{Const, Derived}
 import shapeless3.deriving.K1.*
 
@@ -34,21 +34,49 @@ object DerivedContravariant:
     new Lazy(() => F.unify.composeContravariant(using G.unify)) with Contravariant[F <<< G]:
       export delegate.*
 
-  given [F[_]](using inst: => Instances[Contravariant |: Derived, F]): DerivedContravariant[F] =
-    generic(using inst.unify)
+  given [F[_]](using inst: ProductInstances[Contravariant |: Derived, F]): DerivedContravariant[F] =
+    Strict.product(using inst.unify)
+
+  given [F[_]](using => CoproductInstances[Contravariant |: Derived, F]): DerivedContravariant[F] =
+    Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Functor |: Derived, G[_]: Contravariant |: Derived]: DerivedContravariant[[x] =>> F[G[x]]] =
     nested
 
-  private def generic[F[_]: InstancesOf[Contravariant]]: DerivedContravariant[F] =
-    new Generic[Contravariant, F] {}
+  private[derived] trait Safe[F[_]] extends Contravariant[F]:
+    private[derived] def safeContramap[A, B](fa: F[A])(f: B => A): Eval[F[B]]
+    final override def contramap[A, B](fa: F[A])(f: B => A): F[B] = safeContramap(fa)(f).value
+
+  private[derived] def safeContramap[F[_], A, B](F: Contravariant[F])(fa: F[A])(f: B => A): Eval[F[B]] =
+    F match
+      case safe: Safe[F] @scala.unchecked => safe.safeContramap(fa)(f)
+      case _ => Eval.later(F.contramap(fa)(f))
 
   trait Generic[T[f[_]] <: Contravariant[f], F[_]](using inst: Instances[T, F]) extends Contravariant[F]:
     final override def contramap[A, B](fa: F[A])(f: B => A): F[B] =
       inst.map(fa)([f[_]] => (T: T[f], fa: f[A]) => T.contramap(fa)(f))
 
+  trait Product[T[f[_]] <: Contravariant[f], F[_]](using inst: ProductInstances[T, F]) extends Safe[F]:
+    private[derived] final override def safeContramap[A, B](fa: F[A])(f: B => A): Eval[F[B]] =
+      val pure = [a] => (x: a) => Eval.now(x)
+      val mp = [a, b] => (ea: Eval[a], g: a => b) => ea.map(g)
+      val ap = [a, b] => (ef: Eval[a => b], ea: Eval[a]) => ef.flatMap(g => ea.map(g))
+      inst.traverse[A, Eval, B](fa)(mp)(pure)(ap)(
+        [f[_]] => (F: T[f], fa: f[A]) => DerivedContravariant.safeContramap(F)(fa)(f)
+      )
+
+  trait Coproduct[T[f[_]] <: Contravariant[f], F[_]](using inst: CoproductInstances[T, F]) extends Safe[F]:
+    private[derived] final override def safeContramap[A, B](fa: F[A])(f: B => A): Eval[F[B]] =
+      Eval.defer(inst.fold(fa)(
+        [f[a] <: F[a]] => (F: T[f], fa: f[A]) =>
+          DerivedContravariant.safeContramap(F)(fa)(f).asInstanceOf[Eval[F[B]]]
+      ))
+
   object Strict:
-    given product[F[_]: ProductInstancesOf[Contravariant]]: DerivedContravariant[F] = generic
+    given product[F[_]: ProductInstancesOf[Contravariant]]: DerivedContravariant[F] =
+      new Product[Contravariant, F] {}
+
     given coproduct[F[_]](using inst: => CoproductInstances[Contravariant |: Derived, F]): DerivedContravariant[F] =
-      generic(using inst.unify)
+      given CoproductInstances[Contravariant, F] = inst.unify
+      new Coproduct[Contravariant, F] {}

@@ -46,7 +46,7 @@ object DerivedContravariant:
 
   private[derived] trait Safe[F[_]] extends Contravariant[F]:
     private[derived] def safeContramap[A, B](fa: F[A])(f: B => A): Eval[F[B]]
-    final override def contramap[A, B](fa: F[A])(f: B => A): F[B] = safeContramap(fa)(f).value
+    override def contramap[A, B](fa: F[A])(f: B => A): F[B] = safeContramap(fa)(f).value
 
   private[derived] def safeContramap[F[_], A, B](F: Contravariant[F])(fa: F[A])(f: B => A): Eval[F[B]] =
     F match

@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.Hash
+import cats.{Eval, Hash}
 import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
@@ -23,7 +23,6 @@ object DerivedHash:
     import Strict.given
     summonInline[DerivedHash[A]].instance
 
-  // These instances support singleton types unlike the instances in Cats' kernel.
   given boolean[A <: Boolean]: DerivedHash[A] = Hash.fromUniversalHashCode
   given byte[A <: Byte]: DerivedHash[A] = Hash.fromUniversalHashCode
   given short[A <: Short]: DerivedHash[A] = Hash.fromUniversalHashCode
@@ -42,21 +41,33 @@ object DerivedHash:
     given CoproductInstances[Hash, A] = inst.unify
     new Coproduct[Hash, A] {}
 
+  private[derived] trait Safe[A] extends Hash[A]:
+    private[derived] def safeHash(x: A): Eval[Int]
+    override def hash(x: A): Int = safeHash(x).value
+
+  private[derived] def safeHash[A](F: Hash[A])(x: A): Eval[Int] =
+    F.asInstanceOf[Matchable] match
+      case safe: Safe[?] => safe.asInstanceOf[Safe[A]].safeHash(x)
+      case _ => Eval.later(F.hash(x))
+
   trait Product[F[x] <: Hash[x], A <: scala.Product](using inst: ProductInstances[F, A])
       extends DerivedEq.Product[F, A],
-        Hash[A]:
+        Safe[A]:
 
-    final override def hash(x: A): Int =
+    private[derived] final override def safeHash(x: A): Eval[Int] =
       val arity = x.productArity
       val prefix = x.productPrefix.hashCode
-      if arity <= 0 then prefix
+      if arity <= 0 then Eval.now(prefix)
       else
-        val hash = inst.foldLeft[Int](x)(MurmurHash3.mix(MurmurHash3.productSeed, prefix)):
-          [t] => (acc: Int, h: F[t], x: t) => MurmurHash3.mix(acc, h.hash(x))
-        MurmurHash3.finalizeHash(hash, arity)
+        val seed = MurmurHash3.mix(MurmurHash3.productSeed, prefix)
+        inst.foldLeft[Eval[Int]](x)(Eval.now(seed)):
+          [t] => (acc: Eval[Int], h: F[t], xt: t) =>
+            acc.flatMap(a => DerivedHash.safeHash(h)(xt).map(hh => MurmurHash3.mix(a, hh)))
+        .map(MurmurHash3.finalizeHash(_, arity))
 
-  trait Coproduct[F[x] <: Hash[x], A](using inst: CoproductInstances[F, A]) extends DerivedEq.Coproduct[F, A], Hash[A]:
-    final override def hash(x: A): Int = inst.fold[Int](x)([t] => (h: F[t], x: t) => h.hash(x))
+  trait Coproduct[F[x] <: Hash[x], A](using inst: CoproductInstances[F, A]) extends DerivedEq.Coproduct[F, A], Safe[A]:
+    private[derived] final override def safeHash(x: A): Eval[Int] =
+      Eval.defer(inst.fold[Eval[Int]](x)([t] => (h: F[t], xt: t) => DerivedHash.safeHash(h)(xt)))
 
   object Strict:
     export DerivedHash.coproduct

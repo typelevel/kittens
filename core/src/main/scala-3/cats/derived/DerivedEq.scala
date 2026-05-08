@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.Eq
+import cats.{Eq, Eval}
 import shapeless3.deriving.{Complete, Derived}
 import shapeless3.deriving.K0.*
 
@@ -33,13 +33,28 @@ object DerivedEq:
     given CoproductInstances[Eq, A] = inst.unify
     new Coproduct[Eq, A] {}
 
-  trait Product[F[x] <: Eq[x], A](using inst: ProductInstances[F, A]) extends Eq[A]:
-    final override def eqv(x: A, y: A): Boolean = inst.foldLeft2(x, y)(true: Boolean):
-      [t] => (acc: Boolean, eqt: F[t], x: t, y: t) => Complete(!eqt.eqv(x, y))(false)(acc)
+  private[derived] trait Safe[A] extends Eq[A]:
+    private[derived] def safeEqv(x: A, y: A): Eval[Boolean]
+    override def eqv(x: A, y: A): Boolean = safeEqv(x, y).value
 
-  trait Coproduct[F[x] <: Eq[x], A](using inst: CoproductInstances[F, A]) extends Eq[A]:
-    final override def eqv(x: A, y: A): Boolean = inst.fold2(x, y)(false):
-      [t] => (eqt: F[t], x: t, y: t) => eqt.eqv(x, y)
+  private[derived] def safeEqv[A](F: Eq[A])(x: A, y: A): Eval[Boolean] =
+    F.asInstanceOf[Matchable] match
+      case safe: Safe[?] => safe.asInstanceOf[Safe[A]].safeEqv(x, y)
+      case _ => Eval.later(F.eqv(x, y))
+
+  trait Product[F[x] <: Eq[x], A](using inst: ProductInstances[F, A]) extends Safe[A]:
+    private[derived] final override def safeEqv(x: A, y: A): Eval[Boolean] =
+      inst.foldLeft2[Eval[Boolean]](x, y)(Eval.now(true)):
+        [t] => (acc: Eval[Boolean], eqt: F[t], xt: t, yt: t) =>
+          val next = acc.flatMap: b =>
+            if !b then Eval.now(false) else DerivedEq.safeEqv(eqt)(xt, yt)
+          Complete(false)(next)(next)
+
+  trait Coproduct[F[x] <: Eq[x], A](using inst: CoproductInstances[F, A]) extends Safe[A]:
+    private[derived] final override def safeEqv(x: A, y: A): Eval[Boolean] =
+      Eval.defer(inst.fold2(x, y)(Eval.now(false): Eval[Boolean]):
+        [t] => (eqt: F[t], xt: t, yt: t) => DerivedEq.safeEqv(eqt)(xt, yt)
+      )
 
   object Strict:
     export DerivedEq.coproduct

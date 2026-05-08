@@ -44,16 +44,30 @@ object DerivedFoldable:
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Foldable |: Derived, G[_]: Foldable |: Derived]: DerivedFoldable[[x] =>> F[G[x]]] = nested
 
-  trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: ProductInstances[T, F]) extends Foldable[F]:
-    final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-      inst.foldLeft(fa)(b)([f[_]] => (b: B, F: T[f], fa: f[A]) => F.foldLeft(fa, b)(f))
+  private[derived] trait Safe[F[_]] extends Foldable[F]:
+    private[derived] def safeFoldLeft[A, B](fa: F[A], b: Eval[B])(f: (B, A) => B): Eval[B]
+    override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
+      safeFoldLeft(fa, Eval.now(b))(f).value
+
+  private[derived] def safeFoldLeft[F[_], A, B](F: Foldable[F])(fa: F[A], b: Eval[B])(f: (B, A) => B): Eval[B] =
+    F match
+      case safe: Safe[F] @scala.unchecked => safe.safeFoldLeft(fa, b)(f)
+      case _ => b.map(F.foldLeft(fa, _)(f))
+
+  trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: ProductInstances[T, F]) extends Safe[F]:
+    private[derived] final override def safeFoldLeft[A, B](fa: F[A], b: Eval[B])(f: (B, A) => B): Eval[B] =
+      inst.foldLeft[A, Eval[B]](fa)(b):
+        [f[_]] => (acc: Eval[B], F: T[f], fa: f[A]) =>
+          DerivedFoldable.safeFoldLeft(F)(fa, acc)(f)
 
     final override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
       inst.foldRight(fa)(lb)([f[_]] => (F: T[f], fa: f[A], lb: Eval[B]) => Eval.defer(F.foldRight(fa, lb)(f)))
 
-  trait Coproduct[T[f[_]] <: Foldable[f], F[_]](using inst: CoproductInstances[T, F]) extends Foldable[F]:
-    final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-      inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => F.foldLeft(fa, b)(f))
+  trait Coproduct[T[f[_]] <: Foldable[f], F[_]](using inst: CoproductInstances[T, F]) extends Safe[F]:
+    private[derived] final override def safeFoldLeft[A, B](fa: F[A], b: Eval[B])(f: (B, A) => B): Eval[B] =
+      Eval.defer(inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) =>
+        DerivedFoldable.safeFoldLeft(F)(fa, b)(f)
+      ))
 
     final override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
       inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => Eval.defer(F.foldRight(fa, lb)(f)))

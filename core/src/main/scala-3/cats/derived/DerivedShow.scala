@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.Show
+import cats.{Eval, Show}
 import shapeless3.deriving.{Derived, Labelling}
 import shapeless3.deriving.K0.*
 
@@ -22,7 +22,6 @@ object DerivedShow:
     import Strict.given
     summonInline[DerivedShow[A]].instance
 
-  // These instances support singleton types unlike the instances in Cats' core.
   given boolean[A <: Boolean]: DerivedShow[A] = Show.fromToString
   given byte[A <: Byte]: DerivedShow[A] = Show.fromToString
   given short[A <: Short]: DerivedShow[A] = Show.fromToString
@@ -41,30 +40,40 @@ object DerivedShow:
   given [A](using => CoproductInstances[Show |: Derived, A]): DerivedShow[A] =
     Strict.coproduct
 
-  trait Product[F[x] <: Show[x], A](using inst: ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
-    def show(a: A): String =
+  private[derived] trait Safe[A] extends Show[A]:
+    private[derived] def safeShow(a: A): Eval[String]
+    override def show(a: A): String = safeShow(a).value
+
+  private[derived] def safeShow[A](F: Show[A])(a: A): Eval[String] =
+    F match
+      case safe: Safe[?] => safe.asInstanceOf[Safe[A]].safeShow(a)
+      case _ => Eval.later(F.show(a))
+
+  trait Product[F[x] <: Show[x], A](using inst: ProductInstances[F, A], labelling: Labelling[A]) extends Safe[A]:
+    private[derived] final override def safeShow(a: A): Eval[String] =
       val prefix = labelling.label
       val labels = labelling.elemLabels
       val n = labels.size
-      if n <= 0 then prefix
+      if n <= 0 then Eval.now(prefix)
       else
         val sb = new StringBuilder(prefix)
         sb.append('(')
-        var i = 0
-        while i < n do
-          sb.append(labels(i))
-          sb.append(" = ")
-          sb.append(inst.project(a)(i)([t] => (show: F[t], x: t) => show.show(x)))
-          sb.append(", ")
-          i += 1
+        def loop(i: Int): Eval[StringBuilder] =
+          if i >= n then Eval.now(sb)
+          else
+            inst.project(a)(i)([t] => (showt: F[t], xt: t) => DerivedShow.safeShow(showt)(xt)).flatMap: rendered =>
+              sb.append(labels(i))
+              sb.append(" = ")
+              sb.append(rendered)
+              if i < n - 1 then sb.append(", ")
+              Eval.defer(loop(i + 1))
+        loop(0).map: built =>
+          built.append(')')
+          built.toString
 
-        val l = sb.length
-        sb.delete(l - 2, l)
-        sb.append(')')
-        sb.toString
-
-  trait Coproduct[F[x] <: Show[x], A](using inst: CoproductInstances[F, A]) extends Show[A]:
-    def show(a: A): String = inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))
+  trait Coproduct[F[x] <: Show[x], A](using inst: CoproductInstances[F, A]) extends Safe[A]:
+    private[derived] final override def safeShow(a: A): Eval[String] =
+      Eval.defer(inst.fold[Eval[String]](a)([t] => (st: F[t], t: t) => DerivedShow.safeShow(st)(t)))
 
   object Strict:
     given product[A: Labelling](using => ProductInstances[Show, A]): DerivedShow[A] =

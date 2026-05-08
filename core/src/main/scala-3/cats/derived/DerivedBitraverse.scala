@@ -88,33 +88,54 @@ object DerivedBitraverse:
   given [F[_, _]](using => CoproductInstances[Bitraverse |: Derived, F]): DerivedBitraverse[F] =
     Strict.coproduct
 
-  trait Product[T[f[_, _]] <: Bitraverse[f], F[_, _]](using inst: ProductInstances[T, F])
-      extends Bitraverse[F]
-      with DerivedBifunctor.Generic[T, F]
-      with DerivedBifoldable.Product[T, F]:
-
-    final override def bitraverse[G[_], A, B, C, D](fab: F[A, B])(f: A => G[C], g: B => G[D])(using
+  private[derived] trait Safe[F[_, _]] extends Bitraverse[F]:
+    private[derived] def safeBitraverse[G[_], A, B, C, D](fab: F[A, B])(f: A => G[C], g: B => G[D])(using
         G: Applicative[G]
-    ): G[F[C, D]] =
-      val pure = [a] => (x: a) => G.pure(x)
-      val map = [a, b] => (ga: G[a], f: a => b) => G.map(ga)(f)
-      val ap = [a, b] => (gf: G[a => b], ga: G[a]) => G.ap(gf)(ga)
-      inst.traverse[A, B, G, C, D](fab)(map)(pure)(ap)([f[_, _]] => (F: T[f], fab: f[A, B]) => F.bitraverse(fab)(f, g))
+    ): Eval[G[F[C, D]]]
+    override def bitraverse[G[_], A, B, C, D](fab: F[A, B])(f: A => G[C], g: B => G[D])(using
+        G: Applicative[G]
+    ): G[F[C, D]] = safeBitraverse(fab)(f, g).value
+
+  private[derived] def safeBitraverse[F[_, _], G[_], A, B, C, D](
+      F: Bitraverse[F]
+  )(fab: F[A, B])(f: A => G[C], g: B => G[D])(using G: Applicative[G]): Eval[G[F[C, D]]] =
+    F match
+      case safe: Safe[F] @scala.unchecked => safe.safeBitraverse(fab)(f, g)
+      case _ => Eval.later(F.bitraverse(fab)(f, g))
+
+  trait Product[T[f[_, _]] <: Bitraverse[f], F[_, _]](using inst: ProductInstances[T, F])
+      extends Safe[F],
+        DerivedBifunctor.Product[T, F],
+        DerivedBifoldable.Product[T, F]:
+
+    private[derived] final override def safeBitraverse[G[_], A, B, C, D](
+        fab: F[A, B]
+    )(f: A => G[C], g: B => G[D])(using G: Applicative[G]): Eval[G[F[C, D]]] =
+      val pure = [a] => (x: a) => Eval.now(G.pure(x))
+      val mp = [a, b] => (ega: Eval[G[a]], h: a => b) => ega.map(ga => G.map(ga)(h))
+      val ap = [a, b] => (egf: Eval[G[a => b]], ega: Eval[G[a]]) =>
+        egf.flatMap(gf => ega.map(ga => G.ap(gf)(ga)))
+      inst.traverse[A, B, [x] =>> Eval[G[x]], C, D](fab)(mp)(pure)(ap)(
+        [f[_, _]] => (F: T[f], fab: f[A, B]) => DerivedBitraverse.safeBitraverse(F)(fab)(f, g)
+      )
 
   trait Coproduct[T[f[_, _]] <: Bitraverse[f], F[_, _]](using inst: CoproductInstances[T, F])
-      extends Bitraverse[F]
-      with DerivedBifunctor.Generic[T, F]
-      with DerivedBifoldable.Coproduct[T, F]:
+      extends Safe[F],
+        DerivedBifunctor.Coproduct[T, F],
+        DerivedBifoldable.Coproduct[T, F]:
 
-    final override def bitraverse[G[_], A, B, C, D](fab: F[A, B])(f: A => G[C], g: B => G[D])(using
-        G: Applicative[G]
-    ): G[F[C, D]] = inst.fold(fab):
-      [f[a, b] <: F[a, b]] => (F: T[f], fa: f[A, B]) => G.widen[f[C, D], F[C, D]](F.bitraverse(fa)(f, g))
+    private[derived] final override def safeBitraverse[G[_], A, B, C, D](
+        fab: F[A, B]
+    )(f: A => G[C], g: B => G[D])(using G: Applicative[G]): Eval[G[F[C, D]]] =
+      Eval.defer(inst.fold(fab):
+        [f[a, b] <: F[a, b]] => (F: T[f], fa: f[A, B]) =>
+          DerivedBitraverse.safeBitraverse(F)(fa)(f, g).map(g0 => G.widen[f[C, D], F[C, D]](g0)).asInstanceOf[Eval[G[F[C, D]]]]
+      )
 
   object Strict:
     given product[F[_, _]: ProductInstancesOf[Bitraverse]]: DerivedBitraverse[F] =
-      new Bitraverse[F] with Product[Bitraverse, F] {}
+      new Product[Bitraverse, F] {}
 
     given coproduct[F[_, _]](using inst: => CoproductInstances[Bitraverse |: Derived, F]): DerivedBitraverse[F] =
       given CoproductInstances[Bitraverse, F] = inst.unify
-      new Bitraverse[F] with Coproduct[Bitraverse, F] {}
+      new Coproduct[Bitraverse, F] {}

@@ -45,21 +45,35 @@ object DerivedReducible:
   protected given [F[_]: Reducible |: Derived, G[_]: Reducible |: Derived]: DerivedReducible[[x] =>> F[G[x]]] =
     nested
 
+  private[derived] trait Safe[F[_]] extends Reducible[F]:
+    private[derived] def safeReduceLeftTo[A, B](fa: F[A])(f: A => B)(g: (B, A) => B): Eval[B]
+    override def reduceLeftTo[A, B](fa: F[A])(f: A => B)(g: (B, A) => B): B =
+      safeReduceLeftTo(fa)(f)(g).value
+
+  private[derived] def safeReduceLeftTo[F[_], A, B](
+      F: Reducible[F]
+  )(fa: F[A])(f: A => B)(g: (B, A) => B): Eval[B] =
+    F match
+      case safe: Safe[F] @scala.unchecked => safe.safeReduceLeftTo(fa)(f)(g)
+      case _ => Eval.later(F.reduceLeftTo(fa)(f)(g))
+
   trait Product[T[f[_]] <: Foldable[f], F[_]](@unused ev: Reducible[?])(using inst: ProductInstances[T, F])
-      extends DerivedFoldable.Product[T, F],
-        Reducible[F]:
+      extends Safe[F],
+        DerivedFoldable.Product[T, F]:
 
     private val evalNone = Eval.now(None)
 
-    final override def reduceLeftTo[A, B](fa: F[A])(f: A => B)(g: (B, A) => B): B =
+    private[derived] final override def safeReduceLeftTo[A, B](fa: F[A])(f: A => B)(g: (B, A) => B): Eval[B] =
       inst
-        .foldLeft[A, Option[B]](fa)(None):
+        .foldLeft[A, Eval[Option[B]]](fa)(evalNone):
           [f[_]] =>
-            (acc: Option[B], F: T[f], fa: f[A]) =>
-              acc match
-                case Some(b) => Some(F.foldLeft(fa, b)(g))
-                case None => F.reduceLeftToOption(fa)(f)(g)
-        .get
+            (acc: Eval[Option[B]], F: T[f], fa: f[A]) =>
+              acc.flatMap:
+                case Some(b) => DerivedFoldable.safeFoldLeft(F)(fa, Eval.now(b))(g).map(Some.apply)
+                case None => F match
+                  case red: Reducible[F] @scala.unchecked => DerivedReducible.safeReduceLeftTo(red)(fa)(f)(g).map(Some.apply)
+                  case _ => Eval.now(F.reduceLeftToOption(fa)(f)(g))
+        .map(_.get)
 
     final override def reduceRightTo[A, B](fa: F[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] =
       inst
@@ -72,11 +86,13 @@ object DerivedReducible:
         .map(_.get)
 
   trait Coproduct[T[f[_]] <: Reducible[f], F[_]](using inst: CoproductInstances[T, F])
-      extends DerivedFoldable.Coproduct[T, F],
-        Reducible[F]:
+      extends Safe[F],
+        DerivedFoldable.Coproduct[T, F]:
 
-    final override def reduceLeftTo[A, B](fa: F[A])(f: A => B)(g: (B, A) => B): B =
-      inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => F.reduceLeftTo(fa)(f)(g))
+    private[derived] final override def safeReduceLeftTo[A, B](fa: F[A])(f: A => B)(g: (B, A) => B): Eval[B] =
+      Eval.defer(inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) =>
+        DerivedReducible.safeReduceLeftTo(F)(fa)(f)(g)
+      ))
 
     final override def reduceRightTo[A, B](fa: F[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] =
       inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => Eval.defer(F.reduceRightTo(fa)(f)(g)))

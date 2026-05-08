@@ -46,24 +46,46 @@ object DerivedTraverse:
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Traverse |: Derived, G[_]: Traverse |: Derived]: DerivedTraverse[[x] =>> F[G[x]]] = nested
 
+  private[derived] trait Safe[F[_]] extends Traverse[F]:
+    private[derived] def safeTraverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): Eval[G[F[B]]]
+    override def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
+      safeTraverse(fa)(f).value
+
+  private[derived] def safeTraverse[F[_], G[_], A, B](
+      F: Traverse[F]
+  )(fa: F[A])(f: A => G[B])(using G: Applicative[G]): Eval[G[F[B]]] =
+    F match
+      case safe: Safe[F] @scala.unchecked => safe.safeTraverse(fa)(f)
+      case _ => Eval.later(F.traverse(fa)(f))
+
   trait Product[T[f[_]] <: Traverse[f], F[_]](using inst: ProductInstances[T, F])
-      extends Traverse[F],
-        DerivedFunctor.Generic[T, F],
+      extends Safe[F],
+        DerivedFunctor.Product[T, F],
         DerivedFoldable.Product[T, F]:
 
-    final override def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
-      val pure = [a] => (x: a) => G.pure(x)
-      val map = [a, b] => (ga: G[a], f: a => b) => G.map(ga)(f)
-      val ap = [a, b] => (gf: G[a => b], ga: G[a]) => G.ap(gf)(ga)
-      inst.traverse[A, G, B](fa)(map)(pure)(ap)([f[_]] => (F: T[f], fa: f[A]) => F.traverse(fa)(f))
+    private[derived] final override def safeTraverse[G[_], A, B](
+        fa: F[A]
+    )(f: A => G[B])(using G: Applicative[G]): Eval[G[F[B]]] =
+      val pure = [a] => (x: a) => Eval.now(G.pure(x))
+      val mp = [a, b] => (ega: Eval[G[a]], h: a => b) => ega.map(ga => G.map(ga)(h))
+      val ap = [a, b] => (egf: Eval[G[a => b]], ega: Eval[G[a]]) =>
+        egf.flatMap(gf => ega.map(ga => G.ap(gf)(ga)))
+      inst.traverse[A, [x] =>> Eval[G[x]], B](fa)(mp)(pure)(ap)(
+        [f[_]] => (F: T[f], fa: f[A]) => DerivedTraverse.safeTraverse(F)(fa)(f)
+      )
 
   trait Coproduct[T[f[_]] <: Traverse[f], F[_]](using inst: CoproductInstances[T, F])
-      extends Traverse[F],
-        DerivedFunctor.Generic[T, F],
+      extends Safe[F],
+        DerivedFunctor.Coproduct[T, F],
         DerivedFoldable.Coproduct[T, F]:
 
-    final override def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Applicative[G]): G[F[B]] =
-      inst.fold(fa)([f[a] <: F[a]] => (F: T[f], fa: f[A]) => G.widen[f[B], F[B]](F.traverse(fa)(f)))
+    private[derived] final override def safeTraverse[G[_], A, B](
+        fa: F[A]
+    )(f: A => G[B])(using G: Applicative[G]): Eval[G[F[B]]] =
+      Eval.defer(inst.fold(fa):
+        [f[a] <: F[a]] => (F: T[f], fa: f[A]) =>
+          DerivedTraverse.safeTraverse(F)(fa)(f).map(g => G.widen[f[B], F[B]](g)).asInstanceOf[Eval[G[F[B]]]]
+      )
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Traverse]]: DerivedTraverse[F] =

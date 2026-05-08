@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.Order
+import cats.{Eval, Order}
 import shapeless3.deriving.{Complete, Derived}
 import shapeless3.deriving.K0.*
 
@@ -33,18 +33,28 @@ object DerivedOrder:
     given CoproductInstances[Order, A] = inst.unify
     new Coproduct[Order, A] {}
 
-  trait Product[T[x] <: Order[x], A](using inst: ProductInstances[T, A]) extends Order[A]:
-    def compare(x: A, y: A): Int =
-      inst.foldLeft2(x, y)(0: Int):
-        [t] =>
-          (acc: Int, ord: T[t], t0: t, t1: t) =>
-            val cmp = ord.compare(t0, t1)
-            Complete(cmp != 0)(cmp)(acc)
+  private[derived] trait Safe[A] extends Order[A]:
+    private[derived] def safeCompare(x: A, y: A): Eval[Int]
+    override def compare(x: A, y: A): Int = safeCompare(x, y).value
 
-  trait Coproduct[T[x] <: Order[x], A](using inst: CoproductInstances[T, A]) extends Order[A]:
-    def compare(x: A, y: A): Int =
-      inst.fold2(x, y)((x: Int, y: Int) => x - y):
-        [t] => (ord: T[t], t0: t, t1: t) => ord.compare(t0, t1)
+  private[derived] def safeCompare[A](F: Order[A])(x: A, y: A): Eval[Int] =
+    F.asInstanceOf[Matchable] match
+      case safe: Safe[?] => safe.asInstanceOf[Safe[A]].safeCompare(x, y)
+      case _ => Eval.later(F.compare(x, y))
+
+  trait Product[T[x] <: Order[x], A](using inst: ProductInstances[T, A]) extends Safe[A]:
+    private[derived] final override def safeCompare(x: A, y: A): Eval[Int] =
+      inst.foldLeft2[Eval[Int]](x, y)(Eval.now(0)):
+        [t] => (acc: Eval[Int], ord: T[t], t0: t, t1: t) =>
+          val next = acc.flatMap: cmp =>
+            if cmp != 0 then Eval.now(cmp) else DerivedOrder.safeCompare(ord)(t0, t1)
+          Complete(false)(next)(next)
+
+  trait Coproduct[T[x] <: Order[x], A](using inst: CoproductInstances[T, A]) extends Safe[A]:
+    private[derived] final override def safeCompare(x: A, y: A): Eval[Int] =
+      Eval.defer(inst.fold2(x, y)((x: Int, y: Int) => Eval.now(x - y)):
+        [t] => (ord: T[t], t0: t, t1: t) => DerivedOrder.safeCompare(ord)(t0, t1)
+      )
 
   object Strict:
     export DerivedOrder.coproduct

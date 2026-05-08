@@ -63,7 +63,7 @@ object DerivedFunctor:
 
   private[derived] trait Safe[F[_]] extends Functor[F]:
     private[derived] def safeMap[A, B](fa: F[A])(f: A => B): Eval[F[B]]
-    final override def map[A, B](fa: F[A])(f: A => B): F[B] = safeMap(fa)(f).value
+    override def map[A, B](fa: F[A])(f: A => B): F[B] = safeMap(fa)(f).value
 
   private[derived] def safeMap[F[_], A, B](F: Functor[F])(fa: F[A])(f: A => B): Eval[F[B]] =
     F match

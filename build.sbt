@@ -2,7 +2,7 @@ import com.typesafe.tools.mima.core.{MissingClassProblem, ProblemFilters}
 
 val scala212 = "2.12.21"
 val scala213 = "2.13.18"
-val scala3 = "3.3.7"
+val scala3 = "3.3.8"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
@@ -30,15 +30,7 @@ val scala3Options = List(
   "-Xmax-inlines",
   "64",
   "-Wvalue-discard",
-  List(
-    "explicits",
-    "implicits",
-    "imports",
-    "locals",
-    "params",
-    "strict-no-implicit-warn",
-    "unsafe-warn-patvars"
-  ).mkString("-Wunused:", ",", "")
+  "-Wunused:linted,params,patvars"
 )
 
 val scala213Options = List(

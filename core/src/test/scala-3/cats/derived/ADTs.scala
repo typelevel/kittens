@@ -319,8 +319,6 @@ object ADTs:
     )
 
   trait EqInstances:
-    import ADTs.*
-
     given [A: Eq]: Eq[IList[A]] with
       @tailrec final def eqv(x: IList[A], y: IList[A]): Boolean = (x, y) match
         case (ICons(hx, tx), ICons(hy, ty)) => hx === hy && eqv(tx, ty)

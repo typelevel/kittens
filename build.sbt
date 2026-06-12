@@ -30,15 +30,7 @@ val scala3Options = List(
   "-Xmax-inlines",
   "64",
   "-Wvalue-discard",
-  List(
-    "explicits",
-    "implicits",
-    "imports",
-    "locals",
-    "params",
-    "strict-no-implicit-warn",
-    "unsafe-warn-patvars"
-  ).mkString("-Wunused:", ",", "")
+  "-Wunused:linted,params,patvars"
 )
 
 val scala213Options = List(

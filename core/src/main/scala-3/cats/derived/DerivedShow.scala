@@ -22,6 +22,14 @@ object DerivedShow:
     import Strict.given
     summonInline[DerivedShow[A]].instance
 
+  /** Stack-safe (trampolined via [[cats.Eval]]) derivation. Opt-in: slower on shallow data, but does not overflow the
+    * stack on deeply nested recursive ADTs.
+    */
+  inline def stackSafe[A]: Show[A] =
+    import StackSafe.given
+    summonInline[DerivedShow[A]].instance
+
+  // These instances support singleton types unlike the instances in Cats' core.
   given boolean[A <: Boolean]: DerivedShow[A] = Show.fromToString
   given byte[A <: Byte]: DerivedShow[A] = Show.fromToString
   given short[A <: Short]: DerivedShow[A] = Show.fromToString
@@ -40,6 +48,52 @@ object DerivedShow:
   given [A](using => CoproductInstances[Show |: Derived, A]): DerivedShow[A] =
     Strict.coproduct
 
+  // ---- Default: fast direct recursion ----
+
+  trait Product[F[x] <: Show[x], A](using inst: ProductInstances[F, A], labelling: Labelling[A]) extends Show[A]:
+    def show(a: A): String =
+      val prefix = labelling.label
+      val labels = labelling.elemLabels
+      val n = labels.size
+      if n <= 0 then prefix
+      else
+        val sb = new StringBuilder(prefix)
+        sb.append('(')
+        var i = 0
+        while i < n do
+          sb.append(labels(i))
+          sb.append(" = ")
+          sb.append(inst.project(a)(i)([t] => (show: F[t], x: t) => show.show(x)))
+          sb.append(", ")
+          i += 1
+
+        val l = sb.length
+        sb.delete(l - 2, l)
+        sb.append(')')
+        sb.toString
+
+  trait Coproduct[F[x] <: Show[x], A](using inst: CoproductInstances[F, A]) extends Show[A]:
+    def show(a: A): String = inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))
+
+  object Strict:
+    given product[A: Labelling](using => ProductInstances[Show, A]): DerivedShow[A] =
+      new Product[Show, A] {}
+
+    given coproduct[A](using inst: => CoproductInstances[Show |: Derived, A]): DerivedShow[A] =
+      given CoproductInstances[Show, A] = inst.unify
+      new Coproduct[Show, A] {}
+
+  // ---- Opt-in: stack-safe recursion via Eval ----
+
+  object StackSafe:
+    given product[A](using inst: ProductInstances[Show |: Derived, A], labelling: Labelling[A]): DerivedShow[A] =
+      given ProductInstances[Show, A] = inst.unify
+      new SafeProduct[Show, A] {}
+
+    given coproduct[A](using inst: => CoproductInstances[Show |: Derived, A]): DerivedShow[A] =
+      given CoproductInstances[Show, A] = inst.unify
+      new SafeCoproduct[Show, A] {}
+
   private[derived] trait Safe[A] extends Show[A]:
     private[derived] def safeShow(a: A): Eval[String]
     override def show(a: A): String = safeShow(a).value
@@ -49,7 +103,7 @@ object DerivedShow:
       case safe: Safe[?] => safe.asInstanceOf[Safe[A]].safeShow(a)
       case _ => Eval.later(F.show(a))
 
-  trait Product[F[x] <: Show[x], A](using inst: ProductInstances[F, A], labelling: Labelling[A]) extends Safe[A]:
+  trait SafeProduct[F[x] <: Show[x], A](using inst: ProductInstances[F, A], labelling: Labelling[A]) extends Safe[A]:
     private[derived] final override def safeShow(a: A): Eval[String] =
       val prefix = labelling.label
       val labels = labelling.elemLabels
@@ -71,14 +125,6 @@ object DerivedShow:
           built.append(')')
           built.toString
 
-  trait Coproduct[F[x] <: Show[x], A](using inst: CoproductInstances[F, A]) extends Safe[A]:
+  trait SafeCoproduct[F[x] <: Show[x], A](using inst: CoproductInstances[F, A]) extends Safe[A]:
     private[derived] final override def safeShow(a: A): Eval[String] =
       Eval.defer(inst.fold[Eval[String]](a)([t] => (st: F[t], t: t) => DerivedShow.safeShow(st)(t)))
-
-  object Strict:
-    given product[A: Labelling](using => ProductInstances[Show, A]): DerivedShow[A] =
-      new Product[Show, A] {}
-
-    given coproduct[A](using inst: => CoproductInstances[Show |: Derived, A]): DerivedShow[A] =
-      given CoproductInstances[Show, A] = inst.unify
-      new Coproduct[Show, A] {}

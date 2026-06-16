@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.{Bifunctor, Eval, Functor}
+import cats.{Bifunctor, Functor}
 import shapeless3.deriving.Derived
 import shapeless3.deriving.K2.*
 
@@ -46,47 +46,17 @@ object DerivedBifunctor:
     new Lazy(() => F.unify.compose(using G.unify)) with Bifunctor[[a, b] =>> F[G[a, b], G[a, b]]]:
       export delegate.*
 
-  given [F[_, _]](using inst: ProductInstances[Bifunctor |: Derived, F]): DerivedBifunctor[F] =
-    Strict.product(using inst.unify)
+  given generic[F[_, _]](using inst: => Instances[Bifunctor |: Derived, F]): DerivedBifunctor[F] =
+    gen(using inst.unify)
 
-  given [F[_, _]](using => CoproductInstances[Bifunctor |: Derived, F]): DerivedBifunctor[F] =
-    Strict.coproduct
-
-  private[derived] trait Safe[F[_, _]] extends Bifunctor[F]:
-    private[derived] def safeBimap[A, B, C, D](fab: F[A, B])(f: A => C, g: B => D): Eval[F[C, D]]
-    override def bimap[A, B, C, D](fab: F[A, B])(f: A => C, g: B => D): F[C, D] = safeBimap(fab)(f, g).value
-
-  private[derived] def safeBimap[F[_, _], A, B, C, D](
-      F: Bifunctor[F]
-  )(fab: F[A, B])(f: A => C, g: B => D): Eval[F[C, D]] =
-    F match
-      case safe: Safe[F] @scala.unchecked => safe.safeBimap(fab)(f, g)
-      case _ => Eval.later(F.bimap(fab)(f, g))
+  private def gen[F[_, _]: InstancesOf[Bifunctor]]: DerivedBifunctor[F] =
+    new Generic[Bifunctor, F] {}
 
   trait Generic[T[f[_, _]] <: Bifunctor[f], F[_, _]](using inst: Instances[T, F]) extends Bifunctor[F]:
     final override def bimap[A, B, C, D](fab: F[A, B])(f: A => C, g: B => D): F[C, D] =
       inst.map(fab)([f[_, _]] => (F: T[f], fa: f[A, B]) => F.bimap(fa)(f, g))
 
-  trait Product[T[f[_, _]] <: Bifunctor[f], F[_, _]](using inst: ProductInstances[T, F]) extends Safe[F]:
-    private[derived] final override def safeBimap[A, B, C, D](fab: F[A, B])(f: A => C, g: B => D): Eval[F[C, D]] =
-      val pure = [a] => (x: a) => Eval.now(x)
-      val mp = [a, b] => (ea: Eval[a], h: a => b) => ea.map(h)
-      val ap = [a, b] => (ef: Eval[a => b], ea: Eval[a]) => ef.flatMap(h => ea.map(h))
-      inst.traverse[A, B, Eval, C, D](fab)(mp)(pure)(ap)(
-        [f[_, _]] => (F: T[f], fa: f[A, B]) => DerivedBifunctor.safeBimap(F)(fa)(f, g)
-      )
-
-  trait Coproduct[T[f[_, _]] <: Bifunctor[f], F[_, _]](using inst: CoproductInstances[T, F]) extends Safe[F]:
-    private[derived] final override def safeBimap[A, B, C, D](fab: F[A, B])(f: A => C, g: B => D): Eval[F[C, D]] =
-      Eval.defer(inst.fold(fab):
-        [f[a, b] <: F[a, b]] => (F: T[f], fa: f[A, B]) =>
-          DerivedBifunctor.safeBimap(F)(fa)(f, g).asInstanceOf[Eval[F[C, D]]]
-      )
-
   object Strict:
-    given product[F[_, _]: ProductInstancesOf[Bifunctor]]: DerivedBifunctor[F] =
-      new Product[Bifunctor, F] {}
-
+    given product[F[_, _]: ProductInstancesOf[Bifunctor]]: DerivedBifunctor[F] = gen
     given coproduct[F[_, _]](using inst: => CoproductInstances[Bifunctor |: Derived, F]): DerivedBifunctor[F] =
-      given CoproductInstances[Bifunctor, F] = inst.unify
-      new Coproduct[Bifunctor, F] {}
+      gen(using inst.unify)

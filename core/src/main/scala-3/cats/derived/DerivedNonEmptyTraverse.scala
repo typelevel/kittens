@@ -25,6 +25,14 @@ object DerivedNonEmptyTraverse:
     import DerivedNonEmptyTraverse.Strict.given
     summonInline[DerivedNonEmptyTraverse[F]].instance
 
+  /** Stack-safe (trampolined via [[cats.Eval]]) derivation. Opt-in: slower on shallow data, but does not overflow the
+    * stack on deeply nested recursive ADTs.
+    */
+  inline def stackSafe[F[_]]: NonEmptyTraverse[F] =
+    import DerivedTraverse.StackSafe.given
+    import DerivedNonEmptyTraverse.StackSafe.given
+    summonInline[DerivedNonEmptyTraverse[F]].instance
+
   given nested[F[_], G[_]](using
       F: => (NonEmptyTraverse |: Derived)[F],
       G: => (NonEmptyTraverse |: Derived)[G]
@@ -47,34 +55,6 @@ object DerivedNonEmptyTraverse:
   protected given [F[_]: NonEmptyTraverse |: Derived, G[_]: NonEmptyTraverse |: Derived]
       : DerivedNonEmptyTraverse[[x] =>> F[G[x]]] = nested
 
-  trait Product[T[x[_]] <: Traverse[x], F[_]](@unused ev: NonEmptyTraverse[?])(using
-      @unused inst: ProductInstances[T, F]
-  ) extends NonEmptyTraverse[F],
-        DerivedReducible.Product[T, F],
-        DerivedTraverse.Product[T, F]:
-
-    final override def nonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
-      given Applicative[Alt[G]] = altApplicative[G]
-      DerivedTraverse.safeTraverse[F, Alt[G], A, B](this)(fa)(f.andThen(Left.apply)).value match
-        case Left(value) => value
-        case Right(_) => ???
-
-  trait Coproduct[T[x[_]] <: NonEmptyTraverse[x], F[_]](using inst: CoproductInstances[T, F])
-      extends NonEmptyTraverse[F],
-        DerivedReducible.Coproduct[T, F],
-        DerivedTraverse.Coproduct[T, F]:
-
-    final override def nonEmptyTraverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Apply[G]): G[F[B]] =
-      safeNonEmptyTraverse(fa)(f).value
-
-    private[derived] def safeNonEmptyTraverse[G[_], A, B](
-        fa: F[A]
-    )(f: A => G[B])(using G: Apply[G]): Eval[G[F[B]]] =
-      Eval.defer(inst.fold(fa):
-        [f[a] <: F[a]] => (F: T[f], fa: f[A]) =>
-          Eval.later(F.nonEmptyTraverse(fa)(f)).map(g => G.widen[f[B], F[B]](g)).asInstanceOf[Eval[G[F[B]]]]
-      )
-
   private type Alt[F[_]] = [A] =>> Either[F[A], A]
   private def altApplicative[F[_]](using F: Apply[F]): Applicative[Alt[F]] = new Applicative[Alt[F]]:
     override def pure[A](x: A) = Right(x)
@@ -89,9 +69,33 @@ object DerivedNonEmptyTraverse:
 
   private given [F[_]](using F: Apply[F]): Applicative[Alt[F]] = altApplicative[F]
 
+  // ---- Default: fast direct recursion ----
+
+  trait Product[T[x[_]] <: Traverse[x], F[_]](@unused ev: NonEmptyTraverse[?])(using
+      @unused inst: ProductInstances[T, F]
+  ) extends NonEmptyTraverse[F],
+        DerivedReducible.Product[T, F],
+        DerivedTraverse.Product[T, F]:
+
+    final override def nonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
+      traverse[Alt[G], A, B](fa)(f.andThen(Left.apply)) match
+        case Left(value) => value
+        case Right(_) => ???
+
+  trait Coproduct[T[x[_]] <: NonEmptyTraverse[x], F[_]](using inst: CoproductInstances[T, F])
+      extends NonEmptyTraverse[F],
+        DerivedReducible.Coproduct[T, F],
+        DerivedTraverse.Coproduct[T, F]:
+
+    final override def nonEmptyTraverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Apply[G]): G[F[B]] =
+      inst.fold(fa)([f[a] <: F[a]] => (F: T[f], fa: f[A]) => G.widen[f[B], F[B]](F.nonEmptyTraverse(fa)(f)))
+
   object Strict:
     def product[F[_]: ProductInstancesOf[Traverse]](ev: NonEmptyTraverse[?]): DerivedNonEmptyTraverse[F] =
-      new Product[Traverse, F](ev) with DerivedReducible.Product[Traverse, F](ev) {}
+      new Product[Traverse, F](ev)
+        with DerivedReducible.Product[Traverse, F](ev)
+        with DerivedTraverse.Product[Traverse, F]
+        with DerivedFunctor.Generic[Traverse, F] {}
 
     inline given product[F[_]](using gen: ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
       product(summonFirst[NonEmptyTraverse, gen.MirroredElemTypes])
@@ -100,4 +104,47 @@ object DerivedNonEmptyTraverse:
         inst: => CoproductInstances[NonEmptyTraverse |: Derived, F]
     ): DerivedNonEmptyTraverse[F] =
       given CoproductInstances[NonEmptyTraverse, F] = inst.unify
-      new Coproduct[NonEmptyTraverse, F] {}
+      new NonEmptyTraverse[F] with Coproduct[NonEmptyTraverse, F] {}
+
+  // ---- Opt-in: stack-safe recursion via Eval ----
+
+  object StackSafe:
+    def product[F[_]: ProductInstancesOf[Traverse]](ev: NonEmptyTraverse[?]): DerivedNonEmptyTraverse[F] =
+      new SafeProduct[Traverse, F](ev) with DerivedReducible.SafeProduct[Traverse, F](ev) {}
+
+    inline given product[F[_]](using gen: ProductGeneric[F]): DerivedNonEmptyTraverse[F] =
+      product(summonFirst[NonEmptyTraverse, gen.MirroredElemTypes])
+
+    given coproduct[F[_]](using
+        inst: => CoproductInstances[NonEmptyTraverse |: Derived, F]
+    ): DerivedNonEmptyTraverse[F] =
+      given CoproductInstances[NonEmptyTraverse, F] = inst.unify
+      new SafeCoproduct[NonEmptyTraverse, F] {}
+
+  trait SafeProduct[T[x[_]] <: Traverse[x], F[_]](@unused ev: NonEmptyTraverse[?])(using
+      @unused inst: ProductInstances[T, F]
+  ) extends NonEmptyTraverse[F],
+        DerivedReducible.SafeProduct[T, F],
+        DerivedTraverse.SafeProduct[T, F]:
+
+    final override def nonEmptyTraverse[G[_]: Apply, A, B](fa: F[A])(f: A => G[B]): G[F[B]] =
+      given Applicative[Alt[G]] = altApplicative[G]
+      DerivedTraverse.safeTraverse[F, Alt[G], A, B](this)(fa)(f.andThen(Left.apply)).value match
+        case Left(value) => value
+        case Right(_) => ???
+
+  trait SafeCoproduct[T[x[_]] <: NonEmptyTraverse[x], F[_]](using inst: CoproductInstances[T, F])
+      extends NonEmptyTraverse[F],
+        DerivedReducible.SafeCoproduct[T, F],
+        DerivedTraverse.SafeCoproduct[T, F]:
+
+    final override def nonEmptyTraverse[G[_], A, B](fa: F[A])(f: A => G[B])(using G: Apply[G]): G[F[B]] =
+      safeNonEmptyTraverse(fa)(f).value
+
+    private[derived] def safeNonEmptyTraverse[G[_], A, B](
+        fa: F[A]
+    )(f: A => G[B])(using G: Apply[G]): Eval[G[F[B]]] =
+      Eval.defer(inst.fold(fa):
+        [f[a] <: F[a]] => (F: T[f], fa: f[A]) =>
+          Eval.later(F.nonEmptyTraverse(fa)(f)).map(g => G.widen[f[B], F[B]](g)).asInstanceOf[Eval[G[F[B]]]]
+      )

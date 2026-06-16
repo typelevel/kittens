@@ -24,6 +24,13 @@ object DerivedContravariant:
     import Strict.given
     summonInline[DerivedContravariant[F]].instance
 
+  /** Stack-safe (trampolined via [[cats.Eval]]) derivation. Opt-in: slower on shallow data, but does not overflow the
+    * stack on deeply nested recursive ADTs.
+    */
+  inline def stackSafe[F[_]]: Contravariant[F] =
+    import StackSafe.given
+    summonInline[DerivedContravariant[F]].instance
+
   given [T]: DerivedContravariant[Const[T]] = new Contravariant[Const[T]]:
     def contramap[A, B](fa: T)(f: B => A): T = fa
 
@@ -44,6 +51,31 @@ object DerivedContravariant:
   protected given [F[_]: Functor |: Derived, G[_]: Contravariant |: Derived]: DerivedContravariant[[x] =>> F[G[x]]] =
     nested
 
+  // ---- Default: fast direct recursion ----
+
+  private def generic[F[_]: InstancesOf[Contravariant]]: DerivedContravariant[F] =
+    new Generic[Contravariant, F] {}
+
+  trait Generic[T[f[_]] <: Contravariant[f], F[_]](using inst: Instances[T, F]) extends Contravariant[F]:
+    final override def contramap[A, B](fa: F[A])(f: B => A): F[B] =
+      inst.map(fa)([f[_]] => (T: T[f], fa: f[A]) => T.contramap(fa)(f))
+
+  object Strict:
+    given product[F[_]: ProductInstancesOf[Contravariant]]: DerivedContravariant[F] = generic
+    given coproduct[F[_]](using inst: => CoproductInstances[Contravariant |: Derived, F]): DerivedContravariant[F] =
+      generic(using inst.unify)
+
+  // ---- Opt-in: stack-safe recursion via Eval ----
+
+  object StackSafe:
+    given product[F[_]](using inst: ProductInstances[Contravariant |: Derived, F]): DerivedContravariant[F] =
+      given ProductInstances[Contravariant, F] = inst.unify
+      new SafeProduct[Contravariant, F] {}
+
+    given coproduct[F[_]](using inst: => CoproductInstances[Contravariant |: Derived, F]): DerivedContravariant[F] =
+      given CoproductInstances[Contravariant, F] = inst.unify
+      new SafeCoproduct[Contravariant, F] {}
+
   private[derived] trait Safe[F[_]] extends Contravariant[F]:
     private[derived] def safeContramap[A, B](fa: F[A])(f: B => A): Eval[F[B]]
     override def contramap[A, B](fa: F[A])(f: B => A): F[B] = safeContramap(fa)(f).value
@@ -53,11 +85,7 @@ object DerivedContravariant:
       case safe: Safe[F] @scala.unchecked => safe.safeContramap(fa)(f)
       case _ => Eval.later(F.contramap(fa)(f))
 
-  trait Generic[T[f[_]] <: Contravariant[f], F[_]](using inst: Instances[T, F]) extends Contravariant[F]:
-    final override def contramap[A, B](fa: F[A])(f: B => A): F[B] =
-      inst.map(fa)([f[_]] => (T: T[f], fa: f[A]) => T.contramap(fa)(f))
-
-  trait Product[T[f[_]] <: Contravariant[f], F[_]](using inst: ProductInstances[T, F]) extends Safe[F]:
+  trait SafeProduct[T[f[_]] <: Contravariant[f], F[_]](using inst: ProductInstances[T, F]) extends Safe[F]:
     private[derived] final override def safeContramap[A, B](fa: F[A])(f: B => A): Eval[F[B]] =
       val pure = [a] => (x: a) => Eval.now(x)
       val mp = [a, b] => (ea: Eval[a], g: a => b) => ea.map(g)
@@ -66,17 +94,9 @@ object DerivedContravariant:
         [f[_]] => (F: T[f], fa: f[A]) => DerivedContravariant.safeContramap(F)(fa)(f)
       )
 
-  trait Coproduct[T[f[_]] <: Contravariant[f], F[_]](using inst: CoproductInstances[T, F]) extends Safe[F]:
+  trait SafeCoproduct[T[f[_]] <: Contravariant[f], F[_]](using inst: CoproductInstances[T, F]) extends Safe[F]:
     private[derived] final override def safeContramap[A, B](fa: F[A])(f: B => A): Eval[F[B]] =
       Eval.defer(inst.fold(fa)(
         [f[a] <: F[a]] => (F: T[f], fa: f[A]) =>
           DerivedContravariant.safeContramap(F)(fa)(f).asInstanceOf[Eval[F[B]]]
       ))
-
-  object Strict:
-    given product[F[_]: ProductInstancesOf[Contravariant]]: DerivedContravariant[F] =
-      new Product[Contravariant, F] {}
-
-    given coproduct[F[_]](using inst: => CoproductInstances[Contravariant |: Derived, F]): DerivedContravariant[F] =
-      given CoproductInstances[Contravariant, F] = inst.unify
-      new Coproduct[Contravariant, F] {}

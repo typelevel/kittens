@@ -74,30 +74,9 @@ object DerivedBifoldable:
   given [F[_, _]](using => CoproductInstances[Bifoldable |: Derived, F]): DerivedBifoldable[F] =
     Strict.coproduct
 
-  private[derived] trait Safe[F[_, _]] extends Bifoldable[F]:
-    private[derived] def safeBifoldLeft[A, B, C](fab: F[A, B], c: Eval[C])(
-        f: (C, A) => C,
-        g: (C, B) => C
-    ): Eval[C]
-    override def bifoldLeft[A, B, C](fab: F[A, B], c: C)(f: (C, A) => C, g: (C, B) => C): C =
-      safeBifoldLeft(fab, Eval.now(c))(f, g).value
-
-  private[derived] def safeBifoldLeft[F[_, _], A, B, C](F: Bifoldable[F])(fab: F[A, B], c: Eval[C])(
-      f: (C, A) => C,
-      g: (C, B) => C
-  ): Eval[C] =
-    F match
-      case safe: Safe[F] @scala.unchecked => safe.safeBifoldLeft(fab, c)(f, g)
-      case _ => c.map(F.bifoldLeft(fab, _)(f, g))
-
-  trait Product[T[f[_, _]] <: Bifoldable[f], F[_, _]](using inst: ProductInstances[T, F]) extends Safe[F]:
-    private[derived] final override def safeBifoldLeft[A, B, C](fab: F[A, B], c: Eval[C])(
-        f: (C, A) => C,
-        g: (C, B) => C
-    ): Eval[C] =
-      inst.foldLeft[A, B, Eval[C]](fab)(c):
-        [f[_, _]] => (acc: Eval[C], F: T[f], fab: f[A, B]) =>
-          DerivedBifoldable.safeBifoldLeft(F)(fab, acc)(f, g)
+  trait Product[T[f[_, _]] <: Bifoldable[f], F[_, _]](using inst: ProductInstances[T, F]) extends Bifoldable[F]:
+    final override def bifoldLeft[A, B, C](fab: F[A, B], c: C)(f: (C, A) => C, g: (C, B) => C): C =
+      inst.foldLeft(fab)(c)([f[_, _]] => (c: C, F: T[f], fab: f[A, B]) => F.bifoldLeft(fab, c)(f, g))
 
     final override def bifoldRight[A, B, C](fab: F[A, B], c: Eval[C])(
         f: (A, Eval[C]) => Eval[C],
@@ -105,15 +84,9 @@ object DerivedBifoldable:
     ): Eval[C] = inst.foldRight(fab)(c):
       [f[_, _]] => (F: T[f], fab: f[A, B], c: Eval[C]) => Eval.defer(F.bifoldRight(fab, c)(f, g))
 
-  trait Coproduct[T[f[_, _]] <: Bifoldable[f], F[_, _]](using inst: CoproductInstances[T, F]) extends Safe[F]:
-    private[derived] final override def safeBifoldLeft[A, B, C](fab: F[A, B], c: Eval[C])(
-        f: (C, A) => C,
-        g: (C, B) => C
-    ): Eval[C] =
-      Eval.defer(inst.fold(fab):
-        [f[_, _]] => (F: T[f], fab: f[A, B]) =>
-          DerivedBifoldable.safeBifoldLeft(F)(fab, c)(f, g)
-      )
+  trait Coproduct[T[f[_, _]] <: Bifoldable[f], F[_, _]](using inst: CoproductInstances[T, F]) extends Bifoldable[F]:
+    final override def bifoldLeft[A, B, C](fab: F[A, B], c: C)(f: (C, A) => C, g: (C, B) => C): C =
+      inst.fold(fab)([f[_, _]] => (F: T[f], fab: f[A, B]) => F.bifoldLeft(fab, c)(f, g))
 
     final override def bifoldRight[A, B, C](fab: F[A, B], c: Eval[C])(
         f: (A, Eval[C]) => Eval[C],

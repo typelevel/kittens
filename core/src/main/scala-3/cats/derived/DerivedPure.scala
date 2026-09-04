@@ -42,4 +42,5 @@ object DerivedPure:
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Pure]]: DerivedPure[F] = new Pure[F]:
-      def pure[A](a: A): F[A] = ProductInstances.construct([f[_]] => (F: Pure[f]) => F.pure(a))
+      def pure[A](a: A): F[A] = ProductInstances.construct: [f[_]] =>
+        F => F.pure(a)

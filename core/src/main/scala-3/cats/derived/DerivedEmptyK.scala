@@ -61,9 +61,10 @@ object DerivedEmptyK:
 
   object Strict:
     given product[F[_]: ProductInstancesOf[EmptyK]]: DerivedEmptyK[F] = new EmptyK[F]:
-      def empty[A]: F[A] = ProductInstances.construct([f[_]] => (F: EmptyK[f]) => F.empty[A])
+      def empty[A]: F[A] = ProductInstances.construct: [f[_]] =>
+        F => F.empty[A]
 
     @nowarn("id=E197")
     inline given coproduct[F[_]: CoproductGeneric]: DerivedEmptyK[F] =
       CoproductGeneric.withOnly[EmptyK |: Derived, EmptyK[F]]: [f[x] <: F[x]] =>
-        (F: (EmptyK |: Derived)[f]) => F.asInstanceOf[EmptyK[F]]
+        F => F.asInstanceOf[EmptyK[F]]

@@ -2,12 +2,13 @@ import com.typesafe.tools.mima.core.{MissingClassProblem, ProblemFilters}
 
 val scala212 = "2.12.21"
 val scala213 = "2.13.18"
-val scala3 = "3.3.8"
+val scala3 = "3.9.0"
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / scalaVersion := scala3
-ThisBuild / tlBaseVersion := "3.5"
+ThisBuild / tlBaseVersion := "3.6"
 ThisBuild / organization := "org.typelevel"
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("17"))
 
 val catsVersion = "2.13.0"
 val munitVersion = "1.3.6"
@@ -26,7 +27,6 @@ val commonOptions = List(
 )
 
 val scala3Options = List(
-  "-source:future",
   "-Xmax-inlines",
   "64",
   "-Wvalue-discard",

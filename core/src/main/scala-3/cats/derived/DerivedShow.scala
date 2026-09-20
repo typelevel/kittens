@@ -54,7 +54,7 @@ object DerivedShow:
         while i < n do
           sb.append(labels(i))
           sb.append(" = ")
-          sb.append(inst.project(a)(i)([t] => (show: F[t], x: t) => show.show(x)))
+          sb.append(inst.project(a)(i)([t] => (show, x) => show.show(x)))
           sb.append(", ")
           i += 1
 
@@ -64,7 +64,8 @@ object DerivedShow:
         sb.toString
 
   trait Coproduct[F[x] <: Show[x], A](using inst: CoproductInstances[F, A]) extends Show[A]:
-    def show(a: A): String = inst.fold(a)([t] => (st: F[t], t: t) => st.show(t))
+    def show(a: A): String = inst.fold(a): [t] =>
+      (st, t) => st.show(t)
 
   object Strict:
     given product[A: Labelling](using => ProductInstances[Show, A]): DerivedShow[A] =

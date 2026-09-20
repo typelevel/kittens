@@ -76,7 +76,7 @@ object DerivedShowPretty:
           case h :: t => lines :::= s"  ${labels(n - 1)} = $h" :: t.map(s => "  " + s)
         var i = n - 2
         while i >= 0 do
-          inst.project(a)(i)([a] => (show: Or[a], x: a) => show(x)) match
+          inst.project(a)(i)([a] => (show, x) => show(x)) match
             case Nil => lines ::= s"  ${labels(i)} = \"\","
             case v :: Nil => lines ::= s"  ${labels(i)} = $v,"
             case h :: t => lines = s"  ${labels(i)} = $h" :: t.init.map(s => "  " + s) ::: s"  ${t.last}," :: lines
@@ -84,10 +84,12 @@ object DerivedShowPretty:
         s"$prefix(" :: lines
 
   trait Coproduct[A](using inst: CoproductInstances[Or, A]) extends ShowPretty[A]:
-    def showLines(a: A): List[String] = inst.fold(a)([a] => (show: DerivedShowPretty.Or[a], x: a) => show(x))
+    def showLines(a: A): List[String] = inst.fold(a): [a] =>
+      (show, x) => show(x)
 
   object Strict:
     export DerivedShowPretty.coproduct
     given product[A: Labelling](using inst: => ProductInstances[Show, A]): DerivedShowPretty[A] =
-      given ProductInstances[Or, A] = inst.mapK([a] => (show: Show[a]) => DerivedShowPretty.Or.fromShow(show))
+      given ProductInstances[Or, A] = inst.mapK: [a] =>
+        show => DerivedShowPretty.Or.fromShow(show)
       DerivedShowPretty.product

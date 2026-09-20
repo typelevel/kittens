@@ -46,7 +46,8 @@ object DerivedContravariant:
 
   trait Generic[T[f[_]] <: Contravariant[f], F[_]](using inst: Instances[T, F]) extends Contravariant[F]:
     final override def contramap[A, B](fa: F[A])(f: B => A): F[B] =
-      inst.map(fa)([f[_]] => (T: T[f], fa: f[A]) => T.contramap(fa)(f))
+      inst.map(fa): [f[_]] =>
+        (T, fa) => T.contramap(fa)(f)
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Contravariant]]: DerivedContravariant[F] = generic

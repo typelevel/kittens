@@ -63,7 +63,8 @@ object DerivedFunctor:
 
   trait Generic[T[f[_]] <: Functor[f], F[_]](using inst: Instances[T, F]) extends Functor[F]:
     final override def map[A, B](fa: F[A])(f: A => B): F[B] =
-      inst.map(fa)([f[_]] => (F: T[f], fa: f[A]) => F.map(fa)(f))
+      inst.map(fa): [f[_]] =>
+        (F, fa) => F.map(fa)(f)
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Functor]]: DerivedFunctor[F] = generic

@@ -30,8 +30,8 @@ object DerivedEmpty:
 
   object Strict:
     given product[A: ProductInstancesOf[Empty]]: DerivedEmpty[A] =
-      Empty(ProductInstances.construct([a] => (A: Empty[a]) => A.empty))
+      Empty(ProductInstances.construct([a] => A => A.empty))
 
     @nowarn("id=E197")
     inline given coproduct[A: CoproductGeneric]: DerivedEmpty[A] =
-      Empty(CoproductGeneric.withOnly[Empty |: Derived, A]([a <: A] => (A: (Empty |: Derived)[a]) => A.unify.empty))
+      Empty(CoproductGeneric.withOnly[Empty |: Derived, A]([a <: A] => A => A.unify.empty))

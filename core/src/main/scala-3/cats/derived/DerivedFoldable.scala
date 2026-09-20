@@ -46,17 +46,21 @@ object DerivedFoldable:
 
   trait Product[T[f[_]] <: Foldable[f], F[_]](using inst: ProductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-      inst.foldLeft(fa)(b)([f[_]] => (b: B, F: T[f], fa: f[A]) => F.foldLeft(fa, b)(f))
+      inst.foldLeft(fa)(b): [f[_]] =>
+        (b, F, fa) => F.foldLeft(fa, b)(f)
 
     final override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-      inst.foldRight(fa)(lb)([f[_]] => (F: T[f], fa: f[A], lb: Eval[B]) => Eval.defer(F.foldRight(fa, lb)(f)))
+      inst.foldRight(fa)(lb): [f[_]] =>
+        (F, fa, lb) => Eval.defer(F.foldRight(fa, lb)(f))
 
   trait Coproduct[T[f[_]] <: Foldable[f], F[_]](using inst: CoproductInstances[T, F]) extends Foldable[F]:
     final override def foldLeft[A, B](fa: F[A], b: B)(f: (B, A) => B): B =
-      inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => F.foldLeft(fa, b)(f))
+      inst.fold(fa): [f[_]] =>
+        (F, fa) => F.foldLeft(fa, b)(f)
 
     final override def foldRight[A, B](fa: F[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-      inst.fold(fa)([f[_]] => (F: T[f], fa: f[A]) => Eval.defer(F.foldRight(fa, lb)(f)))
+      inst.fold(fa): [f[_]] =>
+        (F, fa) => Eval.defer(F.foldRight(fa, lb)(f))
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Foldable]]: DerivedFoldable[F] =

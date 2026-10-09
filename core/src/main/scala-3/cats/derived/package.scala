@@ -158,6 +158,37 @@ object strict:
     inline def bifoldable[F[_, _]]: Bifoldable[F] = DerivedBifoldable.strict[F]
     inline def bitraverse[F[_, _]]: Bitraverse[F] = DerivedBitraverse.strict[F]
 
+/** Stack-safe (trampolined via [[cats.Eval]]) variants of the derivations. Opt-in: slower on shallow data, but do not
+  * overflow the stack on deeply nested recursive ADTs.
+  */
+object stackSafe:
+  extension (x: Eq.type) inline def derived[A]: Eq[A] = DerivedEq.stackSafe[A]
+  extension (x: Hash.type) inline def derived[A]: Hash[A] = DerivedHash.stackSafe[A]
+  extension (x: PartialOrder.type) inline def derived[A]: PartialOrder[A] = DerivedPartialOrder.stackSafe[A]
+  extension (x: Order.type) inline def derived[A]: Order[A] = DerivedOrder.stackSafe[A]
+  extension (x: Show.type) inline def derived[A]: Show[A] = DerivedShow.stackSafe[A]
+  extension (x: Invariant.type) inline def derived[F[_]]: Invariant[F] = DerivedInvariant.stackSafe[F]
+  extension (x: Functor.type) inline def derived[F[_]]: Functor[F] = DerivedFunctor.stackSafe[F]
+  extension (x: Contravariant.type) inline def derived[F[_]]: Contravariant[F] = DerivedContravariant.stackSafe[F]
+  extension (x: Foldable.type) inline def derived[F[_]]: Foldable[F] = DerivedFoldable.stackSafe[F]
+  extension (x: Reducible.type) inline def derived[F[_]]: Reducible[F] = DerivedReducible.stackSafe[F]
+  extension (x: Traverse.type) inline def derived[F[_]]: Traverse[F] = DerivedTraverse.stackSafe[F]
+  extension (x: NonEmptyTraverse.type) inline def derived[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.stackSafe[F]
+
+  object semiauto:
+    inline def eq[A]: Eq[A] = DerivedEq.stackSafe[A]
+    inline def hash[A]: Hash[A] = DerivedHash.stackSafe[A]
+    inline def partialOrder[A]: PartialOrder[A] = DerivedPartialOrder.stackSafe[A]
+    inline def order[A]: Order[A] = DerivedOrder.stackSafe[A]
+    inline def show[A]: Show[A] = DerivedShow.stackSafe[A]
+    inline def invariant[F[_]]: Invariant[F] = DerivedInvariant.stackSafe[F]
+    inline def functor[F[_]]: Functor[F] = DerivedFunctor.stackSafe[F]
+    inline def contravariant[F[_]]: Contravariant[F] = DerivedContravariant.stackSafe[F]
+    inline def foldable[F[_]]: Foldable[F] = DerivedFoldable.stackSafe[F]
+    inline def reducible[F[_]]: Reducible[F] = DerivedReducible.stackSafe[F]
+    inline def traverse[F[_]]: Traverse[F] = DerivedTraverse.stackSafe[F]
+    inline def nonEmptyTraverse[F[_]]: NonEmptyTraverse[F] = DerivedNonEmptyTraverse.stackSafe[F]
+
 object auto:
   private type NotGiven0[F[_]] = [A] =>> NotGiven[F[A]]
   private type NotGiven1[T[_[_]]] = [F[_]] =>> NotGiven[T[F]]

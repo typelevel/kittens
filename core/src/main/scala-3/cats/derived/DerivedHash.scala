@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.Hash
+import cats.{Eval, Hash}
 import shapeless3.deriving.Derived
 import shapeless3.deriving.K0.*
 
@@ -23,6 +23,13 @@ object DerivedHash:
     import Strict.given
     summonInline[DerivedHash[A]].instance
 
+  /** Stack-safe (trampolined via [[cats.Eval]]) derivation. Opt-in: slower on shallow data, but does not overflow the
+    * stack on deeply nested recursive ADTs.
+    */
+  inline def stackSafe[A]: Hash[A] =
+    import StackSafe.given
+    summonInline[DerivedHash[A]].instance
+
   // These instances support singleton types unlike the instances in Cats' kernel.
   given boolean[A <: Boolean]: DerivedHash[A] = Hash.fromUniversalHashCode
   given byte[A <: Byte]: DerivedHash[A] = Hash.fromUniversalHashCode
@@ -41,6 +48,8 @@ object DerivedHash:
   given coproduct[A](using inst: => CoproductInstances[Hash |: Derived, A]): DerivedHash[A] =
     given CoproductInstances[Hash, A] = inst.unify
     new Coproduct[Hash, A] {}
+
+  // ---- Default: fast direct recursion ----
 
   trait Product[F[x] <: Hash[x], A <: scala.Product](using inst: ProductInstances[F, A])
       extends DerivedEq.Product[F, A],
@@ -62,3 +71,44 @@ object DerivedHash:
     export DerivedHash.coproduct
     given product[A <: scala.Product: ProductInstancesOf[Hash]]: DerivedHash[A] =
       new Product[Hash, A] {}
+
+  // ---- Opt-in: stack-safe recursion via Eval ----
+
+  object StackSafe:
+    given product[A <: scala.Product](using inst: => ProductInstances[Hash |: Derived, A]): DerivedHash[A] =
+      given ProductInstances[Hash, A] = inst.unify
+      new SafeProduct[Hash, A] {}
+
+    given coproduct[A](using inst: => CoproductInstances[Hash |: Derived, A]): DerivedHash[A] =
+      given CoproductInstances[Hash, A] = inst.unify
+      new SafeCoproduct[Hash, A] {}
+
+  private[derived] trait Safe[A] extends Hash[A]:
+    private[derived] def safeHash(x: A): Eval[Int]
+    override def hash(x: A): Int = safeHash(x).value
+
+  private[derived] def safeHash[A](F: Hash[A])(x: A): Eval[Int] =
+    F.asInstanceOf[Matchable] match
+      case safe: Safe[?] => safe.asInstanceOf[Safe[A]].safeHash(x)
+      case _ => Eval.later(F.hash(x))
+
+  trait SafeProduct[F[x] <: Hash[x], A <: scala.Product](using inst: ProductInstances[F, A])
+      extends DerivedEq.SafeProduct[F, A],
+        Safe[A]:
+
+    private[derived] final override def safeHash(x: A): Eval[Int] =
+      val arity = x.productArity
+      val prefix = x.productPrefix.hashCode
+      if arity <= 0 then Eval.now(prefix)
+      else
+        val seed = MurmurHash3.mix(MurmurHash3.productSeed, prefix)
+        inst.foldLeft[Eval[Int]](x)(Eval.now(seed)):
+          [t] => (acc: Eval[Int], h: F[t], xt: t) =>
+            acc.flatMap(a => DerivedHash.safeHash(h)(xt).map(hh => MurmurHash3.mix(a, hh)))
+        .map(MurmurHash3.finalizeHash(_, arity))
+
+  trait SafeCoproduct[F[x] <: Hash[x], A](using inst: CoproductInstances[F, A])
+      extends DerivedEq.SafeCoproduct[F, A],
+        Safe[A]:
+    private[derived] final override def safeHash(x: A): Eval[Int] =
+      Eval.defer(inst.fold[Eval[Int]](x)([t] => (h: F[t], xt: t) => DerivedHash.safeHash(h)(xt)))

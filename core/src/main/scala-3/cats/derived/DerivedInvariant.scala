@@ -1,6 +1,6 @@
 package cats.derived
 
-import cats.Invariant
+import cats.{Eval, Invariant}
 import shapeless3.deriving.{Const, Derived}
 import shapeless3.deriving.K1.*
 
@@ -24,6 +24,13 @@ object DerivedInvariant:
     import Strict.given
     summonInline[DerivedInvariant[F]].instance
 
+  /** Stack-safe (trampolined via [[cats.Eval]]) derivation. Opt-in: slower on shallow data, but does not overflow the
+    * stack on deeply nested recursive ADTs.
+    */
+  inline def stackSafe[F[_]]: Invariant[F] =
+    import StackSafe.given
+    summonInline[DerivedInvariant[F]].instance
+
   given [T]: DerivedInvariant[Const[T]] = new Invariant[Const[T]]:
     def imap[A, B](fa: T)(f: A => B)(g: B => A): T = fa
 
@@ -34,12 +41,17 @@ object DerivedInvariant:
     new Lazy(() => F.unify.compose(using G.unify)) with Invariant[F <<< G]:
       export delegate.*
 
-  given [F[_]](using inst: => Instances[Invariant |: Derived, F]): DerivedInvariant[F] =
-    generic(using inst.unify)
+  given [F[_]](using inst: ProductInstances[Invariant |: Derived, F]): DerivedInvariant[F] =
+    Strict.product(using inst.unify)
+
+  given [F[_]](using => CoproductInstances[Invariant |: Derived, F]): DerivedInvariant[F] =
+    Strict.coproduct
 
   @deprecated("Kept for binary compatibility", "3.2.0")
   protected given [F[_]: Invariant |: Derived, G[_]: Invariant |: Derived]: DerivedInvariant[[x] =>> F[G[x]]] =
     nested
+
+  // ---- Default: fast direct recursion ----
 
   private def generic[F[_]: InstancesOf[Invariant]]: DerivedInvariant[F] =
     new Generic[Invariant, F] {}
@@ -52,3 +64,39 @@ object DerivedInvariant:
     given product[F[_]: ProductInstancesOf[Invariant]]: DerivedInvariant[F] = generic
     given coproduct[F[_]](using inst: => CoproductInstances[Invariant |: Derived, F]): DerivedInvariant[F] =
       generic(using inst.unify)
+
+  // ---- Opt-in: stack-safe recursion via Eval ----
+
+  object StackSafe:
+    given product[F[_]](using inst: ProductInstances[Invariant |: Derived, F]): DerivedInvariant[F] =
+      given ProductInstances[Invariant, F] = inst.unify
+      new SafeProduct[Invariant, F] {}
+
+    given coproduct[F[_]](using inst: => CoproductInstances[Invariant |: Derived, F]): DerivedInvariant[F] =
+      given CoproductInstances[Invariant, F] = inst.unify
+      new SafeCoproduct[Invariant, F] {}
+
+  private[derived] trait Safe[F[_]] extends Invariant[F]:
+    private[derived] def safeImap[A, B](fa: F[A])(f: A => B)(g: B => A): Eval[F[B]]
+    override def imap[A, B](fa: F[A])(f: A => B)(g: B => A): F[B] = safeImap(fa)(f)(g).value
+
+  private[derived] def safeImap[F[_], A, B](F: Invariant[F])(fa: F[A])(f: A => B)(g: B => A): Eval[F[B]] =
+    F match
+      case safe: Safe[F] @scala.unchecked => safe.safeImap(fa)(f)(g)
+      case _ => Eval.later(F.imap(fa)(f)(g))
+
+  trait SafeProduct[T[f[_]] <: Invariant[f], F[_]](using inst: ProductInstances[T, F]) extends Safe[F]:
+    private[derived] final override def safeImap[A, B](fa: F[A])(f: A => B)(g: B => A): Eval[F[B]] =
+      val pure = [a] => (x: a) => Eval.now(x)
+      val mp = [a, b] => (ea: Eval[a], h: a => b) => ea.map(h)
+      val ap = [a, b] => (ef: Eval[a => b], ea: Eval[a]) => ef.flatMap(h => ea.map(h))
+      inst.traverse[A, Eval, B](fa)(mp)(pure)(ap)(
+        [f[_]] => (F: T[f], fa: f[A]) => DerivedInvariant.safeImap(F)(fa)(f)(g)
+      )
+
+  trait SafeCoproduct[T[f[_]] <: Invariant[f], F[_]](using inst: CoproductInstances[T, F]) extends Safe[F]:
+    private[derived] final override def safeImap[A, B](fa: F[A])(f: A => B)(g: B => A): Eval[F[B]] =
+      Eval.defer(inst.fold(fa)(
+        [f[a] <: F[a]] => (F: T[f], fa: f[A]) =>
+          DerivedInvariant.safeImap(F)(fa)(f)(g).asInstanceOf[Eval[F[B]]]
+      ))

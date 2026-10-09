@@ -64,6 +64,21 @@ class FunctorSuite extends KittensSuite:
     testNoInstance("strict.semiauto.functor", "TopK")
 
   locally:
+    given Functor[IList] = stackSafe.semiauto.functor
+    given Functor[EnumK1] = stackSafe.semiauto.functor
+    val Size = 50000
+    test("stackSafe.semiauto.functor is stack safe for recursive IList"):
+      val list = (1 to Size).foldLeft[IList[Int]](INil())((acc, i) => ICons(i, acc))
+      val mapped = Functor[IList].map(list)(_ + 1)
+      assertEquals(IList.toList(mapped).size, Size)
+
+    test("stackSafe.semiauto.functor is stack safe for recursive EnumK1"):
+      val tree = (1 to Size).foldLeft[EnumK1[Int]](EnumK1.Leaf(0)): (acc, i) =>
+        EnumK1.Rec(EnumK1.Leaf(i), acc)
+      val mapped = Functor[EnumK1].map(tree)(_ + 1)
+      assert(mapped ne null)
+
+  locally:
     import derivedInstances.*
     val instance = "derived.functor"
     checkAll(s"$instance[IList]", tests[IList].functor[Int, String, Long])

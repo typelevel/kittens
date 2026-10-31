@@ -46,7 +46,8 @@ object DerivedInvariant:
 
   trait Generic[T[f[_]] <: Invariant[f], F[_]](using inst: Instances[T, F]) extends Invariant[F]:
     final override def imap[A, B](fa: F[A])(f: A => B)(g: B => A): F[B] =
-      inst.map(fa)([f[_]] => (F: T[f], fa: f[A]) => F.imap(fa)(f)(g))
+      inst.map(fa): [f[_]] =>
+        (F, fa) => F.imap(fa)(f)(g)
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Invariant]]: DerivedInvariant[F] = generic

@@ -45,7 +45,8 @@ object DerivedApplicative:
         DerivedApply.Product[T, F]:
 
     final override def pure[A](x: A): F[A] =
-      inst.construct([f[_]] => (F: T[f]) => F.pure[A](x))
+      inst.construct: [f[_]] =>
+        F => F.pure[A](x)
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Applicative]]: DerivedApplicative[F] =

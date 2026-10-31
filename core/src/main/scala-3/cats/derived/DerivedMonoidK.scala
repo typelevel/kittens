@@ -59,7 +59,8 @@ object DerivedMonoidK:
         DerivedSemigroupK.Product[T, F]:
 
     final override def empty[A]: F[A] =
-      inst.construct([f[_]] => (F: T[f]) => F.empty[A])
+      inst.construct: [f[_]] =>
+        F => F.empty[A]
 
   object Strict:
     given product[F[_]: ProductInstancesOf[MonoidK]]: DerivedMonoidK[F] =

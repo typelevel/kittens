@@ -23,7 +23,8 @@ object DerivedGroup:
     Strict.product(using inst.unify)
 
   trait Product[F[x] <: Group[x], A: ProductInstancesOf[F]] extends DerivedMonoid.Product[F, A], Group[A]:
-    final override def inverse(a: A): A = ProductInstances.map(a)([a] => (F: F[a], x: a) => F.inverse(x))
+    final override def inverse(a: A): A = ProductInstances.map(a): [a] =>
+      (F, x) => F.inverse(x)
 
   object Strict:
     given product[A: ProductInstancesOf[Group]]: DerivedGroup[A] =

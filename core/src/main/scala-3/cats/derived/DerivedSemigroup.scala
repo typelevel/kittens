@@ -24,7 +24,8 @@ object DerivedSemigroup:
 
   trait Product[F[x] <: Semigroup[x], A](using inst: ProductInstances[F, A]) extends Semigroup[A]:
     final override def combine(x: A, y: A): A =
-      inst.map2(x, y)([a] => (F: F[a], x: a, y: a) => F.combine(x, y))
+      inst.map2(x, y): [a] =>
+        (F, x, y) => F.combine(x, y)
 
   object Strict:
     given product[A: ProductInstancesOf[Semigroup]]: DerivedSemigroup[A] =

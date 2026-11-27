@@ -39,9 +39,13 @@ object DerivedApply:
 
   trait Product[T[f[_]] <: Apply[f], F[_]](using inst: ProductInstances[T, F]) extends Apply[F]:
     private lazy val F = DerivedFunctor.Strict.product(using inst.widen).instance
-    final override def map[A, B](fa: F[A])(f: A => B): F[B] = F.map(fa)(f)
+
+    final override def map[A, B](fa: F[A])(f: A => B): F[B] =
+      F.map(fa)(f)
+
     final override def ap[A, B](ff: F[A => B])(fa: F[A]): F[B] =
-      inst.map2(ff, fa)([f[_]] => (F: T[f], ff: f[A => B], fa: f[A]) => F.ap(ff)(fa))
+      inst.map2(ff, fa): [f[_]] =>
+        (F, ff, fa) => F.ap(ff)(fa)
 
   object Strict:
     given product[F[_]: ProductInstancesOf[Apply]]: DerivedApply[F] =

@@ -54,7 +54,8 @@ object DerivedSemigroupK:
 
   trait Product[T[f[_]] <: SemigroupK[f], F[_]](using inst: ProductInstances[T, F]) extends SemigroupK[F]:
     final override def combineK[A](x: F[A], y: F[A]): F[A] =
-      inst.map2(x, y)([f[_]] => (F: T[f], x: f[A], y: f[A]) => F.combineK(x, y))
+      inst.map2(x, y): [f[_]] =>
+        (F, x, y) => F.combineK(x, y)
 
   object Strict:
     given product[F[_]: ProductInstancesOf[SemigroupK]]: DerivedSemigroupK[F] =

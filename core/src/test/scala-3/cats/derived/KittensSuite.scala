@@ -62,7 +62,7 @@ object KittensSuite:
     given [A: Arbitrary]: Arbitrary[List[A]] = Arbitrary.arbContainer
     given [A <: Singleton: ValueOf]: Arbitrary[A] = Arbitrary(Gen.const(valueOf[A]))
     @unused given [A <: Singleton: ValueOf]: Cogen[A] = Cogen((seed, _) => seed)
-    inline given [F[_]]: Isomorphisms[F] = Isomorphisms.invariant(summonInline)
+    inline given [F[_]]: Isomorphisms[F] = Isomorphisms.invariant(using summonInline)
 
     given [A <: Product](using mirror: Mirror.ProductOf[A], via: Arbitrary[mirror.MirroredElemTypes]): Arbitrary[A] =
       Arbitrary(via.arbitrary.map(mirror.fromTuple))

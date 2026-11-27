@@ -56,7 +56,8 @@ object DerivedHash:
         MurmurHash3.finalizeHash(hash, arity)
 
   trait Coproduct[F[x] <: Hash[x], A](using inst: CoproductInstances[F, A]) extends DerivedEq.Coproduct[F, A], Hash[A]:
-    final override def hash(x: A): Int = inst.fold[Int](x)([t] => (h: F[t], x: t) => h.hash(x))
+    final override def hash(x: A): Int = inst.fold[Int](x): [t] =>
+      (h, x) => h.hash(x)
 
   object Strict:
     export DerivedHash.coproduct
